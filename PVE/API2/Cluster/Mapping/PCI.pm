@@ -34,7 +34,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    'check-node' => get_standard_option('pve-node', {
 		description => "If given, checks the configurations on the given node for ".
-		    "correctness, and adds relevant errors to the devices.",
+		    "correctness, and adds relevant diagnostics for the devices to the response.",
 		optional => 1,
 	    }),
 	},
@@ -60,10 +60,10 @@ __PACKAGE__->register_method ({
 		    type => 'string',
 		    description => "A description of the logical mapping.",
 		},
-		error => {
+		checks => {
 		    type => "array",
 		    optional => 1,
-		    description => "A list of errors when 'check_node' is given.",
+		    description => "A list of checks, only present if 'check_node' is set.",
 		    items => {
 			type => 'object',
 			properties => {
@@ -108,10 +108,10 @@ __PACKAGE__->register_method ({
 	    $entry->{digest} = $cfg->{digest};
 
 	    if (defined($node)) {
-		$entry->{errors} = [];
+		$entry->{checks} = [];
 		if (my $mappings = PVE::Mapping::PCI::get_node_mapping($cfg, $id, $node)) {
 		    if (!scalar($mappings->@*)) {
-			push $entry->{errors}->@*, {
+			push $entry->{checks}->@*, {
 			    severity => 'warning',
 			    message => "No mapping for node $node.",
 			};
@@ -121,7 +121,7 @@ __PACKAGE__->register_method ({
 			    PVE::Mapping::PCI::assert_valid($id, $mapping);
 			};
 			if (my $err = $@) {
-			    push $entry->{errors}->@*, {
+			    push $entry->{checks}->@*, {
 				severity => 'error',
 				message => "Invalid configuration: $err",
 			    };
