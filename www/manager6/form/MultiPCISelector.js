@@ -128,15 +128,16 @@ Ext.define('PVE.form.MultiPCISelector', {
 	let slots = {};
 	records.forEach((rec) => {
 	    let slotname = rec.data.id.slice(0, -2); // remove function
-	    rec.set('slot', slotname);
 	    if (slots[slotname] !== undefined) {
 		slots[slotname].count++;
+		rec.set('slot', slots[slotname]);
 		return;
 	    }
-
 	    slots[slotname] = {
 		count: 1,
 	    };
+
+	    rec.set('slot', slots[slotname]);
 
 	    if (rec.data.id.endsWith('.0')) {
 		slots[slotname].device = rec.data;
@@ -213,6 +214,12 @@ Ext.define('PVE.form.MultiPCISelector', {
 	{
 	    header: 'ID',
 	    dataIndex: 'id',
+	    renderer: function(value, _md, rec) {
+		if (value.match(/\.[0-9a-f]/i) && rec.data.slot?.count > 1) {
+		    return `&emsp;${value}`;
+		}
+		return value;
+	    },
 	    width: 150,
 	},
 	{
