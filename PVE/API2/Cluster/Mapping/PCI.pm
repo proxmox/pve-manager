@@ -88,38 +88,37 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
-	my $node = $param->{'check-node'};
 
-	die "Wrong node to check\n"
-	    if defined($node) && $node ne 'localhost' && $node ne PVE::INotify::nodename();
+	my $check_node = $param->{'check-node'};
+	my $local_node = PVE::INotify::nodename();
+
+	die "wrong node to check - $check_node != $local_node\n"
+	    if defined($check_node) && $check_node ne 'localhost' && $check_node ne $local_node;
 
 	my $cfg = PVE::Mapping::PCI::config();
 
+	my $can_see_mapping_privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
+
 	my $res = [];
-
-	my $privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
-
 	for my $id (keys $cfg->{ids}->%*) {
-	    next if !$rpcenv->check_full($authuser, "/mapping/pci/$id", $privs, 1, 1);
+	    next if !$rpcenv->check_any($authuser, "/mapping/pci/$id", $can_see_mapping_privs, 1);
 	    next if !$cfg->{ids}->{$id};
 
 	    my $entry = dclone($cfg->{ids}->{$id});
 	    $entry->{id} = $id;
 	    $entry->{digest} = $cfg->{digest};
 
-	    if (defined($node)) {
+	    if (defined($check_node)) {
 		$entry->{checks} = [];
-		if (my $mappings = PVE::Mapping::PCI::get_node_mapping($cfg, $id, $node)) {
+		if (my $mappings = PVE::Mapping::PCI::get_node_mapping($cfg, $id, $check_node)) {
 		    if (!scalar($mappings->@*)) {
 			push $entry->{checks}->@*, {
 			    severity => 'warning',
-			    message => "No mapping for node $node.",
+			    message => "No mapping for node $check_node.",
 			};
 		    }
 		    for my $mapping ($mappings->@*) {
-			eval {
-			    PVE::Mapping::PCI::assert_valid($id, $mapping);
-			};
+			eval { PVE::Mapping::PCI::assert_valid($id, $mapping) };
 			if (my $err = $@) {
 			    push $entry->{checks}->@*, {
 				severity => 'error',
