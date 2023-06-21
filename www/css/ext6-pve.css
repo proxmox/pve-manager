@@ -704,3 +704,8 @@ table.osds td:first-of-type {
 .x-grid-item .x-item-disabled {
     opacity: 0.3;
 }
+
+.pmx-action-hidden:before {
+    opacity: 0.0;
+    cursor: default;
+}

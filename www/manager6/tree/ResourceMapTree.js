@@ -49,44 +49,89 @@ Ext.define('PVE.tree.ResourceMapTree', {
 	    });
 	},
 
-	addHost: function() {
+	add: function(_grid, _rI, _cI, _item, _e, rec) {
 	    let me = this;
-	    me.edit(false);
+	    if (rec.data.type !== 'entry') {
+		return;
+	    }
+
+	    me.openMapEditWindow(rec.data.name);
 	},
 
-	edit: function(includeNodename = true) {
+	editDblClick: function() {
 	    let me = this;
 	    let view = me.getView();
 	    let selection = view.getSelection();
-	    if (!selection || !selection.length) {
-		return;
-	    }
-	    let rec = selection[0];
-	    if (!view.canConfigure || (rec.data.type === 'entry' && includeNodename)) {
+	    if (!selection || selection.length < 1) {
 		return;
 	    }
 
+	    me.edit(selection[0]);
+	},
+
+	editAction: function(_grid, _rI, _cI, _item, _e, rec) {
+	    this.edit(rec);
+	},
+
+	edit: function(rec) {
+	    let me = this;
+	    if (rec.data.type === 'map') {
+		return;
+	    }
+
+	    me.openMapEditWindow(rec.data.name, rec.data.node, rec.data.type === 'entry');
+	},
+
+	openMapEditWindow: function(name, nodename, entryOnly) {
+	    let me = this;
+	    let view = me.getView();
+
 	    Ext.create(view.editWindowClass, {
-		url: `${view.baseUrl}/${rec.data.name}`,
+		url: `${view.baseUrl}/${name}`,
 		autoShow: true,
 		autoLoad: true,
-		nodename: includeNodename ? rec.data.node : undefined,
-		name: rec.data.name,
+		entryOnly,
+		nodename,
+		name,
 		listeners: {
 		    destroy: () => me.load(),
 		},
 	    });
 	},
 
-	remove: function() {
+	remove: function(_grid, _rI, _cI, _item, _e, rec) {
+	    let me = this;
+	    let msg, id;
+	    let view = me.getView();
+	    let confirmMsg;
+	    switch (rec.data.type) {
+		case 'entry':
+		    msg = gettext("Are you sure you want to remove '{0}'");
+		    confirmMsg = Ext.String.format(msg, rec.data.name);
+		    break;
+		case 'node':
+		    msg = gettext("Are you sure you want to remove '{0}' entries for '{1}'");
+		    confirmMsg = Ext.String.format(msg, rec.data.node, rec.data.name);
+		    break;
+		case 'map':
+		    msg = gettext("Are you sure you want to remove '{0}' on '{1}' for '{2}'");
+		    id = rec.data[view.entryIdProperty];
+		    confirmMsg = Ext.String.format(msg, id, rec.data.node, rec.data.name);
+		    break;
+		default:
+		    throw "invalid type";
+	    }
+	    Ext.Msg.confirm(gettext('Confirm'), confirmMsg, function(btn) {
+		if (btn === 'yes') {
+		    me.executeRemove(rec.data);
+		}
+	    });
+	},
+
+	executeRemove: function(data) {
 	    let me = this;
 	    let view = me.getView();
-	    let selection = view.getSelection();
-	    if (!selection || !selection.length) {
-		return;
-	    }
 
-	    let data = selection[0].data;
 	    let url = `${view.baseUrl}/${data.name}`;
 	    let method = 'PUT';
 	    let params = {
@@ -233,6 +278,18 @@ Ext.define('PVE.tree.ResourceMapTree', {
 	    return `<i class="fa ${iconCls}"></i> ${status}`;
 	},
 
+	getAddClass: function(v, mD, rec) {
+	    let cls = 'fa fa-plus-circle';
+	    if (rec.data.type !== 'entry' || rec.data.children?.length >= PVE.data.ResourceStore.getNodes().length) {
+		cls += ' pmx-action-hidden';
+	    }
+	    return cls;
+	},
+
+	isAddDisabled: function(v, r, c, i, rec) {
+	    return rec.data.type !== 'entry' || rec.data.children?.length >= PVE.data.ResourceStore.getNodes().length;
+	},
+
 	init: function(view) {
 	    let me = this;
 
@@ -254,63 +311,56 @@ Ext.define('PVE.tree.ResourceMapTree', {
 
     tbar: [
 	{
-	    text: gettext('Add mapping'),
+	    text: gettext('Add'),
 	    handler: 'addMapping',
 	    cbind: {
 		disabled: '{!canConfigure}',
 	    },
 	},
-	{
-	    xtype: 'proxmoxButton',
-	    text: gettext('New Host mapping'),
-	    disabled: true,
-	    parentXType: 'treepanel',
-	    enableFn: function(_rec) {
-		return this.up('treepanel').canConfigure;
-	    },
-	    handler: 'addHost',
-	},
-	{
-	    xtype: 'proxmoxButton',
-	    text: gettext('Edit'),
-	    disabled: true,
-	    parentXType: 'treepanel',
-	    enableFn: function(rec) {
-		return rec && rec.data.type !== 'entry' && this.up('treepanel').canConfigure;
-	    },
-	    handler: 'edit',
-	},
-	{
-	    xtype: 'proxmoxButton',
-	    parentXType: 'treepanel',
-	    handler: 'remove',
-	    disabled: true,
-	    text: gettext('Remove'),
-	    enableFn: function(rec) {
-		return rec && this.up('treepanel').canConfigure;
-	    },
-	    confirmMsg: function(rec) {
-		let msg, id;
-		let view = this.up('treepanel');
-		switch (rec.data.type) {
-		    case 'entry':
-			msg = gettext("Are you sure you want to remove '{0}'");
-			return Ext.String.format(msg, rec.data.name);
-		    case 'node':
-			msg = gettext("Are you sure you want to remove '{0}' entries for '{1}'");
-			return Ext.String.format(msg, rec.data.node, rec.data.name);
-		    case 'map':
-			msg = gettext("Are you sure you want to remove '{0}' on '{1}' for '{2}'");
-			id = rec.data[view.entryIdProperty];
-			return Ext.String.format(msg, id, rec.data.node, rec.data.name);
-		    default:
-			throw "invalid type";
-		}
-	    },
-	},
     ],
 
     listeners: {
-	itemdblclick: 'edit',
+	itemdblclick: 'editDblClick',
+    },
+
+    initComponent: function() {
+	let me = this;
+
+	let columns = [...me.columns];
+	columns.splice(1, 0, {
+	    xtype: 'actioncolumn',
+	    text: gettext('Actions'),
+	    width: 80,
+	    items: [
+		{
+		    getTip: (v, m, { data }) =>
+			Ext.String.format(gettext("Add new host mapping for '{0}'"), data.name),
+		    getClass: 'getAddClass',
+		    isActionDisabled: 'isAddDisabled',
+		    handler: 'add',
+		},
+		{
+		    iconCls: 'fa fa-pencil',
+		    getTip: (v, m, { data }) => data.type === 'entry'
+			? Ext.String.format(gettext("Edit Mapping '{0}'"), data.name)
+			: Ext.String.format(gettext("Edit Mapping '{0}' for '{1}'"), data.name, data.node),
+		    getClass: (v, m, { data }) => data.type !== 'map' ? 'fa fa-pencil' : 'pmx-hidden',
+		    isActionDisabled: (v, r, c, i, rec) => rec.data.type === 'map',
+		    handler: 'editAction',
+		},
+		{
+		    iconCls: 'fa fa-trash-o',
+		    getTip: (v, m, { data }) => data.type === 'entry'
+			? Ext.String.format(gettext("Remove '{0}'"), data.name)
+			: data.type === 'node'
+			    ? Ext.String.format(gettext("Remove mapping for '{0}'"), data.node)
+			    : Ext.String.format(gettext("Remove mapping '{0}'"), data.path),
+		    handler: 'remove',
+		},
+	    ],
+	});
+	me.columns = columns;
+
+	me.callParent();
     },
 });

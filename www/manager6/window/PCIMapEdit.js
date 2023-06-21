@@ -13,8 +13,12 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 
     cbindData: function(initialConfig) {
 	let me = this;
-	me.isCreate = !me.name || !me.nodename;
+	me.isCreate = (!me.name || !me.nodename) && !me.entryOnly;
 	me.method = me.name ? 'PUT' : 'POST';
+	me.hideMapping = !!me.entryOnly;
+	me.hideComment = me.name && !me.entryOnly;
+	me.hideNodeSelector = me.nodename || me.entryOnly;
+	me.hideNode = !me.nodename || !me.hideNodeSelector;
 	return {
 	    name: me.name,
 	    nodename: me.nodename,
@@ -201,17 +205,26 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    allowBlank: false,
 		},
 		{
-		    xtype: 'pmxDisplayEditField',
+		    xtype: 'displayfield',
 		    fieldLabel: gettext('Mapping on Node'),
 		    labelWidth: 120,
 		    name: 'node',
-		    editConfig: {
-			xtype: 'pveNodeSelector',
-			reference: 'nodeselector',
-		    },
 		    cbind: {
-			editable: '{!nodename}',
 			value: '{nodename}',
+			disabled: '{hideNode}',
+			hidden: '{hideNode}',
+		    },
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'pveNodeSelector',
+		    reference: 'nodeselector',
+		    fieldLabel: gettext('Mapping on Node'),
+		    labelWidth: 120,
+		    name: 'node',
+		    cbind: {
+			disabled: '{hideNodeSelector}',
+			hidden: '{hideNodeSelector}',
 		    },
 		    allowBlank: false,
 		},
@@ -219,17 +232,14 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 
 	    column2: [
 		{
-		    // as spacer
-		    xtype: 'displayfield',
-		},
-		{
 		    xtype: 'proxmoxcheckbox',
-		    fieldLabel: gettext('Mediated Devices'),
-		    labelWidth: 120,
+		    fieldLabel: gettext('Use with Mediated Devices'),
+		    labelWidth: 200,
 		    reference: 'mdev',
 		    name: 'mdev',
 		    cbind: {
 			deleteEmpty: '{!isCreate}',
+			disabled: '{hideComment}',
 		    },
 		},
 	    ],
@@ -244,6 +254,8 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    name: 'map',
 		    cbind: {
 			nodename: '{nodename}',
+			disabled: '{hideMapping}',
+			hidden: '{hideMapping}',
 		    },
 		    allowBlank: false,
 		    onLoadCallBack: 'checkIommu',
@@ -257,6 +269,8 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    name: 'description',
 		    cbind: {
 			deleteEmpty: '{!isCreate}',
+			disabled: '{hideComment}',
+			hidden: '{hideComment}',
 		    },
 		},
 	    ],

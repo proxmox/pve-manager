@@ -7,6 +7,10 @@ Ext.define('PVE.window.USBMapEditWindow', {
 	let me = this;
 	me.isCreate = !me.name;
 	me.method = me.isCreate ? 'POST' : 'PUT';
+	me.hideMapping = !!me.entryOnly;
+	me.hideComment = me.name && !me.entryOnly;
+	me.hideNodeSelector = me.nodename || me.entryOnly;
+	me.hideNode = !me.nodename || !me.hideNodeSelector;
 	return {
 	    name: me.name,
 	    nodename: me.nodename,
@@ -53,12 +57,14 @@ Ext.define('PVE.window.USBMapEditWindow', {
 	    if (me.originalMap) {
 		map = PVE.Parser.filterPropertyStringList(me.originalMap, (e) => e.node !== values.node);
 	    }
-	    map.push(PVE.Parser.printPropertyString(values));
+	    if (values.id) {
+		map.push(PVE.Parser.printPropertyString(values));
+	    }
 
-	    values = {
-		map,
-		description,
-	    };
+	    values = { map };
+	    if (description) {
+		values.description = description;
+	    }
 
 	    if (view.isCreate) {
 		values.id = name;
@@ -143,16 +149,26 @@ Ext.define('PVE.window.USBMapEditWindow', {
 		    allowBlank: false,
 		},
 		{
-		    xtype: 'pmxDisplayEditField',
-		    fieldLabel: gettext('Node'),
+		    xtype: 'displayfield',
+		    fieldLabel: gettext('Mapping on Node'),
+		    labelWidth: 120,
 		    name: 'node',
-		    editConfig: {
-			xtype: 'pveNodeSelector',
-			reference: 'nodeselector',
-		    },
 		    cbind: {
-			editable: '{!nodename}',
 			value: '{nodename}',
+			disabled: '{hideNode}',
+			hidden: '{hideNode}',
+		    },
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'pveNodeSelector',
+		    reference: 'nodeselector',
+		    fieldLabel: gettext('Mapping on Node'),
+		    labelWidth: 120,
+		    name: 'node',
+		    cbind: {
+			disabled: '{hideNodeSelector}',
+			hidden: '{hideNodeSelector}',
 		    },
 		    allowBlank: false,
 		},
@@ -163,6 +179,10 @@ Ext.define('PVE.window.USBMapEditWindow', {
 		    xtype: 'fieldcontainer',
 		    defaultType: 'radiofield',
 		    layout: 'fit',
+		    cbind: {
+			disabled: '{hideMapping}',
+			hidden: '{hideMapping}',
+		    },
 		    items: [
 			{
 			    name: 'usb',
@@ -178,6 +198,7 @@ Ext.define('PVE.window.USBMapEditWindow', {
 			    name: 'id',
 			    cbind: {
 				nodename: '{nodename}',
+				disabled: '{hideMapping}',
 			    },
 			    editable: true,
 			    allowBlank: false,
@@ -214,6 +235,10 @@ Ext.define('PVE.window.USBMapEditWindow', {
 		    fieldLabel: gettext('Comment'),
 		    submitValue: true,
 		    name: 'description',
+		    cbind: {
+			disabled: '{hideComment}',
+			hidden: '{hideComment}',
+		    },
 		},
 	    ],
 	},
