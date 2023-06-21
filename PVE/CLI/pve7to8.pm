@@ -1229,6 +1229,34 @@ sub check_time_sync {
     }
 }
 
+sub check_bootloader {
+    log_info("Checking bootloader configuration...");
+    if (!$upgraded) {
+	log_skip("not yet upgraded, no need to check the presence of systemd-boot");
+	return;
+    }
+
+    if (! -f "/etc/kernel/proxmox-boot-uuids") {
+	log_skip("proxmox-boot-tool not used for bootloader configuration");
+	return;
+    }
+
+    if (! -d "/sys/firmware/efi") {
+	log_skip("System booted in legacy-mode - no need for systemd-boot");
+	return;
+    }
+
+    if ( -f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
+	log_pass("systemd-boot is installed");
+    } else {
+	log_warn(
+	    "proxmox-boot-tool is used for bootloader configuration in uefi mode"
+	    . "but the separate systemd-boot package, existing in Debian Bookworm  is not installed"
+	    . "initializing new ESPs will not work until the package is installed"
+	);
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1328,6 +1356,7 @@ sub check_misc {
     check_lxcfs_fuse_version();
     check_node_and_guest_configurations();
     check_apt_repos();
+    check_bootloader();
 }
 
 my sub colored_if {
