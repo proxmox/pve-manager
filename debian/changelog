@@ -1,3 +1,20 @@
+pve-manager (7.4-15) bullseye; urgency=medium
+
+  * pve7to8: content-dirs check: skip paths that cannot be resolved
+
+  * pve7to8: remove outdated warning about retention
+
+  * pve7to8: avoid confusing warning about required setting 'storage' for
+    vzdump
+
+  * pve7to8: enable ceph noout check before upgrade
+
+  * pve7to8: add check for systemd-boot presence where needed
+
+  * update shipped aplliance info index
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 20:04:08 +0200
+
 pve-manager (7.4-14) bullseye; urgency=medium
 
   * pve7to8:
