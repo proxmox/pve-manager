@@ -85,7 +85,7 @@ Ext.define('PVE.dc.PCIMapView', {
 	    dataIndex: 'subsystem-id',
 	},
 	{
-	    text: gettext('IOMMU group'),
+	    text: gettext('IOMMU-Group'),
 	    dataIndex: 'iommugroup',
 	},
 	{
