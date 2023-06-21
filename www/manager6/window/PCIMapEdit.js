@@ -163,8 +163,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    hidden: true,
 		    columnWidth: 1,
 		    padding: '0 0 10 0',
-		    value: 'No IOMMU detected, please activate it.' +
-		    'See Documentation for further information.',
+		    value: gettext('No IOMMU detected, please activate it. See Documentation for further information.'),
 		    userCls: 'pmx-hint',
 		},
 		{
@@ -173,8 +172,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    hidden: true,
 		    columnWidth: 1,
 		    padding: '0 0 10 0',
-		    value: 'When multiple devices are selected, the first free one will be chosen' +
-			' on guest start.',
+		    value: gettext('When multiple devices are selected, the first free one will be chosen on guest start.'),
 		    userCls: 'pmx-hint',
 		},
 		{
@@ -184,7 +182,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    columnWidth: 1,
 		    padding: '0 0 10 0',
 		    itemId: 'iommuwarning',
-		    value: 'The selected Device is not in a seperate IOMMU group, make sure this is intended.',
+		    value: gettext('A selected device is not in a separate IOMMU group, make sure this is intended.'),
 		    userCls: 'pmx-hint',
 		},
 	    ],
