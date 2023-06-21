@@ -58,7 +58,13 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 	    let me = this;
 	    let view = me.getView();
 	    me.originalMap = [...values.map];
-	    values.map = PVE.Parser.filterPropertyStringList(values.map, (e) => e.node === view.nodename);
+	    let configuredNodes = [];
+	    values.map = PVE.Parser.filterPropertyStringList(values.map, (e) => {
+		configuredNodes.push(e.node);
+		return e.node === view.nodename;
+	    });
+
+	    me.lookup('nodeselector').disallowedNodes = configuredNodes;
 	    return values;
 	},
 
@@ -203,6 +209,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    name: 'node',
 		    editConfig: {
 			xtype: 'pveNodeSelector',
+			reference: 'nodeselector',
 		    },
 		    cbind: {
 			editable: '{!nodename}',

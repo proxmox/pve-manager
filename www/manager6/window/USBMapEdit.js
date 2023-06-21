@@ -71,13 +71,16 @@ Ext.define('PVE.window.USBMapEditWindow', {
 	    let me = this;
 	    let view = me.getView();
 	    me.originalMap = [...values.map];
+	    let configuredNodes = [];
 	    PVE.Parser.filterPropertyStringList(values.map, (e) => {
+		configuredNodes.push(e.node);
 		if (e.node === view.nodename) {
 		    values = e;
 		}
 		return false;
 	    });
 
+	    me.lookup('nodeselector').disallowedNodes = configuredNodes;
 	    if (values.path) {
 		values.usb = 'path';
 	    }
@@ -145,6 +148,7 @@ Ext.define('PVE.window.USBMapEditWindow', {
 		    name: 'node',
 		    editConfig: {
 			xtype: 'pveNodeSelector',
+			reference: 'nodeselector',
 		    },
 		    cbind: {
 			editable: '{!nodename}',
