@@ -228,7 +228,7 @@ Ext.define('PVE.tree.ResourceMapTree', {
 	    } else {
 		let state = value ? 'good' : 'critical';
 		iconCls = PVE.Utils.get_health_icon(state, true);
-		status = value ? gettext("OK") : record.data.errmsg || Proxmox.Utils.unknownText;
+		status = value ? gettext("Mapping matches host data") : record.data.errmsg || Proxmox.Utils.unknownText;
 	    }
 	    return `<i class="fa ${iconCls}"></i> ${status}`;
 	},
