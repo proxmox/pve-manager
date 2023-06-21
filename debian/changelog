@@ -1,3 +1,14 @@
+pve-manager (8.0.1) bookworm; urgency=medium
+
+  * d/postinst: fix condition for removal of pvetest added during beta
+
+  * ui: cloudinit: align default value for package upgrades with backend again
+
+  * api: resource usb mapping: add missing proxy-to-node callback for advanced
+    checks
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 16:00:04 +0200
+
 pve-manager (8.0.0) bookworm; urgency=medium
 
   * api: ceph: remove deprecated API endpoints that have a more modern
