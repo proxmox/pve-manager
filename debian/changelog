@@ -1,4 +1,4 @@
-pve-manager (8.0.1) bookworm; urgency=medium
+pve-manager (8.0.2) bookworm; urgency=medium
 
   * d/postinst: fix condition for removal of pvetest added during beta
 
@@ -7,7 +7,7 @@ pve-manager (8.0.1) bookworm; urgency=medium
   * api: resource usb mapping: add missing proxy-to-node callback for advanced
     checks
 
- -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 16:00:04 +0200
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 17:06:43 +0200
 
 pve-manager (8.0.0) bookworm; urgency=medium
 
