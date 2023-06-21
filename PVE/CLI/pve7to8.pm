@@ -614,6 +614,8 @@ sub check_backup_retention_settings {
 
     eval {
 	my $confdesc = PVE::VZDump::Common::get_confdesc();
+	# vzdump.conf by itself doesn't need to honor any 'requires'
+	delete $confdesc->{$_}->{requires} for keys $confdesc->%*;
 
 	my $fn = "/etc/vzdump.conf";
 	my $raw = PVE::Tools::file_get_contents($fn);
