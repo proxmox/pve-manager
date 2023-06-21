@@ -95,8 +95,6 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'cmd-safety' },
 	    { name => 'cfg' },
-	    { name => 'config' },
-	    { name => 'configdb' },
 	    { name => 'crush' },
 	    { name => 'fs' },
 	    { name => 'init' },
@@ -105,7 +103,7 @@ __PACKAGE__->register_method ({
 	    { name => 'mgr' },
 	    { name => 'mon' },
 	    { name => 'osd' },
-	    { name => 'pools' },
+	    { name => 'pool' },
 	    { name => 'restart' },
 	    { name => 'rules' },
 	    { name => 'start' },
