@@ -542,6 +542,7 @@ sub check_ceph {
 	    log_warn("unable to determine overall Ceph daemon versions!");
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
+	    # TODO: needs to be set to 1 in the stable branch each time! - find better solution?
 	    $noout_wanted = 0; # off post-upgrade, on pre-upgrade
 	} elsif (keys $ceph_versions_simple->{overall}->%* != 1) {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
