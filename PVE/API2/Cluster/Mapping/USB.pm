@@ -15,6 +15,11 @@ __PACKAGE__->register_method ({
     name => 'index',
     path => '',
     method => 'GET',
+    # only proxy if we give the 'check-node' parameter
+    proxyto_callback => sub {
+	my ($rpcenv, $proxyto, $param) = @_;
+	return $param->{'check-node'} // 'localhost';
+    },
     description => "List USB Hardware Mappings",
     permissions => {
 	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or".
