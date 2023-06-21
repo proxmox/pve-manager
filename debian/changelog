@@ -1,3 +1,36 @@
+pve-manager (8.0.0) bookworm; urgency=medium
+
+  * api: ceph: remove deprecated API endpoints that have a more modern
+    replacement since Proxmox VE 7.4:
+    - ceph/pools got superseded by a more flexible ceph/pool one
+    - ceph/config and ceph/configdb endpoints got superseded by ceph/cfg/raw
+      and ceph/cfg/db, respectively
+
+  * ui: fix pci map selector status column
+
+  * ui: multi pci selector: reset the selection properly on nodename change
+
+  * ui: multi pci selector: indent functions multifunction devices
+
+  * ui: pci map edit: make top fields more clear
+
+  * ui: resource mappings: remove border and add resize handle
+
+  * ui: remove beta text again
+
+  * ui: resource map tree: make 'ok' status clearer
+
+  * ui: pci map edit: reintroduce warnings checks
+
+  * ui: pci/usb map edit: improve new host mappings dialog
+
+  * ui: pci/usb mapping: rework mapping panel for better user experience
+
+  * d/postinst: actively remove pvetest repository (added for beta) again if
+    upgrading from a beta version and if the dedicated file exists.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 09:21:16 +0200
+
 pve-manager (8.0.0~9) bookworm; urgency=medium
 
   * api: cluster resources: add 'localnetwork' referring to local network
