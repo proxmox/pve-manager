@@ -609,8 +609,6 @@ sub check_backup_retention_settings {
 
     my $pass = 1;
 
-    my $node_has_retention;
-
     my $maxfiles_msg = "parameter 'maxfiles' is deprecated with PVE 7.x and will be removed in a " .
 	"future version, use 'prune-backups' instead.";
 
@@ -627,8 +625,6 @@ sub check_backup_retention_settings {
 	    $pass = 0;
 	    log_warn("$fn - $maxfiles_msg");
 	}
-
-	$node_has_retention = defined($param->{maxfiles}) || defined($param->{'prune-backups'});
     };
     if (my $err = $@) {
 	$pass = 0;
@@ -644,15 +640,6 @@ sub check_backup_retention_settings {
 	    $pass = 0;
 	    log_warn("storage '$storeid' - $maxfiles_msg");
 	}
-
-	next if !$scfg->{content}->{backup};
-	next if defined($scfg->{maxfiles}) || defined($scfg->{'prune-backups'});
-	next if $node_has_retention;
-
-	log_info(
-	    "storage '$storeid' - no backup retention settings defined - by default, since PVE 7.0"
-	    ." it will no longer keep only the last backup, but all backups"
-	);
     }
 
     eval {
