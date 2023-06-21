@@ -109,7 +109,7 @@ sub print_header {
 }
 
 my $get_systemd_unit_state = sub {
-    my ($unit, $surpress_stderr) = @_;
+    my ($unit, $suppress_stderr) = @_;
 
     my $state;
     my $filter_output = sub {
@@ -118,7 +118,7 @@ my $get_systemd_unit_state = sub {
     };
 
     my %extra = (outfunc => $filter_output, noerr => 1);
-    $extra{errfunc} = sub {  } if $surpress_stderr;
+    $extra{errfunc} = sub {  } if $suppress_stderr;
 
     eval {
 	run_command(['systemctl', 'is-enabled', "$unit"], %extra);
@@ -198,7 +198,8 @@ sub check_pve_packages {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
 
-	my ($krunning, $kinstalled) = (qr/6\.(?:2|5)/, 'pve-kernel-6.2');
+	# FIXME: better differentiate between 6.2 from bullseye or bookworm
+	my ($krunning, $kinstalled) = (qr/6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/, 'pve-kernel-6.2');
 	if (!$upgraded) {
 	    # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
 	    ($krunning, $kinstalled) = (qr/(?:5\.(?:13|15)|6\.2)/, 'pve-kernel-5.15');
@@ -251,7 +252,7 @@ sub check_storage_health {
 
     my $info = PVE::Storage::storage_info($cfg);
 
-    foreach my $storeid (sort keys %$info) {
+    for my $storeid (sort keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
 	    if ($d->{active}) {
@@ -519,7 +520,7 @@ sub check_ceph {
 	    }
 	}
 
-	foreach my $service (@$services) {
+	for my $service (@$services) {
 	    my ($name, $key) = $service->@{'name', 'key'};
 	    if (my $service_versions = $ceph_versions_simple->{$key}) {
 		if (keys %$service_versions == 0) {
@@ -685,7 +686,7 @@ sub check_cifs_credential_location {
 }
 
 sub check_custom_pool_roles {
-    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
+    log_info("Checking permission system changes..");
 
     if (! -f "/etc/pve/user.cfg") {
 	log_skip("user.cfg does not exist");
@@ -703,27 +704,38 @@ sub check_custom_pool_roles {
 	my $line = $1;
 	my @data;
 
-	foreach my $d (split (/:/, $line)) {
+	for my $d (split (/:/, $line)) {
 	    $d =~ s/^\s+//;
 	    $d =~ s/\s+$//;
 	    push @data, $d
 	}
 
 	my $et = shift @data;
-	next if $et ne 'role';
+	if ($et eq 'role') {
+	    my ($role, $privlist) = @data;
+	    if (!PVE::AccessControl::verify_rolename($role, 1)) {
+		warn "user config - ignore role '$role' - invalid characters in role name\n";
+		next;
+	    }
 
-	my ($role, $privlist) = @data;
-	if (!PVE::AccessControl::verify_rolename($role, 1)) {
-	    warn "user config - ignore role '$role' - invalid characters in role name\n";
-	    next;
-	}
-
-	$roles->{$role} = {} if !$roles->{$role};
-	foreach my $priv (split_list($privlist)) {
-	    $roles->{$role}->{$priv} = 1;
+	    $roles->{$role} = {} if !$roles->{$role};
+	    for my $priv (split_list($privlist)) {
+		$roles->{$role}->{$priv} = 1;
+	    }
+	} elsif ($et eq 'acl') {
+	    my ($propagate, $pathtxt, $uglist, $rolelist) = @data;
+	    for my $role (split_list($rolelist)) {
+		if ($role eq 'PVESysAdmin' || $role eq 'PVEAdmin') {
+		    log_warn(
+		        "found ACL entry on '$pathtxt' for '$uglist' with role '$role' - this role"
+		        ." will no longer have 'Permissions.Modify' after the upgrade!"
+		    );
+		}
+	    }
 	}
     }
 
+    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
     my ($custom_roles, $pve_namespace_clashes) = (0, 0);
     for my $role (sort keys %{$roles}) {
 	next if PVE::AccessControl::role_is_special($role);
@@ -1006,9 +1018,12 @@ sub check_containers_cgroup_compat {
 	my $get_systemd_version = sub {
 	    my ($self) = @_;
 
-	    my $sd_lib_dir = -d "/lib/systemd" ? "/lib/systemd" : "/usr/lib/systemd";
-	    my $libsd = PVE::Tools::dir_glob_regex($sd_lib_dir, "libsystemd-shared-.+\.so");
-	    if (defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)\.so/) {
+	    my $libsd;
+	    for my $dir ('/lib/systemd', '/usr/lib/systemd', '/usr/lib/x86_64-linux-gnu/systemd') {
+		$libsd = PVE::Tools::dir_glob_regex($dir, "libsystemd-shared-.+\.so");
+		last if defined($libsd);
+	    }
+	    if (defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)(\.\d-\d)?\.so/) {
 		return $1;
 	    }
 
@@ -1206,6 +1221,22 @@ sub check_apt_repos {
     }
 }
 
+sub check_nvidia_vgpu_service {
+    log_info("Checking for existence of NVIDIA vGPU Manager..");
+
+    my $msg = "NVIDIA vGPU Service found, possibly not compatible with newer kernel versions, check"
+        ." with their documentation and https://pve.proxmox.com/wiki/Upgrade_from_7_to_8#Known_upgrade_issues.";
+
+    my $state = $get_systemd_unit_state->("nvidia-vgpu-mgr.service", 1);
+    if ($state && $state eq 'active') {
+	log_warn("Running $msg");
+    } elsif ($state && $state ne 'unknown') {
+	log_warn($msg);
+    } else {
+	log_pass("No NVIDIA vGPU Service found.");
+    }
+}
+
 sub check_time_sync {
     my $unit_active = sub { return $get_systemd_unit_state->($_[0], 1) eq 'active' ? $_[0] : undef };
 
@@ -1329,7 +1360,7 @@ sub check_misc {
     };
 
     my $certs_check_failed = 0;
-    foreach my $cert (@$certs) {
+    for my $cert (@$certs) {
 	my ($type, $size, $fn) = $cert->@{qw(public-key-type public-key-bits filename)};
 
 	if (!defined($type) || !defined($size)) {
@@ -1356,6 +1387,7 @@ sub check_misc {
     check_lxcfs_fuse_version();
     check_node_and_guest_configurations();
     check_apt_repos();
+    check_nvidia_vgpu_service();
     check_bootloader();
 }
 
