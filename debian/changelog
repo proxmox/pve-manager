@@ -1,3 +1,16 @@
+pve-manager (8.0.3) bookworm; urgency=medium
+
+  * ui: use common gettext for IOMMU-Group
+
+  * pve7to8: content-dirs check: skip paths that cannot be resolved
+
+  * pve7to8: avoid confusing warning about required setting 'storage' for
+    vzdump
+
+  * pve7to8: add check for systemd-boot presence, where needed.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jun 2023 19:55:54 +0200
+
 pve-manager (8.0.2) bookworm; urgency=medium
 
   * d/postinst: fix condition for removal of pvetest added during beta
