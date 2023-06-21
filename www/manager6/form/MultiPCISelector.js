@@ -8,6 +8,9 @@ Ext.define('PVE.form.MultiPCISelector', {
 	field: 'Ext.form.field.Field',
     },
 
+    // will be called after loading finished
+    onLoadCallBack: Ext.emptyFn,
+
     getValue: function() {
 	let me = this;
 	return me.value ?? [];
@@ -286,6 +289,8 @@ Ext.define('PVE.form.MultiPCISelector', {
 	me.nodename = undefined;
 
 	me.callParent();
+
+	me.mon(me.getStore(), 'load', me.onLoadCallBack);
 
 	Proxmox.Utils.monStoreErrors(me, me.getStore(), true);
 

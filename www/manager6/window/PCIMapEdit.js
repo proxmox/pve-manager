@@ -70,6 +70,46 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 	    me.lookup('iommu_warning').setVisible(
 		records.every((val) => val.data.iommugroup === -1),
 	    );
+
+	    let value = me.lookup('pciselector').getValue();
+	    me.checkIsolated(value);
+	},
+
+	checkIsolated: function(value) {
+	    let me = this;
+
+	    let store = me.lookup('pciselector').getStore();
+
+	    let isIsolated = function(entry) {
+		let isolated = true;
+		let parsed = PVE.Parser.parsePropertyString(entry);
+		parsed.iommugroup = parseInt(parsed.iommugroup, 10);
+		if (!parsed.iommugroup) {
+		    return isolated;
+		}
+		store.each(({ data }) => {
+		    let isSubDevice = data.id.startsWith(parsed.path);
+		    if (data.iommugroup === parsed.iommugroup && data.id !== parsed.path && !isSubDevice) {
+			isolated = false;
+			return false;
+		    }
+		    return true;
+		});
+		return isolated;
+	    };
+
+	    let showWarning = false;
+	    if (Ext.isArray(value)) {
+		for (const entry of value) {
+		    if (!isIsolated(entry)) {
+			showWarning = true;
+			break;
+		    }
+		}
+	    } else {
+		showWarning = isIsolated(value);
+	    }
+	    me.lookup('group_warning').setVisible(showWarning);
 	},
 
 	mdevChange: function(mdevField, value) {
@@ -83,6 +123,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 	pciChange: function(_field, value) {
 	    let me = this;
 	    me.lookup('multiple_warning').setVisible(Ext.isArray(value) && value.length > 1);
+	    me.checkIsolated(value);
 	},
 
 	control: {
