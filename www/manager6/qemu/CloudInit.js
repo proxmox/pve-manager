@@ -290,7 +290,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		header: gettext('Upgrade packages'),
 		iconCls: 'fa fa-archive',
 		renderer: Proxmox.Utils.format_boolean,
-		defaultValue: '',
+		defaultValue: 1,
 		editor: {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Upgrade packages on boot'),
@@ -298,7 +298,7 @@ Ext.define('PVE.qemu.CloudInit', {
 			xtype: 'proxmoxcheckbox',
 			name: 'ciupgrade',
 			uncheckedValue: 0,
-			defaultValue: 0,
+			value: 1, // serves as default value, using defaultValue is not enough
 			fieldLabel: gettext('Upgrade packages'),
 			labelWidth: 140,
 		    },
