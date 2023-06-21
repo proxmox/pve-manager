@@ -44,6 +44,19 @@ Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
 
+Package: centos-9-stream-default
+Version: 20221109
+Type: lxc
+OS: centos
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/centos-9-stream-default_20221109_amd64.tar.xz
+md5sum: 13fccdcc2358b795ee613501eb88c850
+sha512sum: 04bb902992f74edf2333d215837e9bb21258dfcdb7bf23bd659176641f6538aeb25bc44286c9caffb10ceb87288ce93668c9410f4a69b8a3b316e09032ead3a8
+Infopage: https://linuxcontainers.org
+Description: LXC default image for centos 9-stream (20221109)
+
 Package: debian-11-standard
 Version: 11.7-1
 Type: lxc
@@ -56,6 +69,20 @@ md5sum: d07069fe196e89ef70a546625507882a
 sha512sum: 973bb8ee260b5da8c02b023651370d53632ae0b838d878e5cbe38291ca2bcac9ab2d0ef80709e5e27865cfd48a67ff334ea1441d5744e3db372a1fcc84491557
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 11 Bullseye (standard)
+ A small Debian Bullseye system including all standard packages.
+
+Package: debian-12-standard
+Version: 12.0-1
+Type: lxc
+OS: debian-12
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/debian-12-standard_12.0-1_amd64.tar.zst
+md5sum: 8afe6876381729eef9ce56fd5d2ac5d8
+sha512sum: 0cfbb0cd61fa9e5a11f83e2469e9175be79cab1f24385835715a9c29ea8e517d0526943cd6091b038e1f9d4bf57bfb30ddbc2802d9ada366f0b34019f940a3de
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Debian 12 Bookworm (standard)
  A small Debian Bullseye system including all standard packages.
 
 Package: devuan-4.0-standard
@@ -85,6 +112,19 @@ sha512sum: 54328a3338ca9657d298a8a5d2ca15fe76f66fd407296d9e3e1c236ee60ea075d3406
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 38 (20230607)
 
+Package: opensuse-15.4-default
+Version: 20221109
+Type: lxc
+OS: opensuse
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/opensuse-15.4-default_20221109_amd64.tar.xz
+md5sum: 1c66c3549b0684e788c17aa94c384262
+sha512sum: 8089309652a0db23ddff826d1e343e79c6eccb7b615fb309e0a6f6f1983ea697aa94044a795f3cbe35156b1a1b2f60489eb20ecb54c786cec23c9fd89e0f29c5
+Infopage: https://linuxcontainers.org
+Description: LXC default image for opensuse 15.4 (20221109)
+
 Package: proxmox-mailgateway-7.3-standard
 Version: 7.3-1
 Type: lxc
@@ -111,6 +151,20 @@ md5sum: e6aa40bb6a4e01c61fd27eb3da5446d1
 sha512sum: ddc2a29ee66598d4c3a4224a0fa9868882e80bbabb7a20ae9f53431bb0ff73e73d4bd48b86bb0e9d1330e0af2c500f461ea5dc3c500ef722b472257acdc4ab41
 Infopage: https://linuxcontainers.org
 Description: LXC default image for rockylinux 9 (20221109)
+
+Package: ubuntu-20.04-standard
+Version: 20.04-1
+Type: lxc
+OS: ubuntu-20.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-20.04-standard_20.04-1_amd64.tar.gz
+md5sum: 2ceda507834a0a08ce9662257acb7dde
+sha512sum: 9ebcf6cce7c3b760d27c2bfe03d00acf3d40a489cd98230b9ab8dd436f82f4ae8dc2de69b012dcd0affae62ffe4ab4863f624a665f3493983d330e6c015a26dd
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
+Description: Ubuntu Focal (standard)
+ A small Ubuntu 20.04 Focal Fossa system including all standard packages.
 
 Package: ubuntu-22.04-standard
 Version: 22.04-1
