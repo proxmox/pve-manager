@@ -155,7 +155,7 @@ Ext.define('PVE.window.Migrate', {
 	    });
 	},
 
-	checkMigratePreconditions: function(resetMigrationPossible) {
+	checkMigratePreconditions: async function(resetMigrationPossible) {
 	    var me = this,
 		vm = me.getViewModel();
 
@@ -165,12 +165,13 @@ Ext.define('PVE.window.Migrate', {
 		vm.set('running', true);
 	    }
 
+	    me.lookup('pveNodeSelector').disallowedNodes = [vm.get('nodename')];
+
 	    if (vm.get('vmtype') === 'qemu') {
-		me.checkQemuPreconditions(resetMigrationPossible);
+		await me.checkQemuPreconditions(resetMigrationPossible);
 	    } else {
 		me.checkLxcPreconditions(resetMigrationPossible);
 	    }
-	    me.lookup('pveNodeSelector').disallowedNodes = [vm.get('nodename')];
 
 	    // Only allow nodes where the local storage is available in case of offline migration
 	    // where storage migration is not possible
@@ -218,7 +219,7 @@ Ext.define('PVE.window.Migrate', {
 		migration.allowedNodes = migrateStats.allowed_nodes;
 		let target = me.lookup('pveNodeSelector').value;
 		if (target.length && !migrateStats.allowed_nodes.includes(target)) {
-		    let disallowed = migrateStats.not_allowed_nodes[target];
+		    let disallowed = migrateStats.not_allowed_nodes[target] ?? {};
 		    if (disallowed.unavailable_storages !== undefined) {
 			let missingStorages = disallowed.unavailable_storages.join(', ');
 
