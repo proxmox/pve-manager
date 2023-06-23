@@ -718,6 +718,10 @@ table.osds td:first-of-type {
     font-weight: normal;
 }
 
+.pve-ceph-status-busy {
+    color: #3892d4;
+}
+
 .pmx-opacity-75 {
     opacity: 0.75;
 }
