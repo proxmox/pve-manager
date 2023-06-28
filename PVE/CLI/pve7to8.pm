@@ -68,37 +68,31 @@ my $counters = {
     fail => 0,
 };
 
+my $level2color = {
+    pass => 'green',
+    warn => 'yellow',
+    fail => 'bold red',
+};
+
 my $log_line = sub {
     my ($level, $line) = @_;
 
     $counters->{$level}++ if defined($level) && defined($counters->{$level});
 
+    my $color = $level2color->{$level} // '';
+    print color($color) if $color && $color ne '';
+
     print uc($level), ': ' if defined($level);
     print "$line\n";
+
+    print color('reset');
 };
 
-sub log_pass {
-    print color('green');
-    $log_line->('pass', @_);
-    print color('reset');
-}
-
-sub log_info {
-    $log_line->('info', @_);
-}
-sub log_skip {
-    $log_line->('skip', @_);
-}
-sub log_warn {
-    print color('yellow');
-    $log_line->('warn', @_);
-    print color('reset');
-}
-sub log_fail {
-    print color('bold red');
-    $log_line->('fail', @_);
-    print color('reset');
-}
+sub log_pass { $log_line->('pass', @_); }
+sub log_info { $log_line->('info', @_); }
+sub log_skip { $log_line->('skip', @_); }
+sub log_warn { $log_line->('warn', @_);  }
+sub log_fail { $log_line->('fail', @_); }
 
 my $print_header_first = 1;
 sub print_header {
