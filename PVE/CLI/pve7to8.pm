@@ -64,12 +64,14 @@ my $forced_legacy_cgroup = 0;
 my $counters = {
     pass => 0,
     skip => 0,
+    notice => 0,
     warn => 0,
     fail => 0,
 };
 
 my $level2color = {
     pass => 'green',
+    notice => 'bold',
     warn => 'yellow',
     fail => 'bold red',
 };
@@ -91,6 +93,7 @@ my $log_line = sub {
 sub log_pass { $log_line->('pass', @_); }
 sub log_info { $log_line->('info', @_); }
 sub log_skip { $log_line->('skip', @_); }
+sub log_notice { $log_line->('notice', @_); }
 sub log_warn { $log_line->('warn', @_);  }
 sub log_fail { $log_line->('fail', @_); }
 
