@@ -139,6 +139,20 @@ Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 7.3
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
+Package: proxmox-mailgateway-8.0-standard
+Version: 8.0-1
+Type: lxc
+OS: debian-12
+Section: mail
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: mail/proxmox-mailgateway-8.0-standard_8.0-1_amd64.tar.zst
+md5sum: 7d321e5dfc6e1005231586d1871e3625
+sha512sum: be5efcb8ee97f2bb1c638360191eda19f49e2063acb88da55c948c90c091063972cc9ea29e6aeaa4a85733e0fb2c99ea905d665ac693cb2bf06b091c4baf781f
+Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
+Description: Proxmox Mailgateway 8.0
+ A full featured mail proxy for spam and virus filtering, optimized for container environment.
+
 Package: rockylinux-9-default
 Version: 20221109
 Type: lxc
