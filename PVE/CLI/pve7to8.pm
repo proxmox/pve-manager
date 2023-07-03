@@ -44,6 +44,14 @@ sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
 
+my $new_suite = 'bookworm';
+my $old_suite = 'bullseye';
+my $older_suites = {
+    buster => 1,
+    stretch => 1,
+    jessie => 1,
+};
+
 my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (7, 4, 1);
 
 my $ceph_release2code = {
@@ -64,8 +72,16 @@ my $forced_legacy_cgroup = 0;
 my $counters = {
     pass => 0,
     skip => 0,
+    notice => 0,
     warn => 0,
     fail => 0,
+};
+
+my $level2color = {
+    pass => 'green',
+    notice => 'bold',
+    warn => 'yellow',
+    fail => 'bold red',
 };
 
 my $log_line = sub {
@@ -73,32 +89,21 @@ my $log_line = sub {
 
     $counters->{$level}++ if defined($level) && defined($counters->{$level});
 
+    my $color = $level2color->{$level} // '';
+    print color($color) if $color && $color ne '';
+
     print uc($level), ': ' if defined($level);
     print "$line\n";
+
+    print color('reset');
 };
 
-sub log_pass {
-    print color('green');
-    $log_line->('pass', @_);
-    print color('reset');
-}
-
-sub log_info {
-    $log_line->('info', @_);
-}
-sub log_skip {
-    $log_line->('skip', @_);
-}
-sub log_warn {
-    print color('yellow');
-    $log_line->('warn', @_);
-    print color('reset');
-}
-sub log_fail {
-    print color('bold red');
-    $log_line->('fail', @_);
-    print color('reset');
-}
+sub log_pass { $log_line->('pass', @_); }
+sub log_info { $log_line->('info', @_); }
+sub log_skip { $log_line->('skip', @_); }
+sub log_notice { $log_line->('notice', @_); }
+sub log_warn { $log_line->('warn', @_);  }
+sub log_fail { $log_line->('fail', @_); }
 
 my $print_header_first = 1;
 sub print_header {
@@ -543,8 +548,7 @@ sub check_ceph {
 	    log_warn("unable to determine overall Ceph daemon versions!");
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
-	    # TODO: needs to be set to 1 in the stable branch each time! - find better solution?
-	    $noout_wanted = 0; # off post-upgrade, on pre-upgrade
+	    $noout_wanted = 1; # off post-upgrade, on pre-upgrade
 	} elsif (keys $ceph_versions_simple->{overall}->%* != 1) {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
@@ -1168,6 +1172,9 @@ sub check_apt_repos {
 
     # TODO: check that (original) debian and Proxmox VE mirrors are present.
 
+    my ($found_suite, $found_suite_where);
+    my ($mismatches, $strange_suites);
+
     my $check_file = sub {
 	my ($file) = @_;
 
@@ -1188,23 +1195,32 @@ sub check_apt_repos {
 	    next if $line !~ m/^deb[[:space:]]/; # is case sensitive
 
 	    my $suite;
-
-	    # catch any of
-	    # https://deb.debian.org/debian-security
-	    # http://security.debian.org/debian-security
-	    # http://security.debian.org/
-	    if ($line =~ m|https?://deb\.debian\.org/debian-security/?\s+(\S*)|i) {
-		$suite = $1;
-	    } elsif ($line =~ m|https?://security\.debian\.org(?:.*?)\s+(\S*)|i) {
+	    if ($line =~ m|deb\s+\w+://\S+\s+(\S*)|i) {
 		$suite = $1;
 	    } else {
 		next;
 	    }
-
-	    $found = 1;
-
 	    my $where = "in ${file}:${number}";
-	    # TODO: is this useful (for some other checks)?
+
+	    $suite =~ s/-(?:(?:proposed-)?updates|backports|debug|security)(?:-debug)?$//;
+	    if ($suite ne $old_suite && $suite ne $new_suite && !$older_suites->{$suite}) {
+		push $strange_suites->@*, { suite => $suite, where => $where };
+		next;
+	    }
+
+	    if (!defined($found_suite)) {
+		$found_suite = $suite;
+		$found_suite_where = $where;
+	    } elsif ($suite ne $found_suite) {
+		if (!defined($mismatches)) {
+		    $mismatches = [];
+		    push $mismatches->@*,
+			{ suite => $found_suite, where => $found_suite_where},
+			{ suite => $suite, where => $where};
+		} else {
+		    push $mismatches->@*, { suite => $suite, where => $where};
+		}
+	    }
 	}
     };
 
@@ -1214,10 +1230,28 @@ sub check_apt_repos {
 
     PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_file);
 
-    if (!$found) {
-	# only warn, it might be defined in a .sources file or in a way not caaught above
-	log_warn("No Debian security repository detected in /etc/apt/sources.list and " .
-	    "/etc/apt/sources.list.d/*.list");
+    if ($strange_suites) {
+	my @strange_list = map { "found suite $_->{suite} at $_->{where}" } $strange_suites->@*;
+	log_notice(
+	    "found unusual suites that are neither old '$old_suite' nor new '$new_suite':"
+	    ."\n    " . join("\n    ", @strange_list)
+	    ."\n  Please ensure these repositories are shipping compatible packages for the upgrade!"
+	);
+    }
+    if (defined($mismatches)) {
+	my @mismatch_list = map { "found suite $_->{suite} at $_->{where}" } $mismatches->@*;
+
+	log_fail(
+	    "Found mixed old and new package repository suites, fix before upgrading! Mismatches:"
+	    ."\n    " . join("\n    ", @mismatch_list)
+	    ."\n  Configure the same base-suite for all Proxmox and Debian provided repos and ask"
+	    ." original vendor for any third-party repos."
+	    ."\n  E.g., for the upgrade to Proxmox VE ".($min_pve_major + 1)." use the '$new_suite' suite."
+	);
+    } elsif (defined($strange_suites)) {
+	log_notice("found no suite mismatches, but found at least one strange suite");
+    } else {
+	log_pass("found no suite mismatch");
     }
 }
 
