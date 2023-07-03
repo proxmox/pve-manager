@@ -1,3 +1,9 @@
+pve-manager (7.4-16) bullseye; urgency=medium
+
+  * pve7to8: add checks for mismatched or strange repos
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 03 Jul 2023 13:12:20 +0200
+
 pve-manager (7.4-15) bullseye; urgency=medium
 
   * pve7to8: content-dirs check: skip paths that cannot be resolved
