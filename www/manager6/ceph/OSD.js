@@ -83,7 +83,7 @@ Ext.define('PVE.CephCreateOsd', {
 			{
 			    xtype: 'numberfield',
 			    name: 'db_dev_size',
-			    fieldLabel: gettext('DB size') + ' (GiB)',
+			    fieldLabel: `${gettext('DB size')} (${gettext('GiB')})`,
 			    minValue: 1,
 			    maxValue: 128*1024,
 			    decimalPrecision: 2,
@@ -137,7 +137,7 @@ Ext.define('PVE.CephCreateOsd', {
 			{
 			    xtype: 'numberfield',
 			    name: 'wal_dev_size',
-			    fieldLabel: gettext('WAL size') + ' (GiB)',
+			    fieldLabel: `${gettext('WAL size')} (${gettext('GiB')})`,
 			    minValue: 0.5,
 			    maxValue: 128*1024,
 			    decimalPrecision: 2,

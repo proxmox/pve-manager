@@ -145,7 +145,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		xtype: 'numberfield',
 		itemId: 'disksize',
 		name: 'disksize',
-		fieldLabel: gettext('Disk size') + ' (GiB)',
+		fieldLabel: `${gettext('Disk size')} (${gettext('GiB')})`,
 		hidden: me.hideSize,
 		disabled: me.hideSize,
 		minValue: 0.001,
