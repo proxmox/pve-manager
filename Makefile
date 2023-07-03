@@ -1,21 +1,16 @@
-include /usr/share/dpkg/pkg-info.mk
-include /usr/share/dpkg/architecture.mk
+include /usr/share/dpkg/default.mk
 include defines.mk
 
 export PVERELEASE = $(shell echo $(DEB_VERSION_UPSTREAM) | cut -c 1-3)
 export VERSION = $(DEB_VERSION_UPSTREAM_REVISION)
 
-DESTDIR=
-
-SUBDIRS = aplinfo PVE bin www services configs network-hooks test
-
-GITVERSION:=$(shell git rev-parse --short=16 HEAD)
-
-
 BUILDDIR = $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
 
 DSC=$(PACKAGE)_$(DEB_VERSION).dsc
 DEB=$(PACKAGE)_$(DEB_VERSION)_$(DEB_HOST_ARCH).deb
+
+DESTDIR=
+SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done
@@ -26,10 +21,7 @@ check: bin test www
 	$(MAKE) -C test check
 	$(MAKE) -C www check
 
-.PHONY: dinstall
-dinstall: $(DEB)
-	dpkg -i $(DEB)
-
+GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 $(BUILDDIR):
 	rm -rf $@ $@.tmp
 	mkdir $@.tmp
@@ -79,3 +71,7 @@ clean:
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
 	rm -f $(PACKAGE)*.tar* country.dat *.deb *.dsc *.build *.buildinfo *.changes
 	rm -rf dest $(PACKAGE)-[0-9]*/
+
+.PHONY: dinstall
+dinstall: $(DEB)
+	dpkg -i $(DEB)
