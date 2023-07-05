@@ -11,6 +11,29 @@ Ext.define('PVE.panel.GuestStatusView', {
 	};
     },
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	init: function(view) {
+	    if (view.pveSelNode.data.type !== 'lxc') {
+		return;
+	    }
+
+	    const nodename = view.pveSelNode.data.node;
+	    const vmid = view.pveSelNode.data.vmid;
+
+	    Proxmox.Utils.API2Request({
+		url: `/api2/extjs/nodes/${nodename}/lxc/${vmid}/config`,
+		waitMsgTargetView: view,
+		method: 'GET',
+		success: ({ result }) => {
+		    view.down('#unprivileged').updateValue(
+			Proxmox.Utils.format_boolean(result.data.unprivileged));
+		},
+	    });
+	},
+    },
+
     layout: {
 	type: 'vbox',
 	align: 'stretch',
@@ -57,6 +80,15 @@ Ext.define('PVE.panel.GuestStatusView', {
 		text: '{pveSelNode.data.node}',
 	    },
 	    printBar: false,
+	},
+	{
+	    itemId: 'unprivileged',
+	    iconCls: 'fa fa-lock fa-fw',
+	    title: gettext('Unprivileged'),
+	    printBar: false,
+	    cbind: {
+		hidden: '{isQemu}',
+	    },
 	},
 	{
 	    xtype: 'box',
