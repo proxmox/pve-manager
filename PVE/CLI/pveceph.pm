@@ -176,6 +176,16 @@ __PACKAGE__->register_method ({
 	} else {
 	    die "unsupported ceph version: $cephver";
 	}
+
+	if (-t STDOUT && !$param->{version}) {
+	    print "This will install Ceph " . ucfirst($cephver) . " - continue (y/N)? ";
+
+	    my $answer = <STDIN>;
+	    my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
+
+	    die "Aborting installation as requested\n" if !$continue;
+	}
+
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
 	my $supported_re = join('|', $supported_ceph_versions->@*);
