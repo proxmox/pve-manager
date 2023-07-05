@@ -29,6 +29,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 		success: ({ result }) => {
 		    view.down('#unprivileged').updateValue(
 			Proxmox.Utils.format_boolean(result.data.unprivileged));
+		    view.ostype = Ext.htmlEncode(result.data.ostype);
 		},
 	    });
 	},
@@ -166,6 +167,22 @@ Ext.define('PVE.panel.GuestStatusView', {
 		+ ')';
 	}
 
-	me.setTitle(me.getRecordValue('name') + text);
+	let title = `<div class="left-aligned">${me.getRecordValue('name') + text}</div>`;
+
+	if (me.pveSelNode.data.type === 'lxc' && me.ostype && me.ostype !== 'unmanaged') {
+	    // Manual mappings for distros with special casing
+	    const namemap = {
+		'archlinux': 'Arch Linux',
+		'nixos': 'NixOS',
+		'opensuse': 'openSUSE',
+		'centos': 'CentOS',
+	    };
+
+	    const distro = namemap[me.ostype] ?? Ext.String.capitalize(me.ostype);
+	    title += `<div class="right-aligned">
+		<i class="fl-${me.ostype} fl-fw"></i>&nbsp;${distro}</div>`;
+	}
+
+	me.setTitle(title);
     },
 });
