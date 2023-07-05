@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-crisp/resources/theme-crisp-all.css?ver=7.0.0" />
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css?ver=7.0.0" />
     <link rel="stylesheet" type="text/css" href="/pve2/fa/css/font-awesome.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/font-logos/css/font-logos.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css?ver=[% version %]" />
     <link rel="stylesheet" type="text/css" href="/pwt/css/ext6-pmx.css?ver=[% wtversion %]" />
     [%- IF theme != 'crisp' %]
