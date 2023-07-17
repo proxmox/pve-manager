@@ -84,6 +84,7 @@ JSSRC= 							\
 	form/ListField.js				\
 	form/Tag.js					\
 	form/TagEdit.js					\
+	form/MultiFileButton.js				\
 	grid/BackupView.js				\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\

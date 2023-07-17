@@ -120,16 +120,16 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    },
 		},
 		{
-		    xtype: 'proxmoxtextfield',
+		    xtype: 'textarea',
 		    name: 'ssh-public-keys',
 		    value: '',
-		    fieldLabel: gettext('SSH public key'),
+		    fieldLabel: gettext('SSH public key(s)'),
 		    allowBlank: true,
 		    validator: function(value) {
 			let pwfield = this.up().down('field[name=password]');
 			if (value.length) {
-			    let key = PVE.Parser.parseSSHKey(value);
-			    if (!key) {
+			    let keys = value.indexOf('\n') !== -1 ? value.split('\n') : [value];
+			    if (keys.some(key => key !== '' && !PVE.Parser.parseSSHKey(key))) {
 				return "Failed to recognize ssh key";
 			    }
 			    pwfield.allowBlank = true;
@@ -159,15 +159,20 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    },
 		},
 		{
-		    xtype: 'filebutton',
+		    xtype: 'pveMultiFileButton',
 		    name: 'file',
 		    hidden: !window.FileReader,
 		    text: gettext('Load SSH Key File'),
 		    listeners: {
 			change: function(btn, e, value) {
 			    e = e.event;
-			    let field = this.up().down('proxmoxtextfield[name=ssh-public-keys]');
-			    PVE.Utils.loadSSHKeyFromFile(e.target.files[0], v => field.setValue(v));
+			    let field = this.up().down('textarea[name=ssh-public-keys]');
+			    for (const file of e?.target?.files ?? []) {
+				PVE.Utils.loadSSHKeyFromFile(file, v => {
+				    let oldValue = field.getValue();
+				    field.setValue(oldValue ? `${oldValue}\n${v.trim()}` : v.trim());
+				});
+			    }
 			    btn.reset();
 			},
 		    },
