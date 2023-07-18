@@ -789,7 +789,7 @@ __PACKAGE__->register_method({
 
 	my $aptver = $AptPkg::System::_system->versioning();
 	my $byver = sub { $aptver->compare($cache->{$b}->{CurrentVer}->{VerStr}, $cache->{$a}->{CurrentVer}->{VerStr}) };
-	push @list, sort $byver grep { /^pve-kernel-/ && $cache->{$_}->{CurrentState} eq 'Installed' } keys %$cache;
+	push @list, sort $byver grep { /^(?:pve|proxmox)-kernel-/ && $cache->{$_}->{CurrentState} eq 'Installed' } keys %$cache;
 
         my @opt_pack = qw(
 	    ceph

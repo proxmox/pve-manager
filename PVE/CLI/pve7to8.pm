@@ -204,7 +204,7 @@ sub check_pve_packages {
 	}
 
 	# FIXME: better differentiate between 6.2 from bullseye or bookworm
-	my ($krunning, $kinstalled) = (qr/6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/, 'pve-kernel-6.2');
+	my ($krunning, $kinstalled) = (qr/6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/, 'proxmox-kernel-6.2');
 	if (!$upgraded) {
 	    # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
 	    ($krunning, $kinstalled) = (qr/(?:5\.(?:13|15)|6\.2)/, 'pve-kernel-5.15');
