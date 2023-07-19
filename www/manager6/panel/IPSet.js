@@ -203,6 +203,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 		editable: true,
 		base_url: me.list_refs_url,
 		value: '',
+		allowBlank: false,
 		fieldLabel: gettext('IP/CIDR'),
 	    });
 	} else {
