@@ -12,10 +12,7 @@ Ext.define('PVE.form.NodeSelector', {
 
     // only allow those nodes (array)
     allowedNodes: undefined,
-    // set default value to empty array, else it inits it with
-    // null and after the store load it is an empty array,
-    // triggering dirtychange
-    value: [],
+
     valueField: 'node',
     displayField: 'node',
     store: {
