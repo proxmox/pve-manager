@@ -17,6 +17,13 @@ Ext.define('PVE.panel.ADInputPanel', {
 		emptyText: 'company.net',
 		allowBlank: false,
 	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Case-Sensitive'),
+		name: 'case-sensitive',
+		uncheckedValue: 0,
+		checked: true,
+	    },
 	];
 
 	me.column2 = [
