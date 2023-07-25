@@ -249,6 +249,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    xtype: 'displayfield',
 	    name: 'comment',
 	    fieldLabel: gettext('Comment'),
+	    renderer: Ext.String.htmlEncode,
 	},
 	{
 	    xtype: 'fieldset',

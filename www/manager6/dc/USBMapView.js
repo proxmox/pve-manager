@@ -90,7 +90,7 @@ Ext.define('PVE.dc.USBMapView', {
 	    header: gettext('Comment'),
 	    dataIndex: 'description',
 	    renderer: function(value, _meta, record) {
-		return value ?? record.data.comment;
+		return Ext.String.htmlEncode(value ?? record.data.comment);
 	    },
 	    flex: 1,
 	},

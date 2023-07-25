@@ -1003,15 +1003,18 @@ Ext.define('PVE.Utils', {
     },
 
     render_storage_content: function(value, metaData, record) {
-	var data = record.data;
+	let data = record.data;
+	let result;
 	if (Ext.isNumber(data.channel) &&
 	    Ext.isNumber(data.id) &&
 	    Ext.isNumber(data.lun)) {
-	    return "CH " +
+	    result = "CH " +
 		Ext.String.leftPad(data.channel, 2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
+	} else {
+	    result = data.volid.replace(/^.*?:(.*?\/)?/, '');
 	}
-	return data.volid.replace(/^.*?:(.*?\/)?/, '');
+	return Ext.String.htmlEncode(result);
     },
 
     render_serverity: function(value) {

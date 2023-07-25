@@ -40,6 +40,7 @@ Ext.define('PVE.form.PCIMapSelector', {
 		header: gettext('Description'),
 		dataIndex: 'description',
 		flex: 1,
+		renderer: Ext.String.htmlEncode,
 	    },
 	    {
 		header: gettext('Status'),

@@ -64,6 +64,7 @@ Ext.define('PVE.form.USBMapSelector', {
 		header: gettext('Comment'),
 		dataIndex: 'description',
 		flex: 1,
+		renderer: Ext.String.htmlEncode,
 	    },
 	],
     },

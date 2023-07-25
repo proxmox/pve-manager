@@ -214,7 +214,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		    ],
 		} : undefined,
 		renderer: function(value) {
-		    return value || Proxmox.Utils.defaultText;
+		    return Ext.String.htmlEncode(value || Proxmox.Utils.defaultText);
 		},
 	    },
 	    cipassword: {
@@ -236,7 +236,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		    ],
 		} : undefined,
 		renderer: function(value) {
-		    return value || Proxmox.Utils.noneText;
+		    return Ext.String.htmlEncode(value || Proxmox.Utils.noneText);
 		},
 	    },
 	    searchdomain: {
