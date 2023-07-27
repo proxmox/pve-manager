@@ -77,7 +77,7 @@ Ext.define('PVE.panel.ADInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Verify Certificate'),
 		name: 'verify',
-		unceckedValue: 0,
+		uncheckedValue: 0,
 		disabled: true,
 		checked: false,
 		autoEl: {
