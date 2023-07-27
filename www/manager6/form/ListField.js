@@ -144,6 +144,7 @@ Ext.define('PVE.form.ListField', {
 	    text: gettext('Add'),
 	    iconCls: 'fa fa-plus-circle',
 	    handler: 'addLine',
+	    margin: '5 0 0 0',
 	},
     ],
 
