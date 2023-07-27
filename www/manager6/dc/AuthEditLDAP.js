@@ -82,7 +82,7 @@ Ext.define('PVE.panel.LDAPInputPanel', {
 		checked: false,
 		autoEl: {
 		    tag: 'div',
-		    'data-qtip': gettext('Verify SSL certificate of the server'),
+		    'data-qtip': gettext('Verify TLS certificate of the server'),
 		},
 	    },
 	];
