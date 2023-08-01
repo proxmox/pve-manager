@@ -215,7 +215,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
     ],
 
     initComponent: function() {
-        var me = this;
+	var me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -224,7 +224,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 	    throw "no storage ID specified";
 	}
 
-        me.callParent();
+	me.callParent();
     },
 });
 

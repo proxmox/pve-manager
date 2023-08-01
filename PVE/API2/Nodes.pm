@@ -496,7 +496,7 @@ __PACKAGE__->register_method({
 	# just parse the json again, it should already be validated
 	my $commands = eval { decode_json($param->{commands}); };
 
-        foreach my $cmd (@$commands) {
+	foreach my $cmd (@$commands) {
 	    eval {
 		$cmd->{args} //= {};
 
@@ -654,11 +654,11 @@ __PACKAGE__->register_method({
 	    },
 	    ds => {
 		description => "The list of datasources you want to display.",
- 		type => 'string', format => 'pve-configid-list',
+		type => 'string', format => 'pve-configid-list',
 	    },
 	    cf => {
 		description => "The RRD consolidation function",
- 		type => 'string',
+		type => 'string',
 		enum => [ 'AVERAGE', 'MAX' ],
 		optional => 1,
 	    },
@@ -699,7 +699,7 @@ __PACKAGE__->register_method({
 	    },
 	    cf => {
 		description => "The RRD consolidation function",
- 		type => 'string',
+		type => 'string',
 		enum => [ 'AVERAGE', 'MAX' ],
 		optional => 1,
 	    },
@@ -1368,7 +1368,7 @@ __PACKAGE__->register_method({
     description => "Read server time and time zone settings.",
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1393,7 +1393,7 @@ __PACKAGE__->register_method({
 		minimum => 1297163644,
 		renderer => 'timestamp_gmt',
 	    },
-        },
+	},
     },
     code => sub {
 	my ($param) = @_;
@@ -2086,14 +2086,14 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-            target => get_standard_option('pve-node', { description => "Target node." }),
+	    target => get_standard_option('pve-node', { description => "Target node." }),
 	    maxworkers => {
 		description => "Maximal number of parallel migration job. If not set, uses"
 		    ."'max_workers' from datacenter.cfg. One of both must be set!",
 		optional => 1,
 		type => 'integer',
 		minimum => 1
-            },
+	    },
 	    vms => {
 		description => "Only consider Guests with these IDs.",
 		type => 'string',  format => 'pve-vmid-list',
