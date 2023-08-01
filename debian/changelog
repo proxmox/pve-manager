@@ -1,3 +1,29 @@
+pve-manager (8.0.4) bookworm; urgency=medium
+
+  * ui: migrate: fix disabled migrate button glitch
+
+  * update shipped appliance info index
+
+  * pve7to8: sync over from stable-7 branch
+
+  * pve7to8: fix Ceph noout check
+
+  * fix #4551: ui: use gettext on hardcoded byte units
+
+  * fix #4364: pveceph: add confirmation dialogue for ceph installation
+
+  * fix #4758: ui: lxc wizard: allow multiple ssh keys
+
+  * ui: sdn: zonedit: fix non-advanced display
+
+  * ui: active directory realm: expose case-sensitive option
+
+  * ui: add some missing `htmlEncode`s
+
+  * handle pve-kernel -> proxmox-kernel rename
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 01 Aug 2023 11:53:07 +0200
+
 pve-manager (8.0.3) bookworm; urgency=medium
 
   * ui: use common gettext for IOMMU-Group
