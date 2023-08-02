@@ -329,12 +329,10 @@ __PACKAGE__->register_method({
 		    type => 'string',
 		    optional => 1,
 		},
-		vmid => {
+		vmid => get_standard_option('pve-vmid', {
 		    description => "The numerical vmid (when type in qemu,lxc).",
-		    type => 'integer',
 		    optional => 1,
-		    minimum => 1,
-		},
+		}),
 		'cgroup-mode' => {
 		    description => "The cgroup mode the node operates under (when type == node).",
 		    type => 'integer',
