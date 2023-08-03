@@ -29,6 +29,7 @@ use PVE::API2::Cluster::Ceph;
 use PVE::API2::Cluster::Mapping;
 use PVE::API2::Cluster::Jobs;
 use PVE::API2::Cluster::MetricServer;
+use PVE::API2::Cluster::Notifications;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
@@ -50,6 +51,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Cluster::MetricServer",
     path => 'metrics',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::Notifications",
+    path => 'notifications',
 });
 
 __PACKAGE__->register_method ({
@@ -149,6 +155,7 @@ __PACKAGE__->register_method ({
 	    { name => 'log' },
 	    { name => 'mapping' },
 	    { name => 'metrics' },
+	    { name => 'notifications' },
 	    { name => 'nextid' },
 	    { name => 'options' },
 	    { name => 'replication' },

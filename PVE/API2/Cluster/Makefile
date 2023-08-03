@@ -8,6 +8,7 @@ PERLSOURCE= 			\
 	BackupInfo.pm		\
 	MetricServer.pm		\
 	Mapping.pm		\
+	Notifications.pm		\
 	Jobs.pm			\
 	Ceph.pm
 
