@@ -5,7 +5,7 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: test-replication test-balloon test-mail test-vzdump test-osd
+check: test-replication test-balloon test-vzdump-notification test-vzdump test-osd
 
 .PHONY: test-balloon
 test-balloon:
@@ -17,9 +17,9 @@ test-replication: replication1.t replication2.t replication3.t replication4.t re
 replication%.t: replication_test%.pl
 	./$<
 
-.PHONY: test-mail
-test-mail:
-	./mail_test.pl
+.PHONY: test-vzdump-notification
+test-vzdump-notification:
+	./vzdump_notification_test.pl
 
 .PHONY: test-vzdump
 test-vzdump: test-vzdump-guest-included test-vzdump-new
