@@ -5,7 +5,7 @@ use warnings;
 
 use lib '..';
 
-use Test::More tests => 5;
+use Test::More tests => 3;
 use Test::MockModule;
 
 use PVE::VZDump;
@@ -29,17 +29,19 @@ sub prepare_mail_with_status {
 sub prepare_long_mail {
     open(TEST_FILE, '>', $TEST_FILE_PATH); # Removes previous content
     # 0.5 MB * 2 parts + the overview tables gives more than 1 MB mail
-    print TEST_FILE "a" x (1024*1024/2);
+    print TEST_FILE "a" x (1024*1024);
     close(TEST_FILE);
 }
 
-my ($result_text, $result_html);
+my $result_text;
+my $result_properties;
 
-my $mock_tools_module = Test::MockModule->new('PVE::Tools');
-$mock_tools_module->mock('sendmail', sub {
-    my (undef, undef, $text, $html, undef, undef) = @_;
+my $mock_notification_module = Test::MockModule->new('PVE::Notify');
+$mock_notification_module->mock('send_notification', sub {
+    my ($channel, $severity, $title, $text, $properties) = @_;
+
     $result_text = $text;
-    $result_html = $html;
+    $result_properties = $properties;
 });
 
 my $mock_cluster_module = Test::MockModule->new('PVE::Cluster');
@@ -47,7 +49,9 @@ $mock_cluster_module->mock('cfs_read_file', sub {
     my $path = shift;
 
     if ($path eq 'datacenter.cfg') {
-	return {};
+        return {};
+    } elsif ($path eq 'notifications.cfg' || $path eq 'priv/notifications.cfg') {
+        return '';
     } else {
 	die "unexpected cfs_read_file\n";
     }
@@ -62,28 +66,26 @@ my $SELF = {
 my $task = { state => 'ok', vmid => '100', };
 my $tasklist;
 sub prepare_test {
-    $result_text = $result_html = undef;
+    $result_text = undef;
     $task->{tmplog} = shift;
     $tasklist = [ $task ];
 }
 
 {
     prepare_test($TEST_FILE_WRONG_PATH);
-    PVE::VZDump::sendmail($SELF, $tasklist, 0, undef, undef, undef);
-    like($result_text, $NO_LOGFILE, "Missing logfile is detected");
+    PVE::VZDump::send_notification($SELF, $tasklist, 0, undef, undef, undef);
+    like($result_properties->{logs}, $NO_LOGFILE, "Missing logfile is detected");
 }
 {
     prepare_test($TEST_FILE_PATH);
     prepare_mail_with_status();
-    PVE::VZDump::sendmail($SELF, $tasklist, 0, undef, undef, undef);
-    unlike($result_text, $STATUS, "Status are not in text part of mails");
-    unlike($result_html, $STATUS, "Status are not in HTML part of mails");
+    PVE::VZDump::send_notification($SELF, $tasklist, 0, undef, undef, undef);
+    unlike($result_properties->{"status-text"}, $STATUS, "Status are not in text part of mails");
 }
 {
     prepare_test($TEST_FILE_PATH);
     prepare_long_mail();
-    PVE::VZDump::sendmail($SELF, $tasklist, 0, undef, undef, undef);
-    like($result_text, $LOG_TOO_LONG, "Text part of mails gets shortened");
-    like($result_html, $LOG_TOO_LONG, "HTML part of mails gets shortened");
+    PVE::VZDump::send_notification($SELF, $tasklist, 0, undef, undef, undef);
+    like($result_properties->{logs}, $LOG_TOO_LONG, "Text part of mails gets shortened");
 }
 unlink $TEST_FILE_PATH;

@@ -44,7 +44,9 @@ __PACKAGE__->register_method ({
 	    ."'Datastore.AllocateSpace' on the backup storage. The 'tmpdir', 'dumpdir' and "
 	    ."'script' parameters are restricted to the 'root\@pam' user. The 'maxfiles' and "
 	    ."'prune-backups' settings require 'Datastore.Allocate' on the backup storage. The "
-	    ."'bwlimit', 'performance' and 'ionice' parameters require 'Sys.Modify' on '/'.",
+	    ."'bwlimit', 'performance' and 'ionice' parameters require 'Sys.Modify' on '/'. "
+	    ."If 'notification-target' is set, then the 'Mapping.Use' permission is needed on "
+	    ."'/mapping/notification/<target>'.",
 	user => 'all',
     },
     protected => 1,
@@ -113,6 +115,10 @@ __PACKAGE__->register_method ({
 	    $rpcenv->check($user, "/storage/$storeid", [ 'Datastore.AllocateSpace' ]);
 	}
 
+	if (my $target = $param->{'notification-target'}) {
+	    PVE::Notify::check_may_use_target($target, $rpcenv);
+	}
+
 	my $worker = sub {
 	    my $upid = shift;
 
@@ -127,7 +133,7 @@ __PACKAGE__->register_method ({
 		$vzdump->getlock($upid); # only one process allowed
 	    };
 	    if (my $err = $@) {
-		$vzdump->sendmail([], 0, $err);
+		$vzdump->send_notification([], 0, $err);
 		exit(-1);
 	    }
 

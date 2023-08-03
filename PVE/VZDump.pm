@@ -19,6 +19,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::Notify;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::VZDump::Common;
@@ -317,21 +318,90 @@ sub read_vzdump_defaults {
     return $res;
 }
 
-use constant MAX_MAIL_SIZE => 1024*1024;
-sub sendmail {
-    my ($self, $tasklist, $totaltime, $err, $detail_pre, $detail_post) = @_;
+sub read_backup_task_logs {
+    my ($task_list) = @_;
 
-    my $opts = $self->{opts};
+    my $task_logs = "";
 
-    my $mailto = $opts->{mailto};
+    for my $task (@$task_list) {
+	my $vmid = $task->{vmid};
+	my $log_file = $task->{tmplog};
+	if (!$task->{tmplog}) {
+	    $task_logs .= "$vmid: no log available\n\n";
+	    next;
+	}
+	if (open (my $TMP, '<', "$log_file")) {
+	    while (my $line = <$TMP>) {
+		next if $line =~ /^status: \d+/; # not useful in mails
+		$task_logs .= encode8bit ("$vmid: $line");
+	    }
+	    close ($TMP);
+	} else {
+	    $task_logs .= "$vmid: Could not open log file\n\n";
+	}
+	$task_logs .= "\n";
+    }
 
-    return if !($mailto && scalar(@$mailto));
+    return $task_logs;
+}
 
-    my $cmdline = $self->{cmdline};
+sub build_guest_table {
+    my ($task_list) = @_;
 
-    my $ecount = 0;
-    foreach my $task (@$tasklist) {
-	$ecount++ if $task->{state} ne 'ok';
+    my $table = {
+	schema => {
+	    columns => [
+		{
+		    label => "VMID",
+		    id  => "vmid"
+		},
+		{
+		    label => "Name",
+		    id  => "name"
+		},
+		{
+		    label => "Status",
+		    id  => "status"
+		},
+		{
+		    label => "Time",
+		    id  => "time",
+		    renderer => "duration"
+		},
+		{
+		    label => "Size",
+		    id  => "size",
+		    renderer => "human-bytes"
+		},
+		{
+		    label => "Filename",
+		    id  => "filename"
+		},
+	    ]
+	},
+	data => []
+    };
+
+    for my $task (@$task_list) {
+	my $successful = $task->{state} eq 'ok';
+	my $size = $successful ? $task->{size} : 0;
+	my $filename = $successful ? $task->{target} : undef;
+	push @{$table->{data}}, {
+	    "vmid" => $task->{vmid},
+	    "name" => $task->{hostname},
+	    "status" => $task->{state},
+	    "time" => $task->{backuptime},
+	    "size" => $size,
+	    "filename" => $filename,
+	};
+    }
+
+    return $table;
+}
+
+sub sanitize_task_list {
+    my ($task_list) = @_;
+    for my $task (@$task_list) {
 	chomp $task->{msg} if $task->{msg};
 	$task->{backuptime} = 0 if !$task->{backuptime};
 	$task->{size} = 0 if !$task->{size};
@@ -342,164 +412,133 @@ sub sendmail {
 	    $task->{msg} = 'aborted';
 	}
     }
+}
 
-    my $notify = $opts->{mailnotification} || 'always';
-    return if (!$ecount && !$err && ($notify eq 'failure'));
+sub count_failed_tasks {
+    my ($tasklist) = @_;
 
-    my $stat = ($ecount || $err) ? 'backup failed' : 'backup successful';
+    my $error_count = 0;
+    for my $task (@$tasklist) {
+	$error_count++ if $task->{state} ne 'ok';
+    }
+
+    return $error_count;
+}
+
+sub get_hostname {
+    my $hostname = `hostname -f` || PVE::INotify::nodename();
+    chomp $hostname;
+    return $hostname;
+}
+
+my $subject_template = "vzdump backup status ({{hostname}}): {{status-text}}";
+
+my $body_template = <<EOT;
+{{error-message}}
+{{heading-1 "Details"}}
+{{table guest-table}}
+
+Total running time: {{duration total-time}}
+
+{{heading-1 "Logs"}}
+{{verbatim-monospaced logs}}
+EOT
+
+use constant MAX_LOG_SIZE => 1024*1024;
+
+sub send_notification {
+    my ($self, $tasklist, $total_time, $err, $detail_pre, $detail_post) = @_;
+
+    my $opts = $self->{opts};
+    my $mailto = $opts->{mailto};
+    my $cmdline = $self->{cmdline};
+    my $target = $opts->{"notification-target"};
+    # Fall back to 'mailnotification' if 'notification-policy' is not set.
+    # If both are set, 'notification-policy' takes precedence
+    my $policy = $opts->{"notification-policy"} // $opts->{mailnotification} // 'always';
+
+    return if ($policy eq 'never');
+
+    sanitize_task_list($tasklist);
+    my $error_count = count_failed_tasks($tasklist);
+
+    my $failed = ($error_count || $err);
+
+    return if (!$failed && ($policy eq 'failure'));
+
+    my $status_text = $failed ? 'backup failed' : 'backup successful';
+
     if ($err) {
 	if ($err =~ /\n/) {
-	    $stat .= ": multiple problems";
+	    $status_text .= ": multiple problems";
 	} else {
-	    $stat .= ": $err";
+	    $status_text .= ": $err";
 	    $err = undef;
 	}
     }
 
-    my $hostname = `hostname -f` || PVE::INotify::nodename();
-    chomp $hostname;
+    my $text_log_part = "$cmdline\n\n";
+    $text_log_part .= $detail_pre . "\n" if defined($detail_pre);
+    $text_log_part .= read_backup_task_logs($tasklist);
+    $text_log_part .= $detail_post if defined($detail_post);
 
-    # text part
-    my $text = $err ? "$err\n\n" : '';
-    my $namelength = 20;
-    $text .= sprintf (
-	"%-10s %-${namelength}s %-6s %10s %10s  %s\n",
-	qw(VMID NAME STATUS TIME SIZE FILENAME)
-    );
-    foreach my $task (@$tasklist) {
-	my $name = substr($task->{hostname}, 0, $namelength);
-	my $successful = $task->{state} eq 'ok';
-	my $size = $successful ? format_size ($task->{size}) : 0;
-	my $filename = $successful ? $task->{target} : '-';
-	my $size_fmt = $successful ? "%10s": "%8.2fMB";
-	$text .= sprintf(
-	    "%-10s %-${namelength}s %-6s %10s $size_fmt  %s\n",
-	    $task->{vmid},
-	    $name,
-	    $task->{state},
-	    format_time($task->{backuptime}),
-	    $size,
-	    $filename,
+    if (length($text_log_part)  > MAX_LOG_SIZE)
+    {
+	# Let's limit the maximum length of included logs
+	$text_log_part = "Log output was too long to be sent. ".
+	    "See Task History for details!\n";
+    };
+
+    my $notification_props = {
+	"hostname"      => get_hostname(),
+	"error-message" => $err,
+	"guest-table"   => build_guest_table($tasklist),
+	"logs"          => $text_log_part,
+	"status-text"   => $status_text,
+	"total-time"    => $total_time,
+    };
+
+    my $notification_config = PVE::Notify::read_config();
+
+    if ($mailto && scalar(@$mailto)) {
+	# <, >, @ is not allowed in endpoint names, but only it is only
+	# verified once the config is serialized. That means that
+	# we can rely on that fact that no other endpoint with this name exists.
+	my $endpoint_name = "mail-to-<" . join(",", @$mailto) . ">";
+	$notification_config->add_sendmail_endpoint(
+	    $endpoint_name,
+	    $mailto,
+	    undef,
+	    undef,
+	    "vzdump backup tool");
+
+	my $endpoints = [$endpoint_name];
+
+	# Create an anonymous group containing the sendmail endpoint and the
+	# $target endpoint, if specified
+	if ($target) {
+	    push @$endpoints, $target;
+	}
+
+	$target = "group-$endpoint_name";
+	$notification_config->add_group(
+	    $target,
+	    $endpoints,
 	);
     }
 
-    my $text_log_part;
-    $text_log_part .= "\nDetailed backup logs:\n\n";
-    $text_log_part .= "$cmdline\n\n";
+    return if (!$target);
 
-    $text_log_part .= $detail_pre . "\n" if defined($detail_pre);
-    foreach my $task (@$tasklist) {
-	my $vmid = $task->{vmid};
-	my $log = $task->{tmplog};
-	if (!$log) {
-	    $text_log_part .= "$vmid: no log available\n\n";
-	    next;
-	}
-	if (open (my $TMP, '<', "$log")) {
-	    while (my $line = <$TMP>) {
-		next if $line =~ /^status: \d+/; # not useful in mails
-		$text_log_part .= encode8bit ("$vmid: $line");
-	    }
-	    close ($TMP);
-	} else {
-	    $text_log_part .= "$vmid: Could not open log file\n\n";
-	}
-	$text_log_part .= "\n";
-    }
-    $text_log_part .= $detail_post if defined($detail_post);
+    my $severity = $failed ? "error" : "info";
 
-    # html part
-    my $html = "<html><body>\n";
-    $html .= "<p>" . (escape_html($err) =~ s/\n/<br>/gr) . "</p>\n" if $err;
-    $html .= "<table border=1 cellpadding=3>\n";
-    $html .= "<tr><td>VMID<td>NAME<td>STATUS<td>TIME<td>SIZE<td>FILENAME</tr>\n";
-
-    my $ssize = 0;
-    foreach my $task (@$tasklist) {
-	my $vmid = $task->{vmid};
-	my $name = $task->{hostname};
-
-	if  ($task->{state} eq 'ok') {
-	    $ssize += $task->{size};
-
-	    $html .= sprintf (
-	        "<tr><td>%s<td>%s<td>OK<td>%s<td align=right>%s<td>%s</tr>\n",
-	        $vmid,
-	        $name,
-	        format_time($task->{backuptime}),
-	        format_size ($task->{size}),
-	        escape_html ($task->{target}),
-	    );
-	} else {
-	    $html .= sprintf (
-	        "<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
-	        $vmid,
-	        $name,
-	        format_time($task->{backuptime}),
-	        escape_html ($task->{msg}),
-	    );
-	}
-    }
-
-    $html .= sprintf ("<tr><td align=left colspan=3>TOTAL<td>%s<td>%s<td></tr>",
- format_time ($totaltime), format_size ($ssize));
-
-    $html .= "\n</table><br><br>\n";
-    my $html_log_part;
-    $html_log_part .= "Detailed backup logs:<br /><br />\n";
-    $html_log_part .= "<pre>\n";
-    $html_log_part .= escape_html($cmdline) . "\n\n";
-
-    $html_log_part .= escape_html($detail_pre) . "\n" if defined($detail_pre);
-    foreach my $task (@$tasklist) {
-	my $vmid = $task->{vmid};
-	my $log = $task->{tmplog};
-	if (!$log) {
-	    $html_log_part .= "$vmid: no log available\n\n";
-	    next;
-	}
-	if (open (my $TMP, '<', "$log")) {
-	    while (my $line = <$TMP>) {
-		next if $line =~ /^status: \d+/; # not useful in mails
-		if ($line =~ m/^\S+\s\d+\s+\d+:\d+:\d+\s+(ERROR|WARN):/) {
-		    $html_log_part .= encode8bit ("$vmid: <font color=red>".
-			escape_html ($line) . "</font>");
-		} else {
-		    $html_log_part .= encode8bit ("$vmid: " . escape_html ($line));
-		}
-	    }
-	    close ($TMP);
-	} else {
-	    $html_log_part .= "$vmid: Could not open log file\n\n";
-	}
-	$html_log_part .= "\n";
-    }
-    $html_log_part .= escape_html($detail_post) if defined($detail_post);
-    $html_log_part .= "</pre>";
-    my $html_end = "\n</body></html>\n";
-    # end html part
-
-    if (length($text) + length($text_log_part) +
-	length($html) + length($html_log_part) +
-	length($html_end) < MAX_MAIL_SIZE)
-    {
-	$html .= $html_log_part;
-	$html .= $html_end;
-	$text .= $text_log_part;
-    } else {
-	my $msg = "Log output was too long to be sent by mail. ".
-	    "See Task History for details!\n";
-	$text .= $msg;
-	$html .= "<p>$msg</p>";
-	$html .= $html_end;
-    }
-
-    my $subject = "vzdump backup status ($hostname) : $stat";
-
-    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    my $mailfrom = $dcconf->{email_from} || "root";
-
-    PVE::Tools::sendmail($mailto, $subject, $text, $html, $mailfrom, "vzdump backup tool");
+    PVE::Notify::notify(
+	$target,
+	$severity,
+	$subject_template,
+	$body_template,
+	$notification_props,
+	$notification_config
+    );
 };
 
 sub new {
@@ -632,7 +671,7 @@ sub new {
     }
 
     if ($errors) {
-	eval { $self->sendmail([], 0, $errors); };
+	eval { $self->send_notification([], 0, $errors); };
 	debugmsg ('err', $@) if $@;
 	die "$errors\n";
     }
@@ -1322,11 +1361,11 @@ sub exec_backup {
     my $totaltime = time() - $starttime;
 
     eval {
-	# otherwise $self->sendmail() will interpret it as multiple problems
+	# otherwise $self->send_notification() will interpret it as multiple problems
 	my $chomped_err = $err;
 	chomp($chomped_err) if $chomped_err;
 
-	$self->sendmail(
+	$self->send_notification(
 	    $tasklist,
 	    $totaltime,
 	    $chomped_err,
