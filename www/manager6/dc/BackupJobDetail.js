@@ -202,15 +202,27 @@ Ext.define('PVE.dc.BackupInfo', {
     column2: [
 	{
 	    xtype: 'displayfield',
-	    name: 'mailnotification',
+	    name: 'notification-policy',
 	    fieldLabel: gettext('Notification'),
 	    renderer: function(value) {
-		let mailto = this.up('pveBackupInfo')?.record?.mailto || 'root@localhost';
+		let record = this.up('pveBackupInfo')?.record;
+
+		// Fall back to old value, in case this option is not migrated yet.
+		let policy = value || record?.mailnotification || 'always';
+
 		let when = gettext('Always');
-		if (value === 'failure') {
+		if (policy === 'failure') {
 		    when = gettext('On failure only');
+		} else if (policy === 'never') {
+		    when = gettext('Never');
 		}
-		return `${when} (${mailto})`;
+
+		// Notification-target takes precedence
+		let target = record?.['notification-target'] ||
+		    record?.mailto ||
+		    gettext('No target configured');
+
+		return `${when} (${target})`;
 	    },
 	},
 	{
