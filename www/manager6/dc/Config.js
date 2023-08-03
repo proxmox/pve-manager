@@ -329,6 +329,22 @@ Ext.define('PVE.dc.Config', {
 	    );
 	}
 
+	if (caps.mapping['Mapping.Audit'] ||
+	    caps.mapping['Mapping.Use'] ||
+	    caps.mapping['Mapping.Modify']) {
+	    me.items.push(
+		{
+		    xtype: 'pmxNotificationConfigView',
+		    title: gettext('Notification Targets'),
+		    onlineHelp: 'notification_targets',
+		    itemId: 'notification-targets',
+		    iconCls: 'fa fa-dot-circle-o',
+		    baseUrl: '/cluster/notifications',
+		    groups: ['notifications'],
+		},
+	    );
+	}
+
 	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
 		xtype: 'pveDcSupport',
