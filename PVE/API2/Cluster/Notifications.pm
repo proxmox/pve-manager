@@ -94,6 +94,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my $result = [
 	    { name => 'endpoints' },
+	    { name => 'filters' },
 	    { name => 'groups' },
 	];
 
@@ -898,4 +899,258 @@ __PACKAGE__->register_method ({
 	return;
     }
 });
+
+my $filter_properties = {
+    name => {
+	description => 'Name of the endpoint.',
+	type => 'string',
+	format => 'pve-configid',
+    },
+    'min-severity' => {
+	type => 'string',
+	description => 'Minimum severity to match',
+	optional => 1,
+	enum => [qw(info notice warning error)],
+    },
+    mode => {
+	type => 'string',
+	description => "Choose between 'and' and 'or' for when multiple properties are specified",
+	optional => 1,
+	enum => [qw(and or)],
+	default => 'and',
+    },
+    'invert-match' => {
+	type => 'boolean',
+	description => 'Invert match of the whole filter',
+	optional => 1,
+    },
+    'comment' => {
+	description => 'Comment',
+	type        => 'string',
+	optional    => 1,
+    },
+};
+
+__PACKAGE__->register_method ({
+    name => 'get_filters',
+    path => 'filters',
+    method => 'GET',
+    description => 'Returns a list of all filters',
+    protected => 1,
+    permissions => {
+	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
+	user => 'all',
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => $filter_properties,
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	my $config = PVE::Notify::read_config();
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $entities = eval {
+	    $config->get_filters();
+	};
+	raise_api_error($@) if $@;
+
+	return filter_entities_by_privs($rpcenv, $entities);
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_filter',
+    path => 'filters/{name}',
+    method => 'GET',
+    description => 'Return a specific filter',
+    protected => 1,
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    %$filter_properties,
+	    digest => get_standard_option('pve-config-digest'),
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $config = PVE::Notify::read_config();
+
+	my $filter = eval {
+	    $config->get_filter($name)
+	};
+
+	raise_api_error($@) if $@;
+	$filter->{digest} = $config->digest();
+
+	return $filter;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'create_filter',
+    path => 'filters',
+    protected => 1,
+    method => 'POST',
+    description => 'Create a new filter',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => $filter_properties,
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $min_severity = extract_param($param, 'min-severity');
+	my $mode = extract_param($param, 'mode');
+	my $invert_match = extract_param($param, 'invert-match');
+	my $comment = extract_param($param, 'comment');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->add_filter(
+		    $name,
+		    $min_severity,
+		    $mode,
+		    $invert_match,
+		    $comment,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'update_filter',
+    path => 'filters/{name}',
+    protected => 1,
+    method => 'PUT',
+    description => 'Update existing filter',
+    permissions => {
+	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    %{ make_properties_optional($filter_properties) },
+	    delete => {
+		type => 'array',
+		items => {
+		    type => 'string',
+		    format => 'pve-configid',
+		},
+		optional => 1,
+		description => 'A list of settings you want to delete.',
+	    },
+	    digest => get_standard_option('pve-config-digest'),
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $min_severity = extract_param($param, 'min-severity');
+	my $mode = extract_param($param, 'mode');
+	my $invert_match = extract_param($param, 'invert-match');
+	my $comment = extract_param($param, 'comment');
+	my $digest = extract_param($param, 'digest');
+	my $delete = extract_param($param, 'delete');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->update_filter(
+		    $name,
+		    $min_severity,
+		    $mode,
+		    $invert_match,
+		    $comment,
+		    $delete,
+		    $digest,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'delete_filter',
+    protected => 1,
+    path => 'filters/{name}',
+    method => 'DELETE',
+    description => 'Remove filter',
+    permissions => {
+	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+		$config->delete_filter($name);
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
 1;
