@@ -211,6 +211,46 @@ __PACKAGE__->register_method ({
     }
 });
 
+__PACKAGE__->register_method ({
+    name => 'test_target',
+    path => 'targets/{name}/test',
+    protected => 1,
+    method => 'POST',
+    description => 'Send a test notification to a provided target.',
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Use']],
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		description => 'Name of the target.',
+		type => 'string',
+		format => 'pve-configid'
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $config = PVE::Notify::read_config();
+
+	eval {
+	    $config->test_target($name);
+	};
+
+	raise_api_error($@) if $@;
+
+	return;
+    }
+});
+
 my $group_properties = {
     name => {
 	description => 'Name of the group.',
