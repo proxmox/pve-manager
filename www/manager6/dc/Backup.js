@@ -36,6 +36,30 @@ Ext.define('PVE.dc.BackupEdit', {
 		delete values.node;
 	    }
 
+	    if (!isCreate) {
+		// 'mailnotification' is deprecated in favor of 'notification-policy'
+		// -> Migration to the new parameter happens in init, so we are
+		//    safe to remove the old parameter here.
+		Proxmox.Utils.assemble_field_data(values, { 'delete': 'mailnotification' });
+
+		// If sending notifications via mail, remove the current value of
+		// 'notification-target'
+		if (values['notification-mode'] === "mailto") {
+		    Proxmox.Utils.assemble_field_data(
+			values,
+			{ 'delete': 'notification-target' },
+		    );
+		} else {
+		    // and vice versa...
+		    Proxmox.Utils.assemble_field_data(
+			values,
+			{ 'delete': 'mailto' },
+		    );
+		}
+	    }
+
+	    delete values['notification-mode'];
+
 	    if (!values.id && isCreate) {
 		values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
 	    }
@@ -146,6 +170,22 @@ Ext.define('PVE.dc.BackupEdit', {
 		    success: function(response, _options) {
 			let data = response.result.data;
 
+			// 'mailnotification' is deprecated. Let's automatically
+			// migrate to the compatible 'notification-policy' parameter
+			if (data.mailnotification) {
+			    if (!data["notification-policy"]) {
+				data["notification-policy"] = data.mailnotification;
+			    }
+
+			    delete data.mailnotification;
+			}
+
+			if (data['notification-target']) {
+			    data['notification-mode'] = 'notification-target';
+			} else if (data.mailto) {
+			    data['notification-mode'] = 'mailto';
+			}
+
 			if (data.exclude) {
 			    data.vmid = data.exclude;
 			    data.selMode = 'exclude';
@@ -188,11 +228,13 @@ Ext.define('PVE.dc.BackupEdit', {
     viewModel: {
 	data: {
 	    selMode: 'include',
+	    notificationMode: 'notification-target',
 	},
 
 	formulas: {
 	    poolMode: (get) => get('selMode') === 'pool',
 	    disableVMSelection: (get) => get('selMode') !== 'include' && get('selMode') !== 'exclude',
+	    mailNotificationSelected: (get) => get('notificationMode') === 'mailto',
 	},
     },
 
@@ -283,17 +325,45 @@ Ext.define('PVE.dc.BackupEdit', {
 			    ],
 			    column2: [
 				{
-				    xtype: 'textfield',
-				    fieldLabel: gettext('Send email to'),
-				    name: 'mailto',
-				},
-				{
 				    xtype: 'pveEmailNotificationSelector',
-				    fieldLabel: gettext('Email'),
-				    name: 'mailnotification',
+				    fieldLabel: gettext('Notify'),
+				    name: 'notification-policy',
 				    cbind: {
 					value: (get) => get('isCreate') ? 'always' : '',
 					deleteEmpty: '{!isCreate}',
+				    },
+				},
+				{
+				    xtype: 'pveNotificationModeSelector',
+				    fieldLabel: gettext('Notify via'),
+				    name: 'notification-mode',
+				    bind: {
+					value: '{notificationMode}',
+				    },
+				},
+				{
+				    xtype: 'pveNotificationTargetSelector',
+				    fieldLabel: gettext('Notification Target'),
+				    name: 'notification-target',
+				    allowBlank: true,
+				    editable: true,
+				    autoSelect: false,
+				    bind: {
+					hidden: '{mailNotificationSelected}',
+					disabled: '{mailNotificationSelected}',
+				    },
+				    cbind: {
+					deleteEmpty: '{!isCreate}',
+				    },
+				},
+				{
+				    xtype: 'textfield',
+				    fieldLabel: gettext('Send email to'),
+				    name: 'mailto',
+				    hidden: true,
+				    bind: {
+					hidden: '{!mailNotificationSelected}',
+					disabled: '{!mailNotificationSelected}',
 				    },
 				},
 				{

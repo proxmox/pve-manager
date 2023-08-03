@@ -36,7 +36,6 @@ JSSRC= 							\
 	form/DayOfWeekSelector.js			\
 	form/DiskFormatSelector.js			\
 	form/DiskStorageSelector.js			\
-	form/EmailNotificationSelector.js		\
 	form/FileSelector.js				\
 	form/FirewallPolicySelector.js			\
 	form/GlobalSearchField.js			\
@@ -51,6 +50,9 @@ JSSRC= 							\
 	form/MultiPCISelector.js			\
 	form/NetworkCardSelector.js			\
 	form/NodeSelector.js				\
+	form/NotificationModeSelector.js		\
+	form/NotificationTargetSelector.js		\
+	form/NotificationPolicySelector.js		\
 	form/PCISelector.js				\
 	form/PCIMapSelector.js				\
 	form/PermPathSelector.js			\
