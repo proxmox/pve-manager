@@ -159,6 +159,7 @@ JSSRC= 							\
 	dc/Health.js					\
 	dc/Log.js					\
 	dc/NodeView.js					\
+	dc/NotificationEvents.js			\
 	dc/OptionView.js				\
 	dc/PermissionView.js				\
 	dc/PoolEdit.js					\

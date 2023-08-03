@@ -318,6 +318,18 @@ Ext.define('PVE.dc.Config', {
 	}
 
 	if (caps.dc['Sys.Audit']) {
+	    me.items.push(
+		{
+		    xtype: 'pveNotificationEvents',
+		    title: gettext('Notifications'),
+		    onlineHelp: 'notification_events',
+		    iconCls: 'fa fa-bell-o',
+		    itemId: 'notifications',
+		},
+	    );
+	}
+
+	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
 		xtype: 'pveDcSupport',
 		title: gettext('Support'),
