@@ -501,10 +501,10 @@ sub send_notification {
     my $notification_config = PVE::Notify::read_config();
 
     if ($mailto && scalar(@$mailto)) {
-	# <, >, @ is not allowed in endpoint names, but only it is only
+	# <, >, @ are not allowed in endpoint names, but that is only
 	# verified once the config is serialized. That means that
 	# we can rely on that fact that no other endpoint with this name exists.
-	my $endpoint_name = "mail-to-<" . join(",", @$mailto) . ">";
+	my $endpoint_name = "<mail-to-" . join(",", @$mailto) . ">";
 	$notification_config->add_sendmail_endpoint(
 	    $endpoint_name,
 	    $mailto,
@@ -520,7 +520,7 @@ sub send_notification {
 	    push @$endpoints, $target;
 	}
 
-	$target = "group-$endpoint_name";
+	$target = "<group-$endpoint_name>";
 	$notification_config->add_group(
 	    $target,
 	    $endpoints,
