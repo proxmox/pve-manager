@@ -96,6 +96,7 @@ __PACKAGE__->register_method ({
 	    { name => 'endpoints' },
 	    { name => 'filters' },
 	    { name => 'groups' },
+	    { name => 'targets' },
 	];
 
 	return $result;
@@ -127,6 +128,86 @@ __PACKAGE__->register_method ({
 	];
 
 	return $result;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_all_targets',
+    path => 'targets',
+    method => 'GET',
+    description => 'Returns a list of all entities that can be used as notification targets' .
+	' (endpoints and groups).',
+    permissions => {
+	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
+	user => 'all',
+    },
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => {
+		name => {
+		    description => 'Name of the endpoint/group.',
+		    type => 'string',
+		    format => 'pve-configid',
+		},
+		'type' => {
+		    description => 'Type of the endpoint or group.',
+		    type  => 'string',
+		    enum => [qw(sendmail gotify group)],
+		},
+		'comment' => {
+		    description => 'Comment',
+		    type        => 'string',
+		    optional    => 1,
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	my $config = PVE::Notify::read_config();
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $targets = eval {
+	    my $result = [];
+
+	    for my $target (@{$config->get_sendmail_endpoints()}) {
+		push @$result, {
+		    name => $target->{name},
+		    comment => $target->{comment},
+		    type => 'sendmail',
+		};
+	    }
+
+	    for my $target (@{$config->get_gotify_endpoints()}) {
+		push @$result, {
+		    name => $target->{name},
+		    comment => $target->{comment},
+		    type => 'gotify',
+		};
+	    }
+
+	    for my $target (@{$config->get_groups()}) {
+		push @$result, {
+		    name => $target->{name},
+		    comment => $target->{comment},
+		    type => 'group',
+		};
+	    }
+
+	    $result
+	};
+
+	raise_api_error($@) if $@;
+
+	return filter_entities_by_privs($rpcenv, $targets);
     }
 });
 
