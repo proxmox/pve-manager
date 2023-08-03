@@ -24,6 +24,19 @@ sub make_properties_optional {
     return $properties;
 }
 
+sub remove_protected_properties {
+    my ($properties, $to_remove) = @_;
+    $properties = dclone($properties);
+
+    for my $key (keys %$properties) {
+	if (grep /^$key$/, @$to_remove) {
+	    delete $properties->{$key};
+	}
+    }
+
+    return $properties;
+}
+
 sub raise_api_error {
     my ($api_error) = @_;
 
@@ -108,6 +121,7 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my $result = [
+	    { name => 'gotify' },
 	    { name => 'sendmail' },
 	];
 
@@ -636,4 +650,252 @@ __PACKAGE__->register_method ({
     }
 });
 
+my $gotify_properties = {
+    name => {
+	description => 'The name of the endpoint.',
+	type => 'string',
+	format => 'pve-configid',
+    },
+    'server' => {
+	description => 'Server URL',
+	type => 'string',
+    },
+    'token' => {
+	description => 'Secret token',
+	type => 'string',
+    },
+    'comment' => {
+	description => 'Comment',
+	type        => 'string',
+	optional    => 1,
+    },
+    'filter' => {
+	description => 'Name of the filter that should be applied.',
+	type => 'string',
+	format => 'pve-configid',
+	optional => 1,
+    }
+};
+
+__PACKAGE__->register_method ({
+    name => 'get_gotify_endpoints',
+    path => 'endpoints/gotify',
+    method => 'GET',
+    description => 'Returns a list of all gotify endpoints',
+    protected => 1,
+    permissions => {
+	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
+	user => 'all',
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => remove_protected_properties($gotify_properties, ['token']),
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	my $config = PVE::Notify::read_config();
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $entities = eval {
+	    $config->get_gotify_endpoints();
+	};
+	raise_api_error($@) if $@;
+
+	return filter_entities_by_privs($rpcenv, $entities);
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_gotify_endpoint',
+    path => 'endpoints/gotify/{name}',
+    method => 'GET',
+    description => 'Return a specific gotify endpoint',
+    protected => 1,
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+		description => 'Name of the endpoint.'
+	    },
+	}
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    %{ remove_protected_properties($gotify_properties, ['token']) },
+	    digest => get_standard_option('pve-config-digest'),
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $config = PVE::Notify::read_config();
+	my $endpoint = eval {
+	    $config->get_gotify_endpoint($name)
+	};
+
+	raise_api_error($@) if $@;
+	$endpoint->{digest} = $config->digest();
+
+	return $endpoint;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'create_gotify_endpoint',
+    path => 'endpoints/gotify',
+    protected => 1,
+    method => 'POST',
+    description => 'Create a new gotify endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => $gotify_properties,
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $server = extract_param($param, 'server');
+	my $token = extract_param($param, 'token');
+	my $comment = extract_param($param, 'comment');
+	my $filter = extract_param($param, 'filter');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->add_gotify_endpoint(
+		    $name,
+		    $server,
+		    $token,
+		    $comment,
+		    $filter
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'update_gotify_endpoint',
+    path => 'endpoints/gotify/{name}',
+    protected => 1,
+    method => 'PUT',
+    description => 'Update existing gotify endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    %{ make_properties_optional($gotify_properties) },
+	    delete => {
+		type => 'array',
+		items => {
+		    type => 'string',
+		    format => 'pve-configid',
+		},
+		optional => 1,
+		description => 'A list of settings you want to delete.',
+	    },
+	    digest => get_standard_option('pve-config-digest'),
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $server = extract_param($param, 'server');
+	my $token = extract_param($param, 'token');
+	my $comment = extract_param($param, 'comment');
+	my $filter = extract_param($param, 'filter');
+
+	my $delete = extract_param($param, 'delete');
+	my $digest = extract_param($param, 'digest');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->update_gotify_endpoint(
+		    $name,
+		    $server,
+		    $token,
+		    $comment,
+		    $filter,
+		    $delete,
+		    $digest,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'delete_gotify_endpoint',
+    protected => 1,
+    path => 'endpoints/gotify/{name}',
+    method => 'DELETE',
+    description => 'Remove gotify endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+		$config->delete_gotify_endpoint($name);
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
 1;
