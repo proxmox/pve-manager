@@ -15,6 +15,7 @@ use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::LXC::Config;
 use PVE::LXC;
+use PVE::Notify;
 
 use PVE::RESTHandler;
 
@@ -91,6 +92,24 @@ my sub _should_mail_at_failcount {
     return $i * 48 == $fail_count;
 };
 
+my $replication_error_subject_template = "Replication Job: '{{job-id}}' failed";
+my $replication_error_body_template = <<EOT;
+{{#verbatim}}
+Replication job '{{job-id}}' with target '{{job-target}}' and schedule '{{job-schedule}}' failed!
+
+Last successful sync: {{timestamp last-sync}}
+Next sync try: {{timestamp next-sync}}
+Failure count: {{failure-count}}
+
+{{#if (eq failure-count 3)}}
+Note: The system  will now reduce the frequency of error reports, as the job
+appears to be stuck.
+{{/if}}
+Error:
+{{verbatim-monospaced error}}
+{{/verbatim}}
+EOT
+
 my sub _handle_job_err {
     my ($job, $err, $mail) = @_;
 
@@ -103,33 +122,37 @@ my sub _handle_job_err {
 
     return if !_should_mail_at_failcount($fail_count);
 
-    my $schedule = $job->{schedule} // '*/15';
-
-    my $msg = "Replication job $job->{id} with target '$job->{target}' and schedule";
-    $msg .= " '$schedule' failed!\n";
-
-    $msg .= "  Last successful sync: ";
-    if (my $last_sync = $jobstate->{last_sync}) {
-	$msg .= render_timestamp($last_sync) ."\n";
-    } else {
-	$msg .= "None/Unknown\n";
-    }
     # not yet updated, so $job->next_sync here is actually the current one.
     # NOTE: Copied from PVE::ReplicationState::job_status()
     my $next_sync = $job->{next_sync} + 60 * ($fail_count <= 3 ? 5 * $fail_count : 30);
-    $msg .= "  Next sync try: " . render_timestamp($next_sync) ."\n";
-    $msg .= "  Failure count: $fail_count\n";
 
+    # The replication job is run every 15 mins if no schedule is set.
+    my $schedule = $job->{schedule} // '*/15';
 
-    if ($fail_count == 3) {
-	$msg .= "\nNote: The system will now reduce the frequency of error reports,";
-	$msg .= " as the job appears to be stuck.\n";
-    }
-
-    $msg .= "\nError:\n$err";
+    my $properties = {
+	"failure-count" => $fail_count,
+	"last-sync"     => $jobstate->{last_sync},
+	"next-sync"     => $next_sync,
+	"job-id"        => $job->{id},
+	"job-target"    => $job->{target},
+	"job-schedule"  => $schedule,
+	"error"         => $err,
+    };
 
     eval {
-	PVE::Tools::sendmail('root', "Replication Job: $job->{id} failed", $msg)
+	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	my $target = $dcconf->{notify}->{'target-replication'} // PVE::Notify::default_target();
+	my $notify = $dcconf->{notify}->{'replication'} // 'always';
+
+	if ($notify eq 'always') {
+	    PVE::Notify::error(
+		$target,
+		$replication_error_subject_template,
+		$replication_error_body_template,
+		$properties
+	    );
+	}
+
     };
     warn ": $@" if $@;
 }
