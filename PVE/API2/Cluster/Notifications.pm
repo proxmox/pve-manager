@@ -6,6 +6,7 @@ use strict;
 use Storable qw(dclone);
 use JSON;
 
+use PVE::Exception qw(raise_param_exc);
 use PVE::Tools qw(extract_param);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
@@ -71,6 +72,31 @@ sub filter_entities_by_privs {
     } @$entities];
 
     return $filtered;
+}
+
+sub target_used_by {
+    my ($target) = @_;
+
+    my $used_by = [];
+
+    # Check keys in datacenter.cfg
+    my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    for my $key (qw(target-package-updates target-replication target-fencing)) {
+	if ($dc_conf->{notify} && $dc_conf->{notify}->{$key} eq $target) {
+	    push @$used_by, $key;
+	}
+    }
+
+    # Check backup jobs
+    my $jobs_conf = PVE::Cluster::cfs_read_file('jobs.cfg');
+    for my $key (keys %{$jobs_conf->{ids}}) {
+	my $job = $jobs_conf->{ids}->{$key};
+	if ($job->{'notification-target'} eq $target) {
+	    push @$used_by, $key;
+	}
+    }
+
+    return join(', ', @$used_by);
 }
 
 __PACKAGE__->register_method ({
@@ -482,6 +508,11 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
 
+	my $used_by = target_used_by($name);
+	if ($used_by) {
+	    raise_param_exc({'name' => "Cannot remove $name, used by: $used_by"});
+	}
+
 	eval {
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
@@ -758,11 +789,17 @@ __PACKAGE__->register_method ({
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $used_by = target_used_by($name);
+	if ($used_by) {
+	    raise_param_exc({'name' => "Cannot remove $name, used by: $used_by"});
+	}
 
 	eval {
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
-		$config->delete_sendmail_endpoint($param->{name});
+		$config->delete_sendmail_endpoint($name);
 		PVE::Notify::write_config($config);
 	    });
 	};
@@ -1007,6 +1044,11 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
+
+	my $used_by = target_used_by($name);
+	if ($used_by) {
+	    raise_param_exc({'name' => "Cannot remove $name, used by: $used_by"});
+	}
 
 	eval {
 	    PVE::Notify::lock_config(sub {
