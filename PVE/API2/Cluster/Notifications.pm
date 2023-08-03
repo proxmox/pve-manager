@@ -68,7 +68,7 @@ sub filter_entities_by_privs {
 	    "/mapping/notification/$_->{name}",
 	    $can_see_mapping_privs,
 	    1
-	)
+	) || $_->{name} eq PVE::Notify::default_target();
     } @$entities];
 
     return $filtered;
@@ -165,7 +165,8 @@ __PACKAGE__->register_method ({
 	' (endpoints and groups).',
     permissions => {
 	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'."
+	    . " The special 'mail-to-root' target is available to all users.",
 	user => 'all',
     },
     protected => 1,
@@ -244,11 +245,10 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Send a test notification to a provided target.',
     permissions => {
-	check => ['or',
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Use']],
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
-	],
+	description => "The user requires 'Mapping.Modify', 'Mapping.Use' or"
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'."
+	    . " The special 'mail-to-root' target can be accessed by all users.",
+	user => 'all',
     },
     parameters => {
 	additionalProperties => 0,
@@ -264,10 +264,23 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
 
-	my $config = PVE::Notify::read_config();
+	my $privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
+
+	if ($name ne PVE::Notify::default_target()) {
+	    # Due to backwards compatibility reasons the 'mail-to-root'
+	    # target must be accessible for any user
+	    $rpcenv->check_any(
+		$authuser,
+		"/mapping/notification/$name",
+		$privs,
+	    );
+	}
 
 	eval {
+	    my $config = PVE::Notify::read_config();
 	    $config->test_target($name);
 	};
 
