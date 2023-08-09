@@ -412,6 +412,8 @@ Ext.define('PVE.node.Config', {
 		    onlineHelp: 'chapter_pve_firewall',
 		    url: '/api2/extjs/nodes/' + nodename + '/firewall/log',
 		    itemId: 'firewall-fwlog',
+		    log_select_timespan: true,
+		    submitFormat: 'U',
 		},
 		{
 		    xtype: 'cephLogView',

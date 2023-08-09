@@ -390,6 +390,8 @@ Ext.define('PVE.qemu.Config', {
 		    itemId: 'firewall-fwlog',
 		    xtype: 'proxmoxLogView',
 		    url: '/api2/extjs' + base_url + '/firewall/log',
+		    log_select_timespan: true,
+		    submitFormat: 'U',
 		},
 	    );
 	}
