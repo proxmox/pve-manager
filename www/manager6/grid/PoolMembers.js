@@ -1,7 +1,7 @@
 Ext.define('PVE.pool.AddVM', {
     extend: 'Proxmox.window.Edit',
     width: 600,
-    height: 400,
+    height: 420,
     isAdd: true,
     isCreate: true,
     initComponent: function() {
@@ -30,7 +30,7 @@ Ext.define('PVE.pool.AddVM', {
 	    ],
 	    filters: [
 		function(item) {
-		    return (item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '';
+		    return (item.data.type === 'lxc' || item.data.type === 'qemu') &&item.data.pool !== me.pool;
 		},
 	    ],
 	});
@@ -64,6 +64,10 @@ Ext.define('PVE.pool.AddVM', {
 		    dataIndex: 'node',
 		},
 		{
+		    header: gettext('Pool'),
+		    dataIndex: 'pool',
+		},
+		{
 		    header: gettext('Status'),
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
@@ -85,9 +89,16 @@ Ext.define('PVE.pool.AddVM', {
 		},
 	    ],
 	});
+
+	let transfer = Ext.create('Ext.form.field.Checkbox', {
+	    name: 'transfer',
+	    boxLabel: gettext('Allow Transfer'),
+	    inputValue: 1,
+	    value: 0,
+	});
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),
-	    items: [vmsField, vmGrid],
+	    items: [vmsField, vmGrid, transfer],
 	});
 
 	me.callParent();
