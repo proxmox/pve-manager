@@ -131,6 +131,11 @@ __PACKAGE__->register_method ({
 		type => 'string',  format => 'pve-storage-id-list',
 		optional => 1,
 	    },
+	    transfer => {
+		description => "Allow transferring VMs to another pool.",
+		type => 'boolean',
+		optional => 1,
+	    },
 	    delete => {
 		description => "Remove vms/storage (instead of adding it).",
 		type => 'boolean',
@@ -165,8 +170,15 @@ __PACKAGE__->register_method ({
 		    } else {
 			die "VM $vmid is already a pool member\n" if $pool_config->{vms}->{$vmid};
 			my $existing_pool = $usercfg->{vms}->{$vmid};
-			die "VM $vmid belongs already to pool '$existing_pool'\n" if defined($existing_pool);
-
+			if (defined($existing_pool)) {
+			    if ($param->{transfer}) {
+				$rpcenv->check($authuser, "/pool/$existing_pool", ['Pool.Allocate']);
+				my $existing_pool_config = $usercfg->{pools}->{$existing_pool};
+				delete $existing_pool_config->{vms}->{$vmid};
+			    } else {
+				die "VM $vmid belongs already to pool '$existing_pool' and transfer is not set\n";
+			    }
+			}
 			$pool_config->{vms}->{$vmid} = 1;
 			$usercfg->{vms}->{$vmid} = $pool;
 		    }
