@@ -79,6 +79,21 @@ Ext.define('PVE.panel.ADInputPanel', {
 	    },
 	];
 
+	me.advancedItems = [
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Check connection'),
+		name: 'check-connection',
+		uncheckedValue: 0,
+		checked: true,
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip':
+			gettext('Verify connection parameters and bind credentials on save'),
+		},
+	    },
+	];
+
 	me.callParent();
     },
     onGetValues: function(values) {
