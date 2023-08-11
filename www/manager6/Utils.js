@@ -34,7 +34,7 @@ Ext.define('PVE.Utils', {
     },
 
     noSubKeyHtml: 'You do not have a valid subscription for this server. Please visit '
-      +'<a target="_blank" href="https://www.proxmox.com/products/proxmox-ve/subscription-service-plans">'
+      +'<a target="_blank" href="https://www.proxmox.com/en/proxmox-virtual-environment/pricing">'
       +'www.proxmox.com</a> to get a list of available options.',
 
     getClusterSubscriptionLevel: async function() {

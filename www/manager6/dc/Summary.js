@@ -64,7 +64,7 @@ Ext.define('PVE.dc.Summary', {
 			element: 'el',
 			click: function() {
 			    if (this.component.userCls === 'pointer') {
-				window.open('https://www.proxmox.com/en/proxmox-ve/pricing', '_blank');
+				window.open('https://www.proxmox.com/en/proxmox-virtual-environment/pricing', '_blank');
 			    }
 			},
 		    },

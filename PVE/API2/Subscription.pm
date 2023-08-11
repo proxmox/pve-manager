@@ -128,7 +128,7 @@ __PACKAGE__->register_method ({
 	my $has_permission = $rpcenv->check($authuser, "/nodes/$node", ['Sys.Audit'], 1);
 
 	my $server_id = PVE::API2Tools::get_hwaddress();
-	my $url = "https://www.proxmox.com/proxmox-ve/pricing";
+	my $url = "https://www.proxmox.com/en/proxmox-virtual-environment/pricing";
 
 	my $info = read_etc_subscription();
 	if (!$info) {

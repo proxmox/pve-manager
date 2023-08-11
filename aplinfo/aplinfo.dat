@@ -135,7 +135,7 @@ Architecture: amd64
 Location: mail/proxmox-mailgateway-7.3-standard_7.3-1_amd64.tar.zst
 md5sum: 6c130003f9880ae66dca0603d7b7ca87
 sha512sum: 2fdf1dc24306bbaa2ef9a0f322416ca15b97b7d19f84b83743c7afc896095c398241fbc2eb41a33a69f3f275ce4c4cb6425edc5538831b4650d39a5e44fdbc25
-Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
+Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
 Description: Proxmox Mailgateway 7.3
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
@@ -149,7 +149,7 @@ Architecture: amd64
 Location: mail/proxmox-mailgateway-8.0-standard_8.0-1_amd64.tar.zst
 md5sum: 7d321e5dfc6e1005231586d1871e3625
 sha512sum: be5efcb8ee97f2bb1c638360191eda19f49e2063acb88da55c948c90c091063972cc9ea29e6aeaa4a85733e0fb2c99ea905d665ac693cb2bf06b091c4baf781f
-Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
+Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
 Description: Proxmox Mailgateway 8.0
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
