@@ -37,15 +37,25 @@ my $result_text;
 my $result_properties;
 
 my $mock_notification_module = Test::MockModule->new('PVE::Notify');
-$mock_notification_module->mock('send_notification', sub {
+my $mocked_notify = sub {
     my ($channel, $severity, $title, $text, $properties) = @_;
 
     $result_text = $text;
     $result_properties = $properties;
-});
+};
+my $mocked_notify_short = sub {
+    my ($channel, @rest) = @_;
+    return $mocked_notify->($channel, '<some severity>', @rest);
+};
 
-my $mock_cluster_module = Test::MockModule->new('PVE::Cluster');
-$mock_cluster_module->mock('cfs_read_file', sub {
+$mock_notification_module->mock(
+    'notify' => $mocked_notify,
+    'info' => $mocked_notify_short,
+    'notice' => $mocked_notify_short,
+    'warning' => $mocked_notify_short,
+    'error' => $mocked_notify_short,
+);
+$mock_notification_module->mock('cfs_read_file', sub {
     my $path = shift;
 
     if ($path eq 'datacenter.cfg') {
