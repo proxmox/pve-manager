@@ -523,6 +523,10 @@ Ext.define('PVE.node.ACME', {
 
 	orderFinished: function(success) {
 	    if (!success) return;
+	    // reload only if the Web UI is open on the same node that the cert was ordered for
+	    if (this.getView().nodename !== Proxmox.NodeName) {
+		return;
+	    }
 	    var txt = gettext('pveproxy will be restarted with new certificates, please reload the GUI!');
 	    Ext.getBody().mask(txt, ['pve-static-mask']);
 	    // reload after 10 seconds automatically
