@@ -1,3 +1,13 @@
+pve-manager (8.0.5) bookworm; urgency=medium
+
+  * add 'check connection' checkbox for ldap as advanced option
+
+  * fix #474: allow transferring VMs between pools
+
+  * add api endpoints and UI for notification subsystem
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Aug 2023 12:12:34 +0200
+
 pve-manager (8.0.4) bookworm; urgency=medium
 
   * ui: migrate: fix disabled migrate button glitch
