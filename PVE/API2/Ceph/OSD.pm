@@ -293,6 +293,13 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		description => "Set the device class of the OSD in crush."
 	    },
+	    'osds-per-device' => {
+		optional => 1,
+		type => 'integer',
+		minimum => '1',
+		description => 'OSD services per physical device. Only useful for fast ".
+		    "NVME devices to utilize their performance better.',
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -311,6 +318,15 @@ __PACKAGE__->register_method ({
 
 	# extract parameter info and fail if a device is set more than once
 	my $devs = {};
+
+	# allow 'osds-per-device' only without dedicated db and/or wal devs. We cannot specify them with
+	# 'ceph-volume lvm batch' and they don't make a lot of sense on fast NVMEs anyway.
+	if ($param->{'osds-per-device'}) {
+	    for my $type ( qw(db_dev wal_dev) ) {
+		raise_param_exc({ $type => "canot use 'osds-per-device' parameter with '${type}'" })
+		    if $param->{$type};
+	    }
+	}
 
 	my $ceph_conf = cfs_read_file('ceph.conf');
 
@@ -380,10 +396,6 @@ __PACKAGE__->register_method ({
 	# get necessary ceph infos
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'quorum_status' });
-
-	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
-	my $fsid = $monstat->{monmap}->{fsid};
-        $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
 
 	my $ceph_bootstrap_osd_keyring = PVE::Ceph::Tools::get_config('ceph_bootstrap_osd_keyring');
 
@@ -488,7 +500,10 @@ __PACKAGE__->register_method ({
 		$test_disk_requirements->($disklist);
 
 		my $dev_class = $param->{'crush-device-class'};
-		my $cmd = ['ceph-volume', 'lvm', 'create', '--cluster-fsid', $fsid ];
+		# create allows for detailed configuration of DB and WAL devices
+		# batch for easy creation of multiple OSDs (per device)
+		my $create_mode = $param->{'osds-per-device'} ? 'batch' : 'create';
+		my $cmd = ['ceph-volume', 'lvm', $create_mode ];
 		push @$cmd, '--crush-device-class', $dev_class if $dev_class;
 
 		my $devname = $devs->{dev}->{name};
@@ -522,9 +537,17 @@ __PACKAGE__->register_method ({
 		    push @$cmd, "--block.$type", $part_or_lv;
 		}
 
-		push @$cmd, '--data', $devpath;
+		push @$cmd, '--data', $devpath if $create_mode eq 'create';
 		push @$cmd, '--dmcrypt' if $param->{encrypted};
 
+		if ($create_mode eq 'batch') {
+		    push @$cmd,
+			'--osds-per-device', $param->{'osds-per-device'},
+			'--yes',
+			'--no-auto',
+			'--',
+			$devpath;
+		}
 		PVE::Diskmanage::wipe_blockdev($devpath);
 
 		if (PVE::Diskmanage::is_partition($devpath)) {
