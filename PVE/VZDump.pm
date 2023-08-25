@@ -387,11 +387,11 @@ sub build_guest_table {
 	my $size = $successful ? $task->{size} : 0;
 	my $filename = $successful ? $task->{target} : undef;
 	push @{$table->{data}}, {
-	    "vmid" => $task->{vmid},
+	    "vmid" => int($task->{vmid}),
 	    "name" => $task->{hostname},
 	    "status" => $task->{state},
-	    "time" => $task->{backuptime},
-	    "size" => $size,
+	    "time" => int($task->{backuptime}),
+	    "size" => int($size),
 	    "filename" => $filename,
 	};
     }
