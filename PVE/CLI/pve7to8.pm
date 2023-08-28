@@ -1022,12 +1022,18 @@ sub check_containers_cgroup_compat {
 	my $get_systemd_version = sub {
 	    my ($self) = @_;
 
+	    my @dirs = (
+		'/lib/systemd',
+		'/usr/lib/systemd',
+		'/usr/lib/x86_64-linux-gnu/systemd',
+		'/usr/lib64/systemd'
+	    );
 	    my $libsd;
-	    for my $dir ('/lib/systemd', '/usr/lib/systemd', '/usr/lib/x86_64-linux-gnu/systemd') {
+	    for my $dir (@dirs) {
 		$libsd = PVE::Tools::dir_glob_regex($dir, "libsystemd-shared-.+\.so");
 		last if defined($libsd);
 	    }
-	    if (defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)(\.\d-\d)?\.so/) {
+	    if (defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)(\.\d-\d)?(\.fc\d\d)?\.so/) {
 		return $1;
 	    }
 
