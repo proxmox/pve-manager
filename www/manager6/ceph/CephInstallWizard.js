@@ -109,6 +109,7 @@ Ext.define('PVE.ceph.CephHighestVersionDisplay', {
 		    16: 'pacific',
 		    17: 'quincy',
 		    18: 'reef',
+		    19: 'squid',
 		};
 		let release = major2release[maxversion[0]] || 'unknown';
 		let newestVersionTxt = `${Ext.String.capitalize(release)} (${maxversiontext})`;
