@@ -114,7 +114,7 @@ my sub has_valid_subscription {
     return $info->{status} && $info->{status} eq 'active'; # age check?
 }
 
-my $supported_ceph_versions = ['quincy'];
+my $supported_ceph_versions = ['quincy', 'reef'];
 my $default_ceph_version = 'quincy';
 
 __PACKAGE__->register_method ({
@@ -171,7 +171,9 @@ __PACKAGE__->register_method ({
 	}
 
 	my $repolist;
-	if ($cephver eq 'quincy') {
+	if ($cephver eq 'reef') {
+	    $repolist = "deb ${cdn}/debian/ceph-reef bookworm $repo\n";
+	} elsif ($cephver eq 'quincy') {
 	    $repolist = "deb ${cdn}/debian/ceph-quincy bookworm $repo\n";
 	} else {
 	    die "unsupported ceph version: $cephver";
