@@ -162,7 +162,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                     if (!nodeSub) {
 			return gettext('The enterprise repository is enabled, but there is no active subscription!');
 		    } else if (!allSub) {
-			//return gettext('Not all nodes in the cluster have an active subscription, so not all have access to the enterprise repository and therefore may receive upgrades sooner!');
 			return gettext('Not all nodes have an active subscription, which is required for cluster-wide enterprise repo access');
 		    }
 		    return ''; // should be hidden
