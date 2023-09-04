@@ -685,12 +685,11 @@ __PACKAGE__->register_method ({
 	die "OSD '${osdid}' does not exists on host '${nodename}'\n"
 	    if $nodename ne $metadata->{hostname};
 
-	my $raw = '';
 	my $pid;
 	my $parser = sub {
 	    my $line = shift;
 	    if ($line =~ m/^MainPID=([0-9]*)$/) {
-		$pid = $1;
+		$pid = int($1);
 	    }
 	};
 
@@ -702,8 +701,6 @@ __PACKAGE__->register_method ({
 	    'MainPID',
 	];
 	run_command($cmd, errmsg => 'fetching OSD PID and memory usage failed', outfunc => $parser);
-
-	$pid = defined($pid) ? int($pid) : undef;
 
 	my $memory = 0;
 	if ($pid && $pid > 0) {
