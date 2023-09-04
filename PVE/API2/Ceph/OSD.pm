@@ -70,6 +70,24 @@ my $get_osd_usage = sub {
     return $osdstat;
 };
 
+my sub get_proc_pss_from_pid {
+    my ($pid) = @_;
+    return if !defined($pid) || $pid <= 1;
+
+    open (my $SMAPS_FH, '<', "/proc/$pid/smaps_rollup")
+	or die "failed to open PSS memory-stat from process - $!\n";
+
+    while (my $line = <$SMAPS_FH>) {
+	if ($line =~ m/^Pss:\s+([0-9]+) kB$/) { # using PSS avoids bias with many OSDs
+	    close $SMAPS_FH;
+	    return int($1) * 1024;
+	}
+    }
+    close $SMAPS_FH;
+    die "internal error: failed to find PSS memory-stat in procfs for PID $pid\n";
+}
+
+
 __PACKAGE__->register_method ({
     name => 'index',
     path => '',
@@ -702,26 +720,14 @@ __PACKAGE__->register_method ({
 	];
 	run_command($cmd, errmsg => 'fetching OSD PID and memory usage failed', outfunc => $parser);
 
-	my $memory = 0;
-	if ($pid && $pid > 0) {
-	    open (my $SMAPS, '<', "/proc/$pid/smaps_rollup")
-		or die "failed to read PSS memory-stat from process - $!\n";
-
-	    while (my $line = <$SMAPS>) {
-		if ($line =~ m/^Pss:\s+([0-9]+) kB$/) {
-		    $memory = $1 * 1024;
-		    last;
-		}
-	    }
-
-	    close $SMAPS;
-	}
+	my $osd_pss_memory = eval { get_proc_pss_from_pid($pid) } // 0;
+	warn $@ if $@;
 
 	my $data = {
 	    osd => {
 		hostname => $metadata->{hostname},
 		id => $metadata->{id},
-		mem_usage => $memory,
+		mem_usage => $osd_pss_memory,
 		osd_data => $metadata->{osd_data},
 		osd_objectstore => $metadata->{osd_objectstore},
 		pid => $pid,
