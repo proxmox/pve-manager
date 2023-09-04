@@ -148,7 +148,7 @@ Ext.define('PVE.CephOsdDetails', {
 				{
 				    xtype: 'text',
 				    name: 'mem_usage',
-				    text: gettext('Memory usage'),
+				    text: gettext('Memory usage (PSS)'),
 				    renderer: Proxmox.Utils.render_size,
 				},
 				{

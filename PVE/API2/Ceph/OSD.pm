@@ -687,13 +687,10 @@ __PACKAGE__->register_method ({
 
 	my $raw = '';
 	my $pid;
-	my $memory;
 	my $parser = sub {
 	    my $line = shift;
 	    if ($line =~ m/^MainPID=([0-9]*)$/) {
 		$pid = $1;
-	    } elsif ($line =~ m/^MemoryCurrent=([0-9]*|\[not set\])$/) {
-		$memory = $1 eq "[not set]" ? 0 : $1;
 	    }
 	};
 
@@ -702,12 +699,26 @@ __PACKAGE__->register_method ({
 	    'show',
 	    "ceph-osd\@${osdid}.service",
 	    '--property',
-	    'MainPID,MemoryCurrent',
+	    'MainPID',
 	];
 	run_command($cmd, errmsg => 'fetching OSD PID and memory usage failed', outfunc => $parser);
 
 	$pid = defined($pid) ? int($pid) : undef;
-	$memory = defined($memory) ? int($memory) : undef;
+
+	my $memory = 0;
+	if ($pid && $pid > 0) {
+	    open (my $SMAPS, '<', "/proc/$pid/smaps_rollup")
+		or die "failed to read PSS memory-stat from process - $!\n";
+
+	    while (my $line = <$SMAPS>) {
+		if ($line =~ m/^Pss:\s+([0-9]+) kB$/) {
+		    $memory = $1 * 1024;
+		    last;
+		}
+	    }
+
+	    close $SMAPS;
+	}
 
 	my $data = {
 	    osd => {
