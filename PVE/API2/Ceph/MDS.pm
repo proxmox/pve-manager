@@ -153,10 +153,10 @@ __PACKAGE__->register_method ({
 	    }
 
 	    $cfg->{$section}->{host} = $nodename;
-	    $cfg->{$section}->{"mds standby for name"} = 'pve';
+	    $cfg->{$section}->{'mds_standby_for_name'} = 'pve';
 
 	    if ($param->{hotstandby}) {
-		$cfg->{$section}->{"mds standby replay"} = 'true';
+		$cfg->{$section}->{'mds_standby_replay'} = 'true';
 	    }
 
 	    cfs_write_file('ceph.conf', $cfg);
