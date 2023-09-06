@@ -1401,10 +1401,11 @@ Ext.define('PVE.Utils', {
 		css: 'display:none;visibility:hidden;height:0px;',
 	    });
 
-	    // Note: we need to tell Android and Chrome the correct file name extension
+	    // Note: we need to tell Android, AppleWebKit and Chrome
+	    // the correct file name extension
 	    // but we do not set 'download' tag for other environments, because
 	    // It can have strange side effects (additional user prompt on firefox)
-	    if (navigator.userAgent.match(/Android|Chrome/i)) {
+	    if (navigator.userAgent.match(/Android|AppleWebKit|Chrome/i)) {
 		link.download = name;
 	    }
 
