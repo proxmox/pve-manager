@@ -1,8 +1,8 @@
 Ext.define('PVE.pool.AddVM', {
     extend: 'Proxmox.window.Edit',
 
-    width: 600,
-    height: 420,
+    width: 640,
+    height: 480,
     isAdd: true,
     isCreate: true,
 
@@ -44,7 +44,7 @@ Ext.define('PVE.pool.AddVM', {
 	var vmGrid = Ext.create('widget.grid', {
 	    store: vmStore,
 	    border: true,
-	    height: 300,
+	    height: 360,
 	    scrollable: true,
 	    selModel: {
 		selType: 'checkboxmodel',
