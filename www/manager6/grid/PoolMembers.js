@@ -7,7 +7,7 @@ Ext.define('PVE.pool.AddVM', {
     isCreate: true,
 
     extraRequestParams: {
-	transfer: 1,
+	'allow-move': 1,
     },
 
     initComponent: function() {

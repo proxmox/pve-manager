@@ -131,7 +131,7 @@ __PACKAGE__->register_method ({
 		type => 'string',  format => 'pve-storage-id-list',
 		optional => 1,
 	    },
-	    transfer => {
+	    'allow-move' => {
 		description => 'Allow adding a guest even if already in another pool.'
 		    .' The guest will be removed from its current pool and added to this one.',
 		type => 'boolean',
@@ -173,8 +173,8 @@ __PACKAGE__->register_method ({
 		    } else {
 			die "VM $vmid is already a pool member\n" if $pool_config->{vms}->{$vmid};
 			if (defined(my $existing_pool = $usercfg->{vms}->{$vmid})) {
-			    die "VM $vmid belongs already to pool '$existing_pool' and 'transfer' is not set\n"
-			     if !$param->{transfer};
+			    die "VM $vmid belongs already to pool '$existing_pool' and 'allow-move' is not set\n"
+			     if !$param->{'allow-move'};
 
 			    $rpcenv->check($authuser, "/pool/$existing_pool", ['Pool.Allocate']);
 			    delete $usercfg->{pools}->{$existing_pool}->{vms}->{$vmid};
