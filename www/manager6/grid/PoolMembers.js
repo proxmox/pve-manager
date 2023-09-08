@@ -1,9 +1,15 @@
 Ext.define('PVE.pool.AddVM', {
     extend: 'Proxmox.window.Edit',
+
     width: 600,
     height: 420,
     isAdd: true,
     isCreate: true,
+
+    extraRequestParams: {
+	transfer: 1,
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -90,15 +96,17 @@ Ext.define('PVE.pool.AddVM', {
 	    ],
 	});
 
-	let transfer = Ext.create('Ext.form.field.Checkbox', {
-	    name: 'transfer',
-	    boxLabel: gettext('Allow Transfer'),
-	    inputValue: 1,
-	    value: 0,
-	});
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),
-	    items: [vmsField, vmGrid, transfer],
+	    items: [
+		vmsField,
+		vmGrid,
+		{
+		    xtype: 'displayfield',
+		    userCls: 'pmx-hint',
+		    value: gettext('Selected guests who are already part of a pool will be removed from it first.'),
+		},
+	    ],
 	});
 
 	me.callParent();
