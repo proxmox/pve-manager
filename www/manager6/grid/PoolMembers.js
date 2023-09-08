@@ -76,13 +76,7 @@ Ext.define('PVE.pool.AddVM', {
 		{
 		    header: gettext('Status'),
 		    dataIndex: 'uptime',
-		    renderer: function(value) {
-			if (value) {
-			    return Proxmox.Utils.runningText;
-			} else {
-			    return Proxmox.Utils.stoppedText;
-			}
-		    },
+		    renderer: v => v ? Proxmox.Utils.runningText : Proxmox.Utils.stoppedText,
 		},
 		{
 		    header: gettext('Name'),
