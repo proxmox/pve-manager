@@ -172,15 +172,12 @@ __PACKAGE__->register_method ({
 			delete $usercfg->{vms}->{$vmid};
 		    } else {
 			die "VM $vmid is already a pool member\n" if $pool_config->{vms}->{$vmid};
-			my $existing_pool = $usercfg->{vms}->{$vmid};
-			if (defined($existing_pool)) {
-			    if ($param->{transfer}) {
-				$rpcenv->check($authuser, "/pool/$existing_pool", ['Pool.Allocate']);
-				my $existing_pool_config = $usercfg->{pools}->{$existing_pool};
-				delete $existing_pool_config->{vms}->{$vmid};
-			    } else {
-				die "VM $vmid belongs already to pool '$existing_pool' and transfer is not set\n";
-			    }
+			if (defined(my $existing_pool = $usercfg->{vms}->{$vmid})) {
+			    die "VM $vmid belongs already to pool '$existing_pool' and 'transfer' is not set\n"
+			     if !$param->{transfer};
+
+			    $rpcenv->check($authuser, "/pool/$existing_pool", ['Pool.Allocate']);
+			    delete $usercfg->{pools}->{$existing_pool}->{vms}->{$vmid};
 			}
 			$pool_config->{vms}->{$vmid} = 1;
 			$usercfg->{vms}->{$vmid} = $pool;
