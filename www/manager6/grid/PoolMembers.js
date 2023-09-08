@@ -70,7 +70,7 @@ Ext.define('PVE.pool.AddVM', {
 		    dataIndex: 'node',
 		},
 		{
-		    header: gettext('Pool'),
+		    header: gettext('Current Pool'),
 		    dataIndex: 'pool',
 		},
 		{
