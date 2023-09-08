@@ -1,3 +1,33 @@
+pve-manager (8.0.6) bookworm; urgency=medium
+
+  * fix #4663: Prevent Web UI reload on cert order for other node
+
+  * website: update external links to www.proxmox.com
+
+  * vzdump: fix notifications for backing up VMs with 2+ disks to PBS
+
+  * api: ceph: improve reporting of ceph OSD memory usage, using PSS metric
+    now which avoids ignores page-cache that can be freed easily and also
+    measures shared memory in proportional relations.
+
+  * pveceph: support installing Ceph 18.2 Reef
+
+  * ui: ceph wizard: add Ceph 18.2 Reef to available releases
+
+  * ui: ldap: ad: support 'mode' parameter, replacing 'secure'
+
+  * ui: ldap: ad: replace occurrences of SSL with TLS
+
+  * fix #4947 spice: correct filename-extension handling for Safari
+
+  * fix #4808: ceph: mds create: use snake_case when setting options
+
+  * ui: pool view: replace allow-transfer checkbox with simple hint
+
+  * api: pool update: rename 'transfer' parameter to 'allow-move'
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 08 Sep 2023 13:42:00 +0200
+
 pve-manager (8.0.5) bookworm; urgency=medium
 
   * add 'check connection' checkbox for ldap as advanced option
