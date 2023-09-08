@@ -122,24 +122,27 @@ __PACKAGE__->register_method ({
 	    poolid => { type => 'string', format => 'pve-poolid' },
 	    comment => { type => 'string', optional => 1 },
 	    vms => {
-		description => "List of virtual machines.",
+		description => 'List of guest VMIDs to add or remove from this pool.',
 		type => 'string',  format => 'pve-vmid-list',
 		optional => 1,
 	    },
 	    storage => {
-		description => "List of storage IDs.",
+		description => 'List of storage IDs to add or remove from this pool.',
 		type => 'string',  format => 'pve-storage-id-list',
 		optional => 1,
 	    },
 	    transfer => {
-		description => "Allow transferring VMs to another pool.",
+		description => 'Allow adding a guest even if already in another pool.'
+		    .' The guest will be removed from its current pool and added to this one.',
 		type => 'boolean',
 		optional => 1,
+		default => 0,
 	    },
 	    delete => {
-		description => "Remove vms/storage (instead of adding it).",
+		description => 'Remove the passed VMIDs and/or storage IDs instead of adding them.',
 		type => 'boolean',
 		optional => 1,
+		default => 0,
 	    },
 	},
     },
