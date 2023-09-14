@@ -29,8 +29,7 @@ Ext.define('PVE.dc.NotificationEventDisabledWarning', {
     extend: 'Ext.form.field.Display',
     userCls: 'pmx-hint',
     hidden: true,
-    value: gettext('Disabling notifications is not ' +
-        'recommended for production systems!'),
+    value: gettext('Disabling notifications is not recommended for production systems!'),
 });
 
 Ext.define('PVE.dc.NotificationEventsTargetSelector', {
