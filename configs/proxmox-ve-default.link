@@ -1,0 +1,11 @@
+[Match]
+OriginalName=*
+
+[Link]
+# Fixes two issues for Proxmox VE systems:
+# 1. inheriting MAC from the first slave, instead of using a random one, avoids
+#    that locked down network environments (e.g., at most hosting providers)
+#    will block traffic due to a unexpected MAC in the outgoing network packets
+# 2. Avoids that systemd keeps bridge offline if there are no slaves connected,
+#    failing, e.g., setting up s-NAT if no guest is (yet) started.
+MACAddressPolicy=none
