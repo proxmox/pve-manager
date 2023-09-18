@@ -40,7 +40,7 @@ Ext.define('PVE.dc.NotificationEventsTargetSelector', {
     editable: true,
     autoSelect: false,
     deleteEmpty: false,
-    emptyText: `${Proxmox.Utils.defaultText} (${gettext("mail-to-root")})`,
+    emptyText: `${Proxmox.Utils.defaultText} (mail-to-root)`,
 });
 
 Ext.define('PVE.dc.NotificationEvents', {
@@ -126,7 +126,7 @@ Ext.define('PVE.dc.NotificationEvents', {
 	// Needed since the actual value is always stored in the 'notify' property
 	let render_value = (store, target_key, mode_key, default_val) => {
 	    let value = store.getById('notify')?.get('value') ?? {};
-	    let target = value[target_key] ?? gettext('mail-to-root');
+	    let target = value[target_key] ?? 'mail-to-root';
 	    let template;
 
 	    switch (value[mode_key]) {
