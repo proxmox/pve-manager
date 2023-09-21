@@ -34,6 +34,7 @@ use PVE::RRD;
 use PVE::Report;
 use PVE::SafeSyslog;
 use PVE::Storage;
+use PVE::Storage::Plugin;
 use PVE::Tools;
 use PVE::pvecfg;
 
@@ -1564,7 +1565,13 @@ __PACKAGE__->register_method({
 		type => 'boolean',
 		optional => 1,
 		default => 1,
-	    }
+	    },
+	    'detect-compression' => {
+		description => "If true an auto detection of used compression will be attempted",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => {
@@ -1581,6 +1588,11 @@ __PACKAGE__->register_method({
 	    },
 	    mimetype => {
 		type => 'string',
+		optional => 1,
+	    },
+	    compression => {
+		type => 'string',
+		enum => $PVE::Storage::Plugin::KNOWN_COMPRESSION_FORMATS,
 		optional => 1,
 	    },
 	},
@@ -1605,6 +1617,7 @@ __PACKAGE__->register_method({
 		SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
 	    );
 	}
+	my $detect_compression = $param->{'detect-compression'} // 0;
 
 	my $req = HTTP::Request->new(HEAD => $url);
 	my $res = $ua->request($req);
@@ -1615,6 +1628,7 @@ __PACKAGE__->register_method({
 	my $disposition = $res->header("Content-Disposition");
 	my $type = $res->header("Content-Type");
 
+	my $compression;
 	my $filename;
 
 	if ($disposition && ($disposition =~ m/filename="([^"]*)"/ || $disposition =~ m/filename=([^;]*)/)) {
@@ -1628,10 +1642,16 @@ __PACKAGE__->register_method({
 	    $type = $1;
 	}
 
+	if ($detect_compression && $filename =~ m!^(.+)\.(${\PVE::Storage::Plugin::COMPRESSOR_RE})$!) {
+	    $filename = $1;
+	    $compression = $2;
+	}
+
 	my $ret = {};
 	$ret->{filename} = $filename if $filename;
 	$ret->{size} = $size + 0 if $size;
 	$ret->{mimetype} = $type if $type;
+	$ret->{compression} = $compression if $compression;
 
 	return $ret;
     }});
