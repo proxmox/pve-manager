@@ -66,6 +66,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		params: {
 		    url: queryParam.url,
 		    'verify-certificates': queryParam['verify-certificates'],
+		    'detect-compression': view.content === 'iso' ? 1 : 0,
 		},
 		waitMsgTarget: view,
 		failure: res => {
@@ -84,6 +85,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			filename: data.filename || "",
 			size: (data.size && Proxmox.Utils.format_size(data.size)) || gettext("Unknown"),
 			mimetype: data.mimetype || gettext("Unknown"),
+			compression: data.compression || '__default__',
 		    });
 		},
 	    });
@@ -203,6 +205,17 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			change: 'setQueryEnabled',
 		    },
 		},
+		{
+		    xtype: 'pveDecompressionSelector',
+		    name: 'compression',
+		    fieldLabel: gettext('Decompression algorithm'),
+		    allowBlank: true,
+		    hasNoneOption: true,
+		    value: '__default__',
+		    cbind: {
+			hidden: get => get('content') !== 'iso',
+		    },
+		},
 	    ],
 	},
 	{
@@ -223,7 +236,6 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 	if (!me.storage) {
 	    throw "no storage ID specified";
 	}
-
 	me.callParent();
     },
 });
