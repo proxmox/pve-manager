@@ -208,12 +208,12 @@ __PACKAGE__->register_method ({
 
 		$cfg->{global} = {
 		    'fsid' => $fsid,
-		    'auth cluster required' => $auth,
-		    'auth service required' => $auth,
-		    'auth client required' => $auth,
-		    'osd pool default size' => $param->{size} // 3,
-		    'osd pool default min size' => $param->{min_size} // 2,
-		    'mon allow pool delete' => 'true',
+		    'auth_cluster_required' => $auth,
+		    'auth_service_required' => $auth,
+		    'auth_client_required' => $auth,
+		    'osd_pool_default_size' => $param->{size} // 3,
+		    'osd_pool_default_min_size' => $param->{min_size} // 2,
+		    'mon_allow_pool_delete' => 'true',
 		};
 
 		# this does not work for default pools
@@ -226,12 +226,12 @@ __PACKAGE__->register_method ({
 	    }
 
 	    if ($param->{network}) {
-		$cfg->{global}->{'public network'} = $param->{network};
-		$cfg->{global}->{'cluster network'} = $param->{network};
+		$cfg->{global}->{'public_network'} = $param->{network};
+		$cfg->{global}->{'cluster_network'} = $param->{network};
 	    }
 
 	    if ($param->{'cluster-network'}) {
-		$cfg->{global}->{'cluster network'} = $param->{'cluster-network'};
+		$cfg->{global}->{'cluster_network'} = $param->{'cluster-network'};
 	    }
 
 	    cfs_write_file('ceph.conf', $cfg);
