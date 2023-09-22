@@ -158,10 +158,11 @@ __PACKAGE__->register_method ({
 		minimum => 1,
 		maximum => 7,
 	    },
+	    # TODO: deprecrated, remove with PVE 9
 	    pg_bits => {
 		description => "Placement group bits, used to specify the " .
-		    "default number of placement groups.\n\nNOTE: 'osd pool " .
-		    "default pg num' does not work for default pools.",
+		    "default number of placement groups.\n\nDepreacted. This " .
+		    "setting was deprecated in recent Ceph versions.",
 		type => 'integer',
 		default => 6,
 		optional => 1,
@@ -222,11 +223,6 @@ __PACKAGE__->register_method ({
 
 	    if ($auth eq 'cephx') {
 		$cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
-	    }
-
-	    if ($param->{pg_bits}) {
-		$cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
-		$cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
 	    }
 
 	    if ($param->{network}) {
