@@ -136,7 +136,11 @@ Ext.define('PVE.form.VMSelector', {
 	let selection = value.map(item => {
 	    let found = store.findRecord('vmid', item, 0, false, true, true);
 	    if (!found) {
-		notFound.push(item);
+		if (Ext.isNumeric(item)) {
+		    notFound.push(item);
+		} else {
+		    console.warn(`invalid item in vm selection: ${item}`);
+		}
 	    }
 	    return found;
 	}).filter(r => r);
