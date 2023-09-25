@@ -162,7 +162,7 @@ Ext.define('PVE.form.VMSelector', {
     setValue: function(value) {
 	let me = this;
 	if (!Ext.isArray(value)) {
-	    value = value.split(',');
+	    value = value.split(',').filter(v => v !== '');
 	}
 
 	let store = me.getStore();
