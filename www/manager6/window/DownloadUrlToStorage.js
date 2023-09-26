@@ -206,12 +206,19 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    },
 		},
 		{
-		    xtype: 'pveDecompressionSelector',
+		    xtype: 'proxmoxKVComboBox',
 		    name: 'compression',
 		    fieldLabel: gettext('Decompression algorithm'),
 		    allowBlank: true,
 		    hasNoneOption: true,
+		    deleteEmpty: false,
 		    value: '__default__',
+		    comboItems: [
+				['__default__', Proxmox.Utils.NoneText],
+				['lzo', 'LZO'],
+				['gz', 'GZIP'],
+				['zst', 'ZSTD'],
+		    ],
 		    cbind: {
 			hidden: get => get('content') !== 'iso',
 		    },

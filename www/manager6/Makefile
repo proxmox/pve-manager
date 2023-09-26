@@ -30,11 +30,9 @@ JSSRC= 							\
 	form/CephPoolSelector.js			\
 	form/CephFSSelector.js				\
 	form/ComboBoxSetStoreNode.js			\
-	form/CompressionSelector.js			\
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\
 	form/DayOfWeekSelector.js			\
-	form/DecompressionSelector.js			\
 	form/DiskFormatSelector.js			\
 	form/DiskStorageSelector.js			\
 	form/FileSelector.js				\
