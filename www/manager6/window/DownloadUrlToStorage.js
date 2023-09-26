@@ -66,7 +66,6 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		params: {
 		    url: queryParam.url,
 		    'verify-certificates': queryParam['verify-certificates'],
-		    'detect-compression': view.content === 'iso' ? 1 : 0,
 		},
 		waitMsgTarget: view,
 		failure: res => {
@@ -81,11 +80,22 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    urlField.validate();
 
 		    let data = res.result.data;
+
+		    let filename = data.filename || "";
+		    let compression = '__default__';
+		    if (view.content === 'iso') {
+			const matches = filename.match(/^(.+)\.(gz|lzo|zst)$/i);
+			if (matches) {
+			    filename = matches[1];
+			    compression = matches[2];
+			}
+		    }
+
 		    view.setValues({
-			filename: data.filename || "",
+			filename,
+			compression,
 			size: (data.size && Proxmox.Utils.format_size(data.size)) || gettext("Unknown"),
 			mimetype: data.mimetype || gettext("Unknown"),
-			compression: data.compression || '__default__',
 		    });
 		},
 	    });
