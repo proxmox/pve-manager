@@ -87,7 +87,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			const matches = filename.match(/^(.+)\.(gz|lzo|zst)$/i);
 			if (matches) {
 			    filename = matches[1];
-			    compression = matches[2];
+			    compression = matches[2].toLowerCase();
 			}
 		    }
 
