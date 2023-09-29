@@ -11,6 +11,48 @@ Ext.define('PVE.CephPoolInputPanel', {
     defaultSize: undefined,
     defaultMinSize: undefined,
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	init: function(view) {
+	    let vm = this.getViewModel();
+	    vm.set('size', Number(view.defaultSize));
+	    vm.set('minSize', Number(view.defaultMinSize));
+	},
+	sizeChange: function(field, val) {
+	    let vm = this.getViewModel();
+	    let minSize = Math.round(val / 2);
+	    if (minSize > 1) {
+		vm.set('minSize', minSize);
+	    }
+	    vm.set('size', val); // bind does not work in a pmxDisplayEditField, update manually
+	},
+    },
+
+    viewModel: {
+	data: {
+	    minSize: null,
+	    size: null,
+	},
+	formulas: {
+	    minSizeLabel: (get) => {
+		if (get('showMinSizeOneWarning') || get('showMinSizeHalfWarning')) {
+		    return `${gettext('Min. Size')} <i class="fa fa-exclamation-triangle warning"></i>`;
+		}
+		return gettext('Min. Size');
+	    },
+	    showMinSizeOneWarning: (get) => get('minSize') === 1,
+	    showMinSizeHalfWarning: (get) => {
+		let minSize = get('minSize');
+		let size = get('size');
+		if (minSize === 1) {
+		    return false;
+		}
+		return minSize < (size / 2) && minSize !== size;
+	    },
+	},
+    },
+
     column1: [
 	{
 	    xtype: 'pmxDisplayEditField',
@@ -38,12 +80,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 		maxValue: 7,
 		allowBlank: false,
 		listeners: {
-		    change: function(field, val) {
-			let size = Math.round(val / 2);
-			if (size > 1) {
-			    field.up('inputpanel').down('field[name=min_size]').setValue(size);
-			}
-		    },
+		    change: 'sizeChange',
 		},
 	    },
 	},
@@ -81,7 +118,10 @@ Ext.define('PVE.CephPoolInputPanel', {
     advancedColumn1: [
 	{
 	    xtype: 'proxmoxintegerfield',
-	    fieldLabel: gettext('Min. Size'),
+	    bind: {
+		fieldLabel: '{minSizeLabel}',
+		value: '{minSize}',
+	    },
 	    name: 'min_size',
 	    cbind: {
 		value: (get) => get('defaultMinSize'),
@@ -95,28 +135,24 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    },
 	    maxValue: 7,
 	    allowBlank: false,
-	    listeners: {
-		change: function(field, minSize) {
-		    let panel = field.up('inputpanel');
-		    let size = panel.down('field[name=size]').getValue();
-
-		    let showWarning = minSize < (size / 2) && minSize !== size;
-
-		    let fieldLabel = gettext('Min. Size');
-		    if (showWarning) {
-			fieldLabel = gettext('Min. Size') + ' <i class="fa fa-exclamation-triangle warning"></i>';
-		    }
-		    panel.down('field[name=min_size-warning]').setHidden(!showWarning);
-		    field.setFieldLabel(fieldLabel);
-		},
-	    },
 	},
 	{
 	    xtype: 'displayfield',
-	    name: 'min_size-warning',
+	    bind: {
+		hidden: '{!showMinSizeHalfWarning}',
+	    },
+	    hidden: true,
 	    userCls: 'pmx-hint',
 	    value: gettext('min_size < size/2 can lead to data loss, incomplete PGs or unfound objects.'),
+	},
+	{
+	    xtype: 'displayfield',
+	    bind: {
+		hidden: '{!showMinSizeOneWarning}',
+	    },
 	    hidden: true,
+	    userCls: 'pmx-hint',
+	    value: gettext('a min_size of 1 is not recommended and can lead to data loss'),
 	},
 	{
 	    xtype: 'pmxDisplayEditField',
