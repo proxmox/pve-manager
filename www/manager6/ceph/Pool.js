@@ -7,6 +7,10 @@ Ext.define('PVE.CephPoolInputPanel', {
     onlineHelp: 'pve_ceph_pools',
 
     subject: 'Ceph Pool',
+
+    defaultSize: undefined,
+    defaultMinSize: undefined,
+
     column1: [
 	{
 	    xtype: 'pmxDisplayEditField',
@@ -27,7 +31,9 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    name: 'size',
 	    editConfig: {
 		xtype: 'proxmoxintegerfield',
-		value: 3,
+		cbind: {
+		    value: (get) => get('defaultSize'),
+		},
 		minValue: 2,
 		maxValue: 7,
 		allowBlank: false,
@@ -40,7 +46,6 @@ Ext.define('PVE.CephPoolInputPanel', {
 		    },
 		},
 	    },
-
 	},
     ],
     column2: [
@@ -78,9 +83,15 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: gettext('Min. Size'),
 	    name: 'min_size',
-	    value: 2,
 	    cbind: {
-		minValue: (get) => get('isCreate') ? 2 : 1,
+		value: (get) => get('defaultMinSize'),
+		minValue: (get) => {
+		    if (Number(get('defaultMinSize')) === 1) {
+			return 1;
+		    } else {
+			return get('isCreate') ? 2 : 1;
+		    }
+		},
 	    },
 	    maxValue: 7,
 	    allowBlank: false,
@@ -195,6 +206,8 @@ Ext.define('PVE.Ceph.PoolEdit', {
     cbindData: {
 	pool_name: '',
 	isCreate: (cfg) => !cfg.pool_name,
+	defaultSize: undefined,
+	defaultMinSize: undefined,
     },
 
     cbind: {
@@ -217,6 +230,8 @@ Ext.define('PVE.Ceph.PoolEdit', {
 	    pool_name: '{pool_name}',
 	    isErasure: '{isErasure}',
 	    isCreate: '{isCreate}',
+	    defaultSize: '{defaultSize}',
+	    defaultMinSize: '{defaultMinSize}',
 	},
     }],
 });
@@ -397,14 +412,37 @@ Ext.define('PVE.node.Ceph.PoolList', {
 		{
 		    text: gettext('Create'),
 		    handler: function() {
-			Ext.create('PVE.Ceph.PoolEdit', {
-			    title: gettext('Create') + ': Ceph Pool',
-			    isCreate: true,
-			    isErasure: false,
-			    nodename: nodename,
-			    autoShow: true,
-			    listeners: {
-				destroy: () => rstore.load(),
+			let keys = [
+			    'global:osd-pool-default-min-size',
+			    'global:osd-pool-default-size',
+			];
+			let params = {
+			    'config-keys': keys.join(';'),
+			};
+
+			Proxmox.Utils.API2Request({
+			    url: '/nodes/localhost/ceph/cfg/value',
+			    method: 'GET',
+			    params,
+			    waitMsgTarget: me.getView(),
+			    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+			    success: function({ result: { data } }) {
+				let global = data.global;
+				let defaultSize = global?.['osd-pool-default-size'] ?? 3;
+				let defaultMinSize = global?.['osd-pool-default-min-size'] ?? 2;
+
+				Ext.create('PVE.Ceph.PoolEdit', {
+				    title: gettext('Create') + ': Ceph Pool',
+				    isCreate: true,
+				    isErasure: false,
+				    defaultSize,
+				    defaultMinSize,
+				    nodename: nodename,
+				    autoShow: true,
+				    listeners: {
+					destroy: () => rstore.load(),
+				    },
+				});
 			    },
 			});
 		    },
