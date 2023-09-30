@@ -1,3 +1,20 @@
+pve-manager (7.4-17) bullseye; urgency=medium
+
+  * pve7to8:
+    - fix check for ceph's global "noout" flag
+    - adapt unified cgroupv2 check to the change of path where system is
+      located in Fedora 38
+    - add check for DKMS modules, as they are a frequent cause of issues on
+      upgrade
+
+  * ui: vm selector: gracefully handle empty IDs in setting-value function
+
+  * update external links to www.proxmox.com
+
+  * update shipped appliance index
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 02 Oct 2023 08:01:34 +0200
+
 pve-manager (7.4-16) bullseye; urgency=medium
 
   * pve7to8: add checks for mismatched or strange repos
