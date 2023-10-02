@@ -1,3 +1,10 @@
+Ext.define('pve-ceph-warnings', {
+    extend: 'Ext.data.Model',
+    fields: ['id', 'summary', 'detail', 'severity'],
+    idProperty: 'id',
+});
+
+
 Ext.define('PVE.node.CephStatus', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeCephStatus',
@@ -70,35 +77,51 @@ Ext.define('PVE.node.CephStatus', {
 		    xtype: 'grid',
 		    itemId: 'warnings',
 		    flex: 2,
+		    maxHeight: 430,
 		    stateful: true,
 		    stateId: 'ceph-status-warnings',
+		    viewConfig: {
+			enableTextSelection: true,
+		    },
 		    // we load the store manually, to show an emptyText specify an empty intermediate store
 		    store: {
+			type: 'diff',
 			trackRemoved: false,
 			data: [],
+			rstore: {
+			    storeid: 'pve-ceph-warnings',
+			    type: 'update',
+			    model: 'pve-ceph-warnings',
+			},
 		    },
 		    updateHealth: function(health) {
 			let checks = health.checks || {};
 
 			let checkRecords = Object.keys(checks).sort().map(key => {
 			    let check = checks[key];
-			    return {
+			    let data = {
 				id: key,
 				summary: check.summary.message,
-				detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, ''),
+				detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, '').trimStart(),
 				severity: check.severity,
 			    };
+			    if (data.detail.length === 0) {
+				data.detail = "no additional data";
+			    }
+			    return data;
 			});
 
-			this.getStore().loadRawData(checkRecords, false);
+			let rstore = this.getStore().rstore;
+			rstore.loadData(checkRecords, false);
+			rstore.fireEvent('load', rstore, checkRecords, true);
 		    },
 		    emptyText: gettext('No Warnings/Errors'),
 		    columns: [
 			{
 			    dataIndex: 'severity',
-			    header: gettext('Severity'),
+			    tooltip: gettext('Severity'),
 			    align: 'center',
-			    width: 70,
+			    width: 38,
 			    renderer: function(value) {
 				let health = PVE.Utils.map_ceph_health[value];
 				let icon = PVE.Utils.get_health_icon(health);
@@ -118,36 +141,46 @@ Ext.define('PVE.node.CephStatus', {
 			},
 			{
 			    xtype: 'actioncolumn',
-			    width: 40,
+			    width: 50,
 			    align: 'center',
-			    tooltip: gettext('Detail'),
+			    tooltip: gettext('Actions'),
 			    items: [
 				{
-				    iconCls: 'x-fa fa-info-circle',
+				    iconCls: 'x-fa fa-files-o',
+				    tooltip: gettext('Copy summary'),
 				    handler: function(grid, rowindex, colindex, item, e, record) {
-					var win = Ext.create('Ext.window.Window', {
-					    title: gettext('Detail'),
-					    resizable: true,
-					    modal: true,
-					    width: 650,
-					    height: 400,
-					    layout: {
-						type: 'fit',
-					    },
-					    items: [{
-						scrollable: true,
-						padding: 10,
-						xtype: 'box',
-						html: [
-						    '<span>' + Ext.htmlEncode(record.data.summary) + '</span>',
-						    '<pre>' + Ext.htmlEncode(record.data.detail) + '</pre>',
-						],
-					    }],
-					});
-					win.show();
+					navigator.clipboard.writeText(record.data.summary);
+				    },
+				},
+				{
+				    iconCls: 'x-fa fa-clipboard',
+				    tooltip: gettext('Copy details'),
+				    handler: function(grid, rowindex, colindex, item, e, record) {
+					navigator.clipboard.writeText(record.data.detail);
 				    },
 				},
 			    ],
+			},
+		    ],
+		    listeners: {
+			itemdblclick: function(view, record, row, rowIdx, e) {
+			    // inspired by RowExpander.js
+
+			    let rowNode = view.getNode(rowIdx); let
+			    normalRow = Ext.fly(rowNode);
+
+			    let collapsedCls = view.rowBodyFeature.rowCollapsedCls;
+
+			    if (normalRow.hasCls(collapsedCls)) {
+				view.rowBodyFeature.rowExpander.toggleRow(rowIdx, record);
+			    }
+			},
+		    },
+		    plugins: [
+			{
+			    ptype: 'rowexpander',
+			    expandOnDblClick: false,
+			    rowBodyTpl: '<pre class="pve-ceph-warning-detail">{detail}</pre>',
 			},
 		    ],
 		},

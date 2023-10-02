@@ -709,3 +709,9 @@ table.osds td:first-of-type {
     opacity: 0.0;
     cursor: default;
 }
+
+.pve-ceph-warning-detail {
+    overflow: auto;
+    margin: 0;
+    padding-bottom: 10px;
+}
