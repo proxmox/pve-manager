@@ -13,6 +13,7 @@ my sub dir2text {
     my $text = '';
     PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
 	my ($file) = @_;
+	return if $file eq '.' || $file eq '..';
 	$text .=  "\n# cat $target_dir$file\n";
 	$text .= PVE::Tools::file_get_contents($target_dir.$file)."\n";
     });
