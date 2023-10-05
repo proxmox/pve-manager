@@ -2,13 +2,14 @@ Ext.define('PVE.node.SubscriptionKeyEdit', {
     extend: 'Proxmox.window.Edit',
 
     title: gettext('Upload Subscription Key'),
-    width: 300,
+    width: 350,
 
     items: {
 	xtype: 'textfield',
 	name: 'key',
 	value: '',
 	fieldLabel: gettext('Subscription Key'),
+	labelWidth: 120,
     },
 
     initComponent: function() {
