@@ -223,7 +223,7 @@ __PACKAGE__->register_method ({
 	    key => {
 		description => "Proxmox VE subscription key",
 		type => 'string',
-		pattern => $subscription_pattern,
+		pattern => "\\s*${subscription_pattern}\\s*",
 		maxLength => 32,
 	    },
 	},
