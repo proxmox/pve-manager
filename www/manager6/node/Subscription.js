@@ -10,6 +10,9 @@ Ext.define('PVE.node.SubscriptionKeyEdit', {
 	value: '',
 	fieldLabel: gettext('Subscription Key'),
 	labelWidth: 120,
+	getSubmitValue: function() {
+	    return this.processRawValue(this.getRawValue())?.trim();
+	},
     },
 
     initComponent: function() {
