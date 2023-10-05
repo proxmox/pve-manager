@@ -1,13 +1,16 @@
 Ext.define('PVE.node.SubscriptionKeyEdit', {
     extend: 'Proxmox.window.Edit',
+
     title: gettext('Upload Subscription Key'),
     width: 300,
+
     items: {
 	xtype: 'textfield',
 	name: 'key',
 	value: '',
 	fieldLabel: gettext('Subscription Key'),
     },
+
     initComponent: function() {
 	var me = this;
 
@@ -101,21 +104,7 @@ Ext.define('PVE.node.Subscription', {
 	    throw "no node name specified";
 	}
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
-	var baseurl = '/nodes/' + me.nodename + '/subscription';
-
-	var render_status = function(value) {
-	    var message = me.getObjectValue('message');
-	    if (message) {
-		return value + ": " + message;
-	    }
-	    return value;
-	};
-
-	var rows = {
+	let rows = {
 	    productname: {
 		header: gettext('Type'),
 	    },
@@ -124,7 +113,10 @@ Ext.define('PVE.node.Subscription', {
 	    },
 	    status: {
 		header: gettext('Status'),
-		renderer: render_status,
+		renderer: v => {
+		    let message = me.getObjectValue('message');
+		    return message ? `${v}: ${message}` : v;
+		},
 	    },
 	    message: {
 		visible: false,
@@ -144,53 +136,43 @@ Ext.define('PVE.node.Subscription', {
 	    },
 	    signature: {
 		header: gettext('Signed/Offline'),
-		renderer: (value) => {
-		    if (value) {
-			return gettext('Yes');
-		    } else {
-			return gettext('No');
-		    }
-		},
+		renderer: v => v ? gettext('Yes') : gettext('No'),
 	    },
 	};
 
 	Ext.apply(me, {
-	    url: '/api2/json' + baseurl,
+	    url: `/api2/json/nodes/${me.nodename}/subscription`,
 	    cwidth1: 170,
 	    tbar: [
 		{
 		    text: gettext('Upload Subscription Key'),
-		    handler: function() {
-			var win = Ext.create('PVE.node.SubscriptionKeyEdit', {
-			    url: '/api2/extjs/' + baseurl,
-			});
-			win.show();
-			win.on('destroy', reload);
-		    },
+		    handler: () => Ext.create('PVE.node.SubscriptionKeyEdit', {
+			autoShow: true,
+			url: `/api2/extjs/nodes/${me.nodename}/subscription`,
+			listeners: {
+			    destroy: () => me.rstore.load(),
+			},
+		    }),
 		},
 		{
 		    text: gettext('Check'),
-		    handler: function() {
-			Proxmox.Utils.API2Request({
-			    params: { force: 1 },
-			    url: baseurl,
-			    method: 'POST',
-			    waitMsgTarget: me,
-			    failure: function(response, opts) {
-				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    },
-			    callback: reload,
-			});
-		    },
+		    handler: () => Proxmox.Utils.API2Request({
+			params: { force: 1 },
+			url: `/nodes/${me.nodename}/subscription`,
+			method: 'POST',
+			waitMsgTarget: me,
+			failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+			callback: () => me.rstore.load(),
+		    }),
 		},
 		{
 		    text: gettext('Remove Subscription'),
 		    xtype: 'proxmoxStdRemoveButton',
 		    confirmMsg: gettext('Are you sure you want to remove the subscription key?'),
-		    baseurl: baseurl,
+		    baseurl: `/nodes/${me.nodename}/subscription`,
 		    dangerous: true,
 		    selModel: false,
-		    callback: reload,
+		    callback: () => me.rstore.load(),
 		},
 		'-',
 		{
@@ -202,7 +184,7 @@ Ext.define('PVE.node.Subscription', {
 	    ],
 	    rows: rows,
 	    listeners: {
-		activate: reload,
+		activate: () => me.rstore.load(),
 	    },
 	});
 
