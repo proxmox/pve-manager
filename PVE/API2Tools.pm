@@ -2,19 +2,20 @@ package PVE::API2Tools;
 
 use strict;
 use warnings;
-use Net::IP;
 
-use PVE::Exception qw(raise_param_exc);
-use PVE::Tools;
-use PVE::INotify;
-use PVE::Cluster;
-use PVE::DataCenterConfig;
-use PVE::RPCEnvironment;
 use Digest::MD5 qw(md5_hex);
-use URI;
+use Net::IP;
 use URI::Escape;
+use URI;
+
+use PVE::Cluster;
+use PVE::DataCenterConfig; # so we can cfs-read datacenter.cfg
+use PVE::Exception qw(raise_param_exc);
+use PVE::INotify;
+use PVE::RPCEnvironment;
 use PVE::SafeSyslog;
 use PVE::Storage::Plugin;
+use PVE::Tools;
 
 my $hwaddress;
 my $hwaddress_st = {};
