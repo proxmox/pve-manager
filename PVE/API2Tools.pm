@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Digest::MD5 qw(md5_hex);
+use File::stat;
 use Net::IP;
 use URI::Escape;
 use URI;
