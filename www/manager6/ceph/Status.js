@@ -149,14 +149,18 @@ Ext.define('PVE.node.CephStatus', {
 				    iconCls: 'x-fa fa-files-o',
 				    tooltip: gettext('Copy summary'),
 				    handler: function(grid, rowindex, colindex, item, e, record) {
-					navigator.clipboard.writeText(record.data.summary);
+					navigator.clipboard
+					    .writeText(record.data.summary)
+					    .catch(err => Ext.Msg.alert(gettext('Error'), err));
 				    },
 				},
 				{
 				    iconCls: 'x-fa fa-clipboard',
 				    tooltip: gettext('Copy details'),
 				    handler: function(grid, rowindex, colindex, item, e, record) {
-					navigator.clipboard.writeText(record.data.detail);
+					navigator.clipboard
+					    .writeText(record.data.detail)
+					    .catch(err => Ext.Msg.alert(gettext('Error'), err));
 				    },
 				},
 			    ],
@@ -164,10 +168,9 @@ Ext.define('PVE.node.CephStatus', {
 		    ],
 		    listeners: {
 			itemdblclick: function(view, record, row, rowIdx, e) {
-			    // inspired by RowExpander.js
-
-			    let rowNode = view.getNode(rowIdx); let
-			    normalRow = Ext.fly(rowNode);
+			    // inspired by Ext.grid.plugin.RowExpander, but for double click
+			    let rowNode = view.getNode(rowIdx);
+			    let normalRow = Ext.fly(rowNode);
 
 			    let collapsedCls = view.rowBodyFeature.rowCollapsedCls;
 
