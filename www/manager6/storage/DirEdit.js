@@ -30,6 +30,10 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'shared',
 		uncheckedValue: 0,
 		fieldLabel: gettext('Shared'),
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': gettext('Enable if the underlying file system is already shared between nodes.'),
+		},
 	    },
 	];
 

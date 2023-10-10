@@ -227,6 +227,10 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    name: 'shared',
 	    uncheckedValue: 0,
 	    fieldLabel: gettext('Shared'),
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('Enable if the LVM is located on a shared LUN.'),
+	    },
 	},
     ],
 });
