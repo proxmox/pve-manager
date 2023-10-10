@@ -101,7 +101,7 @@ Ext.define('PVE.sdn.SubnetView', {
 	    ],
 	    columns: [
 		{
-		    header: 'ID',
+		    header: gettext('Subnet'),
 		    flex: 2,
 		    dataIndex: 'cidr',
 		    renderer: function(value, metaData, rec) {
