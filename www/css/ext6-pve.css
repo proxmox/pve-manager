@@ -712,6 +712,7 @@ table.osds td:first-of-type {
 
 .pve-ceph-warning-detail {
     overflow: auto;
+    white-space: pre-wrap;
     margin: 0;
     padding-bottom: 10px;
 }
