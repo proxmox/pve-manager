@@ -30,19 +30,19 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'url',
-		fieldLabel: 'url',
+		fieldLabel: 'URL',
 		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'key',
-		fieldLabel: gettext('api key'),
+		fieldLabel: gettext('API Key'),
 		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
 		name: 'ttl',
-		fieldLabel: 'ttl',
+		fieldLabel: 'TTL',
 		allowBlank: true,
 	    },
 	];

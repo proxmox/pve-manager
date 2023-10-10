@@ -36,7 +36,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 	    {
 		xtype: 'proxmoxKVComboBox',
 		name: 'vlan-protocol',
-		fieldLabel: gettext('Service-VLAN Protocol'),
+		fieldLabel: gettext('Service VLAN Protocol'),
 		allowBlank: true,
 		value: '802.1q',
 		comboItems: [

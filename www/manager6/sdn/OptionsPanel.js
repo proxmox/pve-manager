@@ -21,7 +21,7 @@ Ext.define('PVE.sdn.Options', {
 	},
 	{
 	    xtype: 'pveSDNIpamView',
-	    title: 'IPAMs',
+	    title: 'IPAM',
 	    flex: 1,
 	    padding: '0 0 20 0',
 	    border: 0,

@@ -30,7 +30,7 @@ Ext.define('PVE.sdn.ipams.PhpIpamInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'url',
-		fieldLabel: gettext('Url'),
+		fieldLabel: gettext('URL'),
 		allowBlank: false,
 	    },
 	    {

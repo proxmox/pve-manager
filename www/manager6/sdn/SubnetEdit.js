@@ -50,7 +50,7 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
 	    xtype: 'proxmoxtextfield',
 	    name: 'dnszoneprefix',
 	    skipEmptyText: true,
-	    fieldLabel: gettext('DNS zone prefix'),
+	    fieldLabel: gettext('DNS Zone Prefix'),
 	    allowBlank: true,
 	},
     ],

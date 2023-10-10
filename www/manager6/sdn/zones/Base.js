@@ -48,7 +48,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
             },
 	    {
 		xtype: 'pveSDNIpamSelector',
-		fieldLabel: gettext('Ipam'),
+		fieldLabel: gettext('IPAM'),
 		name: 'ipam',
 		value: me.ipam || 'pve',
 		allowBlank: false,
@@ -58,14 +58,14 @@ Ext.define('PVE.panel.SDNZoneBase', {
 	me.advancedItems = [
 	    {
 		xtype: 'pveSDNDnsSelector',
-		fieldLabel: gettext('Dns server'),
+		fieldLabel: gettext('DNS Server'),
 		name: 'dns',
 		value: '',
 		allowBlank: true,
 	    },
 	    {
 		xtype: 'pveSDNDnsSelector',
-		fieldLabel: gettext('Reverse Dns server'),
+		fieldLabel: gettext('Reverse DNS Server'),
 		name: 'reversedns',
 		value: '',
 		allowBlank: true,
@@ -74,7 +74,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
 		xtype: 'proxmoxtextfield',
 		name: 'dnszone',
 		skipEmptyText: true,
-		fieldLabel: gettext('DNS zone'),
+		fieldLabel: gettext('DNS Zone'),
 		allowBlank: true,
 	    },
 	];
