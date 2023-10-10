@@ -186,6 +186,7 @@ Ext.define('PVE.node.CephStatus', {
 			{
 			    ptype: 'rowexpander',
 			    expandOnDblClick: false,
+			    scrollIntoViewOnExpand: false,
 			    rowBodyTpl: '<pre class="pve-ceph-warning-detail {detailsCls}">{detail}</pre>',
 			},
 		    ],
