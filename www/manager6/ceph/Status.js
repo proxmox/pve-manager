@@ -105,6 +105,7 @@ Ext.define('PVE.node.CephStatus', {
 				detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, '').trimStart(),
 				severity: check.severity,
 			    };
+			    data.noDetails = data.detail.length === 0;
 			    if (data.detail.length === 0) {
 				data.detail = "no additional data";
 			    }
@@ -157,6 +158,7 @@ Ext.define('PVE.node.CephStatus', {
 				{
 				    iconCls: 'x-fa fa-clipboard',
 				    tooltip: gettext('Copy All'),
+				    isActionDisabled: (v, r, c, i, { data }) => !!data.noDetails,
 				    handler: function(grid, rowindex, colindex, item, e, { data }) {
 					navigator.clipboard
 					    .writeText(`${data.severity}: ${data.summary}\n${data.detail}`)
