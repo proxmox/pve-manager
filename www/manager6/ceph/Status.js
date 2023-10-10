@@ -147,7 +147,7 @@ Ext.define('PVE.node.CephStatus', {
 			    items: [
 				{
 				    iconCls: 'x-fa fa-files-o',
-				    tooltip: gettext('Copy summary'),
+				    tooltip: gettext('Copy Summary'),
 				    handler: function(grid, rowindex, colindex, item, e, record) {
 					navigator.clipboard
 					    .writeText(record.data.summary)
@@ -156,10 +156,10 @@ Ext.define('PVE.node.CephStatus', {
 				},
 				{
 				    iconCls: 'x-fa fa-clipboard',
-				    tooltip: gettext('Copy details'),
-				    handler: function(grid, rowindex, colindex, item, e, record) {
+				    tooltip: gettext('Copy All'),
+				    handler: function(grid, rowindex, colindex, item, e, { data }) {
 					navigator.clipboard
-					    .writeText(record.data.detail)
+					    .writeText(`${data.severity}: ${data.summary}\n${data.detail}`)
 					    .catch(err => Ext.Msg.alert(gettext('Error'), err));
 				    },
 				},
