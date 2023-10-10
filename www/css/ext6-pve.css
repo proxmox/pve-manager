@@ -715,4 +715,5 @@ table.osds td:first-of-type {
     white-space: pre-wrap;
     margin: 0;
     padding-bottom: 10px;
+    font-weight: normal;
 }
