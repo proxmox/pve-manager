@@ -106,6 +106,7 @@ Ext.define('PVE.node.CephStatus', {
 				severity: check.severity,
 			    };
 			    data.noDetails = data.detail.length === 0;
+			    data.detailsCls = data.detail.length === 0 ? 'pmx-faded' : '';
 			    if (data.detail.length === 0) {
 				data.detail = "no additional data";
 			    }
@@ -185,7 +186,7 @@ Ext.define('PVE.node.CephStatus', {
 			{
 			    ptype: 'rowexpander',
 			    expandOnDblClick: false,
-			    rowBodyTpl: '<pre class="pve-ceph-warning-detail">{detail}</pre>',
+			    rowBodyTpl: '<pre class="pve-ceph-warning-detail {detailsCls}">{detail}</pre>',
 			},
 		    ],
 		},

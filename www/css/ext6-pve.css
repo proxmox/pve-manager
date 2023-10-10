@@ -717,3 +717,7 @@ table.osds td:first-of-type {
     padding-bottom: 10px;
     font-weight: normal;
 }
+
+.pmx-faded {
+    opacity: 0.75;
+}
