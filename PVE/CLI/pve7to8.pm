@@ -1302,29 +1302,36 @@ sub check_time_sync {
 
 sub check_bootloader {
     log_info("Checking bootloader configuration...");
-    if (!$upgraded) {
-	log_skip("not yet upgraded, no need to check the presence of systemd-boot");
+
+    if (! -d '/sys/firmware/efi') {
+	log_skip("System booted in legacy-mode - no need for additional packages");
 	return;
     }
 
-    if (! -f "/etc/kernel/proxmox-boot-uuids") {
-	log_skip("proxmox-boot-tool not used for bootloader configuration");
-	return;
-    }
-
-    if (! -d "/sys/firmware/efi") {
-	log_skip("System booted in legacy-mode - no need for systemd-boot");
-	return;
-    }
-
-    if ( -f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-	log_pass("systemd-boot is installed");
-    } else {
+    if ( -f "/etc/kernel/proxmox-boot-uuids") {
+	if (!$upgraded) {
+	    log_skip("not yet upgraded, no need to check the presence of systemd-boot");
+	    return;
+	}
+	if ( -f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
+	    log_pass("bootloader packages installed correctly");
+	    return;
+	}
 	log_warn(
 	    "proxmox-boot-tool is used for bootloader configuration in uefi mode"
-	    . "but the separate systemd-boot package, existing in Debian Bookworm  is not installed"
-	    . "initializing new ESPs will not work until the package is installed"
+	    . " but the separate systemd-boot package is not installed,"
+	    . " initializing new ESPs will not work until the package is installed"
 	);
+	return;
+    } elsif ( ! -f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz" ) {
+	log_warn(
+	    "System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
+	    . " new grub versions will not be installed to /boot/efi!"
+	    . " Install grub-efi-amd64."
+	);
+	return;
+    } else {
+	log_pass("bootloader packages installed correctly");
     }
 }
 
