@@ -367,7 +367,7 @@ Ext.define('PVE.dc.BackupEdit', {
 				    },
 				},
 				{
-				    xtype: 'pveCompressionSelector',
+				    xtype: 'pveBackupCompressionSelector',
 				    reference: 'compressionSelector',
 				    fieldLabel: gettext('Compression'),
 				    name: 'compress',

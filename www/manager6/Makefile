@@ -20,6 +20,7 @@ JSSRC= 							\
 	form/ACMEAccountSelector.js			\
 	form/ACMEPluginSelector.js			\
 	form/AgentFeatureSelector.js			\
+	form/BackupCompressionSelector.js		\
 	form/BackupModeSelector.js			\
 	form/BandwidthSelector.js			\
 	form/BridgeSelector.js				\
@@ -30,7 +31,6 @@ JSSRC= 							\
 	form/CephPoolSelector.js			\
 	form/CephFSSelector.js				\
 	form/ComboBoxSetStoreNode.js			\
-	form/CompressionSelector.js                     \
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\
 	form/DayOfWeekSelector.js			\

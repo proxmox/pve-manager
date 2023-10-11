@@ -1,6 +1,6 @@
-Ext.define('PVE.form.CompressionSelector', {
+Ext.define('PVE.form.BackupCompressionSelector', {
     extend: 'Proxmox.form.KVComboBox',
-    alias: ['widget.pveCompressionSelector'],
+    alias: ['widget.pveBackupCompressionSelector'],
     comboItems: [
                 ['0', Proxmox.Utils.noneText],
                 ['lzo', 'LZO (' + gettext('fast') + ')'],

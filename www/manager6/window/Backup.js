@@ -18,7 +18,7 @@ Ext.define('PVE.window.Backup', {
 	    throw "no VM type specified";
 	}
 
-	let compressionSelector = Ext.create('PVE.form.CompressionSelector', {
+	let compressionSelector = Ext.create('PVE.form.BackupCompressionSelector', {
 	    name: 'compress',
 	    value: 'zstd',
 	    fieldLabel: gettext('Compression'),
