@@ -106,7 +106,7 @@ Ext.define('PVE.node.CephStatus', {
 				severity: check.severity,
 			    };
 			    data.noDetails = data.detail.length === 0;
-			    data.detailsCls = data.detail.length === 0 ? 'pmx-faded' : '';
+			    data.detailsCls = data.detail.length === 0 ? 'pmx-opacity-75' : '';
 			    if (data.detail.length === 0) {
 				data.detail = "no additional data";
 			    }
