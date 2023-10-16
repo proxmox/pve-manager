@@ -608,6 +608,7 @@ Ext.define('PVE.Utils', {
 	serial3: gettext('Serial terminal') + ' 3',
 	virtio: 'VirtIO-GPU',
 	'virtio-gl': 'VirGL GPU',
+	ramfb: 'ramfb',
 	none: Proxmox.Utils.noneText,
     },
 

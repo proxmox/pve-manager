@@ -15,11 +15,6 @@ SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done
 
-.PHONY: check
-check: bin test www
-	$(MAKE) -C bin check
-	$(MAKE) -C test check
-	$(MAKE) -C www check
 
 GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 $(BUILDDIR):

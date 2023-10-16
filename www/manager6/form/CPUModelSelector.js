@@ -15,7 +15,7 @@ Ext.define('PVE.form.CPUModelSelector', {
     valueField: 'name',
     displayField: 'displayname',
 
-    emptyText: Proxmox.Utils.defaultText + ' (kvm64)',
+    emptyText: Proxmox.Utils.defaultText + ' (host)',
     allowBlank: true,
 
     editable: true,

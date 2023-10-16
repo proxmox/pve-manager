@@ -42,7 +42,6 @@ Depends: apt (>= 1.5~),
          fonts-font-awesome,
          gdisk,
          hdparm,
-         ifupdown2 (>= 3.0) | ifenslave (>= 2.6),
          libapt-pkg-perl,
          libcrypt-ssleay-perl,
          libfile-readbackwards-perl,
@@ -98,7 +97,7 @@ Depends: apt (>= 1.5~),
          ${perl:Depends},
          ${shlibs:Depends}
 Recommends: proxmox-offline-mirror-helper
-Suggests: libpve-network-perl (>= 0.5-1)
+Suggests: libpve-network-perl (>= 0.5-1),pve-firmware
 Conflicts: vlan,
            vzdump,
 Replaces: vlan,
