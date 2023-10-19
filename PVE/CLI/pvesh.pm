@@ -289,18 +289,13 @@ my $handle_streamed_response = sub {
     my ($fh, $path, $encoding, $type) =
 	$download->@{'fh', 'path', 'content-encoding', 'content-type'};
 
-    die "{download} returned but neither fh nor path given\n"
-	if !defined($fh) && !defined($path);
+    die "{download} returned but neither fh nor path given\n" if !defined($fh) && !defined($path);
 
-    die "unknown 'content-encoding' $encoding\n"
-	if defined($encoding) && $encoding ne 'gzip';
-
-    die "unknown 'content-type' $type\n"
-	if defined($type) && $type !~ qw!^(text/plain)|(application/json)$!;
+    die "unknown 'content-encoding' $encoding\n" if defined($encoding) && $encoding ne 'gzip';
+    die "unknown 'content-type' $type\n" if defined($type) && $type !~ qw!^(?:text/plain|application/json)$!;
 
     if (defined($path)) {
-	open($fh, '<', $path)
-	    or die "open stream path '$path' for reading failed: $!\n";
+	open($fh, '<', $path) or die "open stream path '$path' for reading failed - $!\n";
     }
 
     local $/;
