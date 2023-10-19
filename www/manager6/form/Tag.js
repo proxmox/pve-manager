@@ -13,6 +13,15 @@ Ext.define('Proxmox.form.Tag', {
 	'<i class="action fa fa-minus-square"></i>',
     ],
 
+    focusable: true,
+    getFocusEl: function() {
+	return Ext.get(this.tagEl());
+    },
+
+    onFocus: function() {
+	this.selectText();
+    },
+
     // contains tags not to show in the picker and not allowing to set
     filter: [],
 
