@@ -112,18 +112,20 @@ sub proxy_handler {
 	push @$args, "--$key", $_ for split(/\0/, $param->{$key});
     }
 
-    my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip",
-		  'pvesh', '--noproxy', $cmd, $path,
-		  '--output-format', 'json'];
+    my @ssh_tunnel_cmd = ('ssh', '-o', 'BatchMode=yes', "root\@$remip");
 
+    my @pvesh_cmd = ('pvesh', '--noproxy', $cmd, $path, '--output-format', 'json');
     if (scalar(@$args)) {
-	my $cmdargs = [String::ShellQuote::shell_quote(@$args)];
-	push @$remcmd, @$cmdargs;
+	my $cmdargs = [ String::ShellQuote::shell_quote(@$args) ];
+	push @pvesh_cmd, @$cmdargs;
     }
 
     my $res = '';
-    PVE::Tools::run_command($remcmd, errmsg => "proxy handler failed",
-			    outfunc => sub { $res .= shift });
+    PVE::Tools::run_command(
+	[ @ssh_tunnel_cmd, '--', @pvesh_cmd ],
+	errmsg => "proxy handler failed",
+	outfunc => sub { $res .= shift },
+    );
 
     my $decoded_json = eval { decode_json($res) };
     if ($@) {
@@ -322,8 +324,9 @@ sub call_api_method {
     my $path = PVE::Tools::extract_param($param, 'api_path');
     die "missing API path\n" if !defined($path);
 
-    my $stdopts =  $extract_std_options ?
-	PVE::RESTHandler::extract_standard_output_properties($param) : {};
+    my $stdopts = $extract_std_options
+        ? PVE::RESTHandler::extract_standard_output_properties($param)
+        : {};
 
     $opt_nooutput = 1 if $stdopts->{quiet};
 
@@ -344,8 +347,9 @@ sub call_api_method {
 
 	$data = $handler->handle($info, $param);
 
-	$data = &$handle_streamed_response($data->{download})
-	    if ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH';
+	if (ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH') {
+	    $data = $handle_streamed_response->($data->{download})
+	}
     }
 
     return if $opt_nooutput || $stdopts->{quiet};
