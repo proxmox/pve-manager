@@ -99,7 +99,7 @@ Depends: apt (>= 1.5~),
          ${perl:Depends},
          ${shlibs:Depends}
 Recommends: proxmox-offline-mirror-helper
-Suggests: libpve-network-perl (>= 0.5-1)
+Suggests: libpve-network-perl (>= 0.8.2)
 Conflicts: vlan,
            vzdump,
 Replaces: vlan,
