@@ -108,6 +108,15 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    fieldLabel: gettext('Shutdown timeout'),
 		},
 	    ],
+
+	    advancedColumnB: [
+		{
+		    xtype: 'pveTagFieldSet',
+		    name: 'tags',
+		    maxHeight: 150,
+		},
+	    ],
+
 	    onGetValues: function(values) {
 		['name', 'pool', 'onboot', 'agent'].forEach(function(field) {
 		    if (!values[field]) {

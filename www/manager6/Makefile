@@ -87,6 +87,7 @@ JSSRC= 							\
 	form/Tag.js					\
 	form/TagEdit.js					\
 	form/MultiFileButton.js				\
+	form/TagFieldSet.js				\
 	grid/BackupView.js				\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\

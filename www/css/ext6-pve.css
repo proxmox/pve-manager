@@ -721,3 +721,8 @@ table.osds td:first-of-type {
 .pmx-opacity-75 {
     opacity: 0.75;
 }
+
+/* tag edit fields must be aligned manually in the fieldset */
+.proxmox-tag-fieldset.proxmox-tags-full .x-component.x-column {
+    margin: 2px;
+}

@@ -9,6 +9,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 
     // set to false to hide the 'no tags' field and the edit button
     canEdit: true,
+    editOnly: false,
 
     controller: {
 	xclass: 'Ext.app.ViewController',
@@ -216,6 +217,9 @@ Ext.define('PVE.panel.TagEditContainer', {
 			me.tagsChanged();
 		    },
 		    keypress: function(key) {
+			if (vm.get('hideFinishButtons')) {
+			    return;
+			}
 			if (key === 'Enter') {
 			    me.editClick();
 			} else if (key === 'Escape') {
@@ -253,12 +257,31 @@ Ext.define('PVE.panel.TagEditContainer', {
 		me.loadTags(view.tags);
 	    }
 	    me.getViewModel().set('canEdit', view.canEdit);
+	    me.getViewModel().set('editOnly', view.editOnly);
 
 	    me.mon(Ext.GlobalEvents, 'loadedUiOptions', () => {
+		let vm = me.getViewModel();
 		view.toggleCls('hide-handles', PVE.UIOptions.shouldSortTags());
-		me.loadTags(me.oldTags, true); // refresh tag colors and order
+		me.loadTags(me.oldTags, !vm.get('editMode')); // refresh tag colors and order
 	    });
+
+	    if (view.editOnly) {
+		me.toggleEdit();
+	    }
 	},
+    },
+
+    getTags: function() {
+	let me =this;
+	let controller = me.getController();
+	let tags = [];
+	    controller.forEachTag((cmp) => {
+		if (cmp.tag.length) {
+		    tags.push(cmp.tag);
+		}
+	    });
+
+	return tags;
     },
 
     viewModel: {
@@ -267,6 +290,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    editMode: false,
 	    canEdit: true,
 	    isDirty: false,
+	    editOnly: true,
 	},
 
 	formulas: {
@@ -275,6 +299,9 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    },
 	    hideEditBtn: function(get) {
 		return get('editMode') || !get('canEdit');
+	    },
+	    hideFinishButtons: function(get) {
+		return !get('editMode') || get('editOnly');
 	    },
 	},
     },
@@ -311,7 +338,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    xtype: 'tbseparator',
 	    ui: 'horizontal',
 	    bind: {
-		hidden: '{!editMode}',
+		hidden: '{hideFinishButtons}',
 	    },
 	    hidden: true,
 	},
@@ -320,7 +347,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    iconCls: 'fa fa-times',
 	    tooltip: gettext('Cancel Edit'),
 	    bind: {
-		hidden: '{!editMode}',
+		hidden: '{hideFinishButtons}',
 	    },
 	    hidden: true,
 	    margin: '0 5 0 0',
@@ -332,7 +359,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    iconCls: 'fa fa-check',
 	    tooltip: gettext('Finish Edit'),
 	    bind: {
-		hidden: '{!editMode}',
+		hidden: '{hideFinishButtons}',
 		disabled: '{!isDirty}',
 	    },
 	    hidden: true,

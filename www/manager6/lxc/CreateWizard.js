@@ -178,6 +178,13 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    },
 		},
 	    ],
+	    advancedColumnB: [
+		{
+		    xtype: 'pveTagFieldSet',
+		    name: 'tags',
+		    maxHeight: 150,
+		},
+	    ],
 	},
 	{
 	    xtype: 'inputpanel',
