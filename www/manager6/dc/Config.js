@@ -317,7 +317,9 @@ Ext.define('PVE.dc.Config', {
 	    );
 	}
 
-	if (caps.dc['Sys.Audit']) {
+	// this is being reworked, but we need to release newer manager versions already..
+	let notification_enabled = false;
+	if (notification_enabled && caps.dc['Sys.Audit']) {
 	    me.items.push(
 		{
 		    xtype: 'pveNotificationEvents',
@@ -329,9 +331,12 @@ Ext.define('PVE.dc.Config', {
 	    );
 	}
 
-	if (caps.mapping['Mapping.Audit'] ||
-	    caps.mapping['Mapping.Use'] ||
-	    caps.mapping['Mapping.Modify']) {
+	if (notification_enabled && (
+		caps.mapping['Mapping.Audit'] ||
+		caps.mapping['Mapping.Use'] ||
+		caps.mapping['Mapping.Modify']
+	    )
+	) {
 	    me.items.push(
 		{
 		    xtype: 'pmxNotificationConfigView',

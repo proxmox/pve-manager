@@ -94,14 +94,18 @@ sub write_etc_subscription {
     Proxmox::RS::Subscription::write_subscription(
         $filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
 
-    # FIXME: improve this, especially the selection of valid ceph-releases
-    # NOTE: currently we should add future ceph releases as early as possible, to ensure that
-    my $ceph_auth = '';
-    for my $ceph_release ('quincy', 'reef') {
-	$ceph_auth .= "machine enterprise.proxmox.com/debian/ceph-${ceph_release}"
+    if (!(defined($info->{key}) && defined($info->{serverid}))) {
+	unlink "/etc/apt/auth.conf.d/ceph.conf";
+    } else {
+	# FIXME: improve this, especially the selection of valid ceph-releases
+	# NOTE: currently we should add future ceph releases as early as possible, to ensure that
+	my $ceph_auth = '';
+	for my $ceph_release ('quincy', 'reef') {
+	    $ceph_auth .= "machine enterprise.proxmox.com/debian/ceph-${ceph_release}"
 	    ." login $info->{key} password $info->{serverid}\n"
+	}
+	PVE::Tools::file_set_contents("/etc/apt/auth.conf.d/ceph.conf", $ceph_auth);
     }
-    PVE::Tools::file_set_contents("/etc/apt/auth.conf.d/ceph.conf", $ceph_auth);
 }
 
 __PACKAGE__->register_method ({

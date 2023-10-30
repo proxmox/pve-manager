@@ -11,6 +11,30 @@ Ext.define('PVE.panel.GuestStatusView', {
 	};
     },
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	init: function(view) {
+	    if (view.pveSelNode.data.type !== 'lxc') {
+		return;
+	    }
+
+	    const nodename = view.pveSelNode.data.node;
+	    const vmid = view.pveSelNode.data.vmid;
+
+	    Proxmox.Utils.API2Request({
+		url: `/api2/extjs/nodes/${nodename}/lxc/${vmid}/config`,
+		waitMsgTargetView: view,
+		method: 'GET',
+		success: ({ result }) => {
+		    view.down('#unprivileged').updateValue(
+			Proxmox.Utils.format_boolean(result.data.unprivileged));
+		    view.ostype = Ext.htmlEncode(result.data.ostype);
+		},
+	    });
+	},
+    },
+
     layout: {
 	type: 'vbox',
 	align: 'stretch',
@@ -57,6 +81,15 @@ Ext.define('PVE.panel.GuestStatusView', {
 		text: '{pveSelNode.data.node}',
 	    },
 	    printBar: false,
+	},
+	{
+	    itemId: 'unprivileged',
+	    iconCls: 'fa fa-lock fa-fw',
+	    title: gettext('Unprivileged'),
+	    printBar: false,
+	    cbind: {
+		hidden: '{isQemu}',
+	    },
 	},
 	{
 	    xtype: 'box',
@@ -134,6 +167,22 @@ Ext.define('PVE.panel.GuestStatusView', {
 		+ ')';
 	}
 
-	me.setTitle(me.getRecordValue('name') + text);
+	let title = `<div class="left-aligned">${me.getRecordValue('name') + text}</div>`;
+
+	if (me.pveSelNode.data.type === 'lxc' && me.ostype && me.ostype !== 'unmanaged') {
+	    // Manual mappings for distros with special casing
+	    const namemap = {
+		'archlinux': 'Arch Linux',
+		'nixos': 'NixOS',
+		'opensuse': 'openSUSE',
+		'centos': 'CentOS',
+	    };
+
+	    const distro = namemap[me.ostype] ?? Ext.String.capitalize(me.ostype);
+	    title += `<div class="right-aligned">
+		<i class="fl-${me.ostype} fl-fw"></i>&nbsp;${distro}</div>`;
+	}
+
+	me.setTitle(title);
     },
 });

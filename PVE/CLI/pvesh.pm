@@ -15,6 +15,7 @@ use PVE::CLIHandler;
 use PVE::API2Tools;
 use PVE::API2;
 use JSON;
+use IO::Uncompress::Gunzip qw(gunzip);
 
 use base qw(PVE::CLIHandler);
 
@@ -111,18 +112,20 @@ sub proxy_handler {
 	push @$args, "--$key", $_ for split(/\0/, $param->{$key});
     }
 
-    my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip",
-		  'pvesh', '--noproxy', $cmd, $path,
-		  '--output-format', 'json'];
+    my @ssh_tunnel_cmd = ('ssh', '-o', 'BatchMode=yes', "root\@$remip");
 
+    my @pvesh_cmd = ('pvesh', '--noproxy', $cmd, $path, '--output-format', 'json');
     if (scalar(@$args)) {
-	my $cmdargs = [String::ShellQuote::shell_quote(@$args)];
-	push @$remcmd, @$cmdargs;
+	my $cmdargs = [ String::ShellQuote::shell_quote(@$args) ];
+	push @pvesh_cmd, @$cmdargs;
     }
 
     my $res = '';
-    PVE::Tools::run_command($remcmd, errmsg => "proxy handler failed",
-			    outfunc => sub { $res .= shift });
+    PVE::Tools::run_command(
+	[ @ssh_tunnel_cmd, '--', @pvesh_cmd ],
+	errmsg => "proxy handler failed",
+	outfunc => sub { $res .= shift },
+    );
 
     my $decoded_json = eval { decode_json($res) };
     if ($@) {
@@ -283,6 +286,36 @@ my $cond_add_standard_output_properties = sub {
     return PVE::RESTHandler::add_standard_output_properties($props, $keys);
 };
 
+my $handle_streamed_response = sub {
+    my ($download) = @_;
+    my ($fh, $path, $encoding, $type) =
+	$download->@{'fh', 'path', 'content-encoding', 'content-type'};
+
+    die "{download} returned but neither fh nor path given\n" if !defined($fh) && !defined($path);
+
+    die "unknown 'content-encoding' $encoding\n" if defined($encoding) && $encoding ne 'gzip';
+    die "unknown 'content-type' $type\n" if defined($type) && $type !~ qw!^(?:text/plain|application/json)$!;
+
+    if (defined($path)) {
+	open($fh, '<', $path) or die "open stream path '$path' for reading failed - $!\n";
+    }
+
+    local $/;
+    my $data = <$fh>;
+
+    if (defined($encoding)) {
+	my $out;
+	gunzip(\$data => \$out);
+	$data = $out;
+    }
+
+    if (defined($type) && $type eq 'application/json') {
+	$data = decode_json($data)->{data};
+    }
+
+    return $data;
+};
+
 sub call_api_method {
     my ($cmd, $param) = @_;
 
@@ -291,8 +324,9 @@ sub call_api_method {
     my $path = PVE::Tools::extract_param($param, 'api_path');
     die "missing API path\n" if !defined($path);
 
-    my $stdopts =  $extract_std_options ?
-	PVE::RESTHandler::extract_standard_output_properties($param) : {};
+    my $stdopts = $extract_std_options
+        ? PVE::RESTHandler::extract_standard_output_properties($param)
+        : {};
 
     $opt_nooutput = 1 if $stdopts->{quiet};
 
@@ -312,6 +346,10 @@ sub call_api_method {
 	}
 
 	$data = $handler->handle($info, $param);
+
+	if (ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH') {
+	    $data = $handle_streamed_response->($data->{download})
+	}
     }
 
     return if $opt_nooutput || $stdopts->{quiet};

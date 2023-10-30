@@ -40,6 +40,7 @@ Depends: apt (>= 1.5~),
          cstream,
          dtach,
          fonts-font-awesome,
+         fonts-font-logos,
          gdisk,
          hdparm,
          libapt-pkg-perl,
@@ -97,7 +98,7 @@ Depends: apt (>= 1.5~),
          ${perl:Depends},
          ${shlibs:Depends}
 Recommends: proxmox-offline-mirror-helper
-Suggests: libpve-network-perl (>= 0.5-1),pve-firmware
+Suggests: libpve-network-perl (>= 0.8.2),pve-firmware
 Conflicts: vlan,
            vzdump,
 Replaces: vlan,

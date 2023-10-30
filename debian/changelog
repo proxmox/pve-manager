@@ -1,3 +1,41 @@
+pve-manager (8.0.7) bookworm; urgency=medium
+
+  * fix #3069: vzdump: add property 'performance: pbs-entries-max=N'
+
+  * fix #4849: ui: allow decompressing ISO files when downloading
+
+  * pve7to8: update checks from stable-7 branch
+
+  * ui: vm selector: gracefully handle empty IDs in setValue function
+
+  * ui: subscription upload: trim key from whitespace on submission
+
+  * api: subscription update: actually ignore surrounding whitespace
+
+  * hw-address: check if source file changed so cache needs update
+
+  * ui: ceph: improve discoverability of warning details
+
+  * ui: ceph wizard: switch to reef as default release for new setups
+
+  * pvesh: decode streamed responses
+
+  * ui: container guest status: show privileged status as new row
+
+  * ui: container guest status: show distro logo and name in summary header
+
+  * ui: tags: fix focus for edit mode
+
+  * sdn: controllers: add isis controller
+
+  * subscription: remove ceph APT auth if invalid
+
+  * ui: datacenter config: adapt to new default MAC prefix
+
+  * ui: disable new notification UI for now, will be reworked
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 29 Oct 2023 19:52:42 +0100
+
 pve-manager (8.0.6) bookworm; urgency=medium
 
   * fix #4663: Prevent Web UI reload on cert order for other node

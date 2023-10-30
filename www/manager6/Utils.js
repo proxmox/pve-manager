@@ -896,6 +896,11 @@ Ext.define('PVE.Utils', {
 	    ipanel: 'BgpInputPanel',
 	    faIcon: 'crosshairs',
 	},
+	isis: {
+	    name: 'isis',
+	    ipanel: 'IsisInputPanel',
+	    faIcon: 'crosshairs',
+	},
     },
 
     sdnipamSchema: {
