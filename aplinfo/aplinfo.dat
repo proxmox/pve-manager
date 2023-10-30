@@ -72,15 +72,15 @@ Description: Debian 11 Bullseye (standard)
  A small Debian Bullseye system including all standard packages.
 
 Package: debian-12-standard
-Version: 12.0-1
+Version: 12.2-1
 Type: lxc
 OS: debian-12
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-12-standard_12.0-1_amd64.tar.zst
-md5sum: 8afe6876381729eef9ce56fd5d2ac5d8
-sha512sum: 0cfbb0cd61fa9e5a11f83e2469e9175be79cab1f24385835715a9c29ea8e517d0526943cd6091b038e1f9d4bf57bfb30ddbc2802d9ada366f0b34019f940a3de
+Location: system/debian-12-standard_12.2-1_amd64.tar.zst
+md5sum: 0c40b2b49499c827bbf7db2d7a3efadc
+sha512sum: 1846c5e64253256832c6f7b8780c5cb241abada3ab0913940b831bf8f7f869220277f5551f0abeb796852e448c178be22bd44eb1af8c0be3d5a13decf943398a
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 12 Bookworm (standard)
  A small Debian Bullseye system including all standard packages.
@@ -112,6 +112,19 @@ sha512sum: 54328a3338ca9657d298a8a5d2ca15fe76f66fd407296d9e3e1c236ee60ea075d3406
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 38 (20230607)
 
+Package: gentoo-current-openrc
+Version: 20231009
+Type: lxc
+OS: gentoo
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/gentoo-current-openrc_20231009_amd64.tar.xz
+md5sum: ecf4836300bb0973618b7ae30077f2c1
+sha512sum: 40926859f0a777e8dfa7de10c76eb78ee92aa554e0598a09beec7f260ec7a02f19dfc2f620beaa1ea42feb02c682111d70e81e67e7641da3e0643f2692e75430
+Infopage: https://linuxcontainers.org
+Description: LXC openrc image for gentoo current (20231009)
+
 Package: opensuse-15.4-default
 Version: 20221109
 Type: lxc
@@ -135,7 +148,7 @@ Architecture: amd64
 Location: mail/proxmox-mailgateway-7.3-standard_7.3-1_amd64.tar.zst
 md5sum: 6c130003f9880ae66dca0603d7b7ca87
 sha512sum: 2fdf1dc24306bbaa2ef9a0f322416ca15b97b7d19f84b83743c7afc896095c398241fbc2eb41a33a69f3f275ce4c4cb6425edc5538831b4650d39a5e44fdbc25
-Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
+Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 7.3
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
@@ -149,7 +162,7 @@ Architecture: amd64
 Location: mail/proxmox-mailgateway-8.0-standard_8.0-1_amd64.tar.zst
 md5sum: 7d321e5dfc6e1005231586d1871e3625
 sha512sum: be5efcb8ee97f2bb1c638360191eda19f49e2063acb88da55c948c90c091063972cc9ea29e6aeaa4a85733e0fb2c99ea905d665ac693cb2bf06b091c4baf781f
-Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
+Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 8.0
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
@@ -207,3 +220,17 @@ sha512sum: 6c7d916cc76865d5984b6b41e3d45426071967059ecc0a5d10029d2706cca0ea96a3c
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 23.04 Lunar (standard)
  A small Ubuntu 23.04 Lunar Lobster system including all standard packages.
+
+Package: ubuntu-23.10-standard
+Version: 23.10-1
+Type: lxc
+OS: ubuntu-23.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-23.10-standard_23.10-1_amd64.tar.zst
+md5sum: 91b92c717f09d2172471b4c85a00aea3
+sha512sum: 84bcb7348ba86026176ed35e5b798f89cb64b0bcbe27081e3f97e3002a6ec34d836bbc1e1b1ce5f327151d1bc79cf1d08edf5a9d2b21a60ffa91e96284e5a67f
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 23.10 Mantic (standard)
+ A small Ubuntu 23.10 Mantic Minotaur system including all standard packages.
