@@ -77,6 +77,7 @@ my $init_report_cmds = sub {
 		'ip -details -6 route show',
 		'cat /etc/network/interfaces',
 		sub { dir2text('/etc/network/interfaces.d/', '.*') },
+		sub { dir2text('/etc/pve/sdn/', '.*') },
 	    ],
 	},
 	firewall => {
