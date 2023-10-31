@@ -79,15 +79,19 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		    checkbox.setHidden(true);
 
 		    Proxmox.Utils.API2Request({
-			url: '/cluster/acme/tos',
+			url: '/cluster/acme/meta',
 			method: 'GET',
 			params: {
 			    directory: value,
 			},
 			success: function(response, opt) {
-			    field.setValue(response.result.data);
-			    disp.setValue(response.result.data);
-			    checkbox.setHidden(false);
+			    if (response.result.data.termsOfService) {
+				field.setValue(response.result.data.termsOfService);
+				disp.setValue(response.result.data.termsOfService);
+				checkbox.setHidden(false);
+			    } else {
+				disp.setValue(undefined);
+			    }
 			},
 			failure: function(response, opt) {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
