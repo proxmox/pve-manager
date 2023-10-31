@@ -115,6 +115,18 @@ __PACKAGE__->register_method ({
 		default => $acme_default_directory_url,
 		optional => 1,
 	    }),
+	    'eab-kid' => {
+		type => 'string',
+		description => 'Key Identifier for External Account Binding.',
+		requires => 'eab-hmac-key',
+		optional => 1,
+	    },
+	    'eab-hmac-key' => {
+		type => 'string',
+		description => 'HMAC key for External Account Binding.',
+		requires => 'eab-kid',
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -129,6 +141,9 @@ __PACKAGE__->register_method ({
 	my $account_name = extract_param($param, 'name') // 'default';
 	my $account_file = "${acme_account_dir}/${account_name}";
 	mkdir $acme_account_dir if ! -e $acme_account_dir;
+
+	my $eab_kid = extract_param($param, 'eab-kid');
+	my $eab_hmac_key = extract_param($param, 'eab-hmac-key');
 
 	raise_param_exc({'name' => "ACME account config file '${account_name}' already exists."})
 	    if -e $account_file;
@@ -145,7 +160,17 @@ __PACKAGE__->register_method ({
 		print "Generating ACME account key..\n";
 		$acme->init(4096);
 		print "Registering ACME account..\n";
-		eval { $acme->new_account($param->{tos_url}, contact => $contact); };
+
+		my %info = (contact => $contact);
+		if (defined($eab_kid)) {
+		    $info{eab} = {
+			kid => $eab_kid,
+			hmac_key => $eab_hmac_key
+		    };
+		}
+
+		eval { $acme->new_account($param->{tos_url}, %info); };
+
 		if (my $err = $@) {
 		    unlink $account_file;
 		    die "Registration failed: $err\n";
