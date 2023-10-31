@@ -83,6 +83,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
+	my $custom_directory = 0;
 	if (!$param->{directory}) {
 	    my $directories = PVE::API2::ACMEAccount->get_directories({});
 	    print "Directory endpoints:\n";
@@ -100,6 +101,7 @@ __PACKAGE__->register_method({
 		    $selection = $1;
 		    if ($selection == $i) {
 			$param->{directory} = $term->readline("Enter custom URL: ");
+			$custom_directory = 1;
 			return;
 		    } elsif ($selection < $i && $selection >= 0) {
 			$param->{directory} = $directories->[$selection]->{url};
@@ -117,8 +119,9 @@ __PACKAGE__->register_method({
 	    }
 	}
 	print "\nAttempting to fetch Terms of Service from '$param->{directory}'..\n";
-	my $tos = PVE::API2::ACMEAccount->get_tos({ directory => $param->{directory} });
-	if ($tos) {
+	my $meta = PVE::API2::ACMEAccount->get_meta({ directory => $param->{directory} });
+	if ($meta->{termsOfService}) {
+	    my $tos = $meta->{termsOfService};
 	    print "Terms of Service: $tos\n";
 	    my $term = Term::ReadLine->new('pvenode');
 	    my $agreed = $term->readline('Do you agree to the above terms? [y|N]: ');
@@ -129,6 +132,25 @@ __PACKAGE__->register_method({
 	} else {
 	    print "No Terms of Service found, proceeding.\n";
 	}
+
+	my $eab_enabled = $meta->{externalAccountRequired};
+	if (!$eab_enabled && $custom_directory) {
+	    my $term = Term::ReadLine->new('pvenode');
+	    my $agreed = $term->readline('Do you want to use external account binding? [y|N]: ');
+	    $eab_enabled = ($agreed =~ /^y$/i);
+	} elsif ($eab_enabled) {
+	    print "The CA requires external account binding.\n";
+	}
+	if ($eab_enabled) {
+	    print "You should have received a key id and a key from your CA.\n";
+	    my $term = Term::ReadLine->new('pvenode');
+	    my $eab_kid = $term->readline('Enter EAB key id: ');
+	    my $eab_hmac_key = $term->readline('Enter EAB key: ');
+
+	    $param->{'eab-kid'} = $eab_kid;
+	    $param->{'eab-hmac-key'} = $eab_hmac_key;
+	}
+
 	print "\nAttempting to register account with '$param->{directory}'..\n";
 
 	$upid_exit->(PVE::API2::ACMEAccount->register_account($param));
