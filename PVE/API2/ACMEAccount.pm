@@ -62,6 +62,7 @@ __PACKAGE__->register_method ({
 	return [
 	    { name => 'account' },
 	    { name => 'tos' },
+	    { name => 'meta' },
 	    { name => 'directories' },
 	    { name => 'plugins' },
 	    { name => 'challenge-schema' },
@@ -333,11 +334,12 @@ __PACKAGE__->register_method ({
 	return $update_account->($param, 'deactivate', status => 'deactivated');
     }});
 
+# TODO: deprecated, remove with pve 9
 __PACKAGE__->register_method ({
     name => 'get_tos',
     path => 'tos',
     method => 'GET',
-    description => "Retrieve ACME TermsOfService URL from CA.",
+    description => "Retrieve ACME TermsOfService URL from CA. Deprecated, please use /cluster/acme/meta.",
     permissions => { user => 'all' },
     parameters => {
 	additionalProperties => 0,
@@ -362,6 +364,58 @@ __PACKAGE__->register_method ({
 	my $meta = $acme->get_meta();
 
 	return $meta ? $meta->{termsOfService} : undef;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'get_meta',
+    path => 'meta',
+    method => 'GET',
+    description => "Retrieve ACME Directory Meta Information",
+    permissions => { user => 'all' },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    directory => get_standard_option('pve-acme-directory-url', {
+		default => $acme_default_directory_url,
+		optional => 1,
+	    }),
+	},
+    },
+    returns => {
+	type => 'object',
+	additionalProperties => 1,
+	properties => {
+	    termsOfService => {
+		type => 'string',
+		optional => 1,
+		description => 'ACME TermsOfService URL.',
+	    },
+	    externalAccountRequired => {
+		type => 'boolean',
+		optional => 1,
+		description => 'EAB Required'
+	    },
+	    website => {
+		type => 'string',
+		optional => 1,
+		description => 'URL to more information about the ACME server.'
+	    },
+	    caaIdentities => {
+		type => 'string',
+		optional => 1,
+		description => 'Hostnames referring to the ACME servers.'
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $directory = extract_param($param, 'directory') // $acme_default_directory_url;
+
+	my $acme = PVE::ACME->new(undef, $directory);
+	my $meta = $acme->get_meta();
+
+	return $meta;
     }});
 
 __PACKAGE__->register_method ({
