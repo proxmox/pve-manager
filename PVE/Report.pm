@@ -10,7 +10,7 @@ my sub dir2text {
     my ($target_dir, $regexp) = @_;
 
     print STDERR "dir2text '${target_dir}${regexp}'...";
-    my $text = '';
+    my $text = "# output '${target_dir}${regexp}' file(s)\n";
     PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
 	my ($file) = @_;
 	return if $file eq '.' || $file eq '..';
