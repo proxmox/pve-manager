@@ -253,11 +253,11 @@ __PACKAGE__->register_method ({
 	    },
 	    db_dev_size => {
 		description => "Size in GiB for block.db.",
-		verbose_description => "If a block.db is requested but the size is not given, ".
-		    "will be automatically selected by: bluestore_block_db_size from the ".
-		    "ceph database (osd or global section) or config (osd or global section)".
-		    "in that order. If this is not available, it will be sized 10% of the size ".
-		    "of the OSD device. Fails if the available size is not enough.",
+		verbose_description => "If a block.db is requested but the size is not given, will"
+		    ." be automatically selected by: bluestore_block_db_size from the ceph database"
+		    ." (osd or global section) or config (osd or global section) in that order."
+		    ." If this is not available, it will be sized 10% of the size of the OSD device."
+		    ." Fails if the available size is not enough.",
 		optional => 1,
 		type => 'number',
 		default => 'bluestore_block_db_size or 10% of OSD size',
@@ -271,11 +271,11 @@ __PACKAGE__->register_method ({
 	    },
 	    wal_dev_size => {
 		description => "Size in GiB for block.wal.",
-		verbose_description => "If a block.wal is requested but the size is not given, ".
-		    "will be automatically selected by: bluestore_block_wal_size from the ".
-		    "ceph database (osd or global section) or config (osd or global section)".
-		    "in that order. If this is not available, it will be sized 1% of the size ".
-		    "of the OSD device. Fails if the available size is not enough.",
+		verbose_description => "If a block.wal is requested but the size is not given, will"
+		    ." be automatically selected by: bluestore_block_wal_size from the ceph database"
+		    ." (osd or global section) or config (osd or global section) in that order."
+		    ." If this is not available, it will be sized 1% of the size of the OSD device."
+		    ." Fails if the available size is not enough.",
 		optional => 1,
 		minimum => 0.5,
 		default => 'bluestore_block_wal_size or 1% of OSD size',
@@ -297,8 +297,8 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		type => 'integer',
 		minimum => '1',
-		description => 'OSD services per physical device. Only useful for fast ".
-		    "NVME devices to utilize their performance better.',
+		description => 'OSD services per physical device. Only useful for fast NVMe devices"
+		    ." to utilize their performance better.',
 	    },
 	},
     },
