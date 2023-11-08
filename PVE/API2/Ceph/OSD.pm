@@ -985,6 +985,10 @@ __PACKAGE__->register_method ({
 	    print "Remove OSD $osdsection\n";
 	    $rados->mon_command({ prefix => "osd rm", ids => [ $osdsection ], format => 'plain' });
 
+	    print "Remove $osdsection mclock max capacity iops settings from config\n";
+	    $rados->mon_command({ prefix => "config rm", who => $osdsection, name => 'osd_mclock_max_capacity_iops_ssd' });
+	    $rados->mon_command({ prefix => "config rm", who => $osdsection, name => 'osd_mclock_max_capacity_iops_hdd' });
+
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
 
