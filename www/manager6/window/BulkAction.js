@@ -55,50 +55,51 @@ Ext.define('PVE.window.BulkAction', {
 	if (me.action === 'migrateall') {
 	    items.push(
 		{
-		    xtype: 'pveNodeSelector',
-		    name: 'target',
-		    disallowedNodes: [me.nodename],
-		    fieldLabel: gettext('Target node'),
-		    allowBlank: false,
-		    onlineValidator: true,
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    name: 'maxworkers',
-		    minValue: 1,
-		    maxValue: 100,
-		    value: 1,
-		    fieldLabel: gettext('Parallel jobs'),
-		    allowBlank: false,
-		},
-		{
 		    xtype: 'fieldcontainer',
-		    fieldLabel: gettext('Allow local disk migration'),
 		    layout: 'hbox',
 		    items: [{
-			xtype: 'proxmoxcheckbox',
-			name: 'with-local-disks',
-			checked: true,
-			uncheckedValue: 0,
-			listeners: {
-			    change: (cb, val) => me.down('#localdiskwarning').setVisible(val),
-			},
+			flex: 1,
+			xtype: 'pveNodeSelector',
+			name: 'target',
+			disallowedNodes: [me.nodename],
+			fieldLabel: gettext('Target node'),
+			labelWidth: 200,
+			allowBlank: false,
+			onlineValidator: true,
+			padding: '0 10 0 0',
 		    },
 		    {
-			itemId: 'localdiskwarning',
-			xtype: 'displayfield',
+			xtype: 'proxmoxintegerfield',
+			name: 'maxworkers',
+			minValue: 1,
+			maxValue: 100,
+			value: 1,
+			fieldLabel: gettext('Parallel jobs'),
+			allowBlank: false,
 			flex: 1,
-			padding: '0 0 0 10',
-			userCls: 'pmx-hint',
-			value: 'Note: Migration with local disks might take long.',
 		    }],
 		},
 		{
-		    itemId: 'lxcwarning',
-		    xtype: 'displayfield',
-		    userCls: 'pmx-hint',
-		    value: 'Warning: Running CTs will be migrated in Restart Mode.',
-		    hidden: true, // only visible if running container chosen
+		    xtype: 'fieldcontainer',
+		    layout: 'hbox',
+		    items: [{
+			xtype: 'proxmoxcheckbox',
+			fieldLabel: gettext('Allow local disk migration'),
+			name: 'with-local-disks',
+			labelWidth: 200,
+			checked: true,
+			uncheckedValue: 0,
+			flex: 1,
+			padding: '0 10 0 0',
+		    },
+		    {
+			itemId: 'lxcwarning',
+			xtype: 'displayfield',
+			userCls: 'pmx-hint',
+			value: 'Warning: Running CTs will be migrated in Restart Mode.',
+			hidden: true, // only visible if running container chosen
+			flex: 1,
+		    }],
 		},
 	    );
 	} else if (me.action === 'startall') {
@@ -108,25 +109,31 @@ Ext.define('PVE.window.BulkAction', {
 		value: 1,
 	    });
 	} else if (me.action === 'stopall') {
-	    items.push(
-		{
+	    items.push({
+		xtype: 'fieldcontainer',
+		layout: 'hbox',
+		items: [{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'force-stop',
+		    labelWidth: 120,
 		    fieldLabel: gettext('Force Stop'),
 		    boxLabel: gettext('Force stop guest if shutdown times out.'),
 		    checked: true,
 		    uncheckedValue: 0,
+		    flex: 1,
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
 		    name: 'timeout',
 		    fieldLabel: gettext('Timeout (s)'),
+		    labelWidth: 120,
 		    emptyText: '180',
 		    minValue: 0,
 		    maxValue: 7200,
 		    allowBlank: true,
-		},
-	    );
+		    flex: 1,
+		}],
+	    });
 	}
 
 	items.push({
