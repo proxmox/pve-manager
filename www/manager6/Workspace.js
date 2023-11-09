@@ -526,6 +526,35 @@ Ext.define('PVE.StdWorkspace', {
 		modalWindows.forEach(win => win.alignTo(me, 'c-c'));
 	    }
 	});
+
+	let tagSelectors = [];
+	['circle', 'dense'].forEach((style) => {
+	    ['dark', 'light'].forEach((variant) => {
+		tagSelectors.push(`.proxmox-tags-${style} .proxmox-tag-${variant}`);
+	    });
+	});
+
+	Ext.create('Ext.tip.ToolTip', {
+	    target: me.el,
+	    delegate: tagSelectors.join(', '),
+	    trackMouse: true,
+	    renderTo: Ext.getBody(),
+	    border: 0,
+	    minWidth: 0,
+	    padding: 0,
+	    bodyBorder: 0,
+	    bodyPadding: 0,
+	    dismissDelay: 0,
+	    userCls: 'pmx-tag-tooltip',
+	    shadow: false,
+	    listeners: {
+		beforeshow: function(tip) {
+		    let tag = Ext.htmlEncode(tip.triggerElement.innerHTML);
+		    let tagEl = Proxmox.Utils.getTagElement(tag, PVE.UIOptions.tagOverrides);
+		    tip.update(`<span class="proxmox-tags-full">${tagEl}</span>`);
+		},
+	    },
+	});
     },
 });
 

@@ -726,3 +726,13 @@ table.osds td:first-of-type {
 .proxmox-tag-fieldset.proxmox-tags-full .x-component.x-column {
     margin: 2px;
 }
+
+/* we have to override some styles for the tag tooltips,
+ * otherwise extjs styling interferes */
+.pmx-tag-tooltip {
+    background-color: transparent;
+}
+
+.pmx-tag-tooltip .proxmox-tags-full > span {
+    margin: 0px;
+}
