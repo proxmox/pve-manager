@@ -174,6 +174,13 @@ Ext.define('PVE.window.BulkAction', {
 	let tagList = Object.keys(tagMap).map(key => ({ value: key }));
 	let haList = Object.keys(haMap).map(key => [key, key]);
 
+	let clearFilters = function() {
+	    me.down('#namefilter').setValue('');
+	    ['name', 'status', 'pool', 'type', 'hastate', 'includetag', 'excludetag', 'vmid'].forEach((filter) => {
+		me.down(`#${filter}filter`).setValue('');
+	    });
+	};
+
 	let filterChange = function() {
 	    let nameValue = me.down('#namefilter').getValue();
 	    let filterCount = 0;
@@ -210,10 +217,13 @@ Ext.define('PVE.window.BulkAction', {
 	    }
 
 	    let fieldSet = me.down('#filters');
+	    let clearBtn = me.down('#clearBtn');
 	    if (filterCount) {
 		fieldSet.setTitle(Ext.String.format(gettext('Filters ({0})'), filterCount));
+		clearBtn.setDisabled(false);
 	    } else {
 		fieldSet.setTitle(gettext('Filters'));
+		clearBtn.setDisabled(true);
 	    }
 
 	    let filterFn = function(value) {
@@ -397,6 +407,22 @@ Ext.define('PVE.window.BulkAction', {
 			    listeners: {
 				change: filterChange,
 			    },
+			},
+			{
+			    xtype: 'container',
+			    layout: {
+				type: 'vbox',
+				align: 'end',
+			    },
+			    items: [
+				{
+				    xtype: 'button',
+				    itemId: 'clearBtn',
+				    text: gettext('Clear Filters'),
+				    disabled: true,
+				    handler: clearFilters,
+				},
+			    ],
 			},
 		    ],
 		},
