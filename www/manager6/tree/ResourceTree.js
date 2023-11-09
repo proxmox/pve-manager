@@ -122,7 +122,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		status = '<div class="usage-wrapper">';
 		status += `<div class="usage-negative" style="height: ${remainingHeight}%"></div>`;
 		status += `<div class="usage" style="height: ${barHeight}%"></div>`;
-		status += '</div> ';
+		status += '</div>';
 	    }
 	}
 	if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
@@ -130,15 +130,16 @@ Ext.define('PVE.tree.ResourceTree', {
 		info.text = `${info.name} (${String(info.vmid)})`;
 	    }
 	}
-
+	info.text = `<span>${status} ${info.text}</span>`;
 	info.text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
-
-	info.text = status + info.text;
     },
 
-    setToolTip: function(info) {
+    getToolTip: function(info) {
+	if (info.tip) {
+	    return info.tip;
+	}
 	if (info.type === 'pool' || info.groupbyid !== undefined) {
-	    return;
+	    return undefined;
 	}
 
 	let qtips = [gettext('Status') + ': ' + (info.qmpstatus || info.status)];
@@ -149,7 +150,9 @@ Ext.define('PVE.tree.ResourceTree', {
 	    qtips.push(gettext('HA State') + ": " + info.hastate);
 	}
 
-	info.qtip = qtips.join(', ');
+	let tip = qtips.join(', ');
+	info.tip = tip;
+	return tip;
     },
 
     // private
@@ -158,7 +161,6 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	me.setIconCls(info);
 	me.setText(info);
-	me.setToolTip(info);
 
 	if (info.groupbyid) {
 	    info.text = info.groupbyid;
@@ -315,7 +317,6 @@ Ext.define('PVE.tree.ResourceTree', {
 		    Ext.apply(info, item.data);
 		    me.setIconCls(info);
 		    me.setText(info);
-		    me.setToolTip(info);
 		    olditem.commit();
 		}
 		if ((!item || moved) && olditem.isLeaf()) {
@@ -403,6 +404,27 @@ Ext.define('PVE.tree.ResourceTree', {
 		    return allow;
 		},
 		itemdblclick: PVE.Utils.openTreeConsole,
+		afterrender: function() {
+		    if (me.tip) {
+			return;
+		    }
+		    let selectors = [
+			'.x-tree-node-text > span:not(.proxmox-tag-dark):not(.proxmox-tag-light)',
+			'.x-tree-icon',
+		    ];
+		    me.tip = Ext.create('Ext.tip.ToolTip', {
+			target: me.el,
+			delegate: selectors.join(', '),
+			trackMouse: true,
+			renderTo: Ext.getBody(),
+			listeners: {
+			    beforeshow: function(tip) {
+				let rec = me.getView().getRecord(tip.triggerElement);
+				tip.update(me.getToolTip(rec.data));
+			    },
+			},
+		    });
+		},
 	    },
 	    setViewFilter: function(view) {
 		me.viewFilter = view;
