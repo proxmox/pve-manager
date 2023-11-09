@@ -136,6 +136,273 @@ Ext.define('PVE.window.BulkAction', {
 	    });
 	}
 
+	let refreshLxcWarning = function(vmids, records) {
+	    let showWarning = records.some(
+		item => vmids.includes(item.data.vmid) && item.data.type === 'lxc' && item.data.status === 'running',
+	    );
+	    me.down('#lxcwarning').setVisible(showWarning);
+	};
+
+	let defaultStatus = me.action === 'migrateall' ? '' : me.action === 'startall' ? 'stopped' : 'running';
+
+	let statusMap = [];
+	let poolMap = [];
+	let haMap = [];
+	let tagMap = [];
+	PVE.data.ResourceStore.each((rec) => {
+	    if (['qemu', 'lxc'].indexOf(rec.data.type) !== -1) {
+		statusMap[rec.data.status] = true;
+	    }
+	    if (rec.data.type === 'pool') {
+		poolMap[rec.data.pool] = true;
+	    }
+	    if (rec.data.hastate !== "") {
+		haMap[rec.data.hastate] = true;
+	    }
+	    if (rec.data.tags !== "") {
+		rec.data.tags.split(/[,; ]/).forEach((tag) => {
+		    if (tag !== '') {
+			tagMap[tag] = true;
+		    }
+		});
+	    }
+	});
+
+	let statusList = Object.keys(statusMap).map(key => [key, key]);
+	statusList.unshift(['', gettext('All')]);
+	let poolList = Object.keys(poolMap).map(key => [key, key]);
+	let tagList = Object.keys(tagMap).map(key => ({ value: key }));
+	let haList = Object.keys(haMap).map(key => [key, key]);
+
+	let filterChange = function() {
+	    let nameValue = me.down('#namefilter').getValue();
+	    let filterCount = 0;
+
+	    if (nameValue !== '') {
+		filterCount++;
+	    }
+
+	    let arrayFiltersData = [];
+	    ['pool', 'hastate'].forEach((filter) => {
+		let selected = me.down(`#${filter}filter`).getValue() ?? [];
+		if (selected.length) {
+		    filterCount++;
+		    arrayFiltersData.push([filter, [...selected]]);
+		}
+	    });
+
+	    let singleFiltersData = [];
+	    ['status', 'type'].forEach((filter) => {
+		let selected = me.down(`#${filter}filter`).getValue() ?? '';
+		if (selected.length) {
+		    filterCount++;
+		    singleFiltersData.push([filter, selected]);
+		}
+	    });
+
+	    let includeTags = me.down('#includetagfilter').getValue() ?? [];
+	    if (includeTags.length) {
+		filterCount++;
+	    }
+	    let excludeTags = me.down('#excludetagfilter').getValue() ?? [];
+	    if (excludeTags.length) {
+		filterCount++;
+	    }
+
+	    let fieldSet = me.down('#filters');
+	    if (filterCount) {
+		fieldSet.setTitle(Ext.String.format(gettext('Filters ({0})'), filterCount));
+	    } else {
+		fieldSet.setTitle(gettext('Filters'));
+	    }
+
+	    let filterFn = function(value) {
+		let name = value.data.name.toLowerCase().indexOf(nameValue.toLowerCase()) !== -1;
+		let arrayFilters = arrayFiltersData.every(([filter, selected]) =>
+		    !selected.length || selected.indexOf(value.data[filter]) !== -1);
+		let singleFilters = singleFiltersData.every(([filter, selected]) =>
+		    !selected.length || value.data[filter].indexOf(selected) !== -1);
+		let tags = value.data.tags.split(/[;, ]/).filter(t => !!t);
+		let includeFilter = !includeTags.length || tags.some(tag => includeTags.indexOf(tag) !== -1);
+		let excludeFilter = !excludeTags.length || tags.every(tag => excludeTags.indexOf(tag) === -1);
+
+		return name && arrayFilters && singleFilters && includeFilter && excludeFilter;
+	    };
+	    let vmselector = me.down('#vms');
+	    vmselector.getStore().setFilters({
+		id: 'customFilter',
+		filterFn,
+	    });
+	    vmselector.checkChange();
+	    if (me.action === 'migrateall') {
+		let records = vmselector.getSelection();
+		refreshLxcWarning(vmselector.getValue(), records);
+	    }
+	};
+
+	items.push({
+	    xtype: 'fieldset',
+	    itemId: 'filters',
+	    collapsible: true,
+	    title: gettext('Filters'),
+	    layout: 'hbox',
+	    items: [
+		{
+		    xtype: 'container',
+		    flex: 1,
+		    padding: 5,
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
+		    defaults: {
+			listeners: {
+			    change: filterChange,
+			},
+			isFormField: false,
+		    },
+		    items: [
+			{
+			    fieldLabel: gettext("Name"),
+			    itemId: 'namefilter',
+			    xtype: 'textfield',
+			},
+			{
+			    xtype: 'combobox',
+			    itemId: 'statusfilter',
+			    fieldLabel: gettext("Status"),
+			    emptyText: gettext('All'),
+			    editable: false,
+			    value: defaultStatus,
+			    store: statusList,
+			},
+			{
+			    xtype: 'combobox',
+			    itemId: 'poolfilter',
+			    fieldLabel: gettext("Pool"),
+			    emptyText: gettext('All'),
+			    editable: false,
+			    multiSelect: true,
+			    store: poolList,
+			},
+		    ],
+		},
+		{
+		    xtype: 'container',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
+		    flex: 1,
+		    padding: 5,
+		    defaults: {
+			listeners: {
+			    change: filterChange,
+			},
+			isFormField: false,
+		    },
+		    items: [
+			{
+			    xtype: 'combobox',
+			    itemId: 'typefilter',
+			    fieldLabel: gettext("Type"),
+			    emptyText: gettext('All'),
+			    editable: false,
+			    value: '',
+			    store: [
+				['', gettext('All')],
+				['lxc', gettext('CT')],
+				['qemu', gettext('VM')],
+			    ],
+			},
+			{
+			    xtype: 'proxmoxComboGrid',
+			    itemId: 'includetagfilter',
+			    fieldLabel: gettext("Include Tags"),
+			    emptyText: gettext('All'),
+			    editable: false,
+			    multiSelect: true,
+			    valueField: 'value',
+			    displayField: 'value',
+			    listConfig: {
+				userCls: 'proxmox-tags-full',
+				columns: [
+				    {
+					dataIndex: 'value',
+					flex: 1,
+					renderer: value =>
+					    PVE.Utils.renderTags(value, PVE.UIOptions.tagOverrides),
+				    },
+				],
+			    },
+			    store: {
+				data: tagList,
+			    },
+			    listeners: {
+				change: filterChange,
+			    },
+			},
+			{
+			    xtype: 'proxmoxComboGrid',
+			    itemId: 'excludetagfilter',
+			    fieldLabel: gettext("Exclude Tags"),
+			    emptyText: gettext('None'),
+			    multiSelect: true,
+			    editable: false,
+			    valueField: 'value',
+			    displayField: 'value',
+			    listConfig: {
+				userCls: 'proxmox-tags-full',
+				columns: [
+				    {
+					dataIndex: 'value',
+					flex: 1,
+					renderer: value =>
+					    PVE.Utils.renderTags(value, PVE.UIOptions.tagOverrides),
+				    },
+				],
+			    },
+			    store: {
+				data: tagList,
+			    },
+			    listeners: {
+				change: filterChange,
+			    },
+			},
+		    ],
+		},
+		{
+		    xtype: 'container',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
+		    flex: 1,
+		    padding: 5,
+		    defaults: {
+			listeners: {
+			    change: filterChange,
+			},
+			isFormField: false,
+		    },
+		    items: [
+			{
+			    xtype: 'combobox',
+			    itemId: 'hastatefilter',
+			    fieldLabel: gettext("HA status"),
+			    emptyText: gettext('All'),
+			    multiSelect: true,
+			    editable: false,
+			    store: haList,
+			    listeners: {
+				change: filterChange,
+			    },
+			},
+		    ],
+		},
+	    ],
+	});
+
 	items.push({
 	    xtype: 'vmselector',
 	    itemId: 'vms',
@@ -144,15 +411,13 @@ Ext.define('PVE.window.BulkAction', {
 	    height: 300,
 	    selectAll: true,
 	    allowBlank: false,
+	    plugins: '',
 	    nodename: me.nodename,
-	    action: me.action,
 	    listeners: {
 		selectionchange: function(vmselector, records) {
 		    if (me.action === 'migrateall') {
-			let showWarning = records.some(
-			    item => item.data.type === 'lxc' && item.data.status === 'running',
-			);
-			me.down('#lxcwarning').setVisible(showWarning);
+			let vmids = me.down('#vms').getValue();
+			refreshLxcWarning(vmids, records);
 		    }
 		},
 	    },
@@ -166,7 +431,6 @@ Ext.define('PVE.window.BulkAction', {
 		align: 'stretch',
 	    },
 	    fieldDefaults: {
-		labelWidth: me.action === 'migrateall' ? 300 : 120,
 		anchor: '100%',
 	    },
 	    items: items,
@@ -194,5 +458,7 @@ Ext.define('PVE.window.BulkAction', {
 	    submitBtn.setDisabled(!valid);
 	});
 	form.isValid();
+
+	filterChange();
     },
 });

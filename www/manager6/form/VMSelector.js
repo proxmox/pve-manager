@@ -18,6 +18,8 @@ Ext.define('PVE.form.VMSelector', {
 	sorters: 'vmid',
     },
 
+    userCls: 'proxmox-tags-circle',
+
     columnsDeclaration: [
 	{
 	    header: 'ID',
@@ -79,6 +81,12 @@ Ext.define('PVE.form.VMSelector', {
 		    },
 		},
 	    },
+	},
+	{
+	    header: gettext('Tags'),
+	    dataIndex: 'tags',
+	    renderer: tags => PVE.Utils.renderTags(tags, PVE.UIOptions.tagOverrides),
+	    flex: 1,
 	},
 	{
 	    header: 'HA ' + gettext('Status'),
@@ -186,7 +194,7 @@ Ext.define('PVE.form.VMSelector', {
     getErrors: function(value) {
 	let me = this;
 	if (!me.isDisabled() && me.allowBlank === false &&
-	    me.getSelectionModel().getCount() === 0) {
+	    me.getValue().length === 0) {
 	    me.addBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	    return [gettext('No VM selected')];
 	}
