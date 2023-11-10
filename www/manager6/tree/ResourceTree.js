@@ -135,9 +135,6 @@ Ext.define('PVE.tree.ResourceTree', {
     },
 
     getToolTip: function(info) {
-	if (info.tip) {
-	    return info.tip;
-	}
 	if (info.type === 'pool' || info.groupbyid !== undefined) {
 	    return undefined;
 	}
