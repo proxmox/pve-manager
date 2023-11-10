@@ -417,7 +417,12 @@ Ext.define('PVE.tree.ResourceTree', {
 			listeners: {
 			    beforeshow: function(tip) {
 				let rec = me.getView().getRecord(tip.triggerElement);
-				tip.update(me.getToolTip(rec.data));
+				let tipText = me.getToolTip(rec.data);
+				if (tipText) {
+				    tip.update(tipText);
+				    return true;
+				}
+				return false;
 			    },
 			},
 		    });
