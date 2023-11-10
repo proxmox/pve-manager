@@ -146,6 +146,12 @@ Ext.define('PVE.tree.ResourceTree', {
 	if (info.hastate !== 'unmanaged') {
 	    qtips.push(gettext('HA State') + ": " + info.hastate);
 	}
+	if (info.type === 'storage') {
+	    let usage = info.disk / info.maxdisk;
+	    if (usage >= 0.0 && usage <= 1.0) {
+		qtips.push(Ext.String.format(gettext("Usage: {0}%"), (usage*100).toFixed(2)));
+	    }
+	}
 
 	let tip = qtips.join(', ');
 	info.tip = tip;
