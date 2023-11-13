@@ -28,6 +28,7 @@ use PVE::LXC;
 use PVE::ProcFSTools;
 use PVE::QemuConfig;
 use PVE::QemuServer;
+use PVE::RESTEnvironment qw(log_warn);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::RRD;
@@ -2091,8 +2092,8 @@ __PACKAGE__->register_method ({
 
 		for my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
-		    if ($d->{type} eq 'lxc') {
-			print STDERR "Skipping $vmid, only VMs can be suspended\n";
+		    if ($d->{type} ne 'qemu') {
+			log_warn("skipping $vmid, only VMs can be suspended");
 			next;
 		    }
 		    my $upid = eval {
