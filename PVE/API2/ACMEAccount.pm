@@ -371,7 +371,9 @@ __PACKAGE__->register_method ({
     path => 'meta',
     method => 'GET',
     description => "Retrieve ACME Directory Meta Information",
-    permissions => { user => 'all' },
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
     parameters => {
 	additionalProperties => 0,
 	properties => {
