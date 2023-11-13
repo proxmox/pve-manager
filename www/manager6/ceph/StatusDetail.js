@@ -147,7 +147,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	clean: 1,
 	active: 1,
 
-	// working
+	// busy
 	activating: 2,
 	backfill_wait: 2,
 	backfilling: 2,
@@ -193,7 +193,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    cls: 'good',
 	},
 	{
-	    text: gettext('Working'),
+	    text: gettext('Busy'),
 	    cls: 'pve-ceph-status-busy',
 	},
 	{
