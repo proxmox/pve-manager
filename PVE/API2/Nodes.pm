@@ -2061,7 +2061,7 @@ __PACKAGE__->register_method ({
 	    if (scalar(@vms) > 0) {
 		$rpcenv->check($authuser, "/vms/$_", [ 'VM.PowerMgmt' ]) for @vms;
 	    } else {
-		raise_perm_exc("/, VM.PowerMgmt  && VM.Config.Disk");
+		raise_perm_exc("/, VM.PowerMgmt && VM.Config.Disk");
 	    }
 	}
 
@@ -2072,15 +2072,15 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    my $stopList = $get_start_stop_list->($nodename, undef, $param->{vms});
+	    my $toSuspendList = $get_start_stop_list->($nodename, undef, $param->{vms});
 
 	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 	    my $datacenterconfig = cfs_read_file('datacenter.cfg');
 	    # if not set by user spawn max cpu count number of workers
 	    my $maxWorkers =  $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
 
-	    for my $order (sort {$b <=> $a} keys %$stopList) {
-		my $vmlist = $stopList->{$order};
+	    for my $order (sort {$b <=> $a} keys %$toSuspendList) {
+		my $vmlist = $toSuspendList->{$order};
 		my $workers = {};
 
 		my $finish_worker = sub {
@@ -2106,10 +2106,10 @@ __PACKAGE__->register_method ({
 		    next if !$task;
 
 		    my $pid = $task->{pid};
-
 		    $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
+
 		    while (scalar(keys %$workers) >= $maxWorkers) {
-			foreach my $p (keys %$workers) {
+			for my $p (keys %$workers) {
 			    if (!PVE::ProcFSTools::check_process_running($p)) {
 				$finish_worker->($p);
 			    }
