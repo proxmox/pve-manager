@@ -108,8 +108,8 @@ __PACKAGE__->register_method ({
 	    name => get_standard_option('pve-acme-account-name'),
 	    contact => get_standard_option('pve-acme-account-contact'),
 	    tos_url => {
-		type => 'string',
 		description => 'URL of CA TermsOfService - setting this indicates agreement.',
+		type => 'string',
 		optional => 1,
 	    },
 	    directory => get_standard_option('pve-acme-directory-url', {
@@ -117,14 +117,14 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    }),
 	    'eab-kid' => {
-		type => 'string',
 		description => 'Key Identifier for External Account Binding.',
+		type => 'string',
 		requires => 'eab-hmac-key',
 		optional => 1,
 	    },
 	    'eab-hmac-key' => {
-		type => 'string',
 		description => 'HMAC key for External Account Binding.',
+		type => 'string',
 		requires => 'eab-kid',
 		optional => 1,
 	    },
@@ -386,24 +386,24 @@ __PACKAGE__->register_method ({
 	additionalProperties => 1,
 	properties => {
 	    termsOfService => {
+		description => 'ACME TermsOfService URL.',
 		type => 'string',
 		optional => 1,
-		description => 'ACME TermsOfService URL.',
 	    },
 	    externalAccountRequired => {
+		description => 'EAB Required'
 		type => 'boolean',
 		optional => 1,
-		description => 'EAB Required'
 	    },
 	    website => {
+		description => 'URL to more information about the ACME server.'
 		type => 'string',
 		optional => 1,
-		description => 'URL to more information about the ACME server.'
 	    },
 	    caaIdentities => {
+		description => 'Hostnames referring to the ACME servers.'
 		type => 'string',
 		optional => 1,
-		description => 'Hostnames referring to the ACME servers.'
 	    },
 	},
     },
