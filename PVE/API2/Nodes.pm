@@ -289,6 +289,7 @@ __PACKAGE__->register_method ({
 	    { name => 'stopall' },
 	    { name => 'storage' },
 	    { name => 'subscription' },
+	    { name => 'suspendall' },
 	    { name => 'syslog' },
 	    { name => 'tasks' },
 	    { name => 'termproxy' },
@@ -2010,6 +2011,129 @@ __PACKAGE__->register_method ({
 
 	return $rpcenv->fork_worker('stopall', undef, $authuser, $code);
     }});
+
+my $create_suspend_worker = sub {
+    my ($nodename, $vmid) = @_;
+    return if !PVE::QemuServer::check_running($vmid, 1);
+    print STDERR "Suspending VM $vmid\n";
+    return PVE::API2::Qemu->vm_suspend(
+	{ node => $nodename, vmid => $vmid, todisk => 1 }
+    );
+};
+
+__PACKAGE__->register_method ({
+    name => 'suspendall',
+    path => 'suspendall',
+    method => 'POST',
+    protected => 1,
+    permissions => {
+	description => "The 'VM.PowerMgmt' permission is required on '/' or on '/vms/<ID>' for each"
+	    ." ID passed via the 'vms' parameter. Additionally, you need 'VM.Config.Disk' on the"
+	    ." '/vms/{vmid}' path and 'Datastore.AllocateSpace' for the configured state-storage(s)",
+	user => 'all',
+    },
+    proxyto => 'node',
+    description => "Suspend all VMs.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vms => {
+		description => "Only consider Guests with these IDs.",
+		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	# we cannot really check access to the state-storage here, that's happening per worker.
+	if (!$rpcenv->check($authuser, "/", [ 'VM.PowerMgmt', 'VM.Config.Disk' ], 1)) {
+	    my @vms = PVE::Tools::split_list($param->{vms});
+	    if (scalar(@vms) > 0) {
+		$rpcenv->check($authuser, "/vms/$_", [ 'VM.PowerMgmt' ]) for @vms;
+	    } else {
+		raise_perm_exc("/, VM.PowerMgmt  && VM.Config.Disk");
+	    }
+	}
+
+	my $nodename = $param->{node};
+	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
+
+	my $code = sub {
+
+	    $rpcenv->{type} = 'priv'; # to start tasks in background
+
+	    my $stopList = $get_start_stop_list->($nodename, undef, $param->{vms});
+
+	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
+	    my $datacenterconfig = cfs_read_file('datacenter.cfg');
+	    # if not set by user spawn max cpu count number of workers
+	    my $maxWorkers =  $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
+
+	    for my $order (sort {$b <=> $a} keys %$stopList) {
+		my $vmlist = $stopList->{$order};
+		my $workers = {};
+
+		my $finish_worker = sub {
+		    my $pid = shift;
+		    my $worker = delete $workers->{$pid} || return;
+
+		    syslog('info', "end task $worker->{upid}");
+		};
+
+		for my $vmid (sort {$b <=> $a} keys %$vmlist) {
+		    my $d = $vmlist->{$vmid};
+		    if ($d->{type} eq 'lxc') {
+			print STDERR "Skipping $vmid, only VMs can be suspended\n";
+			next;
+		    }
+		    my $upid = eval {
+			$create_suspend_worker->($nodename, $vmid)
+		    };
+		    warn $@ if $@;
+		    next if !$upid;
+
+		    my $task = PVE::Tools::upid_decode($upid, 1);
+		    next if !$task;
+
+		    my $pid = $task->{pid};
+
+		    $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
+		    while (scalar(keys %$workers) >= $maxWorkers) {
+			foreach my $p (keys %$workers) {
+			    if (!PVE::ProcFSTools::check_process_running($p)) {
+				$finish_worker->($p);
+			    }
+			}
+			sleep(1);
+		    }
+		}
+		while (scalar(keys %$workers)) {
+		    for my $p (keys %$workers) {
+			if (!PVE::ProcFSTools::check_process_running($p)) {
+			    $finish_worker->($p);
+			}
+		    }
+		    sleep(1);
+		}
+	    }
+
+	    syslog('info', "all VMs suspended");
+
+	    return;
+	};
+
+	return $rpcenv->fork_worker('suspendall', undef, $authuser, $code);
+    }});
+
 
 my $create_migrate_worker = sub {
     my ($nodename, $type, $vmid, $target, $with_local_disks) = @_;
