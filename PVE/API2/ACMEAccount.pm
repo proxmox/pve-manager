@@ -404,7 +404,10 @@ __PACKAGE__->register_method ({
 	    },
 	    caaIdentities => {
 		description => 'Hostnames referring to the ACME servers.',
-		type => 'string',
+		type => 'array',
+		items => {
+		    type => 'string',
+		},
 		optional => 1,
 	    },
 	},
