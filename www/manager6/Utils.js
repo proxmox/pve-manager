@@ -2000,6 +2000,7 @@ Ext.define('PVE.Utils', {
 	    spiceshell: ['', gettext('Shell') + ' (Spice)'],
 	    startall: ['', gettext('Bulk start VMs and Containers')],
 	    stopall: ['', gettext('Bulk shutdown VMs and Containers')],
+	    suspendall: ['', gettext('Suspend all VMs')],
 	    unknownimgdel: ['', gettext('Destroy image from unknown guest')],
 	    wipedisk: ['Device', gettext('Wipe Disk')],
 	    vncproxy: ['VM/CT', gettext('Console')],

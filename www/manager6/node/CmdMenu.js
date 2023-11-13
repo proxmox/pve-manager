@@ -57,6 +57,20 @@ Ext.define('PVE.node.CmdMenu', {
 	    },
 	},
 	{
+	    text: gettext('Bulk Suspend'),
+	    itemId: 'bulksuspend',
+	    iconCls: 'fa fa-fw fa-download',
+	    handler: function() {
+		Ext.create('PVE.window.BulkAction', {
+		    nodename: this.up('menu').nodename,
+		    title: gettext('Bulk Suspend'),
+		    btnText: gettext('Suspend'),
+		    action: 'suspendall',
+		    autoShow: true,
+		});
+	    },
+	},
+	{
 	    text: gettext('Bulk Migrate'),
 	    itemId: 'bulkmigrate',
 	    iconCls: 'fa fa-fw fa-send-o',
@@ -129,6 +143,7 @@ Ext.define('PVE.node.CmdMenu', {
 	if (!caps.vms['VM.PowerMgmt']) {
 	    me.getComponent('bulkstart').setDisabled(true);
 	    me.getComponent('bulkstop').setDisabled(true);
+	    me.getComponent('bulksuspend').setDisabled(true);
 	}
 	if (!caps.nodes['Sys.PowerMgmt']) {
 	    me.getComponent('wakeonlan').setDisabled(true);

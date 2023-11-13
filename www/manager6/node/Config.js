@@ -66,6 +66,20 @@ Ext.define('PVE.node.Config', {
 			},
 		    },
 		    {
+			text: gettext('Bulk Suspend'),
+			iconCls: 'fa fa-fw fa-download',
+			disabled: !caps.vms['VM.PowerMgmt'],
+			handler: function() {
+			    Ext.create('PVE.window.BulkAction', {
+				autoShow: true,
+				nodename: nodename,
+				title: gettext('Bulk Suspend'),
+				btnText: gettext('Suspend'),
+				action: 'suspendall',
+			    });
+			},
+		    },
+		    {
 			text: gettext('Bulk Migrate'),
 			iconCls: 'fa fa-fw fa-send-o',
 			disabled: !caps.vms['VM.Migrate'],

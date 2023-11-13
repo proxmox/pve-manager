@@ -10,7 +10,7 @@ Ext.define('PVE.window.BulkAction', {
     },
     border: false,
 
-    // the action to set, currently there are: `startall`, `migrateall`, `stopall`
+    // the action to set, currently there are: `startall`, `migrateall`, `stopall`, `suspendall`
     action: undefined,
 
     submit: function(params) {
@@ -144,6 +144,7 @@ Ext.define('PVE.window.BulkAction', {
 	};
 
 	let defaultStatus = me.action === 'migrateall' ? '' : me.action === 'startall' ? 'stopped' : 'running';
+	let defaultType = me.action === 'suspendall' ? 'qemu' : '';
 
 	let statusMap = [];
 	let poolMap = [];
@@ -318,7 +319,7 @@ Ext.define('PVE.window.BulkAction', {
 			    fieldLabel: gettext("Type"),
 			    emptyText: gettext('All'),
 			    editable: false,
-			    value: '',
+			    value: defaultType,
 			    store: [
 				['', gettext('All')],
 				['lxc', gettext('CT')],
