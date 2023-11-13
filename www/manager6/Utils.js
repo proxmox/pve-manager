@@ -1921,6 +1921,10 @@ Ext.define('PVE.Utils', {
 	'ok': 2,
 	'__default__': 3,
     },
+
+    isStandaloneNode: function() {
+	return PVE.data.ResourceStore.getNodes().length < 2;
+    },
 },
 
     singleton: true,

@@ -56,7 +56,7 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
     initComponent: function() {
 	let me = this;
 
-	if (me.showNodeSelector && PVE.data.ResourceStore.getNodes().length > 1) {
+	if (me.showNodeSelector && !PVE.Utils.isStandaloneNode()) {
 	    me.errorHeight = 140;
 	    Ext.apply(me.listConfig ?? {}, {
 		tbar: {

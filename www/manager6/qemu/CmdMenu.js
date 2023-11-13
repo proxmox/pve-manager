@@ -32,7 +32,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	};
 
 	let caps = Ext.state.Manager.get('GuiCap');
-	let standalone = PVE.data.ResourceStore.getNodes().length < 2;
+	let standalone = PVE.Utils.isStandaloneNode();
 
 	let running = false, stopped = true, suspended = false;
 	switch (info.status) {

@@ -114,7 +114,7 @@ Ext.define('PVE.storage.LunSelector', {
     initComponent: function() {
 	let me = this;
 
-	if (PVE.data.ResourceStore.getNodes().length > 1) {
+	if (!PVE.Utils.isStandaloneNode()) {
 	    me.errorHeight = 140;
 	    Ext.apply(me.listConfig ?? {}, {
 		tbar: {

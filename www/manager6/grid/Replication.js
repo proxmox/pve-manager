@@ -220,7 +220,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	// currently replication is for cluster only, so disable the whole component for non-cluster
 	checkPrerequisites: function() {
 	    let view = this.getView();
-	    if (PVE.data.ResourceStore.getNodes().length < 2) {
+	    if (PVE.Utils.isStandaloneNode()) {
 		view.mask(gettext("Replication needs at least two nodes"), ['pve-static-mask']);
 	    }
 	},
@@ -450,7 +450,7 @@ Ext.define('PVE.grid.ReplicaView', {
 
 	// if we set the warning mask, we do not want to load
 	// or set the mask on store errors
-	if (PVE.data.ResourceStore.getNodes().length < 2) {
+	if (PVE.Utils.isStandaloneNode()) {
 	    return;
 	}
 

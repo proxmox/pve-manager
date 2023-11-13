@@ -22,7 +22,7 @@ Ext.define('PVE.menu.TemplateMenu', {
 	me.title = (guestType === 'qemu' ? 'VM ' : 'CT ') + info.vmid;
 
 	let caps = Ext.state.Manager.get('GuiCap');
-	let standaloneNode = PVE.data.ResourceStore.getNodes().length < 2;
+	let standaloneNode = PVE.Utils.isStandaloneNode();
 
 	me.items = [
 	    {

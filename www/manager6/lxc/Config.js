@@ -92,7 +92,7 @@ Ext.define('PVE.lxc.Config', {
 	var migrateBtn = Ext.create('Ext.Button', {
 	    text: gettext('Migrate'),
 	    disabled: !caps.vms['VM.Migrate'],
-	    hidden: PVE.data.ResourceStore.getNodes().length < 2,
+	    hidden: PVE.Utils.isStandaloneNode(),
 	    handler: function() {
 		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'lxc',
