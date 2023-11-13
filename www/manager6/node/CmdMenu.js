@@ -139,5 +139,9 @@ Ext.define('PVE.node.CmdMenu', {
 	if (me.pveSelNode.data.running) {
 	    me.getComponent('wakeonlan').setDisabled(true);
 	}
+
+	if (PVE.Utils.isStandaloneNode()) {
+	    me.getComponent('bulkmigrate').setVisible(false);
+	}
     },
 });

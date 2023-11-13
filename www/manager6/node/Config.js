@@ -69,6 +69,7 @@ Ext.define('PVE.node.Config', {
 			text: gettext('Bulk Migrate'),
 			iconCls: 'fa fa-fw fa-send-o',
 			disabled: !caps.vms['VM.Migrate'],
+			hidden: PVE.Utils.isStandaloneNode(),
 			handler: function() {
 			    Ext.create('PVE.window.BulkAction', {
 				autoShow: true,
