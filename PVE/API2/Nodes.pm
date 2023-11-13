@@ -2015,7 +2015,10 @@ __PACKAGE__->register_method ({
 
 my $create_suspend_worker = sub {
     my ($nodename, $vmid) = @_;
-    return if !PVE::QemuServer::check_running($vmid, 1);
+    if (!PVE::QemuServer::check_running($vmid, 1)) {
+	print "VM $vmid not running, skipping suspension\n";
+	return;
+    }
     print STDERR "Suspending VM $vmid\n";
     return PVE::API2::Qemu->vm_suspend(
 	{ node => $nodename, vmid => $vmid, todisk => 1 }
