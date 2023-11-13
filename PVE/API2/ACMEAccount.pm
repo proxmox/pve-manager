@@ -391,17 +391,17 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    },
 	    externalAccountRequired => {
-		description => 'EAB Required'
+		description => 'EAB Required',
 		type => 'boolean',
 		optional => 1,
 	    },
 	    website => {
-		description => 'URL to more information about the ACME server.'
+		description => 'URL to more information about the ACME server.',
 		type => 'string',
 		optional => 1,
 	    },
 	    caaIdentities => {
-		description => 'Hostnames referring to the ACME servers.'
+		description => 'Hostnames referring to the ACME servers.',
 		type => 'string',
 		optional => 1,
 	    },
