@@ -56,24 +56,6 @@ sub raise_api_error {
     die $exc;
 }
 
-sub filter_entities_by_privs {
-    my ($rpcenv, $entities) = @_;
-    my $authuser = $rpcenv->get_user();
-
-    my $can_see_mapping_privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
-
-    my $filtered = [grep {
-	$rpcenv->check_any(
-	    $authuser,
-	    "/mapping/notification/$_->{name}",
-	    $can_see_mapping_privs,
-	    1
-	);
-    } @$entities];
-
-    return $filtered;
-}
-
 __PACKAGE__->register_method ({
     name => 'index',
     path => '',
@@ -137,10 +119,11 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => 'Returns a list of all entities that can be used as notification targets.',
     permissions => {
-	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'."
-	    . " The special 'mail-to-root' target is available to all users.",
-	user => 'all',
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Use']],
+	],
     },
     protected => 1,
     parameters => {
@@ -184,7 +167,6 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my $config = PVE::Notify::read_config();
-	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $targets = eval {
 	    my $result = [];
@@ -224,7 +206,7 @@ __PACKAGE__->register_method ({
 
 	raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, $targets);
+	return $targets;
     }
 });
 
@@ -235,10 +217,11 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Send a test notification to a provided target.',
     permissions => {
-	description => "The user requires 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'."
-	    . " The special 'mail-to-root' target can be accessed by all users.",
-	user => 'all',
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Use']],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -254,16 +237,6 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
-	my $rpcenv = PVE::RPCEnvironment::get();
-	my $authuser = $rpcenv->get_user();
-
-	my $privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
-
-	$rpcenv->check_any(
-	    $authuser,
-	    "/mapping/notification/$name",
-	    $privs,
-	);
 
 	eval {
 	    my $config = PVE::Notify::read_config();
@@ -329,9 +302,10 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => 'Returns a list of all sendmail endpoints',
     permissions => {
-	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
-	user => 'all',
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	],
     },
     protected => 1,
     parameters => {
@@ -355,14 +329,13 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my $config = PVE::Notify::read_config();
-	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $entities = eval {
 	    $config->get_sendmail_endpoints();
 	};
 	raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, $entities);
+	return $entities;
     }
 });
 
@@ -373,8 +346,8 @@ __PACKAGE__->register_method ({
     description => 'Return a specific sendmail endpoint',
     permissions => {
 	check => ['or',
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
 	],
     },
     protected => 1,
@@ -418,7 +391,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new sendmail endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -466,7 +439,7 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing sendmail endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -532,7 +505,7 @@ __PACKAGE__->register_method ({
     method => 'DELETE',
     description => 'Remove sendmail endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -595,9 +568,8 @@ __PACKAGE__->register_method ({
     description => 'Returns a list of all gotify endpoints',
     protected => 1,
     permissions => {
-	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
-	user => 'all',
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Audit']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -627,7 +599,7 @@ __PACKAGE__->register_method ({
 	};
 	raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, $entities);
+	return $entities;
     }
 });
 
@@ -639,8 +611,8 @@ __PACKAGE__->register_method ({
     protected => 1,
     permissions => {
 	check => ['or',
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
 	],
     },
     parameters => {
@@ -683,7 +655,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new gotify endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -727,7 +699,7 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing gotify endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -788,7 +760,7 @@ __PACKAGE__->register_method ({
     method => 'DELETE',
     description => 'Remove gotify endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -897,9 +869,10 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => 'Returns a list of all smtp endpoints',
     permissions => {
-	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/targets/<name>'.",
-	user => 'all',
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	],
     },
     protected => 1,
     parameters => {
@@ -923,14 +896,13 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my $config = PVE::Notify::read_config();
-	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $entities = eval {
 	    $config->get_smtp_endpoints();
 	};
 	raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, "targets", $entities);
+	return $entities;
     }
 });
 
@@ -941,8 +913,8 @@ __PACKAGE__->register_method ({
     description => 'Return a specific smtp endpoint',
     permissions => {
 	check => ['or',
-	    ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
-	    ['perm', '/mapping/notification/targets/{name}', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
 	],
     },
     protected => 1,
@@ -986,7 +958,9 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new smtp endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/targets', ['Mapping.Modify']],
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1044,7 +1018,9 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing smtp endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1120,7 +1096,7 @@ __PACKAGE__->register_method ({
     method => 'DELETE',
     description => 'Remove smtp endpoint',
     permissions => {
-	check => ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1221,9 +1197,11 @@ __PACKAGE__->register_method ({
     description => 'Returns a list of all matchers',
     protected => 1,
     permissions => {
-	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
-	    . " 'Mapping.Audit' permissions on '/mapping/notification/<name>'.",
-	user => 'all',
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Use']],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1246,14 +1224,13 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my $config = PVE::Notify::read_config();
-	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $entities = eval {
 	    $config->get_matchers();
 	};
 	raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, $entities);
+	return $entities;
     }
 });
 
@@ -1265,8 +1242,8 @@ __PACKAGE__->register_method ({
     protected => 1,
     permissions => {
 	check => ['or',
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
-	    ['perm', '/mapping/notification/{name}', ['Mapping.Audit']],
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
 	],
     },
     parameters => {
@@ -1310,7 +1287,7 @@ __PACKAGE__->register_method ({
     description => 'Create a new matcher',
     protected => 1,
     permissions => {
-	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1362,7 +1339,7 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing matcher',
     permissions => {
-	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1430,7 +1407,7 @@ __PACKAGE__->register_method ({
     method => 'DELETE',
     description => 'Remove matcher',
     permissions => {
-	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
