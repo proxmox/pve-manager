@@ -129,7 +129,7 @@ my sub _handle_job_err {
     # The replication job is run every 15 mins if no schedule is set.
     my $schedule = $job->{schedule} // '*/15';
 
-    my $properties = {
+    my $template_data = {
 	"failure-count" => $fail_count,
 	"last-sync"     => $jobstate->{last_sync},
 	"next-sync"     => $next_sync,
@@ -139,19 +139,18 @@ my sub _handle_job_err {
 	"error"         => $err,
     };
 
-    eval {
-	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	my $target = $dcconf->{notify}->{'target-replication'} // PVE::Notify::default_target();
-	my $notify = $dcconf->{notify}->{'replication'} // 'always';
+    my $metadata_fields = {
+	# TODO: Add job-id?
+	type => "replication",
+    };
 
-	if ($notify eq 'always') {
-	    PVE::Notify::error(
-		$target,
-		$replication_error_subject_template,
-		$replication_error_body_template,
-		$properties
-	    );
-	}
+    eval {
+	PVE::Notify::error(
+	    $replication_error_subject_template,
+	    $replication_error_body_template,
+	    $template_data,
+	    $metadata_fields
+	);
 
     };
     warn ": $@" if $@;
