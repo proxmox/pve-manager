@@ -36,29 +36,11 @@ Ext.define('PVE.dc.BackupEdit', {
 		delete values.node;
 	    }
 
-	    if (!isCreate) {
-		// 'mailnotification' is deprecated in favor of 'notification-policy'
-		// -> Migration to the new parameter happens in init, so we are
-		//    safe to remove the old parameter here.
-		Proxmox.Utils.assemble_field_data(values, { 'delete': 'mailnotification' });
-
-		// If sending notifications via mail, remove the current value of
-		// 'notification-target'
-		if (values['notification-mode'] === "mailto") {
-		    Proxmox.Utils.assemble_field_data(
-			values,
-			{ 'delete': 'notification-target' },
-		    );
-		} else {
-		    // and vice versa...
-		    Proxmox.Utils.assemble_field_data(
-			values,
-			{ 'delete': 'mailto' },
-		    );
-		}
-	    }
-
-	    delete values['notification-mode'];
+	    // Get rid of new-old parameters for notification settings.
+	    // These should only be set for those selected few who ran
+	    // pve-manager from pvetest.
+	    Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-policy' });
+	    Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-target' });
 
 	    if (!values.id && isCreate) {
 		values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
@@ -170,20 +152,14 @@ Ext.define('PVE.dc.BackupEdit', {
 		    success: function(response, _options) {
 			let data = response.result.data;
 
-			// 'mailnotification' is deprecated. Let's automatically
-			// migrate to the compatible 'notification-policy' parameter
-			if (data.mailnotification) {
-			    if (!data["notification-policy"]) {
-				data["notification-policy"] = data.mailnotification;
-			    }
-
-			    delete data.mailnotification;
-			}
-
-			if (data['notification-target']) {
-			    data['notification-mode'] = 'notification-target';
-			} else if (data.mailto) {
-			    data['notification-mode'] = 'mailto';
+			// Migrate 'new'-old notification-policy back to
+			// old-old mailnotification. Only should affect
+			// users who used pve-manager from pvetest.
+			// This was a remnant of notifications before the
+			// overhaul.
+			let policy = data['notification-policy'];
+			if (policy === 'always' || policy === 'failure') {
+			    data.mailnotification = policy;
 			}
 
 			if (data.exclude) {
@@ -228,7 +204,6 @@ Ext.define('PVE.dc.BackupEdit', {
     viewModel: {
 	data: {
 	    selMode: 'include',
-	    notificationMode: 'notification-target',
 	},
 
 	formulas: {
@@ -327,32 +302,9 @@ Ext.define('PVE.dc.BackupEdit', {
 				{
 				    xtype: 'pveEmailNotificationSelector',
 				    fieldLabel: gettext('Notify'),
-				    name: 'notification-policy',
+				    name: 'mailnotification',
 				    cbind: {
 					value: (get) => get('isCreate') ? 'always' : '',
-					deleteEmpty: '{!isCreate}',
-				    },
-				},
-				{
-				    xtype: 'pveNotificationModeSelector',
-				    fieldLabel: gettext('Notify via'),
-				    name: 'notification-mode',
-				    bind: {
-					value: '{notificationMode}',
-				    },
-				},
-				{
-				    xtype: 'pveNotificationTargetSelector',
-				    fieldLabel: gettext('Notification Target'),
-				    name: 'notification-target',
-				    allowBlank: true,
-				    editable: true,
-				    autoSelect: false,
-				    bind: {
-					hidden: '{mailNotificationSelected}',
-					disabled: '{mailNotificationSelected}',
-				    },
-				    cbind: {
 					deleteEmpty: '{!isCreate}',
 				    },
 				},
@@ -360,11 +312,6 @@ Ext.define('PVE.dc.BackupEdit', {
 				    xtype: 'textfield',
 				    fieldLabel: gettext('Send email to'),
 				    name: 'mailto',
-				    hidden: true,
-				    bind: {
-					hidden: '{!mailNotificationSelected}',
-					disabled: '{!mailNotificationSelected}',
-				    },
 				},
 				{
 				    xtype: 'pveBackupCompressionSelector',

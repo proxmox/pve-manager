@@ -4,6 +4,5 @@ Ext.define('PVE.form.EmailNotificationSelector', {
     comboItems: [
 	['always', gettext('Notify always')],
 	['failure', gettext('On failure only')],
-	['never', gettext('Notify never')],
     ],
 });

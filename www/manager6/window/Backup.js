@@ -30,30 +30,10 @@ Ext.define('PVE.window.Backup', {
 	    name: 'mode',
 	});
 
-	let notificationTargetSelector = Ext.create('PVE.form.NotificationTargetSelector', {
-	    fieldLabel: gettext('Notification target'),
-	    name: 'notification-target',
-	    emptyText: Proxmox.Utils.noneText,
-	    hidden: true,
-	});
-
 	let mailtoField = Ext.create('Ext.form.field.Text', {
 	    fieldLabel: gettext('Send email to'),
 	    name: 'mailto',
 	    emptyText: Proxmox.Utils.noneText,
-	});
-
-	let notificationModeSelector = Ext.create('PVE.form.NotificationModeSelector', {
-	    fieldLabel: gettext('Notify via'),
-	    value: 'mailto',
-	    name: 'notification-mode',
-	    listeners: {
-		change: function(f, v) {
-		    let mailSelected = v === 'mailto';
-		    notificationTargetSelector.setHidden(mailSelected);
-		    mailtoField.setHidden(!mailSelected);
-		},
-	    },
 	});
 
 	const keepNames = [
@@ -127,12 +107,6 @@ Ext.define('PVE.window.Backup', {
 			success: function(response, opts) {
 			    const data = response.result.data;
 
-			    if (!initialDefaults && data['notification-mode'] !== undefined) {
-				notificationModeSelector.setValue(data['notification-mode']);
-			    }
-			    if (!initialDefaults && data['notification-channel'] !== undefined) {
-				notificationTargetSelector.setValue(data['notification-channel']);
-			    }
 			    if (!initialDefaults && data.mailto !== undefined) {
 				mailtoField.setValue(data.mailto);
 			    }
@@ -202,8 +176,6 @@ Ext.define('PVE.window.Backup', {
 	    ],
 	    column2: [
 		compressionSelector,
-		notificationModeSelector,
-		notificationTargetSelector,
 		mailtoField,
 		removeCheckbox,
 	    ],
@@ -280,13 +252,8 @@ Ext.define('PVE.window.Backup', {
 		    remove: values.remove,
 		};
 
-		if (values.mailto && values['notification-mode'] === 'mailto') {
+		if (values.mailto) {
 		    params.mailto = values.mailto;
-		}
-
-		if (values['notification-target'] &&
-		    values['notification-mode'] === 'notification-target') {
-		    params['notification-target'] = values['notification-target'];
 		}
 
 		if (values.compress) {
