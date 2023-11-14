@@ -38,14 +38,14 @@ my $result_properties;
 
 my $mock_notification_module = Test::MockModule->new('PVE::Notify');
 my $mocked_notify = sub {
-    my ($channel, $severity, $title, $text, $properties) = @_;
+    my ($severity, $title, $text, $properties, $metadata) = @_;
 
     $result_text = $text;
     $result_properties = $properties;
 };
 my $mocked_notify_short = sub {
-    my ($channel, @rest) = @_;
-    return $mocked_notify->($channel, '<some severity>', @rest);
+    my (@params) = @_;
+    return $mocked_notify->('<some severity>', @params);
 };
 
 $mock_notification_module->mock(
