@@ -317,14 +317,9 @@ Ext.define('PVE.dc.Config', {
 	    );
 	}
 
-	// this is being reworked, but we need to release newer manager versions already..
-	let notification_enabled = false;
-	if (notification_enabled && (
-		caps.mapping['Mapping.Audit'] ||
-		caps.mapping['Mapping.Use'] ||
-		caps.mapping['Mapping.Modify']
-	    )
-	) {
+	if (caps.mapping['Mapping.Audit'] ||
+	    caps.mapping['Mapping.Use'] ||
+	    caps.mapping['Mapping.Modify']) {
 	    me.items.push(
 		{
 		    xtype: 'pmxNotificationConfigView',
