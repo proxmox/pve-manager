@@ -452,19 +452,17 @@ sub send_notification {
     my $opts = $self->{opts};
     my $mailto = $opts->{mailto};
     my $cmdline = $self->{cmdline};
-    my $target = $opts->{"notification-target"};
-    # Fall back to 'mailnotification' if 'notification-policy' is not set.
-    # If both are set, 'notification-policy' takes precedence
-    my $policy = $opts->{"notification-policy"} // $opts->{mailnotification} // 'always';
+    # Old-style notification policy. This parameter will influce
+    # if an ad-hoc notification target/matcher will be created.
+    my $policy = $opts->{"notification-policy"} //
+	$opts->{mailnotification} //
+	'always';
 
-    return if ($policy eq 'never');
 
     sanitize_task_list($tasklist);
     my $error_count = count_failed_tasks($tasklist);
 
     my $failed = ($error_count || $err);
-
-    return if (!$failed && ($policy eq 'failure'));
 
     my $status_text = $failed ? 'backup failed' : 'backup successful';
 
@@ -489,8 +487,10 @@ sub send_notification {
 	    "See Task History for details!\n";
     };
 
+    my $hostname = get_hostname();
+
     my $notification_props = {
-	"hostname"      => get_hostname(),
+	"hostname"      => $hostname,
 	"error-message" => $err,
 	"guest-table"   => build_guest_table($tasklist),
 	"logs"          => $text_log_part,
@@ -498,9 +498,16 @@ sub send_notification {
 	"total-time"    => $total_time,
     };
 
+    my $fields = {
+	type => "vzdump",
+	hostname => $hostname,
+    };
+
     my $notification_config = PVE::Notify::read_config();
 
-    if ($mailto && scalar(@$mailto)) {
+    my $legacy_sendmail = $policy eq "always" || ($policy eq "failure" && $failed);
+
+    if ($mailto && scalar(@$mailto) && $legacy_sendmail) {
 	# <, >, @ are not allowed in endpoint names, but that is only
 	# verified once the config is serialized. That means that
 	# we can rely on that fact that no other endpoint with this name exists.
@@ -514,29 +521,20 @@ sub send_notification {
 
 	my $endpoints = [$endpoint_name];
 
-	# Create an anonymous group containing the sendmail endpoint and the
-	# $target endpoint, if specified
-	if ($target) {
-	    push @$endpoints, $target;
-	}
-
-	$target = "<group-$endpoint_name>";
-	$notification_config->add_group(
-	    $target,
+	$notification_config->add_matcher(
+	    "<matcher-$endpoint_name>",
 	    $endpoints,
 	);
     }
 
-    return if (!$target);
-
     my $severity = $failed ? "error" : "info";
 
     PVE::Notify::notify(
-	$target,
 	$severity,
 	$subject_template,
 	$body_template,
 	$notification_props,
+	$fields,
 	$notification_config
     );
 };
