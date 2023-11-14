@@ -194,6 +194,14 @@ __PACKAGE__->register_method ({
 		};
 	    }
 
+	    for my $target (@{$config->get_smtp_endpoints()}) {
+		push @$result, {
+		    name => $target->{name},
+		    comment => $target->{comment},
+		    type => 'smtp',
+		};
+	    }
+
 	    $result
 	};
 
@@ -754,6 +762,321 @@ __PACKAGE__->register_method ({
 	};
 
 	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+my $smtp_properties= {
+    name => {
+	description => 'The name of the endpoint.',
+	type => 'string',
+	format => 'pve-configid',
+    },
+    server => {
+	description => 'The address of the SMTP server.',
+	type => 'string',
+    },
+    port => {
+	description => 'The port to be used. Defaults to 465 for TLS based connections,'
+	    . ' 587 for STARTTLS based connections and port 25 for insecure plain-text'
+	    . ' connections.',
+	type => 'integer',
+	optional => 1,
+    },
+    mode => {
+	description => 'Determine which encryption method shall be used for the connection.',
+	type => 'string',
+	enum => [ qw(insecure starttls tls) ],
+	default => 'tls',
+	optional => 1,
+    },
+    username => {
+	description => 'Username for SMTP authentication',
+	type => 'string',
+	optional => 1,
+    },
+    password => {
+	description => 'Password for SMTP authentication',
+	type => 'string',
+	optional => 1,
+    },
+    mailto => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	    format => 'email-or-username',
+	},
+	description => 'List of email recipients',
+	optional => 1,
+    },
+    'mailto-user' => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	    format => 'pve-userid',
+	},
+	description => 'List of users',
+	optional => 1,
+    },
+    'from-address' => {
+	description => '`From` address for the mail',
+	type => 'string',
+    },
+    author => {
+	description => 'Author of the mail. Defaults to \'Proxmox VE\'.',
+	type => 'string',
+	optional => 1,
+    },
+    'comment' => {
+	description => 'Comment',
+	type        => 'string',
+	optional    => 1,
+    },
+};
+
+__PACKAGE__->register_method ({
+    name => 'get_smtp_endpoints',
+    path => 'endpoints/smtp',
+    method => 'GET',
+    description => 'Returns a list of all smtp endpoints',
+    permissions => {
+	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
+	    . " 'Mapping.Audit' permissions on '/mapping/notification/targets/<name>'.",
+	user => 'all',
+    },
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => $smtp_properties,
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	my $config = PVE::Notify::read_config();
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $entities = eval {
+	    $config->get_smtp_endpoints();
+	};
+	raise_api_error($@) if $@;
+
+	return filter_entities_by_privs($rpcenv, "targets", $entities);
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_smtp_endpoint',
+    path => 'endpoints/smtp/{name}',
+    method => 'GET',
+    description => 'Return a specific smtp endpoint',
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
+	    ['perm', '/mapping/notification/targets/{name}', ['Mapping.Audit']],
+	],
+    },
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    %{ remove_protected_properties($smtp_properties, ['password']) },
+	    digest => get_standard_option('pve-config-digest'),
+	}
+
+    },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $config = PVE::Notify::read_config();
+	my $endpoint = eval {
+	    $config->get_smtp_endpoint($name)
+	};
+
+	raise_api_error($@) if $@;
+	$endpoint->{digest} = $config->digest();
+
+	return $endpoint;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'create_smtp_endpoint',
+    path => 'endpoints/smtp',
+    protected => 1,
+    method => 'POST',
+    description => 'Create a new smtp endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification/targets', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => $smtp_properties,
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $server = extract_param($param, 'server');
+	my $port = extract_param($param, 'port');
+	my $mode = extract_param($param, 'mode');
+	my $username = extract_param($param, 'username');
+	my $password = extract_param($param, 'password');
+	my $mailto = extract_param($param, 'mailto');
+	my $mailto_user = extract_param($param, 'mailto-user');
+	my $from_address = extract_param($param, 'from-address');
+	my $author = extract_param($param, 'author');
+	my $comment = extract_param($param, 'comment');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->add_smtp_endpoint(
+		    $name,
+		    $server,
+		    $port,
+		    $mode,
+		    $username,
+		    $password,
+		    $mailto,
+		    $mailto_user,
+		    $from_address,
+		    $author,
+		    $comment,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'update_smtp_endpoint',
+    path => 'endpoints/smtp/{name}',
+    protected => 1,
+    method => 'PUT',
+    description => 'Update existing smtp endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    %{ make_properties_optional($smtp_properties) },
+	    delete => {
+		type => 'array',
+		items => {
+		    type => 'string',
+		    format => 'pve-configid',
+		},
+		optional => 1,
+		description => 'A list of settings you want to delete.',
+	    },
+	    digest => get_standard_option('pve-config-digest'),
+
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $server = extract_param($param, 'server');
+	my $port = extract_param($param, 'port');
+	my $mode = extract_param($param, 'mode');
+	my $username = extract_param($param, 'username');
+	my $password = extract_param($param, 'password');
+	my $mailto = extract_param($param, 'mailto');
+	my $mailto_user = extract_param($param, 'mailto-user');
+	my $from_address = extract_param($param, 'from-address');
+	my $author = extract_param($param, 'author');
+	my $comment = extract_param($param, 'comment');
+
+	my $delete = extract_param($param, 'delete');
+	my $digest = extract_param($param, 'digest');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->update_smtp_endpoint(
+		    $name,
+		    $server,
+		    $port,
+		    $mode,
+		    $username,
+		    $password,
+		    $mailto,
+		    $mailto_user,
+		    $from_address,
+		    $author,
+		    $comment,
+		    $delete,
+		    $digest,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'delete_smtp_endpoint',
+    protected => 1,
+    path => 'endpoints/smtp/{name}',
+    method => 'DELETE',
+    description => 'Remove smtp endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notification/targets/{name}', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+		$config->delete_smtp_endpoint($name);
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if ($@);
 	return;
     }
 });
