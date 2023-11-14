@@ -251,8 +251,6 @@ __PACKAGE__->register_method({
     description => "This is used to resynchronize the package index files from their sources (apt-get update).",
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
-	description => "If 'notify: target-package-updates' is set, then the user must have the "
-	    . "'Mapping.Use' permission on '/mapping/notification/<target>'",
     },
     protected => 1,
     proxyto => 'node',
@@ -262,7 +260,7 @@ __PACKAGE__->register_method({
 	    node => get_standard_option('pve-node'),
 	    notify => {
 		type => 'boolean',
-		description => "Send notification mail about new packages (to email address specified for user 'root\@pam').",
+		description => "Send notification about new packages.",
 		optional => 1,
 		default => 0,
 	    },
@@ -282,16 +280,6 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	my $target = $dcconf->{notify}->{'target-package-updates'} //
-	    PVE::Notify::default_target();
-
-	if ($param->{notify} && $target ne PVE::Notify::default_target()) {
-	    # If we notify via anything other than the default target (mail to root),
-	    # then the user must have the proper permissions for the target.
-	    # The mail-to-root target does not require these, as otherwise
-	    # we would break compatibility.
-	    PVE::Notify::check_may_use_target($target, $rpcenv);
-	}
 
 	my $authuser = $rpcenv->get_user();
 
@@ -357,16 +345,23 @@ __PACKAGE__->register_method({
 
 		return if !$count;
 
-		my $properties = {
+		my $template_data = {
 		    updates  => $updates_table,
 		    hostname => $hostname,
 		};
 
+		# Additional metadata fields that can be used in notification
+		# matchers.
+		my $metadata_fields = {
+		    type => 'package-updates',
+		    hostname => $hostname,
+		};
+
 		PVE::Notify::info(
-		    $target,
 		    $updates_available_subject_template,
 		    $updates_available_body_template,
-		    $properties,
+		    $template_data,
+		    $metadata_fields,
 		);
 
 		foreach my $pi (@$pkglist) {
