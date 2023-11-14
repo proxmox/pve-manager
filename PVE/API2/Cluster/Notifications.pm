@@ -164,8 +164,19 @@ __PACKAGE__->register_method ({
 		},
 		'comment' => {
 		    description => 'Comment',
-		    type        => 'string',
-		    optional    => 1,
+		    type => 'string',
+		    optional => 1,
+		},
+		'disable' => {
+		    description => 'Show if this target is disabled',
+		    type => 'boolean',
+		    optional => 1,
+		    default => 0,
+		},
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
 		},
 	    },
 	},
@@ -183,6 +194,8 @@ __PACKAGE__->register_method ({
 		    name => $target->{name},
 		    comment => $target->{comment},
 		    type => 'sendmail',
+		    disable => $target->{disable},
+		    origin => $target->{origin},
 		};
 	    }
 
@@ -191,6 +204,8 @@ __PACKAGE__->register_method ({
 		    name => $target->{name},
 		    comment => $target->{comment},
 		    type => 'gotify',
+		    disable => $target->{disable},
+		    origin => $target->{origin},
 		};
 	    }
 
@@ -199,6 +214,8 @@ __PACKAGE__->register_method ({
 		    name => $target->{name},
 		    comment => $target->{comment},
 		    type => 'smtp',
+		    disable => $target->{disable},
+		    origin => $target->{origin},
 		};
 	    }
 
@@ -295,8 +312,14 @@ my $sendmail_properties = {
     },
     'comment' => {
 	description => 'Comment',
-	type        => 'string',
-	optional    => 1,
+	type => 'string',
+	optional => 1,
+    },
+    'disable' => {
+	description => 'Disable this target',
+	type => 'boolean',
+	optional => 1,
+	default => 0,
     },
 };
 
@@ -319,7 +342,14 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => 'object',
-	    properties => $sendmail_properties,
+	    properties => {
+		%$sendmail_properties,
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
+		},
+	    },
 	},
 	links => [ { rel => 'child', href => '{name}' } ],
     },
@@ -404,6 +434,7 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -416,6 +447,7 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
+		    $disable,
 		);
 
 		PVE::Notify::write_config($config);
@@ -463,6 +495,7 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	my $delete = extract_param($param, 'delete');
 	my $digest = extract_param($param, 'digest');
@@ -478,6 +511,7 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
+		    $disable,
 		    $delete,
 		    $digest,
 		);
@@ -543,8 +577,14 @@ my $gotify_properties = {
     },
     'comment' => {
 	description => 'Comment',
-	type        => 'string',
-	optional    => 1,
+	type => 'string',
+	optional => 1,
+    },
+    'disable' => {
+	description => 'Disable this target',
+	type => 'boolean',
+	optional => 1,
+	default => 0,
     },
 };
 
@@ -567,7 +607,14 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => 'object',
-	    properties => remove_protected_properties($gotify_properties, ['token']),
+	    properties => {
+		% {remove_protected_properties($gotify_properties, ['token'])},
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
+		},
+	    },
 	},
 	links => [ { rel => 'child', href => '{name}' } ],
     },
@@ -650,6 +697,7 @@ __PACKAGE__->register_method ({
 	my $server = extract_param($param, 'server');
 	my $token = extract_param($param, 'token');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -660,6 +708,7 @@ __PACKAGE__->register_method ({
 		    $server,
 		    $token,
 		    $comment,
+		    $disable,
 		);
 
 		PVE::Notify::write_config($config);
@@ -704,6 +753,7 @@ __PACKAGE__->register_method ({
 	my $server = extract_param($param, 'server');
 	my $token = extract_param($param, 'token');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	my $delete = extract_param($param, 'delete');
 	my $digest = extract_param($param, 'digest');
@@ -717,6 +767,7 @@ __PACKAGE__->register_method ({
 		    $server,
 		    $token,
 		    $comment,
+		    $disable,
 		    $delete,
 		    $digest,
 		);
@@ -829,8 +880,14 @@ my $smtp_properties= {
     },
     'comment' => {
 	description => 'Comment',
-	type        => 'string',
-	optional    => 1,
+	type => 'string',
+	optional => 1,
+    },
+    'disable' => {
+	description => 'Disable this target',
+	type => 'boolean',
+	optional => 1,
+	default => 0,
     },
 };
 
@@ -853,7 +910,14 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => 'object',
-	    properties => $smtp_properties,
+	    properties => {
+		%{ remove_protected_properties($smtp_properties, ['password']) },
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
+		},
+	    },
 	},
 	links => [ { rel => 'child', href => '{name}' } ],
     },
@@ -943,6 +1007,7 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -960,6 +1025,7 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
+		    $disable,
 		);
 
 		PVE::Notify::write_config($config);
@@ -1012,6 +1078,7 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	my $delete = extract_param($param, 'delete');
 	my $digest = extract_param($param, 'digest');
@@ -1032,6 +1099,7 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
+		    $disable,
 		    $delete,
 		    $digest,
 		);
@@ -1135,8 +1203,14 @@ my $matcher_properties = {
     },
     'comment' => {
 	description => 'Comment',
-	type        => 'string',
-	optional    => 1,
+	type => 'string',
+	optional => 1,
+    },
+    'disable' => {
+	description => 'Disable this matcher',
+	type => 'boolean',
+	optional => 1,
+	default => 0,
     },
 };
 
@@ -1159,7 +1233,14 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => 'object',
-	    properties => $matcher_properties,
+	    properties => {
+		%$matcher_properties,
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
+		},
+	    }
 	},
 	links => [ { rel => 'child', href => '{name}' } ],
     },
@@ -1247,6 +1328,7 @@ __PACKAGE__->register_method ({
 	my $mode = extract_param($param, 'mode');
 	my $invert_match = extract_param($param, 'invert-match');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -1261,6 +1343,7 @@ __PACKAGE__->register_method ({
 		    $mode,
 		    $invert_match,
 		    $comment,
+		    $disable,
 		);
 
 		PVE::Notify::write_config($config);
@@ -1309,6 +1392,7 @@ __PACKAGE__->register_method ({
 	my $mode = extract_param($param, 'mode');
 	my $invert_match = extract_param($param, 'invert-match');
 	my $comment = extract_param($param, 'comment');
+	my $disable = extract_param($param, 'disable');
 	my $digest = extract_param($param, 'digest');
 	my $delete = extract_param($param, 'delete');
 
@@ -1325,6 +1409,7 @@ __PACKAGE__->register_method ({
 		    $mode,
 		    $invert_match,
 		    $comment,
+		    $disable,
 		    $delete,
 		    $digest,
 		);
