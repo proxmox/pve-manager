@@ -68,35 +68,10 @@ sub filter_entities_by_privs {
 	    "/mapping/notification/$_->{name}",
 	    $can_see_mapping_privs,
 	    1
-	) || $_->{name} eq PVE::Notify::default_target();
+	);
     } @$entities];
 
     return $filtered;
-}
-
-sub target_used_by {
-    my ($target) = @_;
-
-    my $used_by = [];
-
-    # Check keys in datacenter.cfg
-    my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    for my $key (qw(target-package-updates target-replication target-fencing)) {
-	if ($dc_conf->{notify} && $dc_conf->{notify}->{$key} eq $target) {
-	    push @$used_by, $key;
-	}
-    }
-
-    # Check backup jobs
-    my $jobs_conf = PVE::Cluster::cfs_read_file('jobs.cfg');
-    for my $key (keys %{$jobs_conf->{ids}}) {
-	my $job = $jobs_conf->{ids}->{$key};
-	if ($job->{'notification-target'} eq $target) {
-	    push @$used_by, $key;
-	}
-    }
-
-    return join(', ', @$used_by);
 }
 
 __PACKAGE__->register_method ({
@@ -120,7 +95,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my $result = [
 	    { name => 'endpoints' },
-	    { name => 'filters' },
+	    { name => 'matchers' },
 	    { name => 'targets' },
 	];
 
@@ -259,15 +234,11 @@ __PACKAGE__->register_method ({
 
 	my $privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
 
-	if ($name ne PVE::Notify::default_target()) {
-	    # Due to backwards compatibility reasons the 'mail-to-root'
-	    # target must be accessible for any user
-	    $rpcenv->check_any(
-		$authuser,
-		"/mapping/notification/$name",
-		$privs,
-	    );
-	}
+	$rpcenv->check_any(
+	    $authuser,
+	    "/mapping/notification/$name",
+	    $privs,
+	);
 
 	eval {
 	    my $config = PVE::Notify::read_config();
@@ -318,12 +289,6 @@ my $sendmail_properties = {
 	description => 'Comment',
 	type        => 'string',
 	optional    => 1,
-    },
-    filter => {
-	description => 'Name of the filter that should be applied.',
-	type => 'string',
-	format => 'pve-configid',
-	optional => 1,
     },
 };
 
@@ -431,7 +396,6 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
-	my $filter = extract_param($param, 'filter');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -444,7 +408,6 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
-		    $filter
 		);
 
 		PVE::Notify::write_config($config);
@@ -492,7 +455,6 @@ __PACKAGE__->register_method ({
 	my $from_address = extract_param($param, 'from-address');
 	my $author = extract_param($param, 'author');
 	my $comment = extract_param($param, 'comment');
-	my $filter = extract_param($param, 'filter');
 
 	my $delete = extract_param($param, 'delete');
 	my $digest = extract_param($param, 'digest');
@@ -508,7 +470,6 @@ __PACKAGE__->register_method ({
 		    $from_address,
 		    $author,
 		    $comment,
-		    $filter,
 		    $delete,
 		    $digest,
 		);
@@ -545,11 +506,6 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
 
-	my $used_by = target_used_by($name);
-	if ($used_by) {
-	    raise_param_exc({'name' => "Cannot remove $name, used by: $used_by"});
-	}
-
 	eval {
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
@@ -582,12 +538,6 @@ my $gotify_properties = {
 	type        => 'string',
 	optional    => 1,
     },
-    'filter' => {
-	description => 'Name of the filter that should be applied.',
-	type => 'string',
-	format => 'pve-configid',
-	optional => 1,
-    }
 };
 
 __PACKAGE__->register_method ({
@@ -692,7 +642,6 @@ __PACKAGE__->register_method ({
 	my $server = extract_param($param, 'server');
 	my $token = extract_param($param, 'token');
 	my $comment = extract_param($param, 'comment');
-	my $filter = extract_param($param, 'filter');
 
 	eval {
 	    PVE::Notify::lock_config(sub {
@@ -703,7 +652,6 @@ __PACKAGE__->register_method ({
 		    $server,
 		    $token,
 		    $comment,
-		    $filter
 		);
 
 		PVE::Notify::write_config($config);
@@ -748,7 +696,6 @@ __PACKAGE__->register_method ({
 	my $server = extract_param($param, 'server');
 	my $token = extract_param($param, 'token');
 	my $comment = extract_param($param, 'comment');
-	my $filter = extract_param($param, 'filter');
 
 	my $delete = extract_param($param, 'delete');
 	my $digest = extract_param($param, 'digest');
@@ -762,7 +709,6 @@ __PACKAGE__->register_method ({
 		    $server,
 		    $token,
 		    $comment,
-		    $filter,
 		    $delete,
 		    $digest,
 		);
@@ -799,11 +745,6 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 	my $name = extract_param($param, 'name');
 
-	my $used_by = target_used_by($name);
-	if ($used_by) {
-	    raise_param_exc({'name' => "Cannot remove $name, used by: $used_by"});
-	}
-
 	eval {
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
@@ -817,28 +758,56 @@ __PACKAGE__->register_method ({
     }
 });
 
-my $filter_properties = {
+my $matcher_properties = {
     name => {
-	description => 'Name of the endpoint.',
+	description => 'Name of the matcher.',
 	type => 'string',
 	format => 'pve-configid',
     },
-    'min-severity' => {
-	type => 'string',
-	description => 'Minimum severity to match',
+    'match-field' => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	},
 	optional => 1,
-	enum => [qw(info notice warning error)],
+	description => 'Metadata fields to match (regex or exact match).'
+	    . ' Must be in the form (regex|exact):<field>=<value>',
+    },
+    'match-severity' => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	},
+	optional => 1,
+	description => 'Notification severities to match',
+    },
+    'match-calendar' => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	},
+	optional => 1,
+	description => 'Match notification timestamp',
+    },
+    'target' => {
+	type => 'array',
+	items => {
+	    type => 'string',
+	    format => 'pve-configid',
+	},
+	optional => 1,
+	description => 'Targets to notify on match',
     },
     mode => {
 	type => 'string',
-	description => "Choose between 'and' and 'or' for when multiple properties are specified",
+	description => "Choose between 'all' and 'any' for when multiple properties are specified",
 	optional => 1,
-	enum => [qw(and or)],
-	default => 'and',
+	enum => [qw(all any)],
+	default => 'all',
     },
     'invert-match' => {
 	type => 'boolean',
-	description => 'Invert match of the whole filter',
+	description => 'Invert match of the whole matcher',
 	optional => 1,
     },
     'comment' => {
@@ -849,10 +818,10 @@ my $filter_properties = {
 };
 
 __PACKAGE__->register_method ({
-    name => 'get_filters',
-    path => 'filters',
+    name => 'get_matchers',
+    path => 'matchers',
     method => 'GET',
-    description => 'Returns a list of all filters',
+    description => 'Returns a list of all matchers',
     protected => 1,
     permissions => {
 	description => "Only lists entries where you have 'Mapping.Modify', 'Mapping.Use' or"
@@ -867,7 +836,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => 'object',
-	    properties => $filter_properties,
+	    properties => $matcher_properties,
 	},
 	links => [ { rel => 'child', href => '{name}' } ],
     },
@@ -876,7 +845,7 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $entities = eval {
-	    $config->get_filters();
+	    $config->get_matchers();
 	};
 	raise_api_error($@) if $@;
 
@@ -885,10 +854,10 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    name => 'get_filter',
-    path => 'filters/{name}',
+    name => 'get_matcher',
+    path => 'matchers/{name}',
     method => 'GET',
-    description => 'Return a specific filter',
+    description => 'Return a specific matcher',
     protected => 1,
     permissions => {
 	check => ['or',
@@ -908,7 +877,7 @@ __PACKAGE__->register_method ({
     returns => {
 	type => 'object',
 	properties => {
-	    %$filter_properties,
+	    %$matcher_properties,
 	    digest => get_standard_option('pve-config-digest'),
 	},
     },
@@ -918,37 +887,40 @@ __PACKAGE__->register_method ({
 
 	my $config = PVE::Notify::read_config();
 
-	my $filter = eval {
-	    $config->get_filter($name)
+	my $matcher = eval {
+	    $config->get_matcher($name)
 	};
 
 	raise_api_error($@) if $@;
-	$filter->{digest} = $config->digest();
+	$matcher->{digest} = $config->digest();
 
-	return $filter;
+	return $matcher;
     }
 });
 
 __PACKAGE__->register_method ({
-    name => 'create_filter',
-    path => 'filters',
+    name => 'create_matcher',
+    path => 'matchers',
     protected => 1,
     method => 'POST',
-    description => 'Create a new filter',
+    description => 'Create a new matcher',
     protected => 1,
     permissions => {
 	check => ['perm', '/mapping/notification', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
-	properties => $filter_properties,
+	properties => $matcher_properties,
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
 	my $name = extract_param($param, 'name');
-	my $min_severity = extract_param($param, 'min-severity');
+	my $match_severity = extract_param($param, 'match-severity');
+	my $match_field = extract_param($param, 'match-field');
+	my $match_calendar = extract_param($param, 'match-calendar');
+	my $target = extract_param($param, 'target');
 	my $mode = extract_param($param, 'mode');
 	my $invert_match = extract_param($param, 'invert-match');
 	my $comment = extract_param($param, 'comment');
@@ -957,9 +929,12 @@ __PACKAGE__->register_method ({
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
 
-		$config->add_filter(
+		$config->add_matcher(
 		    $name,
-		    $min_severity,
+		    $target,
+		    $match_severity,
+		    $match_field,
+		    $match_calendar,
 		    $mode,
 		    $invert_match,
 		    $comment,
@@ -975,18 +950,18 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    name => 'update_filter',
-    path => 'filters/{name}',
+    name => 'update_matcher',
+    path => 'matchers/{name}',
     protected => 1,
     method => 'PUT',
-    description => 'Update existing filter',
+    description => 'Update existing matcher',
     permissions => {
 	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
     },
     parameters => {
 	additionalProperties => 0,
 	properties => {
-	    %{ make_properties_optional($filter_properties) },
+	    %{ make_properties_optional($matcher_properties) },
 	    delete => {
 		type => 'array',
 		items => {
@@ -1004,7 +979,10 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $name = extract_param($param, 'name');
-	my $min_severity = extract_param($param, 'min-severity');
+	my $match_severity = extract_param($param, 'match-severity');
+	my $match_field = extract_param($param, 'match-field');
+	my $match_calendar = extract_param($param, 'match-calendar');
+	my $target = extract_param($param, 'target');
 	my $mode = extract_param($param, 'mode');
 	my $invert_match = extract_param($param, 'invert-match');
 	my $comment = extract_param($param, 'comment');
@@ -1015,9 +993,12 @@ __PACKAGE__->register_method ({
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
 
-		$config->update_filter(
+		$config->update_matcher(
 		    $name,
-		    $min_severity,
+		    $target,
+		    $match_severity,
+		    $match_field,
+		    $match_calendar,
 		    $mode,
 		    $invert_match,
 		    $comment,
@@ -1035,11 +1016,11 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    name => 'delete_filter',
+    name => 'delete_matcher',
     protected => 1,
-    path => 'filters/{name}',
+    path => 'matchers/{name}',
     method => 'DELETE',
-    description => 'Remove filter',
+    description => 'Remove matcher',
     permissions => {
 	check => ['perm', '/mapping/notification/{name}', ['Mapping.Modify']],
     },
@@ -1060,7 +1041,7 @@ __PACKAGE__->register_method ({
 	eval {
 	    PVE::Notify::lock_config(sub {
 		my $config = PVE::Notify::read_config();
-		$config->delete_filter($name);
+		$config->delete_matcher($name);
 		PVE::Notify::write_config($config);
 	    });
 	};
