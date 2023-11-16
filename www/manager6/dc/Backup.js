@@ -39,8 +39,10 @@ Ext.define('PVE.dc.BackupEdit', {
 	    // Get rid of new-old parameters for notification settings.
 	    // These should only be set for those selected few who ran
 	    // pve-manager from pvetest.
-	    Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-policy' });
-	    Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-target' });
+	    if (!isCreate) {
+		Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-policy' });
+		Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-target' });
+	    }
 
 	    if (!values.id && isCreate) {
 		values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
