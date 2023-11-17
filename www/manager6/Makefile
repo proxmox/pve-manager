@@ -109,6 +109,7 @@ JSSRC= 							\
 	tree/ResourceTree.js				\
 	tree/SnapshotTree.js				\
 	tree/ResourceMapTree.js				\
+	tree/DhcpTree.js				\
 	window/Backup.js				\
 	window/BackupConfig.js				\
 	window/BulkAction.js				\

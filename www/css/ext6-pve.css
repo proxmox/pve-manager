@@ -510,26 +510,36 @@ div.right-aligned {
     content: ' ';
 }
 
-.fa-sdn:before {
+.x-fa-sdn-treelist:before {
     width: 14px;
     height: 14px;
     position: absolute;
     left: 1px;
     top: 4px;
+}
+
+.fa-sdn:before {
     background-image:url(../images/icon-sdn.svg);
     background-size: 14px 14px;
     content: ' ';
 }
 
 .fa-network-wired:before {
-    width: 14px;
-    height: 14px;
-    position: absolute;
-    left: 1px;
-    top: 4px;
     background-image:url(../images/icon-fa-network-wired.svg);
     background-size: 14px 14px;
     content: ' ';
+}
+
+.x-fa-treepanel:before {
+    width: 16px;
+    height: 24px;
+    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.x-tree-icon-none {
+    display: none;
 }
 
 .x-treelist-row-over > * > .x-treelist-item-icon,

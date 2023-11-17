@@ -185,7 +185,7 @@ Ext.define('PVE.dc.Config', {
 		me.items.push({
 		    xtype: 'pveSDNStatus',
 		    title: gettext('SDN'),
-		    iconCls: 'fa fa-sdn',
+		    iconCls: 'fa fa-sdn x-fa-sdn-treelist',
 		    hidden: true,
 		    itemId: 'sdn',
 		    expandedOnInit: true,
@@ -203,7 +203,7 @@ Ext.define('PVE.dc.Config', {
 		    groups: ['sdn'],
 		    title: 'VNets',
 		    hidden: true,
-		    iconCls: 'fa fa-network-wired',
+		    iconCls: 'fa fa-network-wired x-fa-sdn-treelist',
 		    itemId: 'sdnvnet',
 		},
 		{
@@ -213,6 +213,14 @@ Ext.define('PVE.dc.Config', {
 		    hidden: true,
 		    iconCls: 'fa fa-gear',
 		    itemId: 'sdnoptions',
+		},
+		{
+		    xtype: 'pveDhcpTree',
+		    groups: ['sdn'],
+		    title: gettext('IPAM'),
+		    hidden: true,
+		    iconCls: 'fa fa-map-signs',
+		    itemId: 'sdnmappings',
 		});
 	    }
 
