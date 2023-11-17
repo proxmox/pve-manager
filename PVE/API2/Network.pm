@@ -660,6 +660,7 @@ __PACKAGE__->register_method({
 
 	    if ($have_sdn) {
 		PVE::Network::SDN::generate_zone_config();
+		PVE::Network::SDN::generate_dhcp_config();
 	    }
 
 	    my $err = sub {
