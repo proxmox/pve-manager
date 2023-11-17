@@ -55,7 +55,9 @@ Ext.define('PVE.panel.SDNZoneBase', {
 	    },
 	);
 
-	me.advancedItems = [
+	me.advancedItems = me.advancedItems ?? [];
+
+	me.advancedItems.unshift(
 	    {
 		xtype: 'pveSDNDnsSelector',
 		fieldLabel: gettext('DNS Server'),
@@ -77,7 +79,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
 		fieldLabel: gettext('DNS Zone'),
 		allowBlank: true,
 	    },
-	];
+	);
 
 	me.callParent();
     },
