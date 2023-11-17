@@ -109,7 +109,11 @@ sub proxy_handler {
     my $args = [];
     foreach my $key (keys %$param) {
 	next if $key eq 'quiet' || $key eq 'output-format'; # just to  be sure
-	push @$args, "--$key", $_ for split(/\0/, $param->{$key});
+	if (ref($param->{$key}) eq 'ARRAY') {
+	    push @$args, "--$key", $_ for $param->{$key}->@*;
+	} else {
+	    push @$args, "--$key", $_ for split(/\0/, $param->{$key});
+	}
     }
 
     my @ssh_tunnel_cmd = ('ssh', '-o', 'BatchMode=yes', "root\@$remip");
