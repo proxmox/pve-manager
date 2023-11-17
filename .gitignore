@@ -7,5 +7,5 @@ dest/
 /www/manager6/OnlineHelpInfo.js
 /www/manager6/pvemanagerlib.js
 /www/mobile/pvemanager-mobile.js
-/www/touch/touch-*/
+/www/touch/touch-[0-9]*/
 /pve-manager-[0-9]*/
