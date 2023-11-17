@@ -56,6 +56,147 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
     ],
 });
 
+Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
+    extend: 'Ext.form.FieldContainer',
+    mixins: ['Ext.form.field.Field'],
+
+    initComponent: function() {
+	let me = this;
+
+	me.callParent();
+	me.initField();
+    },
+
+    getValue: function() {
+	let me = this;
+	let store = me.lookup('grid').getStore();
+
+	let data = [];
+
+	store.getData()
+	    .each((item) =>
+		data.push(`start-address=${item.data['start-address']},end-address=${item.data['end-address']}`),
+	    );
+
+	return data;
+    },
+
+    getSubmitData: function() {
+	let me = this;
+
+	let data = {};
+	let value = me.getValue();
+
+	if (value.length) {
+	    data[me.getName()] = value;
+	}
+
+	return data;
+    },
+
+    setValue: function(dhcpRanges) {
+	let me = this;
+	let store = me.lookup('grid').getStore();
+	store.setData(dhcpRanges);
+    },
+
+    getErrors: function() {
+	let me = this;
+        let errors = [];
+
+	return errors;
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	addRange: function() {
+	    let me = this;
+	    me.lookup('grid').getStore().add({});
+	},
+
+	removeRange: function(field) {
+	    let me = this;
+	    let record = field.getWidgetRecord();
+
+	    me.lookup('grid').getStore().remove(record);
+	},
+
+	onValueChange: function(field, value) {
+	    let me = this;
+	    let record = field.getWidgetRecord();
+	    let column = field.getWidgetColumn();
+
+	    record.set(column.dataIndex, value);
+	    record.commit();
+	},
+
+	control: {
+	    'grid button': {
+		click: 'removeRange',
+	    },
+	    'field': {
+		change: 'onValueChange',
+	    },
+	},
+    },
+
+    items: [
+	{
+	    xtype: 'grid',
+	    reference: 'grid',
+	    scrollable: true,
+	    store: {
+		fields: ['start-address', 'end-address'],
+	    },
+	    columns: [
+		{
+		    text: gettext('Start Address'),
+		    xtype: 'widgetcolumn',
+		    dataIndex: 'start-address',
+		    flex: 1,
+		    widget: {
+			xtype: 'textfield',
+			vtype: 'IP64Address',
+		    },
+		},
+		{
+		    text: gettext('End Address'),
+		    xtype: 'widgetcolumn',
+		    dataIndex: 'end-address',
+		    flex: 1,
+		    widget: {
+			xtype: 'textfield',
+			vtype: 'IP64Address',
+		    },
+		},
+		{
+		    xtype: 'widgetcolumn',
+		    width: 40,
+		    widget: {
+			xtype: 'button',
+			iconCls: 'fa fa-trash-o',
+		    },
+		},
+	    ],
+	},
+	{
+	    xtype: 'container',
+	    layout: {
+		type: 'hbox',
+	    },
+	    items: [
+		{
+		    xtype: 'button',
+		    text: gettext('Add'),
+		    iconCls: 'fa fa-plus-circle',
+		    handler: 'addRange',
+		},
+	    ],
+	},
+    ],
+});
+
 Ext.define('PVE.sdn.SubnetEdit', {
     extend: 'Proxmox.window.Edit',
 
@@ -66,6 +207,8 @@ Ext.define('PVE.sdn.SubnetEdit', {
     width: 350,
 
     base_url: undefined,
+
+    bodyPadding: 0,
 
     initComponent: function() {
 	var me = this;
@@ -82,11 +225,22 @@ Ext.define('PVE.sdn.SubnetEdit', {
 
 	let ipanel = Ext.create('PVE.sdn.SubnetInputPanel', {
 	    isCreate: me.isCreate,
+	    title: gettext('General'),
+	});
+
+	let dhcpPanel = Ext.create('PVE.sdn.SubnetDhcpRangePanel', {
+	    isCreate: me.isCreate,
+	    title: gettext('DHCP Ranges'),
+	    name: 'dhcp-range',
 	});
 
 	Ext.apply(me, {
 	    items: [
-		ipanel,
+		{
+		    xtype: 'tabpanel',
+		    bodyPadding: 10,
+		    items: [ipanel, dhcpPanel],
+		},
 	    ],
 	});
 
@@ -97,6 +251,10 @@ Ext.define('PVE.sdn.SubnetEdit', {
 		success: function(response, options) {
 		    let values = response.result.data;
 		    ipanel.setValues(values);
+
+		    if (values['dhcp-range']) {
+			dhcpPanel.setValue(values['dhcp-range']);
+		    }
 		},
 	    });
 	}
