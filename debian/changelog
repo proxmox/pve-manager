@@ -1,3 +1,74 @@
+pve-manager (8.0.8) bookworm; urgency=medium
+
+  * update shipped apliance info index
+
+  * report: add files from  interfaces.d and SDN config directories
+
+  * node console: allow usage for non-pam realms, users still need to login
+    with credential recoginzed by PAM
+
+  * ui: wizards: allow adding tags in the qemu/lxc create wizard
+
+  * ui: guest wizard: increase height slightly to match 4:3 ratio
+
+  * pve7to8: check for proper grub meta-package for bootmode
+
+  * fix #4631: ceph: osd: create: add osds-per-device
+
+  * fix #2336: ui: adjust message for bulk start/stop/migrate to better
+    reflect that not always all guests are selected
+
+  * ui: bulk actions: rework filters and allow one to filter by tags
+
+  * ui: add tooltips to non-fully-expaned tags globally
+
+  * ceph: mark global pg bits setting as deprecated
+
+  * ui: hide bulk migrate options on standalone nodes
+
+  * fix #4497: acme: add support for external account bindings
+
+  * api/acme: deprecate 'tos' endpoint in favor of new, more general, 'meta'
+    one
+
+  * api: add bulk-action endpoint for mass-suspendig (hibernating) virtual
+    machines
+
+  * ui: add bulk-action suspend to node menu
+
+  * fix #4442: add date-time range filtering for firewall logs
+
+  * ui: ceph status: add pg warning state
+
+  * ui: ceph status: rename 'working' state into 'busy'
+
+  * apt: use `apt changelog` for changelog fetching
+
+  * ui: ipset: make ip/cidr required
+
+  * ship default link config to disable systemd link mac-policy, avoiding that
+    systemd marks the network as being without carrier, which can result into
+    issues for some network configurations like source-NAT if no TAP device is
+    (yet) connected to the bridge.
+
+  * api: osd  destroy: remove the mclock max iops settings to avoid that it's
+    reused when a new OSD gets the same OSD ID again
+
+  * pvesh: proxy handler: fix handling array parameters
+
+  * api: notification: remove notification groups and filters, they are
+    replaced by a matcher based routing system.
+
+  * api: various adaptions to new matcher based notification system
+
+  * notify: add API routes for smtp endpoints
+
+  * api: notification: add 'disable' and 'origin' params
+
+  * api: notification: simplify ACLs for notification
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 17 Nov 2023 19:54:54 +0100
+
 pve-manager (8.0.7) bookworm; urgency=medium
 
   * fix #3069: vzdump: add property 'performance: pbs-entries-max=N'
