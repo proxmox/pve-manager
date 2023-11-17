@@ -4,7 +4,8 @@ dest/
 *.buildinfo
 *.changes
 
-www/manager6/OnlineHelpInfo.js
-www/manager6/pvemanagerlib.js
-www/mobile/pvemanager-mobile.js
-www/touch/touch-2.4.2/
+/www/manager6/OnlineHelpInfo.js
+/www/manager6/pvemanagerlib.js
+/www/mobile/pvemanager-mobile.js
+/www/touch/touch-*/
+/pve-manager-[0-9]*/
