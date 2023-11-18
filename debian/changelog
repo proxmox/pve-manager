@@ -1,3 +1,11 @@
+pve-manager (8.0.9) bookworm; urgency=medium
+
+  * move default link config to drop-in snippet to avoid that the all default
+    fallback settings are overridden, not just the MACAddressPolicy one we
+    actually want to change.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 18 Nov 2023 12:18:49 +0100
+
 pve-manager (8.0.8) bookworm; urgency=medium
 
   * update shipped apliance info index
