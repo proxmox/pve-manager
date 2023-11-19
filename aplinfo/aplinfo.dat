@@ -112,6 +112,19 @@ sha512sum: 54328a3338ca9657d298a8a5d2ca15fe76f66fd407296d9e3e1c236ee60ea075d3406
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 38 (20230607)
 
+Package: fedora-39-default
+Version: 20231118
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-39-default_20231118_amd64.tar.xz
+md5sum: 5e50babc8d5a70ec0bb00a0bc147c64d
+sha512sum: 921cde6021e3c109e0d560b3e8ff4968c885fad8bcd8c2796d9ca733d362be8dd407d0cb4322d5039f306e4a9bfc8f00b66e138bb513c0c9853c20a5fed379f7
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 39 (20231118)
+
 Package: gentoo-current-openrc
 Version: 20231009
 Type: lxc
@@ -137,6 +150,19 @@ md5sum: 1c66c3549b0684e788c17aa94c384262
 sha512sum: 8089309652a0db23ddff826d1e343e79c6eccb7b615fb309e0a6f6f1983ea697aa94044a795f3cbe35156b1a1b2f60489eb20ecb54c786cec23c9fd89e0f29c5
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.4 (20221109)
+
+Package: opensuse-15.5-default
+Version: 20231118
+Type: lxc
+OS: opensuse
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/opensuse-15.5-default_20231118_amd64.tar.xz
+md5sum: 18c8566b848c907ec74cee3a45348957
+sha512sum: f3a6785c347da3867d074345b68db9c99ec2b269e454f715d234935014ca1dc9f723956f15e4fcc714fa993e4d7c7997faf6bbcc2add6c74d4754c217b6d1712
+Infopage: https://linuxcontainers.org
+Description: LXC default image for opensuse 15.5 (20231118)
 
 Package: proxmox-mailgateway-7.3-standard
 Version: 7.3-1
