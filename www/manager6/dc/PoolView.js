@@ -31,6 +31,9 @@ Ext.define('PVE.dc.PoolView', {
 	    callback: function() {
 		reload();
 	    },
+	    getUrl: function(rec) {
+		return '/pools/?poolid=' + rec.getId();
+	    },
 	});
 
 	var run_editor = function() {

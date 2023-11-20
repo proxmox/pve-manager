@@ -24,7 +24,7 @@ Ext.define('PVE.pool.StatusView', {
 	};
 
 	Ext.apply(me, {
-	    url: "/api2/json/pools/" + pool,
+	    url: "/api2/json/pools/?poolid=" + pool,
 	    rows: rows,
 	});
 
