@@ -20,14 +20,26 @@ __PACKAGE__->register_method ({
     name => 'index',
     path => '',
     method => 'GET',
-    description => "Pool index.",
+    description => "List pools or get pool configuration.",
     permissions => {
-	description => "List all pools where you have Pool.Audit permissions on /pool/<pool>.",
+	description => "List all pools where you have Pool.Audit permissions on /pool/<pool>, or the pool specific with {poolid}",
 	user => 'all',
     },
     parameters => {
 	additionalProperties => 0,
-	properties => {},
+	properties => {
+	    poolid => {
+		type => 'string',
+		format => 'pve-poolid',
+		optional => 1,
+	    },
+	    type => {
+		type => 'string',
+		enum => [ 'qemu', 'lxc', 'storage' ],
+		optional => 1,
+		requires => 'poolid',
+	    },
+	},
     },
     returns => {
 	type => 'array',
@@ -35,6 +47,38 @@ __PACKAGE__->register_method ({
 	    type => "object",
 	    properties => {
 		poolid => { type => 'string' },
+		comment => {
+		    type => 'string',
+		    optional => 1,
+		},
+		members => {
+		    type => 'array',
+		    optional => 1,
+		    items => {
+			type => "object",
+			additionalProperties => 1,
+			properties => {
+			    type => {
+				type => 'string',
+				enum => [ 'qemu', 'lxc', 'openvz', 'storage' ],
+			    },
+			    id => {
+				type => 'string',
+			    },
+			    node => {
+				type => 'string',
+			    },
+			    vmid => {
+				type => 'integer',
+				optional => 1,
+			    },
+			    storage => {
+				type => 'string',
+				optional => 1,
+			    },
+			},
+		    },
+		},
 	    },
 	},
 	links => [ { rel => 'child', href => "{poolid}" } ],
@@ -47,15 +91,63 @@ __PACKAGE__->register_method ({
 
 	my $usercfg = $rpcenv->{user_cfg};
 
-
 	my $res = [];
-	for my $pool (sort keys %{$usercfg->{pools}}) {
-	    next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Audit' ], 1);
+	if (my $poolid = $param->{poolid}) {
+	    $rpcenv->check($authuser, "/pool/$poolid", [ 'Pool.Audit' ], 1);
 
-	    my $entry = { poolid => $pool };
-	    my $pool_config = $usercfg->{pools}->{$pool};
-	    $entry->{comment} = $pool_config->{comment} if defined($pool_config->{comment});
-	    push @$res, $entry;
+	    my $vmlist = PVE::Cluster::get_vmlist() || {};
+	    my $idlist = $vmlist->{ids} || {};
+
+	    my $rrd = PVE::Cluster::rrd_dump();
+
+	    my $pool_config = $usercfg->{pools}->{$poolid};
+
+	    die "pool '$poolid' does not exist\n" if !$pool_config;
+
+	    my $members = [];
+	    for my $vmid (sort keys %{$pool_config->{vms}}) {
+		my $vmdata = $idlist->{$vmid};
+		next if !$vmdata || defined($param->{type}) && $param->{type} ne $vmdata->{type};
+		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $vmdata, $rrd);
+		push @$members, $entry;
+	    }
+
+	    my $nodename = PVE::INotify::nodename();
+	    my $cfg = PVE::Storage::config();
+	    if (!defined($param->{type}) || $param->{type} eq 'storage') {
+		for my $storeid (sort keys %{$pool_config->{storage}}) {
+		    my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
+		    next if !$scfg;
+
+		    my $storage_node = $nodename; # prefer local node
+		    if ($scfg->{nodes} && !$scfg->{nodes}->{$storage_node}) {
+			for my $node (sort keys(%{$scfg->{nodes}})) {
+			    $storage_node = $node;
+			    last;
+			}
+		    }
+
+		    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $storage_node, $rrd);
+		    push @$members, $entry;
+		}
+	    }
+
+	    my $pool_info = {
+		members => $members,
+	    };
+	    $pool_info->{comment} = $pool_config->{comment} if defined($pool_config->{comment});
+	    $pool_info->{poolid} = $poolid;
+
+	    push @$res, $pool_info;
+	} else {
+	    for my $pool (sort keys %{$usercfg->{pools}}) {
+		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Audit' ], 1);
+
+		my $entry = { poolid => $pool };
+		my $pool_config = $usercfg->{pools}->{$pool};
+		$entry->{comment} = $pool_config->{comment} if defined($pool_config->{comment});
+		push @$res, $entry;
+	    }
 	}
 
 	return $res;
@@ -92,6 +184,11 @@ __PACKAGE__->register_method ({
 	    my $pool = $param->{poolid};
 
 	    die "pool '$pool' already exists\n" if $usercfg->{pools}->{$pool};
+	    if ($pool =~ m!^(.*)/[^/]+$!) {
+		my $parent = $1;
+		die "parent '$parent' of pool '$pool' does not exist\n"
+		    if !defined($usercfg->{pools}->{$parent});
+	    }
 
 	    $usercfg->{pools}->{$pool} = {
 		vms => {},
@@ -107,7 +204,7 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'update_pool',
+    name => 'update_pool_deprecated',
     protected => 1,
     path => '{poolid}',
     method => 'PUT',
@@ -115,9 +212,56 @@ __PACKAGE__->register_method ({
 	description => "You also need the right to modify permissions on any object you add/delete.",
 	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
-    description => "Update pool data.",
+    description => "Update pool data (deprecated, no support for nested pools - use 'PUT /pools/?poolid={poolid}' instead).",
     parameters => {
-   	additionalProperties => 0,
+	additionalProperties => 0,
+	properties => {
+	    poolid => { type => 'string', format => 'pve-poolid' },
+	    comment => { type => 'string', optional => 1 },
+	    vms => {
+		description => 'List of guest VMIDs to add or remove from this pool.',
+		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
+	    storage => {
+		description => 'List of storage IDs to add or remove from this pool.',
+		type => 'string',  format => 'pve-storage-id-list',
+		optional => 1,
+	    },
+	    'allow-move' => {
+		description => 'Allow adding a guest even if already in another pool.'
+		    .' The guest will be removed from its current pool and added to this one.',
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
+	    delete => {
+		description => 'Remove the passed VMIDs and/or storage IDs instead of adding them.',
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	return __PACKAGE__->update_pool($param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'update_pool',
+    protected => 1,
+    path => '',
+    method => 'PUT',
+    permissions => {
+	description => "You also need the right to modify permissions on any object you add/delete.",
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
+    },
+    description => "Update pool.",
+    parameters => {
+	additionalProperties => 0,
 	properties => {
 	    poolid => { type => 'string', format => 'pve-poolid' },
 	    comment => { type => 'string', optional => 1 },
@@ -215,7 +359,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/pool/{poolid}', ['Pool.Audit']],
     },
-    description => "Get pool configuration.",
+    description => "Get pool configuration (deprecated, no support for nested pools, use 'GET /pools/?poolid={poolid}').",
     parameters => {
 	additionalProperties => 0,
 	properties => {
@@ -270,60 +414,38 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $usercfg = cfs_read_file("user.cfg");
-
-	my $vmlist = PVE::Cluster::get_vmlist() || {};
-	my $idlist = $vmlist->{ids} || {};
-
-	my $rrd = PVE::Cluster::rrd_dump();
-
-	my $pool = $param->{poolid};
-
-	my $pool_config = $usercfg->{pools}->{$pool};
-
-	die "pool '$pool' does not exist\n" if !$pool_config;
-
-	my $members = [];
-	for my $vmid (sort keys %{$pool_config->{vms}}) {
-	    my $vmdata = $idlist->{$vmid};
-	    next if !$vmdata || defined($param->{type}) && $param->{type} ne $vmdata->{type};
-	    my $entry = PVE::API2Tools::extract_vm_stats($vmid, $vmdata, $rrd);
-	    push @$members, $entry;
-	}
-
-	my $nodename = PVE::INotify::nodename();
-	my $cfg = PVE::Storage::config();
-	if (!defined($param->{type}) || $param->{type} eq 'storage') {
-	    for my $storeid (sort keys %{$pool_config->{storage}}) {
-		my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
-		next if !$scfg;
-
-		my $storage_node = $nodename; # prefer local node
-		if ($scfg->{nodes} && !$scfg->{nodes}->{$storage_node}) {
-		    for my $node (sort keys(%{$scfg->{nodes}})) {
-			$storage_node = $node;
-			last;
-		    }
-		}
-
-		my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $storage_node, $rrd);
-		push @$members, $entry;
-	    }
-	}
-
-	my $res = {
-	    members => $members,
-	};
-	$res->{comment} = $pool_config->{comment} if defined($pool_config->{comment});
-
-	return $res;
+	my $pool_info = __PACKAGE__->index($param);
+	return $pool_info->[0];
     }});
 
 
 __PACKAGE__->register_method ({
-    name => 'delete_pool',
+    name => 'delete_pool_deprecated',
     protected => 1,
     path => '{poolid}',
+    method => 'DELETE',
+    permissions => {
+	description => "You can only delete empty pools (no members).",
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
+    },
+    description => "Delete pool (deprecated, no support for nested pools, use 'DELETE /pools/?poolid={poolid}').",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    poolid => { type => 'string', format => 'pve-poolid' },
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	return __PACKAGE__->delete_pool($param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'delete_pool',
+    protected => 1,
+    path => '',
     method => 'DELETE',
     permissions => {
 	description => "You can only delete empty pools (no members).",
@@ -354,6 +476,9 @@ __PACKAGE__->register_method ({
 
 	    my $pool_config = $usercfg->{pools}->{$pool};
 	    die "pool '$pool' does not exist\n" if !$pool_config;
+	    for my $subpool (sort keys %{$pool_config->{pools}}) {
+		die "pool '$pool' is not empty (contains pool '$subpool')\n";
+	    }
 
 	    for my $vmid (sort keys %{$pool_config->{vms}}) {
 		next if !$idlist->{$vmid}; # ignore destroyed guests
