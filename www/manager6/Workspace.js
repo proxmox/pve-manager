@@ -485,7 +485,7 @@ Ext.define('PVE.StdWorkspace', {
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewWidth = me.getSize().width;
-			    if (width > viewWidth - 100) {
+			    if (width > viewWidth - 100 && viewWidth > 150) {
 				panel.setWidth(viewWidth - 100);
 			    }
 			},
@@ -506,7 +506,7 @@ Ext.define('PVE.StdWorkspace', {
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewHeight = me.getSize().height;
-			    if (height > viewHeight - 150) {
+			    if (height > viewHeight - 150 && viewHeight > 200) {
 				panel.setHeight(viewHeight - 150);
 			    }
 			},
