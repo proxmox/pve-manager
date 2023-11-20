@@ -43,11 +43,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    values.mediaType = 'none';
 	} else {
 	    values.mediaType = 'iso';
-	    var match = drive.file.match(/^([^:]+):/);
-	    if (match) {
-		values.cdstorage = match[1];
-		values.cdimage = drive.file;
-	    }
+	    values.cdimage = drive.file;
 	}
 
 	me.drive = drive;
@@ -58,8 +54,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
     setNodename: function(nodename) {
 	var me = this;
 
-	me.cdstoragesel.setNodename(nodename);
-	me.cdfilesel.setStorage(undefined, nodename);
+	me.isosel.setNodename(nodename);
     },
 
     initComponent: function() {
@@ -87,8 +82,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 		    if (!me.rendered) {
 			return;
 		    }
-		    me.down('field[name=cdstorage]').setDisabled(!value);
-		    var cdImageField = me.down('field[name=cdimage]');
+		    var cdImageField = me.down('pveIsoSelector');
 		    cdImageField.setDisabled(!value);
 		    if (value) {
 			cdImageField.validate();
@@ -99,32 +93,14 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    },
 	});
 
-	me.cdfilesel = Ext.create('PVE.form.FileSelector', {
+
+	me.isosel = Ext.create('PVE.form.IsoSelector', {
+	    nodename: me.nodename,
+	    insideWizard: me.insideWizard,
 	    name: 'cdimage',
-	    nodename: me.nodename,
-	    storageContent: 'iso',
-	    fieldLabel: gettext('ISO image'),
-	    labelAlign: 'right',
-	    allowBlank: false,
 	});
 
-	me.cdstoragesel = Ext.create('PVE.form.StorageSelector', {
-	    name: 'cdstorage',
-	    nodename: me.nodename,
-	    fieldLabel: gettext('Storage'),
-	    labelAlign: 'right',
-	    storageContent: 'iso',
-	    allowBlank: false,
-	    autoSelect: me.insideWizard,
-	    listeners: {
-		change: function(f, value) {
-		    me.cdfilesel.setStorage(value);
-		},
-	    },
-	});
-
-	items.push(me.cdstoragesel);
-	items.push(me.cdfilesel);
+	items.push(me.isosel);
 
 	items.push({
 	    xtype: 'radiofield',
