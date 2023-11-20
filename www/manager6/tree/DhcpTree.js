@@ -17,7 +17,7 @@ Ext.define('PVE.sdn.DhcpTree', {
 	    let me = this;
 
 	    Proxmox.Utils.API2Request({
-		url: `/cluster/sdn/ipam`,
+		url: `/cluster/sdn/ipams/pve/status`,
 		method: 'GET',
 		success: function(response, opts) {
 		    let root = {
@@ -105,8 +105,17 @@ Ext.define('PVE.sdn.DhcpTree', {
 		        return;
 		    }
 
+		    let params = {
+			zone: data.zone,
+			mac: data.mac,
+		    };
+
+		    let encodedParams = Ext.Object.toQueryString(params);
+
+		    let url = `/cluster/sdn/vnets/${data.vnet}/ips?${encodedParams}`;
+
 		    Proxmox.Utils.API2Request({
-			url: `/cluster/sdn/ipam/${data.zone}/${data.vnet}/${data.mac}`,
+			url,
 			method: 'DELETE',
 			waitMsgTarget: view,
 			failure: function(response, opts) {
@@ -149,7 +158,6 @@ Ext.define('PVE.sdn.DhcpTree', {
 	    Ext.create('PVE.sdn.IpamEdit', {
 		autoShow: true,
 		mapping: data,
-		url: `/cluster/sdn/ipam`,
 		extraRequestParams: {
 		    vmid: data.vmid,
 		    mac: data.mac,
@@ -217,7 +225,6 @@ Ext.define('PVE.sdn.DhcpTree', {
 			Ext.create('PVE.sdn.IpamEdit', {
 			    autoShow: true,
 			    mapping: {},
-			    url: `/cluster/sdn/ipam`,
 			    isCreate: true,
 			    extraRequestParams: {
 				vnet: data.name,

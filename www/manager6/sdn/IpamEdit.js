@@ -52,8 +52,10 @@ Ext.define('PVE.sdn.IpamEdit', {
     isCreate: false,
     mapping: {},
 
+    url: '/cluster/sdn/vnets',
+
     submitUrl: function(url, values) {
-	return `${url}/${values.zone}/${values.vnet}/${values.mac}`;
+	return `${url}/${values.vnet}/ips`;
     },
 
     initComponent: function() {
