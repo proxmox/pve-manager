@@ -161,6 +161,9 @@ Ext.define('PVE.qemu.CreateWizard', {
 		{
 		    xtype: 'pveQemuOSTypePanel',
 		    insideWizard: true,
+		    bind: {
+			nodename: '{nodename}',
+		    },
 		},
 	    ],
 	},
