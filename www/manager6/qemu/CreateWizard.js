@@ -26,6 +26,41 @@ Ext.define('PVE.qemu.CreateWizard', {
 
     subject: gettext('Virtual Machine'),
 
+    // fot the special case that we have 2 cdrom drives
+    //
+    // emulates part of the backend bootorder logic, but includes all
+    // cdrom drives since we don't know which one the user put in a bootable iso
+    // and hardcodes the known values (ide0/2, net0)
+    calculateBootOrder: function(values) {
+	// user selected windows + second cdrom
+	if (values.ide0 && values.ide0.match(/media=cdrom/)) {
+	    let disk;
+	    PVE.Utils.forEachBus(['ide', 'scsi', 'virtio', 'sata'], (type, id) => {
+		let confId = type + id;
+		if (!values[confId]) {
+		    return undefined;
+		}
+		if (values[confId].match(/media=cdrom/)) {
+		    return undefined;
+		}
+		disk = confId;
+		return false; // abort loop
+	    });
+
+	    let order = [];
+	    if (disk) {
+		order.push(disk);
+	    }
+	    order.push('ide0', 'ide2');
+	    if (values.net0) {
+		order.push('net0');
+	    }
+
+	    return `order=${order.join(';')}`;
+	}
+	return undefined;
+    },
+
     items: [
 	{
 	    xtype: 'inputpanel',
@@ -228,8 +263,15 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    ],
 	    listeners: {
 		show: function(panel) {
-		    var kv = this.up('window').getValues();
+		    let wizard = this.up('window');
+		    var kv = wizard.getValues();
 		    var data = [];
+
+		    let boot = wizard.calculateBootOrder(kv);
+		    if (boot) {
+			kv.boot = boot;
+		    }
+
 		    Ext.Object.each(kv, function(key, value) {
 			if (key === 'delete') { // ignore
 			    return;
@@ -253,6 +295,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 
 		var nodename = kv.nodename;
 		delete kv.nodename;
+
+		let boot = wizard.calculateBootOrder(kv);
+		if (boot) {
+		    kv.boot = boot;
+		}
 
 		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + nodename + '/qemu',
