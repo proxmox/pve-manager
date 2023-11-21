@@ -154,7 +154,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		    isFormField: false,
 		    hidden: true,
 		    checked: false,
-		    boxLabel: gettext('Add Second CD/DVD Image file (iso)'),
+		    boxLabel: gettext('Add additional drive for VirtIO drivers'),
 		    listeners: {
 			change: function(cb, value) {
 			    me.lookup('isoSelector').setDisabled(!value);
