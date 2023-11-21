@@ -327,7 +327,7 @@ Ext.define('PVE.dc.BackupEdit', {
 				},
 				{
 				    xtype: 'pveEmailNotificationSelector',
-				    fieldLabel: gettext('Notify'),
+				    fieldLabel: gettext('Send email'),
 				    name: 'mailnotification',
 				    cbind: {
 					value: (get) => get('isCreate') ? 'always' : '',

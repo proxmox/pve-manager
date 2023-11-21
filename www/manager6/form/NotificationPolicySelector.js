@@ -2,7 +2,7 @@ Ext.define('PVE.form.EmailNotificationSelector', {
     extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveEmailNotificationSelector'],
     comboItems: [
-	['always', gettext('Notify always')],
+	['always', gettext('Always')],
 	['failure', gettext('On failure only')],
     ],
 });
