@@ -67,25 +67,37 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
 	me.initField();
     },
 
+    // since value is an array of objects we need to override isEquals here
+    isEqual: function(value1, value2) {
+	return JSON.stringify(value1) === JSON.stringify(value2);
+    },
+
     getValue: function() {
 	let me = this;
 	let store = me.lookup('grid').getStore();
 
-	let data = [];
+	let value = [];
 
 	store.getData()
-	    .each((item) =>
-		data.push(`start-address=${item.data['start-address']},end-address=${item.data['end-address']}`),
-	    );
+	    .each((item) => {
+		// needs a deep copy otherwise we run in to ExtJS reference
+		// shenaningans
+		value.push({
+		    'start-address': item.data['start-address'],
+		    'end-address': item.data['end-address'],
+		});
+	    });
 
-	return data;
+	return value;
     },
 
     getSubmitData: function() {
 	let me = this;
 
 	let data = {};
-	let value = me.getValue();
+
+	let value = me.getValue()
+	    .map((item) => `start-address=${item['start-address']},end-address=${item['end-address']}`);
 
 	if (value.length) {
 	    data[me.getName()] = value;
@@ -97,7 +109,19 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
     setValue: function(dhcpRanges) {
 	let me = this;
 	let store = me.lookup('grid').getStore();
-	store.setData(dhcpRanges);
+
+	let data = [];
+
+	dhcpRanges.forEach((item) => {
+	    // needs a deep copy otherwise we run in to ExtJS reference
+	    // shenaningans
+	    data.push({
+		'start-address': item['start-address'],
+		'end-address': item['end-address'],
+	    });
+	});
+
+	store.setData(data);
     },
 
     getErrors: function() {
@@ -113,6 +137,8 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
 	addRange: function() {
 	    let me = this;
 	    me.lookup('grid').getStore().add({});
+
+	    me.getView().checkChange();
 	},
 
 	removeRange: function(field) {
@@ -120,6 +146,8 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
 	    let record = field.getWidgetRecord();
 
 	    me.lookup('grid').getStore().remove(record);
+
+	    me.getView().checkChange();
 	},
 
 	onValueChange: function(field, value) {
@@ -129,6 +157,8 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
 
 	    record.set(column.dataIndex, value);
 	    record.commit();
+
+	    me.getView().checkChange();
 	},
 
 	control: {
@@ -249,12 +279,7 @@ Ext.define('PVE.sdn.SubnetEdit', {
 	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
-		    let values = response.result.data;
-		    ipanel.setValues(values);
-
-		    if (values['dhcp-range']) {
-			dhcpPanel.setValue(values['dhcp-range']);
-		    }
+		    me.setValues(response.result.data);
 		},
 	    });
 	}
