@@ -57,7 +57,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	onSecondCDChange: function(widget, value, lastValue) {
 	    let me = this;
 	    let vm = me.getViewModel();
-	    let updateVMConfig = function () {
+	    let updateVMConfig = function() {
 		let widgets = Ext.ComponentQuery.query('pveMultiHDPanel');
 		if (widgets.length === 1) {
 		    widgets[0].getController().updateVMConfig();
