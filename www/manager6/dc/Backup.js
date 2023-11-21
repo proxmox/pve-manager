@@ -206,12 +206,14 @@ Ext.define('PVE.dc.BackupEdit', {
     viewModel: {
 	data: {
 	    selMode: 'include',
+	    notificationMode: '__default__',
 	},
 
 	formulas: {
 	    poolMode: (get) => get('selMode') === 'pool',
 	    disableVMSelection: (get) => get('selMode') !== 'include' && get('selMode') !== 'exclude',
-	    mailNotificationSelected: (get) => get('notificationMode') === 'mailto',
+	    showMailtoFields: (get) =>
+		['auto', 'legacy-sendmail', '__default__'].includes(get('notificationMode')),
 	},
     },
 
@@ -302,6 +304,28 @@ Ext.define('PVE.dc.BackupEdit', {
 			    ],
 			    column2: [
 				{
+				    xtype: 'proxmoxKVComboBox',
+				    comboItems: [
+					[
+					    '__default__',
+					    Ext.String.format(
+						gettext('{0} (Auto)'), Proxmox.Utils.defaultText,
+					    ),
+					],
+					['auto', gettext('Auto')],
+					['legacy-sendmail', gettext('Email (legacy)')],
+					['notification-system', gettext('Notification system')],
+				    ],
+				    fieldLabel: gettext('Notification mode'),
+				    name: 'notification-mode',
+				    cbind: {
+					deleteEmpty: '{!isCreate}',
+				    },
+				    bind: {
+					value: '{notificationMode}',
+				    },
+				},
+				{
 				    xtype: 'pveEmailNotificationSelector',
 				    fieldLabel: gettext('Notify'),
 				    name: 'mailnotification',
@@ -309,11 +333,17 @@ Ext.define('PVE.dc.BackupEdit', {
 					value: (get) => get('isCreate') ? 'always' : '',
 					deleteEmpty: '{!isCreate}',
 				    },
+				    bind: {
+					disabled: '{!showMailtoFields}',
+				    },
 				},
 				{
 				    xtype: 'textfield',
 				    fieldLabel: gettext('Send email to'),
 				    name: 'mailto',
+				    bind: {
+					disabled: '{!showMailtoFields}',
+				    },
 				},
 				{
 				    xtype: 'pveBackupCompressionSelector',
