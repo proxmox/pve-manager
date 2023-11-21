@@ -324,7 +324,6 @@ Ext.define('PVE.dc.Config', {
 		{
 		    xtype: 'pmxNotificationConfigView',
 		    title: gettext('Notifications'),
-		    onlineHelp: 'notification_targets',
 		    itemId: 'notification-targets',
 		    iconCls: 'fa fa-bell-o',
 		    baseUrl: '/cluster/notifications',
