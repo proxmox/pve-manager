@@ -452,12 +452,8 @@ sub send_notification {
     my $opts = $self->{opts};
     my $mailto = $opts->{mailto};
     my $cmdline = $self->{cmdline};
-    # Old-style notification policy. This parameter will influce
-    # if an ad-hoc notification target/matcher will be created.
-    my $policy = $opts->{"notification-policy"} //
-	$opts->{mailnotification} //
-	'always';
-
+    my $policy = $opts->{mailnotification} // 'always';
+    my $mode = $opts->{"notification-mode"} // 'auto';
 
     sanitize_task_list($tasklist);
     my $error_count = count_failed_tasks($tasklist);
@@ -499,44 +495,69 @@ sub send_notification {
     };
 
     my $fields = {
+	# TODO: There is no straight-forward way yet to get the
+	# backup job id here... (I think pvescheduler would need
+	# to pass that to the vzdump call?)
 	type => "vzdump",
 	hostname => $hostname,
     };
 
-    my $notification_config = PVE::Notify::read_config();
+    my $severity = $failed ? "error" : "info";
+    my $email_configured = $mailto && scalar(@$mailto);
 
-    my $legacy_sendmail = $policy eq "always" || ($policy eq "failure" && $failed);
+    if (($mode eq 'auto' && $email_configured) || $mode eq 'legacy-sendmail') {
+	if ($email_configured && ($policy eq "always" || ($policy eq "failure" && $failed))) {
+	    # Start out with an empty config. Might still contain
+	    # built-ins, so we need to disable/remove them.
+	    my $notification_config = Proxmox::RS::Notify->parse_config('', '');
 
-    if ($mailto && scalar(@$mailto) && $legacy_sendmail) {
-	# <, >, @ are not allowed in endpoint names, but that is only
-	# verified once the config is serialized. That means that
-	# we can rely on that fact that no other endpoint with this name exists.
-	my $endpoint_name = "<mail-to-" . join(",", @$mailto) . ">";
-	$notification_config->add_sendmail_endpoint(
-	    $endpoint_name,
-	    $mailto,
-	    undef,
-	    undef,
-	    "vzdump backup tool");
+	    # Remove built-in matchers, since we only want to send an
+	    # email to the specified recipients and nobody else.
+	    for my $matcher (@{$notification_config->get_matchers()}) {
+		$notification_config->delete_matcher($matcher->{name});
+	    }
 
-	my $endpoints = [$endpoint_name];
+	    # <, >, @ are not allowed in endpoint names, but that is only
+	    # verified once the config is serialized. That means that
+	    # we can rely on that fact that no other endpoint with this name exists.
+	    my $endpoint_name = "<" . join(",", @$mailto) . ">";
+	    $notification_config->add_sendmail_endpoint(
+		$endpoint_name,
+		$mailto,
+		undef,
+		undef,
+		"vzdump backup tool"
+	    );
 
-	$notification_config->add_matcher(
-	    "<matcher-$endpoint_name>",
-	    $endpoints,
+	    my $endpoints = [$endpoint_name];
+
+	    # Add a matcher that matches all notifications, set our
+	    # newly created target as a target.
+	    $notification_config->add_matcher(
+		"<matcher-$endpoint_name>",
+		$endpoints,
+	    );
+
+	    PVE::Notify::notify(
+		$severity,
+		$subject_template,
+		$body_template,
+		$notification_props,
+		$fields,
+		$notification_config
+	    );
+	}
+    } else {
+	# We use the 'new' system, or we are set to 'auto' and
+	# no email addresses were configured.
+	PVE::Notify::notify(
+	    $severity,
+	    $subject_template,
+	    $body_template,
+	    $notification_props,
+	    $fields,
 	);
     }
-
-    my $severity = $failed ? "error" : "info";
-
-    PVE::Notify::notify(
-	$severity,
-	$subject_template,
-	$body_template,
-	$notification_props,
-	$fields,
-	$notification_config
-    );
 };
 
 sub new {
