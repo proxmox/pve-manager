@@ -36,6 +36,23 @@ Ext.define('PVE.window.Backup', {
 	    emptyText: Proxmox.Utils.noneText,
 	});
 
+	let notificationModeSelector = Ext.create({
+	    xtype: 'proxmoxKVComboBox',
+	    comboItems: [
+		['auto', gettext('Auto')],
+		['legacy-sendmail', gettext('Email (legacy)')],
+		['notification-system', gettext('Notification system')],
+	    ],
+	    fieldLabel: gettext('Notification mode'),
+	    name: 'notification-mode',
+	    value: 'auto',
+	    listeners: {
+		change: function(field, value) {
+		    mailtoField.setDisabled(value === 'notification-system');
+		},
+	    },
+	});
+
 	const keepNames = [
 	    ['keep-last', gettext('Keep Last')],
 	    ['keep-hourly', gettext('Keep Hourly')],
@@ -110,6 +127,9 @@ Ext.define('PVE.window.Backup', {
 			    if (!initialDefaults && data.mailto !== undefined) {
 				mailtoField.setValue(data.mailto);
 			    }
+			    if (!initialDefaults && data['notification-mode'] !== undefined) {
+				notificationModeSelector.setValue(data['notification-mode']);
+			    }
 			    if (!initialDefaults && data.mode !== undefined) {
 				modeSelector.setValue(data.mode);
 			    }
@@ -176,6 +196,7 @@ Ext.define('PVE.window.Backup', {
 	    ],
 	    column2: [
 		compressionSelector,
+		notificationModeSelector,
 		mailtoField,
 		removeCheckbox,
 	    ],
@@ -254,6 +275,10 @@ Ext.define('PVE.window.Backup', {
 
 		if (values.mailto) {
 		    params.mailto = values.mailto;
+		}
+
+		if (values['notification-mode']) {
+		    params['notification-mode'] = values['notification-mode'];
 		}
 
 		if (values.compress) {
