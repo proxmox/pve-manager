@@ -6,6 +6,11 @@ Ext.define('PVE.form.IsoSelector', {
 	'Proxmox.Mixin.CBind',
     ],
 
+    layout: {
+	type: 'vbox',
+	align: 'stretch',
+    },
+
     nodename: undefined,
     insideWizard: false,
 
