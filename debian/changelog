@@ -1,3 +1,13 @@
+pve-manager (8.1.1) bookworm; urgency=medium
+
+  * ui: sdn: use all upper case for acronyms
+
+  * api: node status: cache boot mode info
+
+  * sdn: adapt edit panels for new API endpoints
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Nov 2023 19:37:00 +0100
+
 pve-manager (8.1.0) bookworm; urgency=medium
 
   * update shipped appliance info index
