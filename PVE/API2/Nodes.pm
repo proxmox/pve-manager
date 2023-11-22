@@ -342,6 +342,19 @@ __PACKAGE__->register_method ({
 	return PVE::pvecfg::version_info();
     }});
 
+my sub get_current_kernel_info {
+    my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
+
+    my $kernel_version_string = "$sysname $release $version"; # for legacy compat
+    my $current_kernel = {
+	sysname => $sysname,
+	release => $release,
+	version => $version,
+	machine => $machine,
+    };
+    return ($current_kernel, $kernel_version_string);
+}
+
 __PACKAGE__->register_method({
     name => 'status',
     path => 'status',
@@ -377,9 +390,9 @@ __PACKAGE__->register_method({
 	my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
 	$res->{loadavg} = [ $avg1, $avg5, $avg15];
 
-	my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
-
-	$res->{kversion} = "$sysname $release $version";
+	my ($current_kernel_info, $kversion_string) = get_current_kernel_info();
+	$res->{kversion} = $kversion_string;
+	$res->{'current-kernel'} = $current_kernel_info;
 
 	$res->{cpuinfo} = PVE::ProcFSTools::read_cpuinfo();
 
