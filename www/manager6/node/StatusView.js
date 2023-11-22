@@ -2,7 +2,7 @@ Ext.define('PVE.node.StatusView', {
     extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveNodeStatus',
 
-    height: 300,
+    height: 350,
     bodyPadding: '15 5 15 5',
 
     layout: {
@@ -111,6 +111,21 @@ Ext.define('PVE.node.StatusView', {
 		let kernel = data['current-kernel'];
 		let buildDate = kernel.version.match(/\((.+)\)\s*$/)[1] ?? 'unknown';
 		return `${kernel.sysname} ${kernel.release} (${buildDate})`;
+	    },
+	    value: '',
+	},
+	{
+	    colspan: 2,
+	    title: gettext('Boot Mode'),
+	    printBar: false,
+	    textField: 'boot-info',
+	    renderer: boot => {
+		if (boot.mode === 'legacy-bios') {
+		    return 'Legacy BIOS';
+		} else if (boot.mode === 'efi') {
+		    return `EFI${boot.secureboot ? ' (Secure Boot)' : ''}`;
+		}
+		return Proxmox.Utils.unknownText;
 	    },
 	    value: '',
 	},

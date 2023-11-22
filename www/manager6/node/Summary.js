@@ -150,7 +150,7 @@ Ext.define('PVE.node.Summary', {
 		    layout: 'column',
 		    minWidth: 700,
 		    defaults: {
-			minHeight: 325,
+			minHeight: 350,
 			padding: 5,
 			columnWidth: 1,
 		    },
