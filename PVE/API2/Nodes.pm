@@ -35,7 +35,7 @@ use PVE::RRD;
 use PVE::Report;
 use PVE::SafeSyslog;
 use PVE::Storage;
-use PVE::Tools;
+use PVE::Tools qw(file_get_contents);
 use PVE::pvecfg;
 
 use PVE::API2::APT;
@@ -355,6 +355,25 @@ my sub get_current_kernel_info {
     return ($current_kernel, $kernel_version_string);
 }
 
+my sub get_boot_mode_info {
+    my $is_efi_booted = -d "/sys/firmware/efi";
+
+    my $info = {
+	mode => $is_efi_booted ? 'efi' : 'legacy-bios',
+    };
+
+    if ($is_efi_booted) {
+	my $efi_var_sec_boot_entry = eval { file_get_contents("/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c") };
+	if ($@) {
+	    warn "Failed to read secure boot state: $@\n";
+	} else {
+	    my @secureboot = unpack("CCCCC", $efi_var_sec_boot_entry);
+	    $info->{secureboot} = $secureboot[4] == 1 ? 1 : 0;
+	}
+    }
+    return $info;
+}
+
 __PACKAGE__->register_method({
     name => 'status',
     path => 'status',
@@ -393,6 +412,8 @@ __PACKAGE__->register_method({
 	my ($current_kernel_info, $kversion_string) = get_current_kernel_info();
 	$res->{kversion} = $kversion_string;
 	$res->{'current-kernel'} = $current_kernel_info;
+
+	$res->{'boot-info'} = get_boot_mode_info();
 
 	$res->{cpuinfo} = PVE::ProcFSTools::read_cpuinfo();
 
