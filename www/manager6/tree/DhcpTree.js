@@ -108,6 +108,7 @@ Ext.define('PVE.sdn.DhcpTree', {
 		    let params = {
 			zone: data.zone,
 			mac: data.mac,
+			ip: data.ip,
 		    };
 
 		    let encodedParams = Ext.Object.toQueryString(params);
