@@ -1,3 +1,42 @@
+pve-manager (8.1.0) bookworm; urgency=medium
+
+  * update shipped appliance info index
+
+  * ui: fix zero-sized panels on fresh chrome start
+
+  * fix #1148: api: pools: support nested pools
+
+  * ui: vm create wizard: allow adding an extra iso drive for the VirtIO
+    drivers and set the defaults of the disk and network device-types
+    accordingly.
+
+  * api: ceph: add endpoint to fetch config keys
+
+  * fix #2515: ui: ceph pool create: use configured defaults for 'size' and
+    'min_size'
+
+  * vzdump: support 'notification-mode' parameter to allow deciding if one
+    wants to use the legacy sendmail-only system or the new centrally managed
+    notification system.
+
+  * sdn: regenerate DHCP config on reload
+
+  * sdn: add DHCP option to Zone dialogue
+
+  * sdn: subnet: add panel for editing DHCP ranges
+
+  * ui: node summary: drop PVE prefix for manager version
+
+  * api: nodes: add full info about current kernel from uname call
+
+  * api: nodes: add info about current boot mode
+
+  * ui: node summary: reduce noise in current kernel version
+
+  * ui: node summary: add boot-mode information
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Nov 2023 14:50:05 +0100
+
 pve-manager (8.0.9) bookworm; urgency=medium
 
   * move default link config to drop-in snippet to avoid that the all default
