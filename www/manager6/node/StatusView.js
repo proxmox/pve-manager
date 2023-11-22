@@ -109,7 +109,7 @@ Ext.define('PVE.node.StatusView', {
 	    itemId: 'version',
 	    colspan: 2,
 	    printBar: false,
-	    title: gettext('PVE Manager Version'),
+	    title: gettext('Manager Version'),
 	    textField: 'pveversion',
 	    value: '',
 	},
