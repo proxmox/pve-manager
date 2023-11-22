@@ -355,10 +355,13 @@ my sub get_current_kernel_info {
     return ($current_kernel, $kernel_version_string);
 }
 
+my $boot_mode_info_cache;
 my sub get_boot_mode_info {
+    return $boot_mode_info_cache if defined($boot_mode_info_cache);
+
     my $is_efi_booted = -d "/sys/firmware/efi";
 
-    my $info = {
+    $boot_mode_info_cache = {
 	mode => $is_efi_booted ? 'efi' : 'legacy-bios',
     };
 
@@ -368,10 +371,10 @@ my sub get_boot_mode_info {
 	    warn "Failed to read secure boot state: $@\n";
 	} else {
 	    my @secureboot = unpack("CCCCC", $efi_var_sec_boot_entry);
-	    $info->{secureboot} = $secureboot[4] == 1 ? 1 : 0;
+	    $boot_mode_info_cache->{secureboot} = $secureboot[4] == 1 ? 1 : 0;
 	}
     }
-    return $info;
+    return $boot_mode_info_cache;
 }
 
 __PACKAGE__->register_method({
