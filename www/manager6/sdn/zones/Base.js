@@ -78,6 +78,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
 		skipEmptyText: true,
 		fieldLabel: gettext('DNS Zone'),
 		allowBlank: true,
+		deleteEmpty: !me.isCreate,
 	    },
 	);
 
