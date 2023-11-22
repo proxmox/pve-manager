@@ -9,10 +9,6 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    values.type = 'vnet';
 	}
 
-	if (!values.vlanaware) {
-	    delete values.vlanaware;
-	}
-
 	return values;
     },
 
@@ -29,10 +25,14 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    fieldLabel: gettext('Name'),
 	},
 	{
-	    xtype: 'textfield',
+	    xtype: 'proxmoxtextfield',
 	    name: 'alias',
 	    fieldLabel: gettext('Alias'),
 	    allowBlank: true,
+	    skipEmptyText: true,
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
 	{
 	    xtype: 'pveSDNZoneSelector',
@@ -48,13 +48,19 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    maxValue: 16777216,
 	    fieldLabel: gettext('Tag'),
 	    allowBlank: true,
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'vlanaware',
-	    uncheckedValue: 0,
+	    uncheckedValue: null,
 	    checked: false,
 	    fieldLabel: gettext('VLAN Aware'),
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
     ],
 });

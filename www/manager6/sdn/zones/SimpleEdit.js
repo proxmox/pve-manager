@@ -24,9 +24,10 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'dhcp',
 		inputValue: 'dnsmasq',
-		uncheckedValue: undefined,
+		uncheckedValue: null,
 		checked: false,
 		fieldLabel: gettext('automatic DHCP'),
+		deleteEmpty: !me.isCreate,
 	    },
 	];
 

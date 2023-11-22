@@ -8,29 +8,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 
 	if (me.isCreate) {
 	    values.type = me.type;
-	} else {
-	    delete values.zone;
 	}
-
-        if (!values.mac) {
-            delete values.mac;
-        }
-
-        if (values['advertise-subnets'] === 0) {
-            delete values['advertise-subnets'];
-        }
-
-        if (values['exitnodes-local-routing'] === 0) {
-            delete values['exitnodes-local-routing'];
-        }
-
-        if (values['disable-arp-nd-suppression'] === 0) {
-            delete values['disable-arp-nd-suppression'];
-        }
-
-        if (values['exitnodes-primary'] === '') {
-            delete values['exitnodes-primary'];
-        }
 
 	return values;
     },
@@ -55,12 +33,13 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		allowBlank: false,
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'proxmoxtextfield',
 		name: 'mac',
 		fieldLabel: gettext('VNet MAC Address'),
 		vtype: 'MacAddress',
 		allowBlank: true,
 		emptyText: 'auto',
+		deleteEmpty: !me.isCreate,
 	    },
 	    {
 		xtype: 'pveNodeSelector',
@@ -79,29 +58,33 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'exitnodes-local-routing',
-		uncheckedValue: 0,
+		uncheckedValue: null,
 		checked: false,
 		fieldLabel: gettext('Exit Nodes Local Routing'),
+		deleteEmpty: !me.isCreate,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'advertise-subnets',
-		uncheckedValue: 0,
+		uncheckedValue: null,
 		checked: false,
 		fieldLabel: gettext('Advertise Subnets'),
+		deleteEmpty: !me.isCreate,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'disable-arp-nd-suppression',
-		uncheckedValue: 0,
+		uncheckedValue: null,
 		checked: false,
 		fieldLabel: gettext('Disable ARP-nd Suppression'),
+		deleteEmpty: !me.isCreate,
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'proxmoxtextfield',
 		name: 'rt-import',
 		fieldLabel: gettext('Route Target Import'),
 		allowBlank: true,
+		deleteEmpty: !me.isCreate,
 	    },
 	];
 

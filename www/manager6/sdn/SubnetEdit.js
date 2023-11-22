@@ -11,13 +11,6 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
 	    delete values.cidr;
 	}
 
-	if (!values.gateway) {
-	    delete values.gateway;
-	}
-	if (!values.snat) {
-	    delete values.snat;
-	}
-
 	return values;
     },
 
@@ -33,18 +26,25 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
 	    fieldLabel: gettext('Subnet'),
 	},
 	{
-	    xtype: 'textfield',
+	    xtype: 'proxmoxtextfield',
 	    name: 'gateway',
 	    vtype: 'IP64Address',
 	    fieldLabel: gettext('Gateway'),
 	    allowBlank: true,
+	    skipEmptyText: true,
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'snat',
-	    uncheckedValue: 0,
+	    uncheckedValue: null,
 	    checked: false,
 	    fieldLabel: 'SNAT',
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
 	{
 	    xtype: 'proxmoxtextfield',
@@ -52,6 +52,9 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
 	    skipEmptyText: true,
 	    fieldLabel: gettext('DNS Zone Prefix'),
 	    allowBlank: true,
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
 	},
     ],
 });
@@ -101,6 +104,8 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
 
 	if (value.length) {
 	    data[me.getName()] = value;
+	} else if (!me.isCreate) {
+	    data.delete = me.getName();
 	}
 
 	return data;
