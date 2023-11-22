@@ -28,24 +28,24 @@ Ext.define('PVE.panel.SDNZoneBase', {
 	});
 
         me.items.push(
-            {
-                xtype: 'proxmoxintegerfield',
-                name: 'mtu',
-                minValue: 100,
-                maxValue: 65000,
-                fieldLabel: 'MTU',
-                allowBlank: true,
-                emptyText: 'auto',
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'mtu',
+		minValue: 100,
+		maxValue: 65000,
+		fieldLabel: 'MTU',
+		allowBlank: true,
+		emptyText: 'auto',
 		deleteEmpty: !me.isCreate,
-            },
-            {
-                xtype: 'pveNodeSelector',
-                name: 'nodes',
-                fieldLabel: gettext('Nodes'),
-                emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
-                multiSelect: true,
-                autoSelect: false,
-            },
+	    },
+	    {
+		xtype: 'pveNodeSelector',
+		name: 'nodes',
+		fieldLabel: gettext('Nodes'),
+		emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
+		multiSelect: true,
+		autoSelect: false,
+	    },
 	    {
 		xtype: 'pveSDNIpamSelector',
 		fieldLabel: gettext('IPAM'),
