@@ -223,7 +223,7 @@ Ext.define('PVE.storage.BackupView', {
 	}
 
 	me.extraColumns.vmid = {
-	    header: gettext('VMID'),
+	    header: 'VMID',
 	    dataIndex: 'vmid',
 	    hidden: true,
 	    sorter: (a, b) => (a.data.vmid ?? 0) - (b.data.vmid ?? 0),

@@ -199,12 +199,12 @@ Ext.define('PVE.sdn.DhcpTree', {
 	    },
 	},
 	{
-	    text: gettext('IP'),
+	    text: gettext('IP Address'),
 	    dataIndex: 'ip',
 	    width: 200,
 	},
 	{
-	    text: gettext('MAC'),
+	    text: 'MAC',
 	    dataIndex: 'mac',
 	    width: 200,
 	},

@@ -434,7 +434,7 @@ Ext.define('PVE.dc.BackedGuests', {
 	    sortable: true,
 	},
 	{
-	    header: gettext('VMID'),
+	    header: 'VMID',
 	    dataIndex: 'vmid',
 	    flex: 1,
 	    sortable: true,

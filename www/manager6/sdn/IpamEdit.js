@@ -18,7 +18,7 @@ Ext.define('PVE.sdn.IpamEditInputPanel', {
 	{
 	    xtype: 'pmxDisplayEditField',
 	    name: 'vmid',
-	    fieldLabel: gettext('VMID'),
+	    fieldLabel: 'VMID',
 	    allowBlank: false,
 	    editable: false,
 	    cbind: {
@@ -28,7 +28,7 @@ Ext.define('PVE.sdn.IpamEditInputPanel', {
 	{
 	    xtype: 'pmxDisplayEditField',
 	    name: 'mac',
-	    fieldLabel: gettext('MAC'),
+	    fieldLabel: 'MAC',
 	    allowBlank: false,
 	    cbind: {
 		editable: '{isCreate}',
@@ -37,7 +37,7 @@ Ext.define('PVE.sdn.IpamEditInputPanel', {
 	{
 	    xtype: 'proxmoxtextfield',
 	    name: 'ip',
-	    fieldLabel: gettext('IP'),
+	    fieldLabel: gettext('IP Address'),
 	    allowBlank: false,
 	},
     ],

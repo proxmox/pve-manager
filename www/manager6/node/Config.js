@@ -437,7 +437,7 @@ Ext.define('PVE.node.Config', {
 		extraFilter: [
 		    {
 			xtype: 'pveGuestIDSelector',
-			fieldLabel: gettext('VMID'),
+			fieldLabel: 'VMID',
 			allowBlank: true,
 			name: 'vmid',
 		    },

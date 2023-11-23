@@ -364,7 +364,7 @@ Ext.define('PVE.grid.BackupView', {
 		    dataIndex: 'size',
 		},
 		{
-		    header: gettext('VMID'),
+		    header: 'VMID',
 		    dataIndex: 'vmid',
 		    hidden: true,
 		},
