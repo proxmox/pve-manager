@@ -109,7 +109,6 @@ Ext.define('PVE.tree.ResourceTree', {
 	}
     },
 
-    // add additional elements to text. Currently only the usage indicator for storages
     setText: function(info) {
 	let me = this;
 
