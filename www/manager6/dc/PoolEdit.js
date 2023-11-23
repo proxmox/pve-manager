@@ -11,8 +11,7 @@ Ext.define('PVE.dc.PoolEdit', {
     },
 
     cbind: {
-	autoLoad: get => !get('isCreate'),
-	url: get => `/api2/extjs/pools/${get('poolid')}`,
+	url: get => `/api2/extjs/pools/${!get('isCreate') ? '?poolid=' + get('poolid') : ''}`,
 	method: get => get('isCreate') ? 'POST' : 'PUT',
     },
 
@@ -34,4 +33,21 @@ Ext.define('PVE.dc.PoolEdit', {
 	    allowBlank: true,
 	},
     ],
+
+    initComponent: function() {
+	let me = this;
+	me.callParent();
+	if (me.poolid) {
+	    me.load({
+		success: function(response) {
+		    let data = response.result.data;
+		    if (Ext.isArray(data)) {
+			me.setValues(data[0]);
+		    } else {
+			me.setValues(data);
+		    }
+		},
+	    });
+	}
+    },
 });
