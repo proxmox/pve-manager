@@ -9,7 +9,7 @@ Ext.define('PVE.data.PermPathStore', {
 	{ 'value': '/access/groups' },
 	{ 'value': '/access/realm' },
 	{ 'value': '/mapping' },
-	{ 'value': '/mapping/notification' },
+	{ 'value': '/mapping/notifications' },
 	{ 'value': '/mapping/pci' },
 	{ 'value': '/mapping/usb' },
 	{ 'value': '/nodes' },
