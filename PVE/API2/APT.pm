@@ -761,6 +761,8 @@ __PACKAGE__->register_method({
         my @opt_pack = qw(
 	    ceph
 	    criu
+	    dnsmasq
+	    frr-pythontools
 	    gfs2-utils
 	    ifupdown
 	    ifupdown2
