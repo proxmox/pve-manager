@@ -122,7 +122,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		status = '<div class="usage-wrapper">';
 		status += `<div class="usage-negative" style="height: ${remainingHeight}%"></div>`;
 		status += `<div class="usage" style="height: ${barHeight}%"></div>`;
-		status += '</div>';
+		status += '</div> ';
 	    }
 	}
 	if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
@@ -130,7 +130,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		info.text = `${info.name} (${String(info.vmid)})`;
 	    }
 	}
-	info.text = `<span>${status} ${info.text}</span>`;
+	info.text = `<span>${status}${info.text}</span>`;
 	info.text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
     },
 
