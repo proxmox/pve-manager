@@ -1,3 +1,19 @@
+pve-manager (8.1.2) bookworm; urgency=medium
+
+  * ui: iso selector: fix layout, stretch items again to full space
+
+  * ui: drop various translations of fixed strings like 'VMID'
+
+  * ui: resource tree: fix inconsistency with extra-space causing some
+    potential vertical misalignment with nodes that had no virtual-guest
+
+  * ui: resource tree: consistently apply the tooltip and 'setText' method
+
+  * ui: perm paths: use adapted plural form for /mapping/notifications ACL
+    path
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 23 Nov 2023 10:23:05 +0100
+
 pve-manager (8.1.1) bookworm; urgency=medium
 
   * ui: sdn: use all upper case for acronyms
