@@ -88,7 +88,7 @@ Ext.define('PVE.CephPoolInputPanel', {
     column2: [
 	{
 	    xtype: 'proxmoxKVComboBox',
-	    fieldLabel: 'PG Autoscale Mode',
+	    fieldLabel: gettext('PG Autoscaler Mode'),
 	    name: 'pg_autoscale_mode',
 	    comboItems: [
 		['warn', 'warn'],
@@ -370,7 +370,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    },
 	},
 	{
-	    text: gettext('Autoscale Mode'),
+	    text: gettext('Autoscaler Mode'),
 	    flex: 1,
 	    minWidth: 100,
 	    align: 'right',
