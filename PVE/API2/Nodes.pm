@@ -365,8 +365,10 @@ my sub get_boot_mode_info {
 	mode => $is_efi_booted ? 'efi' : 'legacy-bios',
     };
 
-    if ($is_efi_booted) {
-	my $efi_var_sec_boot_entry = eval { file_get_contents("/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c") };
+    my $efi_var = "/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c";
+
+    if ($is_efi_booted && -e $efi_var) {
+	my $efi_var_sec_boot_entry = eval { file_get_contents($efi_var) };
 	if ($@) {
 	    warn "Failed to read secure boot state: $@\n";
 	} else {
