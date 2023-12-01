@@ -20,7 +20,8 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "List replication jobs.",
     permissions => {
-	description => "Requires the VM.Audit permission on /vms/<vmid>.",
+	description => "Will only return replication jobs for which the calling user has"
+	    . " VM.Audit permission on /vms/<vmid>.",
 	user => 'all',
     },
     parameters => {
@@ -47,7 +48,7 @@ __PACKAGE__->register_method ({
 	foreach my $id (sort keys %{$cfg->{ids}}) {
 	    my $d = $cfg->{ids}->{$id};
 	    my $vmid = $d->{guest};
-	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ]);
+	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 	    $d->{id} = $id;
 	    push @$res, $d;
 	}
