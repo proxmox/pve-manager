@@ -61,7 +61,7 @@ Ext.define('PVE.form.IsoSelector', {
 	let me = this;
 	me.lookup('storage').setDisabled(disabled);
 	me.lookup('file').setDisabled(disabled);
-	me.callParent();
+	return me.callParent([disabled]);
     },
 
     referenceHolder: true,
