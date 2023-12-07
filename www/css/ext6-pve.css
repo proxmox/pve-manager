@@ -750,3 +750,7 @@ table.osds td:first-of-type {
 .pmx-tag-tooltip .proxmox-tags-full > span {
     margin: 0px;
 }
+
+.pmx-column-wrapped > div {
+    white-space: pre-wrap;
+}
