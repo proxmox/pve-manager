@@ -318,7 +318,7 @@ sub read_vzdump_defaults {
     return $res;
 }
 
-sub read_backup_task_logs {
+my sub read_backup_task_logs {
     my ($task_list) = @_;
 
     my $task_logs = "";
@@ -345,7 +345,7 @@ sub read_backup_task_logs {
     return $task_logs;
 }
 
-sub build_guest_table {
+my sub build_guest_table {
     my ($task_list) = @_;
 
     my $table = {
@@ -399,7 +399,7 @@ sub build_guest_table {
     return $table;
 }
 
-sub sanitize_task_list {
+my sub sanitize_task_list {
     my ($task_list) = @_;
     for my $task (@$task_list) {
 	chomp $task->{msg} if $task->{msg};
@@ -427,7 +427,7 @@ my sub aggregate_task_statistics {
     return ($error_count, $total_size);
 }
 
-sub get_hostname {
+my sub get_hostname {
     my $hostname = `hostname -f` || PVE::INotify::nodename();
     chomp $hostname;
     return $hostname;
