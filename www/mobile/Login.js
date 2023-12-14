@@ -35,8 +35,12 @@ Ext.define('PVE.Login', {
 			    message: 'Loading...',
 			});
 			Proxmox.Utils.API2Request({
-			    url: '/api2/extjs/access/tfa',
-			    params: { response: code },
+			    url: '/api2/extjs/access/ticket',
+			    params: {
+				username: ticketResponse.username,
+				'tfa-challenge': ticketResponse.ticket,
+				password: `totp:${code}`
+			    },
 			    method: 'POST',
 			    timeout: 5000, // it'll delay both success & failure
 			    success: function(resp, opts) {
