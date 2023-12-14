@@ -414,15 +414,17 @@ sub sanitize_task_list {
     }
 }
 
-sub count_failed_tasks {
+my sub aggregate_task_statistics {
     my ($tasklist) = @_;
 
     my $error_count = 0;
+    my $total_size = 0;
     for my $task (@$tasklist) {
 	$error_count++ if $task->{state} ne 'ok';
+	$total_size += $task->{size} if $task->{state} eq 'ok';
     }
 
-    return $error_count;
+    return ($error_count, $total_size);
 }
 
 sub get_hostname {
@@ -437,9 +439,10 @@ my $body_template = <<EOT;
 {{error-message}}
 {{heading-1 "Details"}}
 {{table guest-table}}
-
+{{#verbatim}}
 Total running time: {{duration total-time}}
-
+Total size: {{human-bytes total-size}}
+{{/verbatim}}
 {{heading-1 "Logs"}}
 {{verbatim-monospaced logs}}
 EOT
@@ -456,7 +459,7 @@ sub send_notification {
     my $mode = $opts->{"notification-mode"} // 'auto';
 
     sanitize_task_list($tasklist);
-    my $error_count = count_failed_tasks($tasklist);
+    my ($error_count, $total_size) = aggregate_task_statistics($tasklist);
 
     my $failed = ($error_count || $err);
 
@@ -486,12 +489,13 @@ sub send_notification {
     my $hostname = get_hostname();
 
     my $notification_props = {
-	"hostname"      => $hostname,
+	"hostname" => $hostname,
 	"error-message" => $err,
-	"guest-table"   => build_guest_table($tasklist),
-	"logs"          => $text_log_part,
-	"status-text"   => $status_text,
-	"total-time"    => $total_time,
+	"guest-table" => build_guest_table($tasklist),
+	"logs" => $text_log_part,
+	"status-text" => $status_text,
+	"total-time" => $total_time,
+	"total-size" => $total_size,
     };
 
     my $fields = {
