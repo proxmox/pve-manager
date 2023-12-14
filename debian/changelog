@@ -1,3 +1,19 @@
+pve-manager (8.1.4) bookworm; urgency=medium
+
+  * api: apt versions: track dnsmasq and frr-pythontools as optional packages
+
+  * api: node status: add guard for missing secure-boot efi var
+
+  * ui: iso selector: disable all fields to avoid bogus validation where one
+    cannot confirm the dialog even though the values visible are correct
+
+  * api: replication: allow users to enumerate accessible replication jobs
+
+  * fix #5121: ui: node status: avoid invalid array access for certain foreign
+    kernels
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Dec 2023 15:20:06 +0100
+
 pve-manager (8.1.3) bookworm; urgency=medium
 
   * ui: pool view: fix editing nested pools
