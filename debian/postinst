@@ -9,23 +9,33 @@ set -e
 # installed and configured.
 
 set_lvm_conf() {
+    local FORCE="$1"
     LVM_CONF_MARKER="# added by pve-manager to avoid scanning"
 
     # keep user changes afterwards provided marker is still there..
-    if grep -qLF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf; then
+    if grep -qLF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf && test -z "$FORCE"; then
         return 0 # only do these changes once
     fi
 
-    OLD_VALUE="$(lvmconfig --typeconfig full devices/global_filter)"
-    NEW_VALUE='global_filter=["r|/dev/zd.*|"]'
-
     export LVM_SUPPRESS_FD_WARNINGS=1
 
-    # check global_filter
-    # keep previous setting from our custom packaging if it is still there
-    if echo "$OLD_VALUE" | grep -qvF 'r|/dev/zd.*|'; then
+    OLD_VALUE="$(lvmconfig --typeconfig diff devices/global_filter || true)"
+    NEW_VALUE='global_filter=["r|/dev/zd.*|","r|/dev/rbd.*|"]'
+
+    # update global_filter if:
+    # it is empty and there is no marker OR exactly the one we set before 8.1.4
+    if (! grep -qF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf && test -z "$OLD_VALUE")\
+	|| (echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"');
+    then
         SET_FILTER=1
         BACKUP=1
+    # print warning if global_filter is set but not our old/new default
+    elif test -n "$OLD_VALUE"\
+	&& ! echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"'\
+	&& ! echo "$OLD_VALUE" | grep -qF "$NEW_VALUE";
+    then
+	echo "non-default 'global_filter' value '$OLD_VALUE' in /etc/lvm/lvm.conf, not setting '$NEW_VALUE' automatically"
+	echo "consider adapting your 'global_filter' manually."
     fi
     # should be the default since bullseye
     if lvmconfig --typeconfig full devices/scan_lvs | grep -qv 'scan_lvs=0'; then
@@ -37,17 +47,19 @@ set_lvm_conf() {
         cp -vb /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
     fi
     if test -n "$SET_FILTER"; then
-        echo "Setting 'global_filter' in /etc/lvm/lvm.conf to prevent zvols from being scanned:"
+        echo "Setting 'global_filter' in /etc/lvm/lvm.conf to prevent zvols and rbds from being scanned:"
         echo "$OLD_VALUE => $NEW_VALUE"
-        # comment out existing setting
-        sed -i -e 's/^\([[:space:]]*global_filter[[:space:]]*=\)/#\1/' /etc/lvm/lvm.conf
-        # add new section with our setting
-        cat >> /etc/lvm/lvm.conf <<EOF
+        if test -n "$OLD_VALUE"; then
+            sed -i -e "s/$LVM_CONF_MARKER ZFS zvols/$LVM_CONF_MARKER ZFS zvols and Ceph rbds/" /etc/lvm/lvm.conf
+            sed -i -e "s!^\([[:space:]]*\)\(global_filter[[:space:]]*=.*\)\$!\1# \2\n\1$NEW_VALUE!" /etc/lvm/lvm.conf
+        else
+            cat >> /etc/lvm/lvm.conf <<EOF
 devices {
-     $LVM_CONF_MARKER ZFS zvols
+     $LVM_CONF_MARKER ZFS zvols and Ceph rbds
      $NEW_VALUE
- }
+}
 EOF
+        fi
     fi
     if test -n "$SET_SCAN_LVS"; then
         echo "Adding scan_lvs=0 setting to /etc/lvm/lvm.conf to prevent LVs from being scanned."
@@ -60,6 +72,11 @@ devices {
      scan_lvs=0
  }
 EOF
+    fi
+
+    if ! lvmconfig --validate; then
+	echo "Invalid LVM config detected - restoring from /etc/lvm/lvm.conf.bak"
+	mv /etc/lvm/lvm.conf.bak /etc/lvm/lvm.conf
     fi
 }
 
@@ -163,6 +180,12 @@ case "$1" in
     if test -f "$BETA_SOURCES" && dpkg --compare-versions "$2" 'lt' '8.0.2' && dpkg --compare-versions "$2" 'gt' '8.0~'; then
         echo "Removing the during beta added pvetest repository file again"
         rm -v "$BETA_SOURCES" || true
+    fi
+
+    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '8.1.4~'; then
+        if test -e /etc/lvm/lvm.conf ; then
+            set_lvm_conf 1
+        fi
     fi
 
     set_lvm_conf
