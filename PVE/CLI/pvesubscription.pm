@@ -25,11 +25,12 @@ __PACKAGE__->register_method({
     name => 'set_offline_key',
     path => 'set_offline_key',
     method => 'POST',
-    description => "(Internal use only!) Set a signed subscription info blob as offline key",
+    description => "Internal use only! To set an offline key, use the package proxmox-offline-mirror-helper instead.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
 	    data => {
+		description => "A signed subscription info blob",
 		type => "string",
 	    },
 	},
