@@ -85,7 +85,7 @@ my $init_report_cmds = sub {
 	    cmds => [
 		sub { dir2text('/etc/pve/firewall/', '.*fw') },
 		'cat /etc/pve/local/host.fw',
-		'iptables-save -c',
+		'iptables-save -c | column -t -l4 -o" "',
 	    ],
 	},
 	cluster => {
