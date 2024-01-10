@@ -25,17 +25,17 @@ set_lvm_conf() {
     # update global_filter if:
     # it is empty and there is no marker OR exactly the one we set before 8.1.4
     if (! grep -qF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf && test -z "$OLD_VALUE")\
-	|| (echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"');
+        || (echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"');
     then
         SET_FILTER=1
         BACKUP=1
     # print warning if global_filter is set but not our old/new default
     elif test -n "$OLD_VALUE"\
-	&& ! echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"'\
-	&& ! echo "$OLD_VALUE" | grep -qF "$NEW_VALUE";
+        && ! echo "$OLD_VALUE" | grep -qF '="r|/dev/zd.*|"'\
+        && ! echo "$OLD_VALUE" | grep -qF "$NEW_VALUE";
     then
-	echo "non-default 'global_filter' value '$OLD_VALUE' in /etc/lvm/lvm.conf, not setting '$NEW_VALUE' automatically"
-	echo "consider adapting your 'global_filter' manually."
+        echo "non-default 'global_filter' value '$OLD_VALUE' in /etc/lvm/lvm.conf, not setting '$NEW_VALUE' automatically"
+        echo "consider adapting your 'global_filter' manually."
     fi
     # should be the default since bullseye
     if lvmconfig --typeconfig full devices/scan_lvs | grep -qv 'scan_lvs=0'; then
@@ -75,8 +75,8 @@ EOF
     fi
 
     if ! lvmconfig --validate; then
-	echo "Invalid LVM config detected - restoring from /etc/lvm/lvm.conf.bak"
-	mv /etc/lvm/lvm.conf.bak /etc/lvm/lvm.conf
+        echo "Invalid LVM config detected - restoring from /etc/lvm/lvm.conf.bak"
+        mv /etc/lvm/lvm.conf.bak /etc/lvm/lvm.conf
     fi
 }
 
