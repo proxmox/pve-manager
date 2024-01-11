@@ -1017,7 +1017,8 @@ my $get_vnc_connection_info = sub {
     my ($remip, $family);
     if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
 	($remip, $family) = PVE::Cluster::remote_node_ip($node);
-	$remote_cmd = ['/usr/bin/ssh', '-e', 'none', '-t', $remip , '--'];
+	$remote_cmd = PVE::SSHInfo::ssh_info_to_command({ ip => $remip, name => $node }, ('-t'));
+	push @$remote_cmd, '--';
     } else {
 	$family = PVE::Tools::get_host_address_family($node);
     }
