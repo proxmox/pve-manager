@@ -116,7 +116,7 @@ sub proxy_handler {
 	}
     }
 
-    my @ssh_tunnel_cmd = ('ssh', '-o', 'BatchMode=yes', "root\@$remip");
+    my $ssh_tunnel_cmd = PVE::SSHInfo::ssh_info_to_command({ ip => $remip, name => $node });
 
     my @pvesh_cmd = ('pvesh', '--noproxy', $cmd, $path, '--output-format', 'json');
     if (scalar(@$args)) {
@@ -126,7 +126,7 @@ sub proxy_handler {
 
     my $res = '';
     PVE::Tools::run_command(
-	[ @ssh_tunnel_cmd, '--', @pvesh_cmd ],
+	[ $ssh_tunnel_cmd->@*, '--', @pvesh_cmd ],
 	errmsg => "proxy handler failed",
 	outfunc => sub { $res .= shift },
     );
