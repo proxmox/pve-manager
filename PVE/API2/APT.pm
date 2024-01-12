@@ -788,9 +788,12 @@ __PACKAGE__->register_method({
 	    libproxmox-backup-qemu0
 	    libproxmox-rs-perl
 	    libpve-access-control
+	    libpve-cluster-api-perl
+	    libpve-cluster-perl
 	    libpve-common-perl
 	    libpve-guest-common-perl
 	    libpve-http-server-perl
+	    livpve-notify-perl
 	    libpve-rs-perl
 	    libpve-storage-perl
 	    libqb0
