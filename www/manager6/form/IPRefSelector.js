@@ -37,8 +37,10 @@ Ext.define('PVE.form.IPRefSelector', {
 		    calculate: function(v) {
 			if (v.type === 'alias') {
 			    return `${v.scope}/${v.name}`;
-			} else {
+			} else if (v.type === 'ipset') {
 			    return `+${v.scope}/${v.name}`;
+			} else {
+			    return v.ref;
 			}
 		    },
 		},
