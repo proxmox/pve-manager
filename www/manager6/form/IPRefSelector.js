@@ -56,15 +56,6 @@ Ext.define('PVE.form.IPRefSelector', {
 	    },
 	});
 
-	var disable_query_for_ips = function(f, value) {
-	    if (value === null ||
-		value.match(/^\d/)) { // IP address starts with \d
-		f.queryDelay = 9999999999; // hack: disable with long delay
-	    } else {
-		f.queryDelay = 10;
-	    }
-	};
-
 	var columns = [];
 
 	if (!me.ref_type) {
@@ -109,7 +100,9 @@ Ext.define('PVE.form.IPRefSelector', {
 	    },
 	});
 
-	me.on('change', disable_query_for_ips);
+	me.on('beforequery', function(queryPlan) {
+	    return !(queryPlan.query === null || queryPlan.query.match(/^\d/));
+	});
 
         me.callParent();
     },
