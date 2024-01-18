@@ -1925,6 +1925,18 @@ Ext.define('PVE.Utils', {
     isStandaloneNode: function() {
 	return PVE.data.ResourceStore.getNodes().length < 2;
     },
+
+    // main use case of this helper is the login window
+    getUiLanguage: function() {
+	let languageCookie = Ext.util.Cookies.get('PVELangCookie');
+	if (languageCookie === 'kr') {
+	    // fix-up 'kr' being used for Korean by mistake FIXME: remove with PVE 9
+	    let dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
+	    languageCookie = 'ko';
+	    Ext.util.Cookies.set('PVELangCookie', languageCookie, dt);
+	}
+	return languageCookie || Proxmox.defaultLang || 'en';
+    },
 },
 
     singleton: true,
