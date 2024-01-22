@@ -1319,6 +1319,7 @@ sub exec_backup_task {
 	debugmsg ('info', "Failed at " . strftime("%F %H:%M:%S", localtime()));
 
 	eval { $self->run_hook_script ('backup-abort', $task, $logfd); };
+	debugmsg('warn', $@) if $@; # message already contains command with phase name
 
     } else {
 	$task->{state} = 'ok';
@@ -1350,6 +1351,7 @@ sub exec_backup_task {
     }
 
     eval { $self->run_hook_script ('log-end', $task); };
+    debugmsg('warn', $@) if $@; # message already contains command with phase name
 
     die $err if $err && $err =~ m/^interrupted by signal$/;
 }
