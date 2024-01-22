@@ -130,6 +130,17 @@ my $generate_notes = sub {
     return $notes_template;
 };
 
+my sub parse_fleecing {
+    my ($param) = @_;
+
+    if (defined(my $fleecing = $param->{fleecing})) {
+	return $fleecing if ref($fleecing) eq 'HASH'; # already parsed
+	$param->{fleecing} = PVE::JSONSchema::parse_property_string('backup-fleecing', $fleecing);
+    }
+
+    return $param->{fleecing};
+}
+
 my sub parse_performance {
     my ($param) = @_;
 
@@ -299,6 +310,13 @@ sub read_vzdump_defaults {
 	    defined($default) ? ($_ => $default) : ()
 	} keys $performance_fmt->%*
     };
+    my $fleecing_fmt = PVE::JSONSchema::get_format('backup-fleecing');
+    $defaults->{fleecing} = {
+	map {
+	    my $default = $fleecing_fmt->{$_}->{default};
+	    defined($default) ? ($_ => $default) : ()
+	} keys $fleecing_fmt->%*
+    };
     $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
 
     my $raw;
@@ -325,6 +343,7 @@ sub read_vzdump_defaults {
 	$res->{mailto} = [ @mailto ];
     }
     $parse_prune_backups_maxfiles->($res, "options in '$fn'");
+    parse_fleecing($res);
     parse_performance($res);
 
     for my $key (keys $defaults->%*) {
@@ -1480,6 +1499,7 @@ sub verify_vzdump_parameters {
 	if defined($param->{'prune-backups'}) && defined($param->{maxfiles});
 
     $parse_prune_backups_maxfiles->($param, 'CLI parameters');
+    parse_fleecing($param);
     parse_performance($param);
 
     if (my $template = $param->{'notes-template'}) {
