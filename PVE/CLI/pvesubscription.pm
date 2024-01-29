@@ -48,6 +48,8 @@ __PACKAGE__->register_method({
 	PVE::API2::Subscription::check_key($info->{key}, PVE::API2::Subscription::get_sockets());
 
 	PVE::API2::Subscription::write_etc_subscription($info);
+
+	return;
 }});
 
 our $cmddef = {
