@@ -232,5 +232,11 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		'data-qtip': gettext('Enable if the LVM is located on a shared LUN.'),
 	    },
 	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'saferemove',
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Wipe Removed Volumes'),
+	},
     ],
 });
