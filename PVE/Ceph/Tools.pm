@@ -35,15 +35,18 @@ my $ceph_service = {
     ceph_volume => '/usr/sbin/ceph-volume',
 };
 
-my $config_hash = {
+my $config_values = {
     ccname => $ccname,
+    ceph_mds_data_dir => $ceph_mds_data_dir,
+    long_rados_timeout => 60,
+};
+
+my $config_files = {
     pve_ceph_cfgpath => $pve_ceph_cfgpath,
     pve_mon_key_path => $pve_mon_key_path,
     pve_ckeyring_path => $pve_ckeyring_path,
     ceph_bootstrap_osd_keyring => $ceph_bootstrap_osd_keyring,
     ceph_bootstrap_mds_keyring => $ceph_bootstrap_mds_keyring,
-    ceph_mds_data_dir => $ceph_mds_data_dir,
-    long_rados_timeout => 60,
     ceph_cfgpath => $ceph_cfgpath,
 };
 
@@ -84,9 +87,12 @@ sub get_cluster_versions {
 sub get_config {
     my $key = shift;
 
-    my $value = $config_hash->{$key};
+    my $value = $config_values->{$key};
+    if (! defined($value)) {
+	$value = $config_files->{$key};
+    }
 
-    die "no such ceph config '$key'" if !$value;
+    die "no such ceph config '$key'" if ! defined($value);
 
     return $value;
 }
@@ -123,7 +129,7 @@ sub purge_all_ceph_files {
 	warn "Foreign MON address in ceph.conf. Keeping config & keyrings\n"
     } else {
 	print "Removing config & keyring files\n";
-	foreach my $file (%$config_hash) {
+	for my $file (%$config_files) {
 	    unlink $file if (-e $file);
 	}
     }
