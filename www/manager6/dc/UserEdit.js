@@ -171,6 +171,12 @@ Ext.define('PVE.dc.UserEdit', {
                         ) {
                             me.down('[name="keys"]').setDisabled(1);
                         }
+                        if (data.keys === 'x') {
+                            me.down('[name="keys"]').setHidden(true);
+                        }
+                    } else {
+                        me.down('[name="keys"]').setDisabled(true);
+                        me.down('[name="keys"]').setHidden(true);
                     }
                 },
             });
