@@ -162,7 +162,10 @@ Ext.define('PVE.dc.UserEdit', {
 		    var data = response.result.data;
 		    me.setValues(data);
 		    if (data.keys) {
-			if (data.keys === 'x!oath' || data.keys === 'x!u2f') {
+			if (data.keys === 'x' ||
+			    data.keys === 'x!oath' ||
+			    data.keys === 'x!u2f' ||
+			    data.keys === 'x!yubico') {
 			    me.down('[name="keys"]').setDisabled(1);
 			}
 		    }
