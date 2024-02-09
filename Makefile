@@ -1,7 +1,7 @@
 include /usr/share/dpkg/default.mk
 include defines.mk
 
-export PVERELEASE = $(shell echo $(DEB_VERSION_UPSTREAM) | cut -c 1-3)
+export PVERELEASE = $(shell echo $(DEB_VERSION_UPSTREAM) | cut -d. -f1-2)
 export VERSION = $(DEB_VERSION_UPSTREAM_REVISION)
 
 BUILDDIR = $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
