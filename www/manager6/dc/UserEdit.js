@@ -129,7 +129,7 @@ Ext.define('PVE.dc.UserEdit', {
             ],
             advancedItems: [
                 {
-                    xtype: 'textfield',
+                    xtype: 'displayfield',
                     name: 'keys',
                     fieldLabel: gettext('Key IDs'),
                 },
@@ -162,20 +162,7 @@ Ext.define('PVE.dc.UserEdit', {
                 success: function (response, options) {
                     var data = response.result.data;
                     me.setValues(data);
-                    if (data.keys) {
-                        if (
-                            data.keys === 'x' ||
-                            data.keys === 'x!oath' ||
-                            data.keys === 'x!u2f' ||
-                            data.keys === 'x!yubico'
-                        ) {
-                            me.down('[name="keys"]').setDisabled(1);
-                        }
-                        if (data.keys === 'x') {
-                            me.down('[name="keys"]').setHidden(true);
-                        }
-                    } else {
-                        me.down('[name="keys"]').setDisabled(true);
+                    if (!data.keys || data.keys === 'x') {
                         me.down('[name="keys"]').setHidden(true);
                     }
                 },
