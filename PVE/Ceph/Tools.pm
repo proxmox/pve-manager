@@ -87,10 +87,7 @@ sub get_cluster_versions {
 sub get_config {
     my $key = shift;
 
-    my $value = $config_values->{$key};
-    if (! defined($value)) {
-	$value = $config_files->{$key};
-    }
+    my $value = $config_values->{$key} // $config_files->{$key};
 
     die "no such ceph config '$key'" if ! defined($value);
 
