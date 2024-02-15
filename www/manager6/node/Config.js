@@ -244,7 +244,7 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Syslog']) {
 	    me.items.push({
 		xtype: 'proxmoxJournalView',
-		title: 'Syslog',
+		title: gettext('System Log'),
 		iconCls: 'fa fa-list',
 		groups: ['services'],
 		disabled: !caps.nodes['Sys.Syslog'],
