@@ -344,6 +344,7 @@ Ext.define('PVE.window.LoginWindow', {
 		itemId: 'usernameField',
 		reference: 'usernameField',
 		stateId: 'login-username',
+		inputAttrTpl: 'autocomplete=username',
 		bind: {
 		    visible: "{!openid}",
 		    disabled: "{openid}",
@@ -355,6 +356,7 @@ Ext.define('PVE.window.LoginWindow', {
 		fieldLabel: gettext('Password'),
 		name: 'password',
 		reference: 'passwordField',
+		inputAttrTpl: 'autocomplete=current-password',
 		bind: {
 		    visible: "{!openid}",
 		    disabled: "{openid}",
