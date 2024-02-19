@@ -1620,7 +1620,10 @@ __PACKAGE__->register_method({
     description => "Query metadata of an URL: file size, file name and mime type.",
     proxyto => 'node',
     permissions => {
-	check => ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+	check => ['or',
+	    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+	    ['perm', '/nodes/{node}', [ 'Sys.AccessNetwork' ]],
+	],
     },
     parameters => {
 	additionalProperties => 0,
