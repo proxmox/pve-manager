@@ -51,7 +51,10 @@ Ext.define('PVE.storage.Browser', {
 	    let contents = res.content.split(',');
 
 	    let enableUpload = !!caps.storage['Datastore.AllocateTemplate'];
-	    let enableDownloadUrl = enableUpload && !!(caps.nodes['Sys.Audit'] && caps.nodes['Sys.Modify']);
+	    let enableDownloadUrl = enableUpload && (
+		!!(caps.nodes['Sys.Audit'] && caps.nodes['Sys.Modify']) || // for backward compat
+		!!caps.nodes['Sys.AccessNetwork'] // new explicit priv for querying (local) networks
+	    );
 
 	    if (contents.includes('backup')) {
 		me.items.push({
