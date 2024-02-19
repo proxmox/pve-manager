@@ -634,7 +634,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		isCloudInit ||
 		!(isDisk || isEfi || tpmMoveable),
 	    );
-	    move_menuitem.setDisabled(isUnusedDisk);
 	    reassign_menuitem.setDisabled(pending || (isEfi || tpmMoveable));
 	    resize_menuitem.setDisabled(pending || !isUsedDisk);
 
