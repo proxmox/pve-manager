@@ -54,6 +54,8 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		fieldLabel: gettext('Primary Exit Node'),
 		multiSelect: false,
 		autoSelect: false,
+		skipEmptyText: true,
+		deleteEmpty: !me.isCreate,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
