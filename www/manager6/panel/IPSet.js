@@ -143,8 +143,17 @@ Ext.define('PVE.IPSetList', {
 	    tbar: ['<b>IPSet:</b>', me.addBtn, me.removeBtn, me.editBtn],
 	    selModel: sm,
 	    columns: [
-		{ header: 'IPSet', dataIndex: 'name', width: '100' },
-		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 },
+		{
+		    header: 'IPSet',
+		    dataIndex: 'name',
+		    width: 100,
+		},
+		{
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    renderer: Ext.String.htmlEncode,
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
@@ -181,12 +190,12 @@ Ext.define('PVE.IPSetCidrEdit', {
 
 
 	if (me.isCreate) {
-            me.url = '/api2/extjs' + me.base_url;
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs' + me.base_url + '/' + me.cidr;
-            me.method = 'PUT';
-        }
+	    me.url = '/api2/extjs' + me.base_url;
+	    me.method = 'POST';
+	} else {
+	    me.url = '/api2/extjs' + me.base_url + '/' + me.cidr;
+	    me.method = 'PUT';
+	}
 
 	var column1 = [];
 
@@ -452,8 +461,8 @@ Ext.define('PVE.IPSet', {
 	});
 
 	Ext.apply(me, {
-            layout: 'border',
-            items: [ipset_list, ipset_panel],
+	    layout: 'border',
+	    items: [ipset_list, ipset_panel],
 	    listeners: {
 		show: function() {
 		    ipset_list.fireEvent('show', ipset_list);
