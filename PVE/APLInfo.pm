@@ -12,8 +12,8 @@ use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::pvecfg;
 
-my $logfile = "/var/log/pveam.log";
-my $aplinfodir = "/var/lib/pve-manager/apl-info";
+my $LOGFILE = "/var/log/pveam.log";
+my $APL_INFO_DIRECTORY = "/var/lib/pve-manager/apl-info";
 
 sub logmsg {
     my ($logfd, $msg) = @_;
@@ -147,7 +147,7 @@ sub download_aplinfo {
     my $aplsigurl = "$aplinfo->{url}/$aplinfo->{file}.asc";
     my $host = $aplinfo->{host};
 
-    my $tmp = "$aplinfodir/pveam-${host}.tmp.$$";
+    my $tmp = "$APL_INFO_DIRECTORY/pveam-${host}.tmp.$$";
     my $tmpgz = "$tmp.gz";
     my $sigfn = "$tmp.asc";
 
@@ -178,7 +178,7 @@ sub download_aplinfo {
 	eval { read_aplinfo($tmp, {}, $aplinfo->{url}, 1) };
 	die "update failed: $@" if $@;
 
-	rename($tmp, "$aplinfodir/$host") or
+	rename($tmp, "$APL_INFO_DIRECTORY/$host") or
 	    die "update failed: unable to store data: $!\n";
 
 	logmsg($logfd, "update successful");
@@ -213,11 +213,11 @@ sub get_apl_sources {
 sub update {
     my ($proxy) = @_;
 
-    my $logfile_size = -s $logfile || 0;
+    my $logfile_size = -s $LOGFILE || 0;
     if ($logfile_size > 1024 * 256) {
-	rename($logfile, "$logfile.0") or warn "failed to rotate log file $logfile - $!\n";
+	rename($LOGFILE, "$LOGFILE.0") or warn "failed to rotate log file $LOGFILE - $!\n";
     }
-    my $logfd = IO::File->new (">>$logfile");
+    my $logfd = IO::File->new (">>$LOGFILE");
     logmsg($logfd, "starting update");
 
     my $ua = LWP::UserAgent->new;
@@ -232,7 +232,7 @@ sub update {
 
     my $sources = get_apl_sources();
 
-    mkdir $aplinfodir;
+    mkdir $APL_INFO_DIRECTORY;
 
     my @dlerr = ();
     foreach my $info (@$sources) {
@@ -260,7 +260,7 @@ sub load_data {
     foreach my $info (@$sources) {
 	eval {
 	    my $host = $info->{host};
-	    read_aplinfo("$aplinfodir/$host", $list, $info->{url});
+	    read_aplinfo("$APL_INFO_DIRECTORY/$host", $list, $info->{url});
 	};
 	warn $@ if $@;
     }
