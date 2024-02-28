@@ -146,13 +146,14 @@ Ext.define('PVE.IPSetList', {
 		{
 		    header: 'IPSet',
 		    dataIndex: 'name',
-		    width: 100,
+		    minWidth: 150,
+		    flex: 1,
 		},
 		{
 		    header: gettext('Comment'),
 		    dataIndex: 'comment',
 		    renderer: Ext.String.htmlEncode,
-		    flex: 1,
+		    flex: 4,
 		},
 	    ],
 	    listeners: {
@@ -389,11 +390,15 @@ Ext.define('PVE.IPSetGrid', {
 	    columns: [
 		{
 		    xtype: 'rownumberer',
+		    // cannot use width on instantiation as rownumberer hard-wires that in the
+		    // constructor to avoid being overridden by applyDefaults
+		    minWidth: 40,
 		},
 		{
 		    header: gettext('IP/CIDR'),
 		    dataIndex: 'cidr',
-		    width: 150,
+		    minWidth: 150,
+		    flex: 1,
 		    renderer: function(value, metaData, record) {
 			value = render_errors(value, metaData, record);
 			if (record.data.nomatch) {
@@ -405,7 +410,7 @@ Ext.define('PVE.IPSetGrid', {
 		{
 		    header: gettext('Comment'),
 		    dataIndex: 'comment',
-		    flex: 1,
+		    flex: 3,
 		    renderer: function(value) {
 			return Ext.util.Format.htmlEncode(value);
 		    },
