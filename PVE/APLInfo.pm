@@ -213,8 +213,9 @@ sub get_apl_sources {
 sub update {
     my ($proxy) = @_;
 
-    if ((-s $logfile || 0) > 1024 * 256) {
-	rename($logfile, "$logfile.0");
+    my $logfile_size = -s $logfile || 0;
+    if ($logfile_size > 1024 * 256) {
+	rename($logfile, "$logfile.0") or warn "failed to rotate log file $logfile - $!\n";
     }
     my $logfd = IO::File->new (">>$logfile");
     logmsg($logfd, "starting update");
