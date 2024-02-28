@@ -213,7 +213,7 @@ sub get_apl_sources {
 sub update {
     my ($proxy) = @_;
 
-    if (-s $logfile || 0 > 1024 * 256) {
+    if ((-s $logfile || 0) > 1024 * 256) {
 	rename($logfile, "$logfile.0");
     }
     my $logfd = IO::File->new (">>$logfile");
