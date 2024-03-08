@@ -121,6 +121,42 @@ Ext.define('PVE.storage.Browser', {
 		    pluginType: plugin,
 		});
 	    }
+	    if (contents.includes('import')) {
+		me.items.push({
+		    xtype: 'pveStorageContentView',
+		    title: gettext('Import'),
+		    iconCls: 'fa fa-cloud-download',
+		    itemId: 'contentImport',
+		    content: 'import',
+		    useCustomRemoveButton: true, // hide default remove button
+		    showColumns: ['name', 'format'],
+		    tbar: [
+			{
+			    xtype: 'proxmoxButton',
+			    disabled: true,
+			    text: gettext('Start Import'),
+			    handler: function() {
+				let grid = this.up('pveStorageContentView');
+				let selection = grid.getSelection()?.[0];
+
+				if (!selection) {
+				    return;
+				}
+
+				let volumeName = selection.data.volid.replace(/^.*?:/, '');
+
+				Ext.create('PVE.window.GuestImport', {
+				    storage: storeid,
+				    volumeName,
+				    nodename,
+				    autoShow: true,
+				});
+			    },
+			},
+		    ],
+		    pluginType: plugin,
+		});
+	    }
 	}
 
 	if (caps.storage['Permissions.Modify']) {

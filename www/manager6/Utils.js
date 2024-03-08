@@ -1022,6 +1022,8 @@ Ext.define('PVE.Utils', {
 	    result = "CH " +
 		Ext.String.leftPad(data.channel, 2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
+	} else if (data.content === 'import') {
+	    result = data.volid.replace(/^.*?:/, '');
 	} else {
 	    result = data.volid.replace(/^.*?:(.*?\/)?/, '');
 	}
