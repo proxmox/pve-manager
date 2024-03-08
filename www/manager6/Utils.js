@@ -839,6 +839,12 @@ Ext.define('PVE.Utils', {
 	    hideAdd: true,
 	    backups: false,
 	},
+	esxi: {
+	    name: 'ESXi',
+	    ipanel: 'ESXIInputPanel',
+	    faIcon: 'cloud-download',
+	    backups: false,
+	},
     },
 
     sdnvnetSchema: {
@@ -1236,6 +1242,8 @@ Ext.define('PVE.Utils', {
 	    // templates
 	    objType = 'template';
 	    status = type;
+	} else if (type === 'storage' && record.content.indexOf('import') !== -1) {
+	    return 'fa fa-cloud-download';
 	} else {
 	    // everything else
 	    status = record.status + ' ha-' + record.hastate;

@@ -17,14 +17,25 @@ Ext.define('PVE.storage.Browser', {
 	    throw "no storage ID specified";
 	}
 
-	me.items = [
+	let storageInfo = PVE.data.ResourceStore.findRecord(
+	    'id',
+	    `storage/${nodename}/${storeid}`,
+	    0, // startIndex
+	    false, // anyMatch
+	    true, // caseSensitive
+	    true, // exactMatch
+	);
+	let res = storageInfo.data;
+	let plugin = res.plugintype;
+
+	me.items = plugin !== 'esxi' ? [
 	    {
 		title: gettext('Summary'),
 		xtype: 'pveStorageSummary',
 		iconCls: 'fa fa-book',
 		itemId: 'summary',
 	    },
-	];
+	] : [];
 
 	let caps = Ext.state.Manager.get('GuiCap');
 
@@ -38,16 +49,6 @@ Ext.define('PVE.storage.Browser', {
 	    caps.storage['Datastore.AllocateSpace'] ||
 	    caps.storage['Datastore.Audit']
 	) {
-	    let storageInfo = PVE.data.ResourceStore.findRecord(
-		'id',
-		`storage/${nodename}/${storeid}`,
-		0, // startIndex
-		false, // anyMatch
-		true, // caseSensitive
-		true, // exactMatch
-	    );
-	    let res = storageInfo.data;
-	    let plugin = res.plugintype;
 	    let contents = res.content.split(',');
 
 	    let enableUpload = !!caps.storage['Datastore.AllocateTemplate'];

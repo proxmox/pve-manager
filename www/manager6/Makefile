@@ -316,6 +316,7 @@ JSSRC= 							\
 	storage/TemplateView.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
+	storage/ESXIEdit.js				\
 	Workspace.js					\
 # end of JSSRC list
 
