@@ -58,11 +58,9 @@ Ext.define('PVE.storage.ContentView', {
 
 	Proxmox.Utils.monStoreErrors(me, store);
 
-	if (!me.tbar) {
-	    me.tbar = [];
-	}
+	let tbar = me.tbar ? [...me.tbar] : [];
 	if (me.useUploadButton) {
-	    me.tbar.unshift(
+	    tbar.unshift(
 		{
 		    xtype: 'button',
 		    text: gettext('Upload'),
@@ -95,7 +93,7 @@ Ext.define('PVE.storage.ContentView', {
 	    );
 	}
 	if (!me.useCustomRemoveButton) {
-	    me.tbar.push({
+	    tbar.push({
 		xtype: 'proxmoxStdRemoveButton',
 		selModel: sm,
 		enableFn: rec => !rec?.data?.protected,
@@ -104,7 +102,7 @@ Ext.define('PVE.storage.ContentView', {
 		baseurl: baseurl + '/',
 	    });
 	}
-	me.tbar.push(
+	tbar.push(
 	    '->',
 	    gettext('Search') + ':',
 	    ' ',
@@ -205,7 +203,7 @@ Ext.define('PVE.storage.ContentView', {
 	Ext.apply(me, {
 	    store,
 	    selModel: sm,
-	    tbar: me.tbar,
+	    tbar,
 	    columns,
 	    listeners: {
 		activate: reload,
