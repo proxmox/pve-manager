@@ -203,10 +203,10 @@ Ext.define('PVE.storage.ContentView', {
 	const columns = Object.values(availableColumns);
 
 	Ext.apply(me, {
-	    store: store,
+	    store,
 	    selModel: sm,
 	    tbar: me.tbar,
-	    columns: columns,
+	    columns,
 	    listeners: {
 		activate: reload,
 		itemdblclick: (view, record) => me.itemdblclick(view, record),
