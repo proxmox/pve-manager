@@ -29,19 +29,6 @@ Ext.define('PVE.window.GuestImport', {
 	    widget.setNodename(view.nodename);
 	},
 
-	setIsos: function(ignoredVolumes) {
-	    let me = this;
-	    let isos = Object.entries(ignoredVolumes).map(([id, value]) => `${id}: ${value.replace(/^.*\//, '')}`);
-	    if (!isos) {
-		return;
-	    }
-	    let warning = gettext('The following cd images were detected, but will not be carried over:');
-	    warning += '<br>' + isos.join('<br>');
-	    let warnings = me.getViewModel().get('warnings');
-	    warnings.push(warning);
-	    me.getViewModel().set('warnings', warnings);
-	},
-
 	storageChange: function(storageSelector, value) {
 	    let me = this;
 
@@ -90,7 +77,8 @@ Ext.define('PVE.window.GuestImport', {
 	formulas: {
 	    totalCoreCount: get => get('socketCount') * get('coreCount'),
 	    hideWarnings: get => get('warnings').length === 0,
-	    warningsText: get => get('warnings').join('<br><br>'),
+	    warningsText: get => '<ul style="margin: 0; padding-left: 20px;">'
+	        + get('warnings').map(w => `<li>${w}</li>`).join('') + '</ul>',
 	},
     },
 
@@ -369,6 +357,20 @@ Ext.define('PVE.window.GuestImport', {
 
 	me.setTitle(Ext.String.format(gettext('Import Guest - {0}'), `${me.storage}:${me.volumeName}`));
 
+	let renderWarning = w => {
+	    const warningsCatalogue = {
+		'cdrom-image-ignored': gettext("CD-ROM images cannot get imported, please reconfigure the '{0}' drive after the import"),
+		'nvme-unsupported': gettext("NVMe disks are currently not supported, '{0}' will get attaced as SCSI"),
+		'ovmf-with-lsi-unsupported': gettext("OVMF is built without LSI drivers, scsi hardware was set to '{1}'"),
+		'serial-port-socket-only': gettext("Serial socket '{0}' will be mapped to a socket"),
+	    };
+            let message = warningsCatalogue[w.type];
+	    if (!w.type || !message) {
+		return w.message ?? w.type ?? gettext('Unknown warning');
+	    }
+	    return Ext.String.format(message, w.key ?? 'unknown', w.value ?? 'unknown');
+	};
+
 	me.load({
 	    success: function(response) {
 		let data = response.result.data;
@@ -393,8 +395,7 @@ Ext.define('PVE.window.GuestImport', {
 		me.lookup('diskGrid').getStore().setData(disks);
 		me.lookup('netGrid').getStore().setData(nets);
 
-		me.getViewModel().set('warnings', data.warnings.map(warning => warning.message));
-		me.getController().setIsos(data['ignored-volumes']);
+		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
 
 		me.setValues(me.vmConfig);
 	    },
