@@ -29,12 +29,12 @@ Ext.define('PVE.window.GuestImport', {
 	    widget.setNodename(view.nodename);
 	},
 
-	storageChange: function(storageSelector, value) {
+	diskStorageChange: function(storageSelector, value) {
 	    let me = this;
 
 	    let grid = me.lookup('diskGrid');
 	    let rec = storageSelector.getWidgetRecord();
-	    let validFormats = storageSelector.store.getById(value).data.format;
+	    let validFormats = storageSelector.store.getById(value)?.data.format;
 	    grid.query('pveDiskFormatSelector').some((selector) => {
 		if (selector.getWidgetRecord().data.id !== rec.data.id) {
 		    return false;
@@ -46,6 +46,25 @@ Ext.define('PVE.window.GuestImport', {
 		} else {
 		    selector.setValue('raw');
 		    selector.setDisabled(true);
+		}
+
+		return true;
+	    });
+	},
+
+	isoStorageChange: function(storageSelector, value) {
+	    let me = this;
+
+	    let grid = me.lookup('cdGrid');
+	    let rec = storageSelector.getWidgetRecord();
+	    grid.query('pveFileSelector').some((selector) => {
+		if (selector.getWidgetRecord().data.id !== rec.data.id) {
+		    return false;
+		}
+
+		selector.setStorage(value);
+		if (!value) {
+		    selector.setValue('');
 		}
 
 		return true;
@@ -74,8 +93,11 @@ Ext.define('PVE.window.GuestImport', {
 		    rec.commit();
 		},
 	    },
-	    'pveStorageSelector': {
-		change: 'storageChange',
+	    'grid[reference=diskGrid] pveStorageSelector': {
+		change: 'diskStorageChange',
+	    },
+	    'grid[reference=cdGrid] pveStorageSelector': {
+		change: 'isoStorageChange',
 	    },
 	    'field[name=osbase]': {
 		change: 'onOSBaseChange',
@@ -133,6 +155,20 @@ Ext.define('PVE.window.GuestImport', {
 		    delete rec.data.enable;
 		    delete rec.data.id;
 		    config[id] = PVE.Parser.printQemuNetwork(rec.data);
+		});
+
+		grid.lookup('cdGrid').getStore().each((rec) => {
+		    if (!rec.data.enable) {
+			return;
+		    }
+		    let id = rec.data.id;
+		    delete rec.data.enable;
+		    delete rec.data.id;
+		    let cd = {
+			media: 'cdrom',
+			file: rec.data.file ? rec.data.file : 'none',
+		    };
+		    config[id] = PVE.Parser.printPropertyString(cd);
 		});
 
 		if (grid.lookup('liveimport').getValue()) {
@@ -302,6 +338,69 @@ Ext.define('PVE.window.GuestImport', {
 		},
 		{
 		    xtype: 'displayfield',
+		    fieldLabel: gettext('CD/DVD Drives'),
+		    labelWidth: 200,
+		},
+		{
+		    xtype: 'grid',
+		    reference: 'cdGrid',
+		    maxHeight: 150,
+		    store: {
+			data: [],
+			sorters: [
+			    'id',
+			],
+		    },
+		    columns: [
+			{
+			    xtype: 'checkcolumn',
+			    header: gettext('Use'),
+			    width: 50,
+			    dataIndex: 'enable',
+			    listeners: {
+				checkchange: function(_column, _rowIndex, _checked, record) {
+				    record.commit();
+				},
+			    },
+			},
+			{
+			    text: gettext('Slot'),
+			    dataIndex: 'id',
+			    sorted: true,
+			},
+			{
+			    text: gettext('Storage'),
+			    xtype: 'widgetcolumn',
+			    width: 150,
+			    widget: {
+				xtype: 'pveStorageSelector',
+				isFormField: false,
+				autoSelect: false,
+				allowBlank: true,
+				emptyText: Proxmox.Utils.noneText,
+				storageContent: 'iso',
+			    },
+			    onWidgetAttach: 'setNodename',
+			},
+			{
+			    text: gettext('ISO'),
+			    dataIndex: 'file',
+			    xtype: 'widgetcolumn',
+			    flex: 1,
+			    widget: {
+				xtype: 'pveFileSelector',
+				name: 'file',
+				isFormField: false,
+				allowBlank: true,
+				emptyText: Proxmox.Utils.noneText,
+				storageContent: 'iso',
+			    },
+			    onWidgetAttach: 'setNodename',
+			},
+		    ],
+		},
+		{
+		    xtype: 'displayfield',
 		    fieldLabel: gettext('Network Interfaces'),
 		    labelWidth: 200,
 		},
@@ -434,8 +533,21 @@ Ext.define('PVE.window.GuestImport', {
 		    parsed.enable = true;
 		    nets.push(parsed);
 		}
+
+		let cdroms = [];
+		for (const [id, value] of Object.entries(me.vmConfig)) {
+		    if (!Ext.isString(value) || !value.match(/media=cdrom/)) {
+			continue;
+		    }
+		    cdroms.push({
+			enable: true,
+			id,
+		    });
+		    delete me.vmConfig[id];
+		}
 		me.lookup('diskGrid').getStore().setData(disks);
 		me.lookup('netGrid').getStore().setData(nets);
+		me.lookup('cdGrid').getStore().setData(cdroms);
 
 		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
 
