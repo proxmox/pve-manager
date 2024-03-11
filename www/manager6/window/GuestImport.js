@@ -52,6 +52,19 @@ Ext.define('PVE.window.GuestImport', {
 	    });
 	},
 
+	onOSBaseChange: function(_field, value) {
+	    let me = this;
+	    let ostype = me.lookup('ostype');
+	    let store = ostype.getStore();
+	    store.setData(PVE.Utils.kvm_ostypes[value]);
+	    let old_val = ostype.getValue();
+	    if (old_val && store.find('val', old_val) !== -1) {
+		ostype.setValue(old_val);
+	    } else {
+		ostype.setValue(store.getAt(0));
+	    }
+	},
+
 	control: {
 	    'grid field': {
 		// update records from widgetcolumns
@@ -63,6 +76,9 @@ Ext.define('PVE.window.GuestImport', {
 	    },
 	    'pveStorageSelector': {
 		change: 'storageChange',
+	    },
+	    'field[name=osbase]': {
+		change: 'onOSBaseChange',
 	    },
 	},
     },
@@ -195,6 +211,32 @@ Ext.define('PVE.window.GuestImport', {
 			value: '{totalCoreCount}',
 		    },
 		},
+	    {
+		xtype: 'combobox',
+		submitValue: false,
+		name: 'osbase',
+		fieldLabel: gettext('OS Type'),
+		editable: false,
+		queryMode: 'local',
+		value: 'Linux',
+		store: Object.keys(PVE.Utils.kvm_ostypes),
+	    },
+	    {
+		xtype: 'combobox',
+		name: 'ostype',
+		reference: 'ostype',
+		fieldLabel: gettext('Version'),
+		value: 'l26',
+		allowBlank: false,
+		editable: false,
+		queryMode: 'local',
+		valueField: 'val',
+		displayField: 'desc',
+		store: {
+		    fields: ['desc', 'val'],
+		    data: PVE.Utils.kvm_ostypes.Linux,
+		},
+	    },
 	    ],
 	    columnB: [
 		{
@@ -397,7 +439,12 @@ Ext.define('PVE.window.GuestImport', {
 
 		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
 
-		me.setValues(me.vmConfig);
+		let osinfo = PVE.Utils.get_kvm_osinfo(me.vmConfig.ostype ?? '');
+
+		me.setValues({
+		    osbase: osinfo.base,
+		    ...me.vmConfig,
+		});
 	    },
 	});
     },
