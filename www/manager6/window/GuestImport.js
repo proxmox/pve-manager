@@ -439,6 +439,7 @@ Ext.define('PVE.window.GuestImport', {
 			    text: gettext('MAC address'),
 			    flex: 1,
 			    dataIndex: 'macaddr',
+			    renderer: value => value ?? 'auto',
 			},
 			{
 			    text: gettext('Model'),
