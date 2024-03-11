@@ -284,7 +284,12 @@ Ext.define('PVE.window.GuestImport', {
 		    xtype: 'grid',
 		    reference: 'diskGrid',
 		    maxHeight: 150,
-		    store: { data: [] },
+		    store: {
+			data: [],
+			sorters: [
+			    'id',
+			],
+		    },
 		    columns: [
 			{
 			    xtype: 'checkcolumn',
@@ -408,7 +413,12 @@ Ext.define('PVE.window.GuestImport', {
 		    xtype: 'grid',
 		    maxHeight: 150,
 		    reference: 'netGrid',
-		    store: { data: [] },
+		    store: {
+			data: [],
+			sorters: [
+			    'id',
+			],
+		    },
 		    columns: [
 			{
 			    xtype: 'checkcolumn',
