@@ -84,6 +84,14 @@ Ext.define('PVE.window.GuestImport', {
 	    }
 	},
 
+	calculateConfig: function() {
+	    let me = this;
+	    let inputPanel = me.lookup('mainInputPanel');
+	    let summaryGrid = me.lookup('summaryGrid');
+	    let values = inputPanel.getValues();
+	    summaryGrid.getStore().setData(Object.entries(values).map(([key, value]) => ({ key, value })));
+	},
+
 	control: {
 	    'grid field': {
 		// update records from widgetcolumns
@@ -101,6 +109,9 @@ Ext.define('PVE.window.GuestImport', {
 	    },
 	    'field[name=osbase]': {
 		change: 'onOSBaseChange',
+	    },
+	    'panel[reference=summaryTab]': {
+		activate: 'calculateConfig',
 	    },
 	},
     },
@@ -559,6 +570,29 @@ Ext.define('PVE.window.GuestImport', {
 				    },
 				    onWidgetAttach: 'setNodename',
 				},
+			    ],
+			},
+		    ],
+		},
+		{
+		    title: gettext('Resulting Config'),
+		    reference: 'summaryTab',
+		    items: [
+			{
+			    xtype: 'grid',
+			    reference: 'summaryGrid',
+			    maxHeight: 400,
+			    scrollable: true,
+			    store: {
+				model: 'KeyValue',
+				sorters: [{
+				    property: 'key',
+				    direction: 'ASC',
+				}],
+			    },
+			    columns: [
+				{ header: 'Key', width: 150, dataIndex: 'key' },
+				{ header: 'Value', flex: 1, dataIndex: 'value' },
 			    ],
 			},
 		    ],
