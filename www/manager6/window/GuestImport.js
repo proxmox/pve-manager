@@ -328,6 +328,13 @@ Ext.define('PVE.window.GuestImport', {
 
 		    columnB: [
 			{
+			    xtype: 'proxmoxcheckbox',
+			    fieldLabel: gettext('Live Import'),
+			    reference: 'liveimport',
+			    isFormField: false,
+			    boxLabel: gettext('Experimental'),
+			},
+			{
 			    xtype: 'displayfield',
 			    fieldLabel: gettext('Warnings'),
 			    labelWidth: 200,
@@ -576,13 +583,6 @@ Ext.define('PVE.window.GuestImport', {
 	}
 
 	me.callParent();
-
-	me.query('toolbar')?.[0]?.insert(0, {
-	    xtype: 'proxmoxcheckbox',
-	    reference: 'liveimport',
-	    boxLabelAlign: 'before',
-	    boxLabel: gettext('Live Import'),
-	});
 
 	me.setTitle(Ext.String.format(gettext('Import Guest - {0}'), `${me.storage}:${me.volumeName}`));
 
