@@ -120,6 +120,7 @@ Ext.define('PVE.window.GuestImport', {
 	},
     },
 
+    width: 700,
     bodyPadding: 0,
 
     items: [
