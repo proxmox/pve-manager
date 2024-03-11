@@ -174,6 +174,7 @@ Ext.define('PVE.window.GuestImport', {
 			    };
 			    delete data.enable;
 			    delete data.id;
+			    delete data.size;
 			    if (!data.file) {
 				data.file = defaultStorage;
 				data.format = defaultFormat;
@@ -411,6 +412,16 @@ Ext.define('PVE.window.GuestImport', {
 				    },
 				},
 				{
+				    text: gettext('Size'),
+				    dataIndex: 'size',
+				    renderer: (value) => {
+					if (Ext.isNumeric(value)) {
+					    return Proxmox.Utils.render_size(value);
+					}
+					return value ?? Proxmox.Utils.unknownText;
+				    },
+				},
+				{
 				    text: gettext('Storage'),
 				    dataIndex: 'file',
 				    xtype: 'widgetcolumn',
@@ -644,10 +655,17 @@ Ext.define('PVE.window.GuestImport', {
 
 		let disks = [];
 		for (const [id, value] of Object.entries(data.disks ?? {})) {
+		    let volid = Ext.htmlEncode('<none>');
+		    let size = 'auto';
+		    if (Ext.isObject(value)) {
+			volid = value.volid;
+			size = value.size;
+		    }
 		    disks.push({
 			id,
 			enable: true,
-			'import-from': id === 'efidisk0' ? Ext.htmlEncode('<none>') : value,
+			size,
+			'import-from': volid,
 			format: 'raw',
 		    });
 		}
