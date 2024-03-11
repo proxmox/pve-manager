@@ -120,371 +120,440 @@ Ext.define('PVE.window.GuestImport', {
 	},
     },
 
+    bodyPadding: 0,
+
     items: [
 	{
-	    xtype: 'inputpanel',
-	    onGetValues: function(values) {
-		let me = this;
-		let grid = me.up('pveGuestImportWindow');
-
-		let config = Ext.apply(grid.vmConfig, values);
-
-		if (config.scsi0) {
-		    config.scsi0 = config.scsi0.replace('local:0,', 'local:0,format=qcow2,');
-		}
-
-		grid.lookup('diskGrid').getStore().each((rec) => {
-		    if (!rec.data.enable) {
-			return;
-		    }
-		    let id = rec.data.id;
-		    delete rec.data.enable;
-		    delete rec.data.id;
-		    rec.data.file += ':0'; // for our special api format
-		    if (id === 'efidisk0') {
-			delete rec.data['import-from'];
-		    }
-		    config[id] = PVE.Parser.printQemuDrive(rec.data);
-		});
-
-		grid.lookup('netGrid').getStore().each((rec) => {
-		    if (!rec.data.enable) {
-			return;
-		    }
-		    let id = rec.data.id;
-		    delete rec.data.enable;
-		    delete rec.data.id;
-		    config[id] = PVE.Parser.printQemuNetwork(rec.data);
-		});
-
-		grid.lookup('cdGrid').getStore().each((rec) => {
-		    if (!rec.data.enable) {
-			return;
-		    }
-		    let id = rec.data.id;
-		    delete rec.data.enable;
-		    delete rec.data.id;
-		    let cd = {
-			media: 'cdrom',
-			file: rec.data.file ? rec.data.file : 'none',
-		    };
-		    config[id] = PVE.Parser.printPropertyString(cd);
-		});
-
-		if (grid.lookup('liveimport').getValue()) {
-		    config['live-restore'] = 1;
-		}
-
-		return config;
+	    xtype: 'tabpanel',
+	    defaults: {
+		bodyPadding: 10,
 	    },
+	    items: [
+		{
+		    title: gettext('General'),
+		    xtype: 'inputpanel',
+		    reference: 'mainInputPanel',
+		    onGetValues: function(values) {
+			let me = this;
+			let grid = me.up('pveGuestImportWindow');
 
-	    column1: [
-		{
-		    xtype: 'pveGuestIDSelector',
-		    name: 'vmid',
-		    fieldLabel: 'VM',
-		    guestType: 'qemu',
-		    loadNextFreeID: true,
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    fieldLabel: gettext('Sockets'),
-		    name: 'sockets',
-		    reference: 'socketsField',
-		    value: 1,
-		    minValue: 1,
-		    maxValue: 4,
-		    allowBlank: true,
-		    bind: {
-			value: '{socketCount}',
-		    },
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    fieldLabel: gettext('Cores'),
-		    name: 'cores',
-		    reference: 'coresField',
-		    value: 1,
-		    minValue: 1,
-		    maxValue: 128,
-		    allowBlank: true,
-		    bind: {
-			value: '{coreCount}',
-		    },
-		},
-		{
-		    xtype: 'pveMemoryField',
-		    fieldLabel: gettext('Memory'),
-		    name: 'memory',
-		    reference: 'memoryField',
-		    value: 512,
-		    allowBlank: true,
-		},
-	    ],
+			// from pveDiskStorageSelector
+			let defaultStorage = values.hdstorage;
+			let defaultFormat = values.diskformat;
+			delete values.hdstorage;
+			delete values.diskformat;
 
-	    column2: [
-		{
-		    xtype: 'textfield',
-		    fieldLabel: gettext('Name'),
-		    name: 'name',
-		    vtype: 'DnsName',
-		    reference: 'nameField',
-		    allowBlank: true,
-		},
-		{
-		    xtype: 'CPUModelSelector',
-		    name: 'cpu',
-		    reference: 'cputype',
-		    value: 'x86-64-v2-AES',
-		    fieldLabel: gettext('Type'),
-		},
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Total cores'),
-		    name: 'totalcores',
-		    isFormField: false,
-		    bind: {
-			value: '{totalCoreCount}',
+			let defaultBridge = values.defaultBridge;
+			delete values.defaultBridge;
+
+			let config = Ext.apply(grid.vmConfig, values);
+
+			if (config.scsi0) {
+			    config.scsi0 = config.scsi0.replace('local:0,', 'local:0,format=qcow2,');
+			}
+
+			grid.lookup('diskGrid').getStore().each((rec) => {
+			    if (!rec.data.enable) {
+				return;
+			    }
+			    let id = rec.data.id;
+			    let data = {
+				...rec.data,
+			    };
+			    delete data.enable;
+			    delete data.id;
+			    if (!data.file) {
+				data.file = defaultStorage;
+				data.format = defaultFormat;
+			    }
+			    data.file += ':0'; // for our special api format
+			    if (id === 'efidisk0') {
+				delete data['import-from'];
+			    }
+			    config[id] = PVE.Parser.printQemuDrive(data);
+			});
+
+			grid.lookup('netGrid').getStore().each((rec) => {
+			    if (!rec.data.enable) {
+				return;
+			    }
+			    let id = rec.data.id;
+			    let data = {
+				...rec.data,
+			    };
+			    delete data.enable;
+			    delete data.id;
+			    if (!data.bridge) {
+				data.bridge = defaultBridge;
+			    }
+			    config[id] = PVE.Parser.printQemuNetwork(data);
+			});
+
+			grid.lookup('cdGrid').getStore().each((rec) => {
+			    if (!rec.data.enable) {
+				return;
+			    }
+			    let id = rec.data.id;
+			    let cd = {
+				media: 'cdrom',
+				file: rec.data.file ? rec.data.file : 'none',
+			    };
+			    config[id] = PVE.Parser.printPropertyString(cd);
+			});
+
+			if (grid.lookup('liveimport').getValue()) {
+			    config['live-restore'] = 1;
+			}
+
+			return config;
 		    },
-		},
-	    {
-		xtype: 'combobox',
-		submitValue: false,
-		name: 'osbase',
-		fieldLabel: gettext('OS Type'),
-		editable: false,
-		queryMode: 'local',
-		value: 'Linux',
-		store: Object.keys(PVE.Utils.kvm_ostypes),
-	    },
-	    {
-		xtype: 'combobox',
-		name: 'ostype',
-		reference: 'ostype',
-		fieldLabel: gettext('Version'),
-		value: 'l26',
-		allowBlank: false,
-		editable: false,
-		queryMode: 'local',
-		valueField: 'val',
-		displayField: 'desc',
-		store: {
-		    fields: ['desc', 'val'],
-		    data: PVE.Utils.kvm_ostypes.Linux,
-		},
-	    },
-	    ],
-	    columnB: [
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Disks'),
-		    labelWidth: 200,
-		},
-		{
-		    xtype: 'grid',
-		    reference: 'diskGrid',
-		    maxHeight: 150,
-		    store: {
-			data: [],
-			sorters: [
-			    'id',
-			],
-		    },
-		    columns: [
+
+		    column1: [
 			{
-			    xtype: 'checkcolumn',
-			    header: gettext('Use'),
-			    width: 50,
-			    dataIndex: 'enable',
-			    listeners: {
-				checkchange: function(_column, _rowIndex, _checked, record) {
-				    record.commit();
-				},
+			    xtype: 'pveGuestIDSelector',
+			    name: 'vmid',
+			    fieldLabel: 'VM',
+			    guestType: 'qemu',
+			    loadNextFreeID: true,
+			},
+			{
+			    xtype: 'proxmoxintegerfield',
+			    fieldLabel: gettext('Sockets'),
+			    name: 'sockets',
+			    reference: 'socketsField',
+			    value: 1,
+			    minValue: 1,
+			    maxValue: 4,
+			    allowBlank: true,
+			    bind: {
+				value: '{socketCount}',
 			    },
 			},
 			{
-			    text: gettext('Disk'),
-			    dataIndex: 'id',
-			},
-			{
-			    text: gettext('Source'),
-			    dataIndex: 'import-from',
-			    flex: 1,
-			    renderer: function(value) {
-				return value.replace(/^.*\//, '');
+			    xtype: 'proxmoxintegerfield',
+			    fieldLabel: gettext('Cores'),
+			    name: 'cores',
+			    reference: 'coresField',
+			    value: 1,
+			    minValue: 1,
+			    maxValue: 128,
+			    allowBlank: true,
+			    bind: {
+				value: '{coreCount}',
 			    },
 			},
 			{
-			    text: gettext('Storage'),
-			    dataIndex: 'file',
-			    xtype: 'widgetcolumn',
-			    width: 150,
-			    widget: {
-				xtype: 'pveStorageSelector',
-				isFormField: false,
-				name: 'file',
-				storageContent: 'images',
-			    },
-			    onWidgetAttach: 'setNodename',
+			    xtype: 'pveMemoryField',
+			    fieldLabel: gettext('Memory'),
+			    name: 'memory',
+			    reference: 'memoryField',
+			    value: 512,
+			    allowBlank: true,
 			},
 			{
-			    text: gettext('Format'),
-			    dataIndex: 'format',
-			    xtype: 'widgetcolumn',
-			    width: 150,
-			    widget: {
-				xtype: 'pveDiskFormatSelector',
-				name: 'format',
-				isFormField: false,
-				matchFieldWidth: false,
+			    //spacer
+			    xtype: 'displayfield',
+			},
+			{
+			    xtype: 'pveDiskStorageSelector',
+			    reference: 'defaultStorage',
+			    storageLabel: gettext('Default Storage'),
+			    storageContent: 'images',
+			    autoSelect: true,
+			    hideSize: true,
+			    name: 'defaultStorage',
+			},
+		    ],
+
+		    column2: [
+			{
+			    xtype: 'textfield',
+			    fieldLabel: gettext('Name'),
+			    name: 'name',
+			    vtype: 'DnsName',
+			    reference: 'nameField',
+			    allowBlank: true,
+			},
+			{
+			    xtype: 'CPUModelSelector',
+			    name: 'cpu',
+			    reference: 'cputype',
+			    value: 'x86-64-v2-AES',
+			    fieldLabel: gettext('Type'),
+			},
+			{
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('Total cores'),
+			    name: 'totalcores',
+			    isFormField: false,
+			    bind: {
+				value: '{totalCoreCount}',
+			    },
+			},
+			{
+			    xtype: 'combobox',
+			    submitValue: false,
+			    name: 'osbase',
+			    fieldLabel: gettext('OS Type'),
+			    editable: false,
+			    queryMode: 'local',
+			    value: 'Linux',
+			    store: Object.keys(PVE.Utils.kvm_ostypes),
+			},
+			{
+			    xtype: 'combobox',
+			    name: 'ostype',
+			    reference: 'ostype',
+			    fieldLabel: gettext('Version'),
+			    value: 'l26',
+			    allowBlank: false,
+			    editable: false,
+			    queryMode: 'local',
+			    valueField: 'val',
+			    displayField: 'desc',
+			    store: {
+				fields: ['desc', 'val'],
+				data: PVE.Utils.kvm_ostypes.Linux,
+			    },
+			},
+			{
+			    xtype: 'PVE.form.BridgeSelector',
+			    reference: 'defaultBridge',
+			    name: 'defaultBridge',
+			    allowBlank: false,
+			    fieldLabel: gettext('Default Bridge'),
+			},
+		    ],
+
+		    columnB: [
+			{
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('Warnings'),
+			    labelWidth: 200,
+			    hidden: true,
+			    bind: {
+				hidden: '{hideWarnings}',
+			    },
+			},
+			{
+			    xtype: 'displayfield',
+			    reference: 'warningText',
+			    userCls: 'pmx-hint',
+			    hidden: true,
+			    bind: {
+				hidden: '{hideWarnings}',
+				value: '{warningsText}',
 			    },
 			},
 		    ],
 		},
 		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('CD/DVD Drives'),
-		    labelWidth: 200,
-		},
-		{
-		    xtype: 'grid',
-		    reference: 'cdGrid',
-		    maxHeight: 150,
-		    store: {
-			data: [],
-			sorters: [
-			    'id',
-			],
-		    },
-		    columns: [
+		    title: gettext('Advanced'),
+		    xtype: 'inputpanel',
+		    items: [
 			{
-			    xtype: 'checkcolumn',
-			    header: gettext('Use'),
-			    width: 50,
-			    dataIndex: 'enable',
-			    listeners: {
-				checkchange: function(_column, _rowIndex, _checked, record) {
-				    record.commit();
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('Disks'),
+			    labelWidth: 200,
+			},
+			{
+			    xtype: 'grid',
+			    reference: 'diskGrid',
+			    minHeight: 58,
+			    maxHeight: 150,
+			    store: {
+				data: [],
+				sorters: [
+				    'id',
+				],
+			    },
+			    columns: [
+				{
+				    xtype: 'checkcolumn',
+				    header: gettext('Use'),
+				    width: 50,
+				    dataIndex: 'enable',
+				    listeners: {
+					checkchange: function(_column, _rowIndex, _checked, record) {
+					    record.commit();
+					},
+				    },
 				},
-			    },
+				{
+				    text: gettext('Disk'),
+				    dataIndex: 'id',
+				},
+				{
+				    text: gettext('Source'),
+				    dataIndex: 'import-from',
+				    flex: 1,
+				    renderer: function(value) {
+					return value.replace(/^.*\//, '');
+				    },
+				},
+				{
+				    text: gettext('Storage'),
+				    dataIndex: 'file',
+				    xtype: 'widgetcolumn',
+				    width: 150,
+				    widget: {
+					xtype: 'pveStorageSelector',
+					isFormField: false,
+					autoSelect: false,
+					allowBlank: true,
+					emptyText: gettext('From Default'),
+					name: 'file',
+					storageContent: 'images',
+				    },
+				    onWidgetAttach: 'setNodename',
+				},
+				{
+				    text: gettext('Format'),
+				    dataIndex: 'format',
+				    xtype: 'widgetcolumn',
+				    width: 150,
+				    widget: {
+					xtype: 'pveDiskFormatSelector',
+					name: 'format',
+					disabled: true,
+					isFormField: false,
+					matchFieldWidth: false,
+				    },
+				},
+			    ],
 			},
 			{
-			    text: gettext('Slot'),
-			    dataIndex: 'id',
-			    sorted: true,
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('CD/DVD Drives'),
+			    labelWidth: 200,
 			},
 			{
-			    text: gettext('Storage'),
-			    xtype: 'widgetcolumn',
-			    width: 150,
-			    widget: {
-				xtype: 'pveStorageSelector',
-				isFormField: false,
-				autoSelect: false,
-				allowBlank: true,
-				emptyText: Proxmox.Utils.noneText,
-				storageContent: 'iso',
+			    xtype: 'grid',
+			    reference: 'cdGrid',
+			    minHeight: 58,
+			    maxHeight: 150,
+			    store: {
+				data: [],
+				sorters: [
+				    'id',
+				],
 			    },
-			    onWidgetAttach: 'setNodename',
+			    columns: [
+				{
+				    xtype: 'checkcolumn',
+				    header: gettext('Use'),
+				    width: 50,
+				    dataIndex: 'enable',
+				    listeners: {
+					checkchange: function(_column, _rowIndex, _checked, record) {
+					    record.commit();
+					},
+				    },
+				},
+				{
+				    text: gettext('Slot'),
+				    dataIndex: 'id',
+				    sorted: true,
+				},
+				{
+				    text: gettext('Storage'),
+				    xtype: 'widgetcolumn',
+				    width: 150,
+				    widget: {
+					xtype: 'pveStorageSelector',
+					isFormField: false,
+					autoSelect: false,
+					allowBlank: true,
+					emptyText: Proxmox.Utils.noneText,
+					storageContent: 'iso',
+				    },
+				    onWidgetAttach: 'setNodename',
+				},
+				{
+				    text: gettext('ISO'),
+				    dataIndex: 'file',
+				    xtype: 'widgetcolumn',
+				    flex: 1,
+				    widget: {
+					xtype: 'pveFileSelector',
+					name: 'file',
+					isFormField: false,
+					allowBlank: true,
+					emptyText: Proxmox.Utils.noneText,
+					storageContent: 'iso',
+				    },
+				    onWidgetAttach: 'setNodename',
+				},
+			    ],
 			},
 			{
-			    text: gettext('ISO'),
-			    dataIndex: 'file',
-			    xtype: 'widgetcolumn',
-			    flex: 1,
-			    widget: {
-				xtype: 'pveFileSelector',
-				name: 'file',
-				isFormField: false,
-				allowBlank: true,
-				emptyText: Proxmox.Utils.noneText,
-				storageContent: 'iso',
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('Network Interfaces'),
+			    labelWidth: 200,
+			},
+			{
+			    xtype: 'grid',
+			    minHeight: 58,
+			    maxHeight: 150,
+			    reference: 'netGrid',
+			    store: {
+				data: [],
+				sorters: [
+				    'id',
+				],
 			    },
-			    onWidgetAttach: 'setNodename',
+			    columns: [
+				{
+				    xtype: 'checkcolumn',
+				    header: gettext('Use'),
+				    width: 50,
+				    dataIndex: 'enable',
+				    listeners: {
+					checkchange: function(_column, _rowIndex, _checked, record) {
+					    record.commit();
+					},
+				    },
+				},
+				{
+				    text: gettext('ID'),
+				    dataIndex: 'id',
+				},
+				{
+				    text: gettext('MAC address'),
+				    flex: 1,
+				    dataIndex: 'macaddr',
+				    renderer: value => value ?? 'auto',
+				},
+				{
+				    text: gettext('Model'),
+				    flex: 1,
+				    dataIndex: 'model',
+				    xtype: 'widgetcolumn',
+				    widget: {
+					xtype: 'pveNetworkCardSelector',
+					name: 'model',
+					isFormField: false,
+					allowBlank: false,
+				    },
+				},
+				{
+				    text: gettext('Bridge'),
+				    dataIndex: 'bridge',
+				    xtype: 'widgetcolumn',
+				    flex: 1,
+				    widget: {
+					xtype: 'PVE.form.BridgeSelector',
+					name: 'bridge',
+					isFormField: false,
+					autoSelect: false,
+					allowBlank: true,
+					emptyText: gettext('From Default'),
+				    },
+				    onWidgetAttach: 'setNodename',
+				},
+			    ],
 			},
 		    ],
-		},
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Network Interfaces'),
-		    labelWidth: 200,
-		},
-		{
-		    xtype: 'grid',
-		    maxHeight: 150,
-		    reference: 'netGrid',
-		    store: {
-			data: [],
-			sorters: [
-			    'id',
-			],
-		    },
-		    columns: [
-			{
-			    xtype: 'checkcolumn',
-			    header: gettext('Use'),
-			    width: 50,
-			    dataIndex: 'enable',
-			    listeners: {
-				checkchange: function(_column, _rowIndex, _checked, record) {
-				    record.commit();
-				},
-			    },
-			},
-			{
-			    text: gettext('ID'),
-			    dataIndex: 'id',
-			},
-			{
-			    text: gettext('MAC address'),
-			    flex: 1,
-			    dataIndex: 'macaddr',
-			    renderer: value => value ?? 'auto',
-			},
-			{
-			    text: gettext('Model'),
-			    flex: 1,
-			    dataIndex: 'model',
-			    xtype: 'widgetcolumn',
-			    widget: {
-				xtype: 'pveNetworkCardSelector',
-				name: 'model',
-				isFormField: false,
-				allowBlank: false,
-			    },
-			},
-			{
-			    text: gettext('Bridge'),
-			    dataIndex: 'bridge',
-			    xtype: 'widgetcolumn',
-			    widget: {
-				xtype: 'PVE.form.BridgeSelector',
-				name: 'bridge',
-				isFormField: false,
-				allowBlank: false,
-			    },
-			    onWidgetAttach: 'setNodename',
-			},
-		    ],
-		},
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Warnings'),
-		    labelWidth: 200,
-		    hidden: true,
-		    bind: {
-			hidden: '{hideWarnings}',
-		    },
-		},
-		{
-		    xtype: 'displayfield',
-		    reference: 'warningText',
-		    userCls: 'pmx-hint',
-		    hidden: true,
-		    bind: {
-			hidden: '{hideWarnings}',
-			value: '{warningsText}',
-		    },
 		},
 	    ],
 	},
@@ -515,6 +584,9 @@ Ext.define('PVE.window.GuestImport', {
 	});
 
 	me.setTitle(Ext.String.format(gettext('Import Guest - {0}'), `${me.storage}:${me.volumeName}`));
+
+	me.lookup('defaultStorage').setNodename(me.nodename);
+	me.lookup('defaultBridge').setNodename(me.nodename);
 
 	let renderWarning = w => {
 	    const warningsCatalogue = {
