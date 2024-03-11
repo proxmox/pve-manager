@@ -445,6 +445,13 @@ Ext.define('PVE.window.GuestImport', {
 			    text: gettext('Model'),
 			    flex: 1,
 			    dataIndex: 'model',
+			    xtype: 'widgetcolumn',
+			    widget: {
+				xtype: 'pveNetworkCardSelector',
+				name: 'model',
+				isFormField: false,
+				allowBlank: false,
+			    },
 			},
 			{
 			    text: gettext('Bridge'),
