@@ -92,6 +92,73 @@ Ext.define('PVE.window.GuestImport', {
 	    summaryGrid.getStore().setData(Object.entries(values).map(([key, value]) => ({ key, value })));
 	},
 
+	// assume assigned sata disks indices are continuous, so without holes
+	getMaxSata: function() {
+	    let me = this;
+	    let view = me.getView();
+	    if (view.maxSata !== undefined) {
+		return view.maxSata;
+	    }
+
+	    view.maxSata = -1;
+	    for (const key of Object.keys(me.getView().vmConfig)) {
+		if (!key.toLowerCase().startsWith('sata')) {
+		    continue;
+		}
+		let idx = parseInt(key.slice(4), 10);
+		if (idx > view.maxSata) {
+		    view.maxSata = idx;
+		}
+	    }
+	    me.lookup('diskGrid').getStore().each(rec => {
+		if (!rec.data.id.toLowerCase().startsWith('sata')) {
+		    return;
+		}
+		let idx = parseInt(rec.data.id.slice(4), 10);
+		if (idx > view.maxSata) {
+		    view.maxSata = idx;
+		}
+	    });
+	    me.lookup('cdGrid').getStore().each(rec => {
+		if (!rec.data.id.toLowerCase().startsWith('sata')) {
+		    return;
+		}
+		let idx = parseInt(rec.data.id.slice(4), 10);
+		if (idx > view.maxSata) {
+		    view.maxSata = idx;
+		}
+	    });
+
+	    return view.maxSata;
+	},
+
+	mapDisk: function(value, metaData) {
+	    let me = this;
+	    let mapSata = me.lookup('mapSata');
+	    if (mapSata.isDisabled() || !mapSata.getValue()) {
+		return value;
+	    }
+	    if (!value.toLowerCase().startsWith('scsi')) {
+		return value;
+	    }
+	    let offset = parseInt(value.slice(4), 10);
+	    let newIdx = offset + me.getMaxSata() + 1;
+	    if (newIdx > PVE.Utils.diskControllerMaxIDs.sata) {
+		let prefix = '';
+		if (metaData !== undefined) {
+		    // we're in the renderer so put a warning here
+		    let warning = gettext('Too many disks, could not map to SATA.');
+		    prefix = `<i data-qtip="${warning}" class="fa fa-exclamation-triangle warning"></i> `;
+		}
+		return `${prefix}${value}`;
+	    }
+	    return `sata${newIdx}`;
+	},
+
+	refreshDiskGrid: function() {
+	    this.lookup('diskGrid').reconfigure();
+	},
+
 	control: {
 	    'grid field': {
 		// update records from widgetcolumns
@@ -113,6 +180,12 @@ Ext.define('PVE.window.GuestImport', {
 	    'panel[reference=summaryTab]': {
 		activate: 'calculateConfig',
 	    },
+	    'proxmoxcheckbox[reference=mapSata]': {
+		change: 'refreshDiskGrid',
+	    },
+	    'combobox[name=ostype]': {
+		change: 'refreshDiskGrid',
+	    },
 	},
     },
 
@@ -121,6 +194,7 @@ Ext.define('PVE.window.GuestImport', {
 	    coreCount: 1,
 	    socketCount: 1,
 	    liveImport: false,
+	    os: '',
 	    warnings: [],
 	},
 
@@ -131,6 +205,7 @@ Ext.define('PVE.window.GuestImport', {
 	        + get('warnings').map(w => `<li>${w}</li>`).join('') + '</ul>',
 	    liveImportNote: get => !get('liveImport') ? ''
 	        : gettext('Note: If anything goes wrong during the live-import, new data written by the VM may be lost.'),
+	    isWindows: get => (get('os') ?? '').startsWith('win'),
 	},
     },
 
@@ -167,11 +242,22 @@ Ext.define('PVE.window.GuestImport', {
 			    config.scsi0 = config.scsi0.replace('local:0,', 'local:0,format=qcow2,');
 			}
 
+			let parsedBoot = PVE.Parser.parsePropertyString(config.boot ?? '');
+			if (parsedBoot.order) {
+			    parsedBoot.order = parsedBoot.order.split(';');
+			}
+
 			grid.lookup('diskGrid').getStore().each((rec) => {
 			    if (!rec.data.enable) {
 				return;
 			    }
-			    let id = rec.data.id;
+			    let id = grid.getController().mapDisk(rec.data.id);
+			    if (id !== rec.data.id && parsedBoot?.order) {
+				let idx = parsedBoot.order.indexOf(rec.data.id);
+				if (idx !== -1) {
+				    parsedBoot.order[idx] = id;
+				}
+			    }
 			    let data = {
 				...rec.data,
 			    };
@@ -188,6 +274,11 @@ Ext.define('PVE.window.GuestImport', {
 			    }
 			    config[id] = PVE.Parser.printQemuDrive(data);
 			});
+
+			if (parsedBoot.order) {
+			    parsedBoot.order = parsedBoot.order.join(';');
+			}
+			config.boot = PVE.Parser.printPropertyString(parsedBoot);
 
 			grid.lookup('netGrid').getStore().each((rec) => {
 			    if (!rec.data.enable) {
@@ -327,6 +418,9 @@ Ext.define('PVE.window.GuestImport', {
 			    queryMode: 'local',
 			    valueField: 'val',
 			    displayField: 'desc',
+			    bind: {
+				value: '{os}',
+			    },
 			    store: {
 				fields: ['desc', 'val'],
 				data: PVE.Utils.kvm_ostypes.Linux,
@@ -377,7 +471,28 @@ Ext.define('PVE.window.GuestImport', {
 		{
 		    title: gettext('Advanced'),
 		    xtype: 'inputpanel',
-		    items: [
+
+		    column1: [
+			{
+			    xtype: 'proxmoxcheckbox',
+			    fieldLabel: gettext('Map SCSI to SATA'),
+			    labelWidth: 120,
+			    reference: 'mapSata',
+			    isFormField: false,
+			    hidden: true,
+			    disabled: true,
+			    bind: {
+				hidden: '{!isWindows}',
+				disabled: '{!isWindows}',
+			    },
+			    autoEl: {
+				tag: 'div',
+				'data-qtip': gettext('Useful when wanting to use VirtIO-SCSI'),
+			    },
+			},
+		    ],
+
+		    columnB: [
 			{
 			    xtype: 'displayfield',
 			    fieldLabel: gettext('Disks'),
@@ -409,6 +524,7 @@ Ext.define('PVE.window.GuestImport', {
 				{
 				    text: gettext('Disk'),
 				    dataIndex: 'id',
+				    renderer: 'mapDisk',
 				},
 				{
 				    text: gettext('Source'),
