@@ -511,6 +511,9 @@ Ext.define('PVE.window.GuestImport', {
 		    title: gettext('Advanced'),
 		    xtype: 'inputpanel',
 
+		    // the first inputpanel handles the values, prevent
+		    // accidental values from this inputpanel here
+		    onGetValues: () => ({}),
 		    column1: [
 			{
 			    xtype: 'pveScsiHwSelector',
