@@ -636,7 +636,7 @@ Ext.define('PVE.window.GuestImport', {
 
 	let renderWarning = w => {
 	    const warningsCatalogue = {
-		'cdrom-image-ignored': gettext("CD-ROM images cannot get imported, please reconfigure the '{0}' drive after the import"),
+		'cdrom-image-ignored': gettext("CD-ROM images cannot get imported, if required you can reconfigure the '{0}' drive in the 'Advanced' tab."),
 		'nvme-unsupported': gettext("NVMe disks are currently not supported, '{0}' will get attaced as SCSI"),
 		'ovmf-with-lsi-unsupported': gettext("OVMF is built without LSI drivers, scsi hardware was set to '{1}'"),
 		'serial-port-socket-only': gettext("Serial socket '{0}' will be mapped to a socket"),
