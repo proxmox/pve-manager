@@ -159,6 +159,12 @@ Ext.define('PVE.window.GuestImport', {
 	    this.lookup('diskGrid').reconfigure();
 	},
 
+	toggleIsoSelector: function(_cb, value) {
+	    let me = this;
+	    me.lookup('isoSelector').setDisabled(!value);
+	    me.lookup('isoSelector').setHidden(!value);
+	},
+
 	control: {
 	    'grid field': {
 		// update records from widgetcolumns
@@ -185,6 +191,9 @@ Ext.define('PVE.window.GuestImport', {
 	    },
 	    'combobox[name=ostype]': {
 		change: 'refreshDiskGrid',
+	    },
+	    'proxmoxcheckbox[reference=enableSecondCD]': {
+		change: 'toggleIsoSelector',
 	    },
 	},
     },
@@ -312,6 +321,27 @@ Ext.define('PVE.window.GuestImport', {
 
 			if (grid.lookup('liveimport').getValue()) {
 			    config['live-restore'] = 1;
+			}
+
+			if (grid.lookup('enableSecondCD')) {
+			    let idsToTry = ['ide0', 'ide2'];
+			    for (let i = 0; i <=PVE.Utils.diskControllerMaxIDs.sata; i++) {
+				idsToTry.push(`sata{$i}`);
+			    }
+			    let found = false;
+			    for (const id of idsToTry) {
+				if (!config[id]) {
+				    config[id] = PVE.Parser.printQemuDrive({
+					media: 'cdrom',
+					file: grid.lookup('isoSelector').getValue(),
+				    });
+				    found = true;
+				    break;
+				}
+			    }
+			    if (!found) {
+				console.warn('could not insert cd drive for virtio');
+			    }
 			}
 
 			// remove __default__ values
@@ -489,6 +519,18 @@ Ext.define('PVE.window.GuestImport', {
 			    submitValue: false,
 			    fieldLabel: gettext('SCSI Controller'),
 			},
+			{
+			    xtype: 'proxmoxcheckbox',
+			    reference: 'enableSecondCD',
+			    isFormField: false,
+			    hidden: true,
+			    checked: false,
+			    boxLabel: gettext('Add additional drive for VirtIO drivers'),
+			    bind: {
+				hidden: '{!isWindows}',
+				disabled: '{!isWindows}',
+			    },
+			},
 		    ],
 
 		    column2: [
@@ -508,6 +550,16 @@ Ext.define('PVE.window.GuestImport', {
 				tag: 'div',
 				'data-qtip': gettext('Useful when wanting to use VirtIO-SCSI'),
 			    },
+			},
+			{
+			    xtype: 'pveIsoSelector',
+			    reference: 'isoSelector',
+			    submitValue: false,
+			    labelWidth: 120,
+			    labelAlign: 'left',
+			    insideWizard: true,
+			    hidden: true,
+			    disabled: true,
 			},
 		    ],
 
@@ -781,6 +833,7 @@ Ext.define('PVE.window.GuestImport', {
 
 	me.lookup('defaultStorage').setNodename(me.nodename);
 	me.lookup('defaultBridge').setNodename(me.nodename);
+	me.lookup('isoSelector').setNodename(me.nodename);
 
 	let renderWarning = w => {
 	    const warningsCatalogue = {
