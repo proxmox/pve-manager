@@ -386,7 +386,7 @@ Ext.define('PVE.window.GuestImport', {
 			{
 			    xtype: 'grid',
 			    reference: 'diskGrid',
-			    minHeight: 58,
+			    minHeight: 60,
 			    maxHeight: 150,
 			    store: {
 				data: [],
@@ -463,11 +463,14 @@ Ext.define('PVE.window.GuestImport', {
 			    xtype: 'displayfield',
 			    fieldLabel: gettext('CD/DVD Drives'),
 			    labelWidth: 200,
+			    style: {
+				paddingTop: '10px',
+			    },
 			},
 			{
 			    xtype: 'grid',
 			    reference: 'cdGrid',
-			    minHeight: 58,
+			    minHeight: 60,
 			    maxHeight: 150,
 			    store: {
 				data: [],
@@ -527,6 +530,9 @@ Ext.define('PVE.window.GuestImport', {
 			    xtype: 'displayfield',
 			    fieldLabel: gettext('Network Interfaces'),
 			    labelWidth: 200,
+			    style: {
+				paddingTop: '10px',
+			    },
 			},
 			{
 			    xtype: 'grid',
