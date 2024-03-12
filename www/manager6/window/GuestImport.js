@@ -640,6 +640,7 @@ Ext.define('PVE.window.GuestImport', {
 		'nvme-unsupported': gettext("NVMe disks are currently not supported, '{0}' will get attaced as SCSI"),
 		'ovmf-with-lsi-unsupported': gettext("OVMF is built without LSI drivers, scsi hardware was set to '{1}'"),
 		'serial-port-socket-only': gettext("Serial socket '{0}' will be mapped to a socket"),
+		'guest-is-running': gettext('Virtual guest seems to be running on source host. Import might fail or have inconsistent state!'),
 	    };
             let message = warningsCatalogue[w.type];
 	    if (!w.type || !message) {
