@@ -13,6 +13,8 @@ Ext.define('PVE.form.IsoSelector', {
 
     nodename: undefined,
     insideWizard: false,
+    labelWidth: undefined,
+    labelAlign: 'right',
 
     cbindData: function() {
 	let me = this;
@@ -72,7 +74,6 @@ Ext.define('PVE.form.IsoSelector', {
 	    reference: 'storage',
 	    isFormField: false,
 	    fieldLabel: gettext('Storage'),
-	    labelAlign: 'right',
 	    storageContent: 'iso',
 	    allowBlank: false,
 	    cbind: {
@@ -80,6 +81,8 @@ Ext.define('PVE.form.IsoSelector', {
 		autoSelect: '{insideWizard}',
 		insideWizard: '{insideWizard}',
 		disabled: '{disabled}',
+		labelWidth: '{labelWidth}',
+		labelAlign: '{labelAlign}',
 	    },
 	    listeners: {
 		change: function(f, value) {
@@ -100,6 +103,8 @@ Ext.define('PVE.form.IsoSelector', {
 	    cbind: {
 		nodename: '{nodename}',
 		disabled: '{disabled}',
+		labelWidth: '{labelWidth}',
+		labelAlign: '{labelAlign}',
 	    },
 	    allowBlank: false,
 	    listeners: {
