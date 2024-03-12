@@ -120,6 +120,7 @@ Ext.define('PVE.window.GuestImport', {
 	data: {
 	    coreCount: 1,
 	    socketCount: 1,
+	    liveImport: false,
 	    warnings: [],
 	},
 
@@ -128,6 +129,8 @@ Ext.define('PVE.window.GuestImport', {
 	    hideWarnings: get => get('warnings').length === 0,
 	    warningsText: get => '<ul style="margin: 0; padding-left: 20px;">'
 	        + get('warnings').map(w => `<li>${w}</li>`).join('') + '</ul>',
+	    liveImportNote: get => !get('liveImport') ? ''
+	        : gettext('Note: If anything goes wrong during the live-import, new data written by the VM may be lost.'),
 	},
     },
 
@@ -344,7 +347,11 @@ Ext.define('PVE.window.GuestImport', {
 			    fieldLabel: gettext('Live Import'),
 			    reference: 'liveimport',
 			    isFormField: false,
-			    boxLabel: gettext('Experimental'),
+			    boxLabelCls: 'pmx-hint black x-form-cb-label',
+			    bind: {
+				value: '{liveImport}',
+				boxLabel: '{liveImportNote}',
+			    },
 			},
 			{
 			    xtype: 'displayfield',
