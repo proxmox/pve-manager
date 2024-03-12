@@ -308,8 +308,17 @@ Ext.define('PVE.window.GuestImport', {
 			    config[id] = PVE.Parser.printPropertyString(cd);
 			});
 
+			config.scsihw = grid.lookup('scsihw').getValue();
+
 			if (grid.lookup('liveimport').getValue()) {
 			    config['live-restore'] = 1;
+			}
+
+			// remove __default__ values
+			for (const [key, value] of Object.entries(config)) {
+			    if (value === '__default__') {
+				delete config[key];
+			    }
 			}
 
 			return config;
@@ -473,6 +482,16 @@ Ext.define('PVE.window.GuestImport', {
 		    xtype: 'inputpanel',
 
 		    column1: [
+			{
+			    xtype: 'pveScsiHwSelector',
+			    reference: 'scsihw',
+			    name: 'scsihw',
+			    submitValue: false,
+			    fieldLabel: gettext('SCSI Controller'),
+			},
+		    ],
+
+		    column2: [
 			{
 			    xtype: 'proxmoxcheckbox',
 			    fieldLabel: gettext('Map SCSI to SATA'),
