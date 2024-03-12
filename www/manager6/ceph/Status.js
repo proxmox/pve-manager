@@ -346,7 +346,8 @@ Ext.define('PVE.node.CephStatus', {
 	);
 
 	// update the usage widget
-	me.down('#space').updateValue(used/total, text);
+	const usage = total > 0 ? used / total : 0;
+	me.down('#space').updateValue(usage, text);
 
 	let readiops = pgmap.read_op_per_sec;
 	let writeiops = pgmap.write_op_per_sec;
