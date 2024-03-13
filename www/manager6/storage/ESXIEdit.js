@@ -20,30 +20,26 @@ Ext.define('PVE.storage.ESXIInputPanel', {
 	me.column1 = [
 	    {
 		xtype: 'pmxDisplayEditField',
-		editable: me.isCreate,
 		name: 'server',
 		fieldLabel: gettext('Server'),
+		editable: me.isCreate,
+		emptyText: gettext('IP address or hostname'),
 		allowBlank: false,
 	    },
 	    {
-		xtype: 'pmxDisplayEditField',
-		editable: me.isCreate,
+		xtype: 'textfield',
 		name: 'username',
 		fieldLabel: gettext('Username'),
 		allowBlank: false,
 	    },
 	    {
-		xtype: 'pmxDisplayEditField',
-		editable: me.isCreate,
+		xtype: 'proxmoxtextfield',
 		name: 'password',
-		value: me.isCreate ? '' : '********',
-		minLength: 1,
-		editConfig: {
-		    inputType: 'password',
-		    name: 'password',
-		},
 		fieldLabel: gettext('Password'),
-		allowBlank: false,
+		inputType: 'password',
+		emptyText: gettext('Unchanged'),
+		minLength: 1,
+		allowBlank: !me.isCreate,
 	    },
 	];
 
