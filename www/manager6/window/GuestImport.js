@@ -409,7 +409,7 @@ Ext.define('PVE.window.GuestImport', {
 			    reference: 'socketsField',
 			    value: 1,
 			    minValue: 1,
-			    maxValue: 4,
+			    maxValue: 128,
 			    allowBlank: true,
 			    bind: {
 				value: '{socketCount}',
@@ -422,7 +422,7 @@ Ext.define('PVE.window.GuestImport', {
 			    reference: 'coresField',
 			    value: 1,
 			    minValue: 1,
-			    maxValue: 128,
+			    maxValue: 1024,
 			    allowBlank: true,
 			    bind: {
 				value: '{coreCount}',
