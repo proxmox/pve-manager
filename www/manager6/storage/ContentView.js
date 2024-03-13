@@ -3,6 +3,8 @@ Ext.define('PVE.storage.ContentView', {
 
     alias: 'widget.pveStorageContentView',
 
+    itemdblclick: Ext.emptyFn,
+
     viewConfig: {
 	trackOver: false,
 	loadMask: false,
@@ -207,6 +209,7 @@ Ext.define('PVE.storage.ContentView', {
 	    columns: columns,
 	    listeners: {
 		activate: reload,
+		itemdblclick: (view, record) => me.itemdblclick(view, record),
 	    },
 	});
 
