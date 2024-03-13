@@ -436,10 +436,8 @@ Ext.define('PVE.window.GuestImport', {
 			    value: 512,
 			    allowBlank: true,
 			},
-			{
-			    //spacer
-			    xtype: 'displayfield',
-			},
+			{ xtype: 'displayfield' }, // spacer
+			{ xtype: 'displayfield' }, // spacer
 			{
 			    xtype: 'pveDiskStorageSelector',
 			    reference: 'defaultStorage',
@@ -505,6 +503,7 @@ Ext.define('PVE.window.GuestImport', {
 				data: PVE.Utils.kvm_ostypes.Linux,
 			    },
 			},
+			{ xtype: 'displayfield' }, // spacer
 			{
 			    xtype: 'PVE.form.BridgeSelector',
 			    reference: 'defaultBridge',
