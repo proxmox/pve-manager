@@ -43,6 +43,18 @@ Ext.define('PVE.storage.ESXIInputPanel', {
 	    },
 	];
 
+	me.column2 = [
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'skip-cert-verification',
+		fieldLabel: gettext('Skip Certificate Verification'),
+		value: false,
+		uncheckedValue: 0,
+		defaultValue: 0,
+		deleteDefaultValue: !me.isCreate,
+	    },
+	];
+
 	me.callParent();
     },
 });
