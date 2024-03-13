@@ -671,9 +671,6 @@ Ext.define('PVE.window.GuestImport', {
 			    xtype: 'displayfield',
 			    fieldLabel: gettext('CD/DVD Drives'),
 			    labelWidth: 200,
-			    style: {
-				paddingTop: '10px',
-			    },
 			},
 			{
 			    xtype: 'grid',
