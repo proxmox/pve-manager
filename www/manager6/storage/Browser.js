@@ -138,7 +138,7 @@ Ext.define('PVE.storage.Browser', {
 		};
 		me.items.push({
 		    xtype: 'pveStorageContentView',
-		    title: gettext('Import'),
+		    title: gettext('Virtual Guests'),
 		    iconCls: 'fa fa-cloud-download',
 		    itemId: 'contentImport',
 		    content: 'import',
@@ -149,7 +149,7 @@ Ext.define('PVE.storage.Browser', {
 			{
 			    xtype: 'proxmoxButton',
 			    disabled: true,
-			    text: gettext('Start Import'),
+			    text: gettext('Import'),
 			    handler: function() {
 				let grid = this.up('pveStorageContentView');
 				let selection = grid.getSelection()?.[0];

@@ -430,7 +430,7 @@ Ext.define('PVE.window.GuestImport', {
 			},
 			{
 			    xtype: 'pveMemoryField',
-			    fieldLabel: gettext('Memory'),
+			    fieldLabel: gettext('Memory') + ' (MiB)',
 			    name: 'memory',
 			    reference: 'memoryField',
 			    value: 512,
@@ -463,7 +463,7 @@ Ext.define('PVE.window.GuestImport', {
 			    name: 'cpu',
 			    reference: 'cputype',
 			    value: 'x86-64-v2-AES',
-			    fieldLabel: gettext('Type'),
+			    fieldLabel: gettext('CPU Type'),
 			},
 			{
 			    xtype: 'displayfield',
