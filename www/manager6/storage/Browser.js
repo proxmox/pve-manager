@@ -122,6 +122,20 @@ Ext.define('PVE.storage.Browser', {
 		});
 	    }
 	    if (contents.includes('import')) {
+		let createGuestImportWindow = (selection) => {
+		    if (!selection) {
+			return;
+		    }
+
+		    let volumeName = selection.data.volid.replace(/^.*?:/, '');
+
+		    Ext.create('PVE.window.GuestImport', {
+			storage: storeid,
+			volumeName,
+			nodename,
+			autoShow: true,
+		    });
+		};
 		me.items.push({
 		    xtype: 'pveStorageContentView',
 		    title: gettext('Import'),
@@ -130,6 +144,7 @@ Ext.define('PVE.storage.Browser', {
 		    content: 'import',
 		    useCustomRemoveButton: true, // hide default remove button
 		    showColumns: ['name', 'format'],
+		    itemdblclick: (view, record) => createGuestImportWindow(record),
 		    tbar: [
 			{
 			    xtype: 'proxmoxButton',
@@ -139,18 +154,7 @@ Ext.define('PVE.storage.Browser', {
 				let grid = this.up('pveStorageContentView');
 				let selection = grid.getSelection()?.[0];
 
-				if (!selection) {
-				    return;
-				}
-
-				let volumeName = selection.data.volid.replace(/^.*?:/, '');
-
-				Ext.create('PVE.window.GuestImport', {
-				    storage: storeid,
-				    volumeName,
-				    nodename,
-				    autoShow: true,
-				});
+				createGuestImportWindow(selection);
 			    },
 			},
 		    ],
