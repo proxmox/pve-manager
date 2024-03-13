@@ -511,8 +511,7 @@ Ext.define('PVE.window.GuestImport', {
 		    title: gettext('Advanced'),
 		    xtype: 'inputpanel',
 
-		    // the first inputpanel handles the values, prevent
-		    // accidental values from this inputpanel here
+		    // the first inputpanel handles all values, so prevent value leakage here
 		    onGetValues: () => ({}),
 		    column1: [
 			{
@@ -551,7 +550,7 @@ Ext.define('PVE.window.GuestImport', {
 			    },
 			    autoEl: {
 				tag: 'div',
-				'data-qtip': gettext('Useful when wanting to use VirtIO-SCSI'),
+				'data-qtip': gettext('Useful for a quicker switch to VirtIO-SCSI attached disks'),
 			    },
 			},
 			{
