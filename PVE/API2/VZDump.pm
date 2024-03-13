@@ -41,10 +41,11 @@ __PACKAGE__->register_method ({
     description => "Create backup.",
     permissions => {
 	description => "The user needs 'VM.Backup' permissions on any VM, and "
-	    ."'Datastore.AllocateSpace' on the backup storage. The 'tmpdir', 'dumpdir' and "
-	    ."'script' parameters are restricted to the 'root\@pam' user. The 'maxfiles' and "
-	    ."'prune-backups' settings require 'Datastore.Allocate' on the backup storage. The "
-	    ."'bwlimit', 'performance' and 'ionice' parameters require 'Sys.Modify' on '/'. ",
+	    ."'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing "
+	    ."is used). The 'tmpdir', 'dumpdir' and 'script' parameters are restricted to the "
+	    ."'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require "
+	    ."'Datastore.Allocate' on the backup storage. The 'bwlimit', 'performance' and "
+	    ."'ionice' parameters require 'Sys.Modify' on '/'.",
 	user => 'all',
     },
     protected => 1,

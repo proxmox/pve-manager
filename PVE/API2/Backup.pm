@@ -42,7 +42,7 @@ my $vzdump_job_id_prop = {
 
 # NOTE: also used by the vzdump API call.
 sub assert_param_permission_common {
-    my ($rpcenv, $user, $param) = @_;
+    my ($rpcenv, $user, $param, $is_delete) = @_;
     return if $user eq 'root@pam'; # always OK
 
     for my $key (qw(tmpdir dumpdir script)) {
@@ -51,6 +51,12 @@ sub assert_param_permission_common {
 
     if (grep { defined($param->{$_}) } qw(bwlimit ionice performance)) {
 	$rpcenv->check($user, "/", [ 'Sys.Modify' ]);
+    }
+
+    if ($param->{fleecing} && !$is_delete) {
+	my $fleecing = PVE::VZDump::parse_fleecing($param) // {};
+	$rpcenv->check($user, "/storage/$fleecing->{storage}", [ 'Datastore.AllocateSpace' ])
+	    if $fleecing->{storage};
     }
 }
 
@@ -70,7 +76,7 @@ my sub assert_param_permission_update {
     return if $user eq 'root@pam'; # always OK
 
     assert_param_permission_common($rpcenv, $user, $update);
-    assert_param_permission_common($rpcenv, $user, $delete);
+    assert_param_permission_common($rpcenv, $user, $delete, 1);
 
     if ($update->{storage}) {
 	$rpcenv->check($user, "/storage/$update->{storage}", [ 'Datastore.Allocate' ])

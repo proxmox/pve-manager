@@ -130,7 +130,7 @@ my $generate_notes = sub {
     return $notes_template;
 };
 
-my sub parse_fleecing {
+sub parse_fleecing {
     my ($param) = @_;
 
     if (defined(my $fleecing = $param->{fleecing})) {
