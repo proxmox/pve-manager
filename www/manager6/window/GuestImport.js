@@ -263,7 +263,7 @@ Ext.define('PVE.window.GuestImport', {
 	    coreCount: 1,
 	    socketCount: 1,
 	    liveImport: false,
-	    os: '',
+	    os: 'l26',
 	    maxCdDrives: false,
 	    warnings: [],
 	},
