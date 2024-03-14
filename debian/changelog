@@ -1,3 +1,37 @@
+pve-manager (8.1.5) bookworm; urgency=medium
+
+  * report: format iptables output for readability
+
+  * fix #5067: vzdump: include total backup size in notification
+
+  * ui: storage: zfs: set blocksize placeholder (empty text) to 16k
+
+  * ui: add compat for fix of previously wrongly used Korean language code
+
+  * ui: lvm: expose saferemove setting
+
+  * pvesubscription: add missing return statement to avoid a failing null
+    check and its error message.
+
+  * ceph: fix edge case of wrong files being deleted on purge
+
+  * ui: node: system: avoid using specific and outdated 'Syslog', just call it
+    'System Log'
+
+  * fix #5106: ui: ceph status: make column wrap the summary text on expand
+
+  * ui: qemu: bump max cores to 256 by socket
+
+  * api: node status: document boot-info and current-kernel in return schema
+
+  * api: nodes: allow usage of query url metadata with Sys.AccessNetwork
+
+  * ui: storage: enable download-url button with Sys.AccessNetwork capability
+
+  * ui: IP-set: re-work column widths
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Mar 2024 15:13:26 +0100
+
 pve-manager (8.1.4) bookworm; urgency=medium
 
   * api: apt versions: track dnsmasq and frr-pythontools as optional packages
