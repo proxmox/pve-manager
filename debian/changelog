@@ -1,3 +1,14 @@
+pve-manager (8.1.6) bookworm; urgency=medium
+
+  * ui: add guest import wizard in the content browser for storages that
+     upport the new 'import' content type.
+
+  * ui: support to add the new ESXi storage type, which provides only the
+    'import' content type and can be used for importing VMs from a ESXi host
+    into Proxmox VE directly.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Mar 2024 15:26:33 +0100
+
 pve-manager (8.1.5) bookworm; urgency=medium
 
   * report: format iptables output for readability
