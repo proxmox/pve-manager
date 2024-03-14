@@ -147,14 +147,15 @@ my $assert_mon_prerequisites = sub {
 my $assert_mon_can_remove = sub {
     my ($monhash, $monlist, $monid, $mondir) = @_;
 
-    if (!(defined($monhash->{$monid}) ||
-	  grep { defined($_->{name}) && $_->{name} eq $monid } @$monlist))
-    {
+    if (
+        !defined($monhash->{$monid} ||
+        grep { defined($_->{name}) && $_->{name} eq $monid } $monlist->@*)
+    ) {
 	die "no such monitor id '$monid'\n"
     }
 
     die "monitor filesystem '$mondir' does not exist on this node\n" if ! -d $mondir;
-    die "can't remove last monitor\n" if scalar(@$monlist) <= 1;
+    die "can't remove last monitor\n" if scalar($monlist->@*) <= 1;
 };
 
 my $remove_addr_from_mon_host = sub {
