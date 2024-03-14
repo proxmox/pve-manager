@@ -147,8 +147,8 @@ my $assert_mon_prerequisites = sub {
 my $assert_mon_can_remove = sub {
     my ($monhash, $monlist, $monid, $mondir) = @_;
 
-    if (!(defined($monhash->{"mon.$monid"}) ||
-	  grep { $_->{name} && $_->{name} eq $monid } @$monlist))
+    if (!(defined($monhash->{$monid}) ||
+	  grep { defined($_->{name}) && $_->{name} eq $monid } @$monlist))
     {
 	die "no such monitor id '$monid'\n"
     }
