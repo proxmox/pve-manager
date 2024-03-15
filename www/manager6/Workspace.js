@@ -382,6 +382,7 @@ Ext.define('PVE.StdWorkspace', {
 				    handler: function() {
 					var win = Ext.create('Proxmox.window.PasswordEdit', {
 					    userid: Proxmox.UserName,
+					    confirmCurrentPassword: Proxmox.UserName !== 'root@pam',
 					});
 					win.show();
 				    },

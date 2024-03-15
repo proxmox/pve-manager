@@ -70,6 +70,7 @@ Ext.define('PVE.dc.UserView', {
 	    handler: function(btn, event, rec) {
 		Ext.create('Proxmox.window.PasswordEdit', {
 		    userid: rec.data.userid,
+		    confirmCurrentPassword: Proxmox.UserName !== 'root@pam',
 		    autoShow: true,
 		    listeners: {
 			destroy: () => reload(),
