@@ -204,7 +204,8 @@ Ext.define('PVE.window.GuestImport', {
 		rec.commit();
 	    }
 	    let prepareVirtio = me.lookup('mapSata').getValue();
-	    me.lookup('scsihw').setValue(prepareVirtio && isWindows ? 'virtio-scsi-single' : me.getView().vmConfig.scsihw);
+	    let defaultScsiHw = me.getView().vmConfig.scsihw ?? '__default__';
+	    me.lookup('scsihw').setValue(prepareVirtio && isWindows ? 'virtio-scsi-single' : defaultScsiHw);
 
 	    me.refreshGrids();
 	},
@@ -662,6 +663,7 @@ Ext.define('PVE.window.GuestImport', {
 			    xtype: 'pveScsiHwSelector',
 			    reference: 'scsihw',
 			    name: 'scsihw',
+			    value: '__default__',
 			    submitValue: false,
 			    fieldLabel: gettext('SCSI Controller'),
 			},
