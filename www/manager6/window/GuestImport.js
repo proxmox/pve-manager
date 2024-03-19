@@ -644,7 +644,8 @@ Ext.define('PVE.window.GuestImport', {
 			    fieldLabel: gettext('Prepare for VirtIO-SCSI'),
 			    labelWidth: 200,
 			    reference: 'mapSata',
-			    isFormField: false,
+			    name: 'mapSata',
+			    submitValue: false,
 			    disabled: true,
 			    bind: {
 				disabled: '{!isWindows}',
@@ -934,11 +935,15 @@ Ext.define('PVE.window.GuestImport', {
 		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
 
 		let osinfo = PVE.Utils.get_kvm_osinfo(me.vmConfig.ostype ?? '');
+		let mapSata = (me.vmConfig.ostype ?? '').startsWith('w') && (me.vmConfig.bios ?? '').indexOf('ovmf') !== -1;
 
 		me.setValues({
 		    osbase: osinfo.base,
 		    ...me.vmConfig,
 		});
+
+
+		me.lookup('mapSata').setValue(mapSata);
 	    },
 	});
     },
