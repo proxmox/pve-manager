@@ -867,6 +867,10 @@ Ext.define('PVE.window.GuestImport', {
 		'ovmf-with-lsi-unsupported': gettext("OVMF is built without LSI drivers, scsi hardware was set to '{1}'"),
 		'serial-port-socket-only': gettext("Serial socket '{0}' will be mapped to a socket"),
 		'guest-is-running': gettext('Virtual guest seems to be running on source host. Import might fail or have inconsistent state!'),
+		'efi-state-lost': Ext.String.format(
+		    gettext('EFI state cannot be imported, you may need to reconfigure the boot order (see {0})'),
+		    '<a href="https://pve.proxmox.com/wiki/OVMF/UEFI_Boot_Entries">OVMF/UEFI Boot Entries</a>',
+		),
 	    };
             let message = warningsCatalogue[w.type];
 	    if (!w.type || !message) {
