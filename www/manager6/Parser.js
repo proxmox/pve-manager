@@ -121,7 +121,7 @@ Ext.define('PVE.Parser', {
 		}
 	    } else if ((match_res = p.match(/^bridge=(\S+)$/)) !== null) {
 		res.bridge = match_res[1];
-	    } else if ((match_res = p.match(/^rate=(\d+(\.\d+)?)$/)) !== null) {
+	    } else if ((match_res = p.match(/^rate=(\d+(\.\d+)?|\.\d+)$/)) !== null) {
 		res.rate = match_res[1];
 	    } else if ((match_res = p.match(/^tag=(\d+(\.\d+)?)$/)) !== null) {
 		res.tag = match_res[1];
