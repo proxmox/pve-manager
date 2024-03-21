@@ -12,6 +12,9 @@ Ext.define('PVE.window.IPInfo', {
 	    xtype: 'grid',
 	    store: {},
 	    emptyText: gettext('No network information'),
+	    viewConfig: {
+		enableTextSelection: true,
+	    },
 	    columns: [
 		{
 		    dataIndex: 'name',
