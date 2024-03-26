@@ -25,6 +25,7 @@ use PVE::HA::Env::PVE2;
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::LXC;
+use PVE::NodeConfig;
 use PVE::ProcFSTools;
 use PVE::QemuConfig;
 use PVE::QemuServer;
@@ -689,7 +690,8 @@ __PACKAGE__->register_method({
 	PVE::Cluster::check_node_exists($node);
 
 	my $config = PVE::NodeConfig::load_config($node);
-	my $mac_addr = $config->{wakeonlan};
+	my $wol_config = PVE::NodeConfig::get_wakeonlan_config($config);
+	my $mac_addr = $wol_config->{mac};
 	if (!defined($mac_addr)) {
 	    die "No wake on LAN MAC address defined for '$node'!\n";
 	}
@@ -711,7 +713,7 @@ __PACKAGE__->register_method({
 
 	close($sock);
 
-	return $config->{wakeonlan};
+	return $wol_config->{mac};
     }});
 
 __PACKAGE__->register_method({
