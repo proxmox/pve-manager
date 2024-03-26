@@ -15,6 +15,8 @@ Ext.define('PVE.window.GuestImport', {
     showTaskViewer: true,
     method: 'POST',
 
+    uniqueMac: false,
+
     loadUrl: function(_url, { storage, nodename, volumeName }) {
 	let args = Ext.Object.toQueryString({ volume: volumeName });
 	return `/nodes/${nodename}/storage/${storage}/import-metadata?${args}`;
@@ -187,6 +189,7 @@ Ext.define('PVE.window.GuestImport', {
 	refreshGrids: function() {
 	    this.lookup('diskGrid').reconfigure();
 	    this.lookup('cdGrid').reconfigure();
+	    this.lookup('netGrid').reconfigure();
 	},
 
 	onOSTypeChange: function(_cb, value) {
@@ -226,6 +229,21 @@ Ext.define('PVE.window.GuestImport', {
 	    me.getView().vmConfig.scsihw = value;
 	},
 
+	onUniqueMacChange: function(_cb, value) {
+	    let me = this;
+	    me.getView().uniqueMac = value;
+
+	    me.refreshGrids();
+	},
+
+	renderMacAddress: function(value, metaData, record, rowIndex, colIndex, store, view) {
+	    let me = this;
+	    if (me.getView().uniqueMac) {
+		return 'auto';
+	    }
+	    return value ? value : 'auto';
+	},
+
 	control: {
 	    'grid field': {
 		// update records from widgetcolumns
@@ -255,6 +273,9 @@ Ext.define('PVE.window.GuestImport', {
 	    },
 	    'pveScsiHwSelector': {
 		change: 'onScsiHwChange',
+	    },
+	    'proxmoxcheckbox[reference=uniqueMac]': {
+		change: 'onUniqueMacChange',
 	    },
 	},
     },
@@ -363,6 +384,9 @@ Ext.define('PVE.window.GuestImport', {
 			    delete data.id;
 			    if (!data.bridge) {
 				data.bridge = defaultBridge;
+			    }
+			    if (grid.uniqueMac) {
+				data.macaddr = undefined;
 			    }
 			    config[id] = PVE.Parser.printQemuNetwork(data);
 			});
@@ -778,7 +802,7 @@ Ext.define('PVE.window.GuestImport', {
 				    text: gettext('MAC address'),
 				    flex: 1,
 				    dataIndex: 'macaddr',
-				    renderer: value => value ?? 'auto',
+				    renderer: 'renderMacAddress',
 				},
 				{
 				    text: gettext('Model'),
@@ -808,6 +832,19 @@ Ext.define('PVE.window.GuestImport', {
 				    onWidgetAttach: 'setNodename',
 				},
 			    ],
+			},
+			{
+			    xtype: 'proxmoxcheckbox',
+			    name: 'uniqueMACs',
+			    reference: 'uniqueMac',
+			    labelWidth: 200,
+			    fieldLabel: gettext('Unique MAC addresses'),
+			    uncheckedValue: false,
+			    checked: false,
+			    autoEl: {
+				tag: 'div',
+				'data-qtip': gettext('Generate new unique MAC addresses.'),
+			    },
 			},
 		    ],
 		},
