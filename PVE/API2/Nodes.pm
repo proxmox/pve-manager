@@ -683,9 +683,10 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $node = $param->{node};
+	my $local_node = PVE::INotify::nodename();
 
 	die "'$node' is local node, cannot wake my self!\n"
-	    if $node eq 'localhost' || $node eq PVE::INotify::nodename();
+	    if $node eq 'localhost' || $node eq $local_node;
 
 	PVE::Cluster::check_node_exists($node);
 
@@ -695,6 +696,10 @@ __PACKAGE__->register_method({
 	if (!defined($mac_addr)) {
 	    die "No wake on LAN MAC address defined for '$node'!\n";
 	}
+
+	my $local_config = PVE::NodeConfig::load_config($local_node);
+	my $local_wol_config = PVE::NodeConfig::get_wakeonlan_config($local_config);
+	my $bind_iface = $local_wol_config->{'bind-interface'};
 
 	$mac_addr =~ s/://g;
 	my $packet = chr(0xff) x 6 . pack('H*', $mac_addr) x 16;
@@ -707,6 +712,13 @@ __PACKAGE__->register_method({
 	    || die "Unable to open socket: $!\n";
 	setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BROADCAST, 1)
 	    || die "Unable to set socket option: $!\n";
+
+	if (defined($bind_iface)) {
+	    # Null terminated interface name
+	    my $bind_iface_raw = pack('Z*', $bind_iface);
+	    setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BINDTODEVICE, $bind_iface_raw)
+		|| die "Unable to bind socket to interface '$bind_iface': $!\n";
+	}
 
 	send($sock, $packet, 0, $to)
 	    || die "Unable to send packet: $!\n";

@@ -103,6 +103,13 @@ my $wakeonlan_desc = {
 	format_description => 'MAC address',
 	default_key => 1,
     },
+    'bind-interface' => {
+	type => 'string',
+	description => 'Bind to this interface when sending wake on LAN packet',
+	format => 'pve-iface',
+	format_description => 'bind interface',
+	optional => 1,
+    },
 };
 
 $confdesc->{wakeonlan} = {
