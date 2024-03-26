@@ -114,7 +114,7 @@ Ext.define('PVE.Parser', {
 
 	    let match_res;
 
-	    if ((match_res = p.match(/^(ne2k_pci|e1000|e1000-82540em|e1000-82544gc|e1000-82545em|vmxnet3|rtl8139|pcnet|virtio|ne2k_isa|i82551|i82557b|i82559er)(=([0-9a-f]{2}(:[0-9a-f]{2}){5}))?$/i)) !== null) {
+	    if ((match_res = p.match(/^(ne2k_pci|e1000e?|e1000-82540em|e1000-82544gc|e1000-82545em|vmxnet3|rtl8139|pcnet|virtio|ne2k_isa|i82551|i82557b|i82559er)(=([0-9a-f]{2}(:[0-9a-f]{2}){5}))?$/i)) !== null) {
 		res.model = match_res[1].toLowerCase();
 		if (match_res[3]) {
 		    res.macaddr = match_res[3];
