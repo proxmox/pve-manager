@@ -110,6 +110,13 @@ my $wakeonlan_desc = {
 	format_description => 'bind interface',
 	optional => 1,
     },
+    'broadcast-address' => {
+	type => 'string',
+	description => 'IPv4 broadcast address to use when sending wake on LAN packet',
+	format => 'ipv4',
+	format_description => 'IPv4 broadcast address',
+	optional => 1,
+    },
 };
 
 $confdesc->{wakeonlan} = {

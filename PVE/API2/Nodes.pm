@@ -700,11 +700,12 @@ __PACKAGE__->register_method({
 	my $local_config = PVE::NodeConfig::load_config($local_node);
 	my $local_wol_config = PVE::NodeConfig::get_wakeonlan_config($local_config);
 	my $bind_iface = $local_wol_config->{'bind-interface'};
+	my $broadcast_addr = $local_wol_config->{'broadcast-address'} // '255.255.255.255';
 
 	$mac_addr =~ s/://g;
 	my $packet = chr(0xff) x 6 . pack('H*', $mac_addr) x 16;
 
-	my $addr = gethostbyname('255.255.255.255');
+	my $addr = gethostbyname($broadcast_addr);
 	my $port = getservbyname('discard', 'udp');
 	my $to = Socket::pack_sockaddr_in($port, $addr);
 
