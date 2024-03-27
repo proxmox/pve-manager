@@ -665,8 +665,7 @@ Ext.define('PVE.window.GuestImport', {
 		column1: [
 		    {
 			xtype: 'proxmoxcheckbox',
-			fieldLabel: gettext('Prepare for VirtIO-SCSI'),
-			labelWidth: 200,
+			boxLabel: gettext('Prepare for VirtIO-SCSI'),
 			reference: 'prepareForVirtIO',
 			name: 'prepareForVirtIO',
 			submitValue: false,
