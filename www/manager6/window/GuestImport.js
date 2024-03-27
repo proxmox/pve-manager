@@ -159,8 +159,8 @@ Ext.define('PVE.window.GuestImport', {
 
 	mapDisk: function(value, metaData) {
 	    let me = this;
-	    let mapSata = me.lookup('mapSata');
-	    if (mapSata.isDisabled() || !mapSata.getValue()) {
+	    let prepareForVirtIO = me.lookup('prepareForVirtIO');
+	    if (prepareForVirtIO.isDisabled() || !prepareForVirtIO.getValue()) {
 		return value;
 	    }
 	    if (!value.toLowerCase().startsWith('scsi')) {
@@ -204,7 +204,7 @@ Ext.define('PVE.window.GuestImport', {
 		rec.set('hidden', !isWindows);
 		rec.commit();
 	    }
-	    let prepareVirtio = me.lookup('mapSata').getValue();
+	    let prepareVirtio = me.lookup('prepareForVirtIO').getValue();
 	    let defaultScsiHw = me.getView().vmConfig.scsihw ?? '__default__';
 	    me.lookup('scsihw').setValue(prepareVirtio && isWindows ? 'virtio-scsi-single' : defaultScsiHw);
 
@@ -263,7 +263,7 @@ Ext.define('PVE.window.GuestImport', {
 	    'panel[reference=summaryTab]': {
 		activate: 'calculateConfig',
 	    },
-	    'proxmoxcheckbox[reference=mapSata]': {
+	    'proxmoxcheckbox[reference=prepareForVirtIO]': {
 		change: 'onPrepareVirtioChange',
 	    },
 	    'combobox[name=ostype]': {
@@ -667,8 +667,8 @@ Ext.define('PVE.window.GuestImport', {
 			xtype: 'proxmoxcheckbox',
 			fieldLabel: gettext('Prepare for VirtIO-SCSI'),
 			labelWidth: 200,
-			reference: 'mapSata',
-			name: 'mapSata',
+			reference: 'prepareForVirtIO',
+			name: 'prepareForVirtIO',
 			submitValue: false,
 			disabled: true,
 			bind: {
@@ -970,7 +970,7 @@ Ext.define('PVE.window.GuestImport', {
 		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
 
 		let osinfo = PVE.Utils.get_kvm_osinfo(me.vmConfig.ostype ?? '');
-		let mapSata = (me.vmConfig.ostype ?? '').startsWith('w') && (me.vmConfig.bios ?? '').indexOf('ovmf') !== -1;
+		let prepareForVirtIO = (me.vmConfig.ostype ?? '').startsWith('w') && (me.vmConfig.bios ?? '').indexOf('ovmf') !== -1;
 
 		me.setValues({
 		    osbase: osinfo.base,
@@ -978,7 +978,7 @@ Ext.define('PVE.window.GuestImport', {
 		});
 
 
-		me.lookup('mapSata').setValue(mapSata);
+		me.lookup('prepareForVirtIO').setValue(prepareForVirtIO);
 	    },
 	});
     },
