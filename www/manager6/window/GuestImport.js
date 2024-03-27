@@ -15,8 +15,6 @@ Ext.define('PVE.window.GuestImport', {
     showTaskViewer: true,
     method: 'POST',
 
-    uniqueMac: false,
-
     loadUrl: function(_url, { storage, nodename, volumeName }) {
 	let args = Ext.Object.toQueryString({ volume: volumeName });
 	return `/nodes/${nodename}/storage/${storage}/import-metadata?${args}`;
@@ -229,19 +227,19 @@ Ext.define('PVE.window.GuestImport', {
 	    me.getView().vmConfig.scsihw = value;
 	},
 
-	onUniqueMacChange: function(_cb, value) {
+	onUniqueMACChange: function(_cb, value) {
 	    let me = this;
-	    me.getView().uniqueMac = value;
 
-	    me.refreshGrids();
+	    me.getViewModel().set('uniqueMACAdresses', value);
+
+	    me.lookup('netGrid').reconfigure();
 	},
 
 	renderMacAddress: function(value, metaData, record, rowIndex, colIndex, store, view) {
 	    let me = this;
-	    if (me.getView().uniqueMac) {
-		return 'auto';
-	    }
-	    return value ? value : 'auto';
+	    let vm = me.getViewModel();
+
+	    return !vm.get('uniqueMACAdresses') && value ? value : 'auto';
 	},
 
 	control: {
@@ -274,8 +272,8 @@ Ext.define('PVE.window.GuestImport', {
 	    'pveScsiHwSelector': {
 		change: 'onScsiHwChange',
 	    },
-	    'proxmoxcheckbox[reference=uniqueMac]': {
-		change: 'onUniqueMacChange',
+	    'proxmoxcheckbox[name=uniqueMACs]': {
+		change: 'onUniqueMACChange',
 	    },
 	},
     },
@@ -287,6 +285,7 @@ Ext.define('PVE.window.GuestImport', {
 	    liveImport: false,
 	    os: 'l26',
 	    maxCdDrives: false,
+	    uniqueMACAdresses: false,
 	    warnings: [],
 	},
 
@@ -318,6 +317,7 @@ Ext.define('PVE.window.GuestImport', {
 		    onGetValues: function(values) {
 			let me = this;
 			let grid = me.up('pveGuestImportWindow');
+			let vm = grid.getViewModel();
 
 			// from pveDiskStorageSelector
 			let defaultStorage = values.hdstorage;
@@ -385,7 +385,7 @@ Ext.define('PVE.window.GuestImport', {
 			    if (!data.bridge) {
 				data.bridge = defaultBridge;
 			    }
-			    if (grid.uniqueMac) {
+			    if (vm.get('uniqueMACAdresses')) {
 				data.macaddr = undefined;
 			    }
 			    config[id] = PVE.Parser.printQemuNetwork(data);
@@ -836,15 +836,9 @@ Ext.define('PVE.window.GuestImport', {
 			{
 			    xtype: 'proxmoxcheckbox',
 			    name: 'uniqueMACs',
-			    reference: 'uniqueMac',
-			    labelWidth: 200,
-			    fieldLabel: gettext('Unique MAC addresses'),
+			    boxLabel: gettext('Unique MAC addresses'),
 			    uncheckedValue: false,
-			    checked: false,
-			    autoEl: {
-				tag: 'div',
-				'data-qtip': gettext('Generate new unique MAC addresses.'),
-			    },
+			    value: false,
 			},
 		    ],
 		},
