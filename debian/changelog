@@ -1,3 +1,20 @@
+pve-manager (8.1.8) bookworm; urgency=medium
+
+  * ui: parser: recognize Intel E1000E as network card
+
+  * ui: network card selector: add Intel E1000E as choosable model
+
+  * ui: guest import: allow setting mac addresses to newly generated unique
+    ones
+
+  * ui: guest import: use box-label style for prepare-for-virtio checkbox
+
+  * ui: guest import: fine tune icons
+
+  * ui: guest import: validate that selected VMID does not exist yet
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 27 Mar 2024 14:33:49 +0100
+
 pve-manager (8.1.7) bookworm; urgency=medium
 
   * fix #5293: ceph status: fix division-by-zero when calculating usage
