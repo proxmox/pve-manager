@@ -425,6 +425,7 @@ Ext.define('PVE.window.GuestImport', {
 			fieldLabel: 'VM',
 			guestType: 'qemu',
 			loadNextFreeID: true,
+			validateExists: false,
 		    },
 		    {
 			xtype: 'proxmoxintegerfield',
