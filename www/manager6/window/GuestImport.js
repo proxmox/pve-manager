@@ -315,8 +315,9 @@ Ext.define('PVE.window.GuestImport', {
 		reference: 'mainInputPanel',
 		onGetValues: function(values) {
 		    let me = this;
-		    let grid = me.up('pveGuestImportWindow');
-		    let vm = grid.getViewModel();
+		    let view = me.up('pveGuestImportWindow');
+		    let vm = view.getViewModel();
+		    let diskGrid = view.lookup('diskGrid');
 
 		    // from pveDiskStorageSelector
 		    let defaultStorage = values.hdstorage;
@@ -339,11 +340,11 @@ Ext.define('PVE.window.GuestImport', {
 			parsedBoot.order = parsedBoot.order.split(';');
 		    }
 
-		    grid.lookup('diskGrid').getStore().each((rec) => {
+		    diskGrid.getStore().each(rec => {
 			if (!rec.data.enable) {
 			    return;
 			}
-			let id = grid.getController().mapDisk(rec.data.id);
+			let id = view.getController().mapDisk(rec.data.id);
 			if (id !== rec.data.id && parsedBoot?.order) {
 			    let idx = parsedBoot.order.indexOf(rec.data.id);
 			    if (idx !== -1) {
@@ -372,7 +373,7 @@ Ext.define('PVE.window.GuestImport', {
 		    }
 		    config.boot = PVE.Parser.printPropertyString(parsedBoot);
 
-		    grid.lookup('netGrid').getStore().each((rec) => {
+		    view.lookup('netGrid').getStore().each((rec) => {
 			if (!rec.data.enable) {
 			    return;
 			}
@@ -391,7 +392,7 @@ Ext.define('PVE.window.GuestImport', {
 			config[id] = PVE.Parser.printQemuNetwork(data);
 		    });
 
-		    grid.lookup('cdGrid').getStore().each((rec) => {
+		    view.lookup('cdGrid').getStore().each((rec) => {
 			if (!rec.data.enable) {
 			    return;
 			}
@@ -403,9 +404,9 @@ Ext.define('PVE.window.GuestImport', {
 			config[id] = PVE.Parser.printPropertyString(cd);
 		    });
 
-		    config.scsihw = grid.lookup('scsihw').getValue();
+		    config.scsihw = view.lookup('scsihw').getValue();
 
-		    if (grid.lookup('liveimport').getValue()) {
+		    if (view.lookup('liveimport').getValue()) {
 			config['live-restore'] = 1;
 		    }
 
