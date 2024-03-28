@@ -699,7 +699,6 @@ __PACKAGE__->register_method({
 
 	my $local_config = PVE::NodeConfig::load_config($local_node);
 	my $local_wol_config = PVE::NodeConfig::get_wakeonlan_config($local_config);
-	my $bind_iface = $local_wol_config->{'bind-interface'};
 	my $broadcast_addr = $local_wol_config->{'broadcast-address'} // '255.255.255.255';
 
 	$mac_addr =~ s/://g;
@@ -714,9 +713,8 @@ __PACKAGE__->register_method({
 	setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BROADCAST, 1)
 	    || die "Unable to set socket option: $!\n";
 
-	if (defined($bind_iface)) {
-	    # Null terminated interface name
-	    my $bind_iface_raw = pack('Z*', $bind_iface);
+	if (defined(my $bind_iface = $local_wol_config->{'bind-interface'})) {
+	    my $bind_iface_raw = pack('Z*', $bind_iface); # Null terminated interface name
 	    setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BINDTODEVICE, $bind_iface_raw)
 		|| die "Unable to bind socket to interface '$bind_iface': $!\n";
 	}
