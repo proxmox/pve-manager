@@ -327,7 +327,8 @@ Ext.define('PVE.window.GuestImport', {
 		    let defaultBridge = values.defaultBridge;
 		    delete values.defaultBridge;
 
-		    let config = Ext.apply(grid.vmConfig, values);
+		    let config = { ...view.vmConfig };
+		    Ext.apply(config, values);
 
 		    if (config.scsi0) {
 			config.scsi0 = config.scsi0.replace('local:0,', 'local:0,format=qcow2,');
