@@ -1,6 +1,21 @@
 Ext.define('PVE.storage.ESXIInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    setValues: function(values) {
+	let me = this;
+
+	let server = values.server;
+	if (values.port !== undefined) {
+	    if (Proxmox.Utils.IP6_match.test(server)) {
+		server = `[${server}]`;
+	    }
+	    server += `:${values.port}`;
+	}
+	values.server = server;
+
+	return me.callParent([values]);
+    },
+
     onGetValues: function(values) {
 	let me = this;
 
@@ -9,6 +24,23 @@ Ext.define('PVE.storage.ESXIInputPanel', {
 	}
 	if (values.username?.length === 0) {
 	    delete values.username;
+	}
+
+	if (me.isCreate) {
+	    let serverPortMatch = Proxmox.Utils.HostPort_match.exec(values.server);
+	    if (serverPortMatch === null) {
+		serverPortMatch = Proxmox.Utils.HostPortBrackets_match.exec(values.server);
+		if (serverPortMatch === null) {
+		    serverPortMatch = Proxmox.Utils.IP6_dotnotation_match.exec(values.server);
+		}
+	    }
+
+	    if (serverPortMatch !== null) {
+		values.server = serverPortMatch[1];
+		if (serverPortMatch[2] !== undefined) {
+		    values.port = serverPortMatch[2];
+		}
+	    }
 	}
 
 	return me.callParent([values]);
