@@ -157,31 +157,20 @@ Ext.define('PVE.window.GuestImport', {
 	    return max;
 	},
 
-	mapDisk: function(value, metaData) {
-	    let me = this;
-	    let prepareForVirtIO = me.lookup('prepareForVirtIO');
-	    if (prepareForVirtIO.isDisabled() || !prepareForVirtIO.getValue()) {
-		return value;
-	    }
-	    if (!value.toLowerCase().startsWith('scsi')) {
-		return value;
-	    }
-	    let offset = parseInt(value.slice(4), 10);
-	    let newIdx = offset + me.getMaxControllerId('sata') + 1;
-	    if (me.getViewModel().get('isWindows') && me.getView().additionalCdIdx?.startsWith('sata')) {
-		// additionalCdIdx takes the highest sata port
-		newIdx++;
-	    }
-	    if (newIdx >= PVE.Utils.diskControllerMaxIDs.sata) {
-		let prefix = '';
-		if (metaData !== undefined) {
-		    // we're in the renderer so put a warning here
-		    let warning = gettext('Too many disks, could not map to SATA.');
-		    prefix = `<i data-qtip="${warning}" class="fa fa-exclamation-triangle warning"></i> `;
+	renderDisk: function(value, metaData, record, rowIndex, colIndex, store, tableView) {
+	    let diskGrid = tableView.grid ?? this.lookup('diskGrid');
+	    if (diskGrid.diskMap) {
+		let mappedID = diskGrid.diskMap[value];
+		if (mappedID) {
+		    let prefix = '';
+		    if (mappedID === value) { // mapped to the same value means we ran out of IDs
+			let warning = gettext('Too many disks, could not map to SATA.');
+			prefix = `<i data-qtip="${warning}" class="fa fa-exclamation-triangle warning"></i> `;
+		    }
+		    return `${prefix}${mappedID}`;
 		}
-		return `${prefix}${value}`;
 	    }
-	    return `sata${newIdx}`;
+	    return value;
 	},
 
 	refreshGrids: function() {
@@ -213,6 +202,31 @@ Ext.define('PVE.window.GuestImport', {
 
 	onPrepareVirtioChange: function(_cb, value) {
 	    let me = this;
+	    let view = me.getView();
+	    let diskGrid = me.lookup('diskGrid');
+
+	    diskGrid.diskMap = {};
+	    if (value) {
+		const hasAdditionalSataCDROM =
+		    me.getViewModel().get('isWindows') && view.additionalCdIdx?.startsWith('sata');
+
+		diskGrid.getStore().each(rec => {
+		    let diskID = rec.data.id;
+		    if (!diskID.toLowerCase().startsWith('scsi')) {
+			return; // continue
+		    }
+		    let offset = parseInt(diskID.slice(4), 10);
+		    let newIdx = offset + me.getMaxControllerId('sata') + 1;
+		    if (hasAdditionalSataCDROM) {
+			newIdx++;
+		    }
+		    let mappedID = `sata${newIdx}`;
+		    if (newIdx >= PVE.Utils.diskControllerMaxIDs.sata) {
+			mappedID = diskID; // map to self so that the renderer can detect that we're out of IDs
+		    }
+		    diskGrid.diskMap[diskID] = mappedID;
+		});
+	    }
 
 	    let scsihw = me.lookup('scsihw');
 	    scsihw.suspendEvents();
@@ -340,11 +354,12 @@ Ext.define('PVE.window.GuestImport', {
 			parsedBoot.order = parsedBoot.order.split(';');
 		    }
 
+		    let diskMap = diskGrid.diskMap ?? {};
 		    diskGrid.getStore().each(rec => {
 			if (!rec.data.enable) {
 			    return;
 			}
-			let id = view.getController().mapDisk(rec.data.id);
+			let id = diskMap[rec.data.id] ?? rec.data.id;
 			if (id !== rec.data.id && parsedBoot?.order) {
 			    let idx = parsedBoot.order.indexOf(rec.data.id);
 			    if (idx !== -1) {
@@ -612,7 +627,7 @@ Ext.define('PVE.window.GuestImport', {
 			    {
 				text: gettext('Disk'),
 				dataIndex: 'id',
-				renderer: 'mapDisk',
+				renderer: 'renderDisk',
 			    },
 			    {
 				text: gettext('Source'),
