@@ -4,6 +4,9 @@ Ext.define('PVE.window.GuestImport', {
 
     title: gettext('Import Guest'),
 
+    width: 720,
+    bodyPadding: 0,
+
     submitUrl: function() {
 	let me = this;
 	return `/nodes/${me.nodename}/qemu`;
@@ -313,9 +316,6 @@ Ext.define('PVE.window.GuestImport', {
 	    isWindows: get => (get('os') ?? '').startsWith('w'),
 	},
     },
-
-    width: 700,
-    bodyPadding: 0,
 
     items: [{
 	xtype: 'tabpanel',
@@ -816,13 +816,13 @@ Ext.define('PVE.window.GuestImport', {
 			    },
 			    {
 				text: gettext('MAC address'),
-				flex: 1,
+				flex: 7,
 				dataIndex: 'macaddr',
 				renderer: 'renderMacAddress',
 			    },
 			    {
 				text: gettext('Model'),
-				flex: 1,
+				flex: 7,
 				dataIndex: 'model',
 				xtype: 'widgetcolumn',
 				widget: {
@@ -836,7 +836,7 @@ Ext.define('PVE.window.GuestImport', {
 				text: gettext('Bridge'),
 				dataIndex: 'bridge',
 				xtype: 'widgetcolumn',
-				flex: 1,
+				flex: 6,
 				widget: {
 				    xtype: 'PVE.form.BridgeSelector',
 				    name: 'bridge',
@@ -846,6 +846,19 @@ Ext.define('PVE.window.GuestImport', {
 				    emptyText: gettext('From Default'),
 				},
 				onWidgetAttach: 'setNodename',
+			    },
+			    {
+				text: gettext('VLAN Tag'),
+				dataIndex: 'tag',
+				xtype: 'widgetcolumn',
+				flex: 5,
+				widget: {
+				    xtype: 'pveVlanField',
+				    fieldLabel: undefined,
+				    name: 'tag',
+				    isFormField: false,
+				    allowBlank: true,
+				},
 			    },
 			],
 		    },
