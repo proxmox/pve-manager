@@ -1,3 +1,9 @@
+pve-manager (8.1.10) bookworm; urgency=medium
+
+  * guest import: allow setting VLAN-tag for network devices in advanced tab
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 28 Mar 2024 19:57:05 +0100
+
 pve-manager (8.1.9) bookworm; urgency=medium
 
   * ui: guest import: actually copy the initial guest config state before
