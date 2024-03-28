@@ -1,3 +1,18 @@
+pve-manager (8.1.9) bookworm; urgency=medium
+
+  * ui: guest import: actually copy the initial guest config state before
+    applying value overrides to avoid a old state being send if one edits the
+    values after checking the resulting config tab before hand
+
+  * fix #5255: node: wol: add optional bind-interface where magic packet is
+    sent on
+
+  * fix #5255: node: wol: make broadcast address configurable
+
+  * fix #5337: ui: parse a port in the server field
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 28 Mar 2024 18:12:47 +0100
+
 pve-manager (8.1.8) bookworm; urgency=medium
 
   * ui: parser: recognize Intel E1000E as network card
