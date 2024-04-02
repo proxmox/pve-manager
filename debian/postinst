@@ -82,10 +82,23 @@ EOF
 
 update_ceph_conf() {
     CEPH_CONF_DIR='/etc/pve/ceph'
+    UNIT='ceph-crash.service'
+
+    echo ""
 
     if test ! -d "${CEPH_CONF_DIR}"; then
         mkdir -p "${CEPH_CONF_DIR}"
     fi
+
+    # Don't fail in case user has "exotic" configuration where RADOS
+    # isn't available on all nodes for some reason
+    /usr/share/pve-manager/helpers/pve-init-ceph-crash || true
+
+    if systemctl -q is-enabled "$UNIT" 2> /dev/null; then
+        deb-systemd-invoke restart "$UNIT" || true
+    fi
+
+    echo ""
 }
 
 migrate_apt_auth_conf() {

@@ -451,6 +451,14 @@ __PACKAGE__->register_method ({
 			)
 		    };
 		    warn "$@" if $@;
+
+		    print "Configuring keyring for ceph-crash.service\n";
+		    eval {
+			PVE::Ceph::Tools::create_or_update_crash_keyring_file();
+			$cfg->{'client.crash'}->{keyring} = '/etc/pve/ceph/$cluster.$name.keyring';
+			cfs_write_file('ceph.conf', $cfg);
+		    };
+		    warn "Unable to configure keyring for ceph-crash.service: $@" if $@;
 		}
 
 		eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };

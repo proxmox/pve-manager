@@ -83,6 +83,7 @@ install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLE
 	install -m 0755 $(SCRIPTS) $(BINDIR)
 	install -d $(USRSHARE)/helpers
 	install -m 0755 pve-startall-delay $(USRSHARE)/helpers
+	install -m 0755 pve-init-ceph-crash $(USRSHARE)/helpers
 	install -d $(MAN1DIR)
 	install -m 0644 $(CLI_MANS) $(MAN1DIR)
 	install -d $(MAN8DIR)
