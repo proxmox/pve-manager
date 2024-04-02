@@ -192,6 +192,11 @@ __PACKAGE__->register_method ({
 	    PVE::Ceph::Tools::check_ceph_installed('ceph_bin');
 	}
 
+	my $pve_ceph_cfgdir = PVE::Ceph::Tools::get_config('pve_ceph_cfgdir');
+	if (! -d $pve_ceph_cfgdir) {
+	    File::Path::make_path($pve_ceph_cfgdir);
+	}
+
 	my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
 
 	# simply load old config if it already exists
