@@ -66,6 +66,14 @@ sub main {
         exit 0;
     }
 
+    my $ceph_cfg_path = PVE::Ceph::Tools::get_config('pve_ceph_cfgpath');
+    if (PVE::Ceph::Tools::check_ceph_installed('ceph_mon', 1) && -f $ceph_cfg_path) {
+	my $pve_ceph_cfgdir = PVE::Ceph::Tools::get_config('pve_ceph_cfgdir');
+	if (! -d $pve_ceph_cfgdir) {
+	    File::Path::make_path($pve_ceph_cfgdir);
+	}
+    }
+
     eval {
         PVE::Ceph::Tools::check_ceph_inited();
     };
