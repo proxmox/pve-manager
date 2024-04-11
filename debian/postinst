@@ -135,11 +135,11 @@ case "$1" in
     # the ExecStartPre doesn't triggers on service reload, so just in case
     pvecm updatecerts --silent || true
 
-    deb-systemd-invoke reload-or-try-restart pvedaemon.service
-    deb-systemd-invoke reload-or-try-restart pvestatd.service
-    deb-systemd-invoke reload-or-try-restart pveproxy.service
-    deb-systemd-invoke reload-or-try-restart spiceproxy.service
-    deb-systemd-invoke reload-or-try-restart pvescheduler.service
+    deb-systemd-invoke reload-or-try-restart pvedaemon.service || true
+    deb-systemd-invoke reload-or-try-restart pvestatd.service || true
+    deb-systemd-invoke reload-or-try-restart pveproxy.service || true
+    deb-systemd-invoke reload-or-try-restart spiceproxy.service || true
+    deb-systemd-invoke reload-or-try-restart pvescheduler.service || true
 
     exit 0;;
 
@@ -215,7 +215,7 @@ case "$1" in
                 dh_action="start"
             fi
             if systemctl -q is-enabled "$unit"; then
-                deb-systemd-invoke $dh_action "$unit"
+                deb-systemd-invoke $dh_action "$unit" || true
             fi
         done
     fi
