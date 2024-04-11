@@ -84,8 +84,6 @@ update_ceph_conf() {
     CEPH_CONF_DIR='/etc/pve/ceph'
     UNIT='ceph-crash.service'
 
-    echo ""
-
     if test ! -d "${CEPH_CONF_DIR}"; then
         mkdir -p "${CEPH_CONF_DIR}"
     fi
@@ -97,8 +95,6 @@ update_ceph_conf() {
     if systemctl -q is-enabled "$UNIT" 2> /dev/null; then
         deb-systemd-invoke restart "$UNIT" || true
     fi
-
-    echo ""
 }
 
 migrate_apt_auth_conf() {
