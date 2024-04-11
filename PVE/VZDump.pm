@@ -134,9 +134,11 @@ my sub parse_performance {
     my ($param) = @_;
 
     if (defined(my $perf = $param->{performance})) {
-	return if ref($perf) eq 'HASH'; # already parsed
+	return $perf if ref($perf) eq 'HASH'; # already parsed
 	$param->{performance} = PVE::JSONSchema::parse_property_string('backup-performance', $perf);
     }
+
+    return $param->{performance};
 }
 
 my sub merge_performance {
@@ -160,7 +162,7 @@ my $parse_prune_backups_maxfiles = sub {
         if defined($maxfiles) && defined($prune_backups);
 
     if (defined($prune_backups)) {
-	return if ref($prune_backups) eq 'HASH'; # already parsed
+	return $prune_backups if ref($prune_backups) eq 'HASH'; # already parsed
 	$param->{'prune-backups'} = PVE::JSONSchema::parse_property_string(
 	    'prune-backups',
 	    $prune_backups
@@ -172,6 +174,8 @@ my $parse_prune_backups_maxfiles = sub {
 	    $param->{'prune-backups'} = { 'keep-all' => 1 };
 	}
     }
+
+    return $param->{'prune-backups'};
 };
 
 sub storage_info {
