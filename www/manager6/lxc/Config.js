@@ -77,11 +77,13 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: Proxmox.Utils.format_task_description('vzstop', vmid),
 		    tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
-		    dangerous: true,
 		    handler: function() {
-			vm_command("stop");
+			Ext.create('PVE.GuestStop', {
+			    nodename: nodename,
+			    vm: vm,
+			    autoShow: true,
+			});
 		    },
 		    iconCls: 'fa fa-stop',
 		}],

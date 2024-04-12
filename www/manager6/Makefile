@@ -132,6 +132,7 @@ JSSRC= 							\
 	window/ScheduleSimulator.js			\
 	window/Wizard.js				\
 	window/GuestDiskReassign.js				\
+	window/GuestStop.js				\
 	window/TreeSettingsEdit.js			\
 	window/PCIMapEdit.js				\
 	window/USBMapEdit.js				\

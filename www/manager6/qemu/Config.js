@@ -176,11 +176,13 @@ Ext.define('PVE.qemu.Config', {
 		}, {
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    dangerous: true,
 		    tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'VM'),
-		    confirmMsg: Proxmox.Utils.format_task_description('qmstop', vmid),
 		    handler: function() {
-			vm_command("stop", { timeout: 30 });
+			Ext.create('PVE.GuestStop', {
+			    nodename: nodename,
+			    vm: vm,
+			    autoShow: true,
+			});
 		    },
 		    iconCls: 'fa fa-stop',
 		}, {

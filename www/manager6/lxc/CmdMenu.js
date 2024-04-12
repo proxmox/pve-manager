@@ -66,7 +66,13 @@ Ext.define('PVE.lxc.CmdMenu', {
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
 		tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
-		handler: () => confirmedVMCommand('stop'),
+		handler: () => {
+		    Ext.create('PVE.GuestStop', {
+			nodename: info.node,
+			vm: info,
+			autoShow: true,
+		    });
+		},
 	    },
 	    {
 		text: gettext('Reboot'),
