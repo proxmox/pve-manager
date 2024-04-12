@@ -24,6 +24,9 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
             name: 'bridge',
             fieldLabel: 'Bridge',
             allowBlank: false,
+	    vtype: 'BridgeName',
+	    minLength: 1,
+	    maxLength: 10,
           },
 	];
 

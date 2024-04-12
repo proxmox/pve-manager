@@ -24,6 +24,9 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 		name: 'bridge',
 		fieldLabel: 'Bridge',
 		allowBlank: false,
+		vtype: 'BridgeName',
+		minLength: 1,
+		maxLength: 10,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
