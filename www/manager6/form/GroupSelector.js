@@ -12,6 +12,10 @@ Ext.define('PVE.form.GroupSelector', {
     extend: 'Proxmox.form.ComboGrid',
     xtype: 'pveGroupSelector',
 
+    editable: true,
+    anyMatch: true,
+    forceSelection: true,
+
     allowBlank: false,
     autoSelect: false,
     valueField: 'groupid',
