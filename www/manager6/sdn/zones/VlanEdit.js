@@ -20,10 +20,10 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
 
         me.items = [
           {
-            xtype: 'textfield',
-            name: 'bridge',
-            fieldLabel: 'Bridge',
-            allowBlank: false,
+	    xtype: 'textfield',
+	    name: 'bridge',
+	    fieldLabel: 'Bridge',
+	    allowBlank: false,
 	    vtype: 'BridgeName',
 	    minLength: 1,
 	    maxLength: 10,
