@@ -2,6 +2,15 @@ Ext.define('PVE.qemu.MachineInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveMachineInputPanel',
 
+    viewModel: {
+	data: {
+	    type: '__default__',
+	},
+	formulas: {
+	    q35: get => get('type') === 'q35',
+	},
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 	control: {
@@ -35,16 +44,28 @@ Ext.define('PVE.qemu.MachineInputPanel', {
     },
 
     onGetValues: function(values) {
+	if (values.delete === 'machine' && values.viommu) {
+	    delete values.delete;
+	    values.machine = 'pc';
+	}
 	if (values.version && values.version !== 'latest') {
 	    values.machine = values.version;
 	    delete values.delete;
 	}
 	delete values.version;
-	return values;
+	if (values.delete === 'machine' && !values.viommu) {
+	    return values;
+	}
+	let ret = {};
+	ret.machine = PVE.Parser.printPropertyString(values, 'machine');
+	return ret;
     },
 
     setValues: function(values) {
 	let me = this;
+
+	let machineConf = PVE.Parser.parsePropertyString(values.machine, 'type');
+	values.machine = machineConf.type;
 
 	me.isWindows = values.isWindows;
 	if (values.machine === 'pc') {
@@ -58,6 +79,9 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 		values.version = 'pc-q35-5.1';
 	    }
 	}
+
+	values.viommu = machineConf.viommu || '__default__';
+
 	if (values.machine !== '__default__' && values.machine !== 'q35') {
 	    values.version = values.machine;
 	    values.machine = values.version.match(/q35/) ? 'q35' : '__default__';
@@ -78,6 +102,9 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    ['__default__', PVE.Utils.render_qemu_machine('')],
 	    ['q35', 'q35'],
 	],
+	bind: {
+	    value: '{type}',
+	},
     },
 
     advancedItems: [
@@ -112,6 +139,39 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Note'),
 	    value: gettext('Machine version change may affect hardware layout and settings in the guest OS.'),
+	},
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'viommu',
+	    fieldLabel: gettext('vIOMMU'),
+	    reference: 'viommu-q35',
+	    deleteEmpty: false,
+	    value: '__default__',
+	    comboItems: [
+		['__default__', Proxmox.Utils.defaultText + ' (None)'],
+		['intel', 'Intel'],
+		['virtio', 'VirtIO'],
+	    ],
+	    bind: {
+		hidden: '{!q35}',
+		disabled: '{!q35}',
+	    },
+	},
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'viommu',
+	    fieldLabel: gettext('vIOMMU'),
+	    reference: 'viommu-i440fx',
+	    deleteEmpty: false,
+	    value: '__default__',
+	    comboItems: [
+		['__default__', Proxmox.Utils.defaultText + ' (None)'],
+		['virtio', 'VirtIO'],
+	    ],
+	    bind: {
+		hidden: '{q35}',
+		disabled: '{q35}',
+	    },
 	},
     ],
 });
