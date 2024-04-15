@@ -107,6 +107,7 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'gotify' },
 	    { name => 'sendmail' },
+	    { name => 'smtp' },
 	];
 
 	return $result;
@@ -143,7 +144,7 @@ __PACKAGE__->register_method ({
 		'type' => {
 		    description => 'Type of the target.',
 		    type  => 'string',
-		    enum => [qw(sendmail gotify)],
+		    enum => [qw(sendmail gotify smtp)],
 		},
 		'comment' => {
 		    description => 'Comment',
