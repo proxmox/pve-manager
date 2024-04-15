@@ -225,13 +225,23 @@ Ext.define('PVE.dc.BackupEdit', {
 	data: {
 	    selMode: 'include',
 	    notificationMode: '__default__',
+	    mailto: '',
+	    mailNotification: 'always',
 	},
 
 	formulas: {
 	    poolMode: (get) => get('selMode') === 'pool',
-	    disableVMSelection: (get) => get('selMode') !== 'include' && get('selMode') !== 'exclude',
+	    disableVMSelection: (get) => get('selMode') !== 'include' &&
+		get('selMode') !== 'exclude',
 	    showMailtoFields: (get) =>
 		['auto', 'legacy-sendmail', '__default__'].includes(get('notificationMode')),
+	    enableMailnotificationField: (get) => {
+		let mode = get('notificationMode');
+		let mailto = get('mailto');
+
+		return (['auto', '__default__'].includes(mode) && mailto) ||
+		    mode === 'legacy-sendmail';
+	    },
 	},
     },
 
@@ -344,6 +354,15 @@ Ext.define('PVE.dc.BackupEdit', {
 				    },
 				},
 				{
+				    xtype: 'textfield',
+				    fieldLabel: gettext('Send email to'),
+				    name: 'mailto',
+				    bind: {
+					hidden: '{!showMailtoFields}',
+					value: '{mailto}',
+				    },
+				},
+				{
 				    xtype: 'pveEmailNotificationSelector',
 				    fieldLabel: gettext('Send email'),
 				    name: 'mailnotification',
@@ -352,15 +371,9 @@ Ext.define('PVE.dc.BackupEdit', {
 					deleteEmpty: '{!isCreate}',
 				    },
 				    bind: {
-					disabled: '{!showMailtoFields}',
-				    },
-				},
-				{
-				    xtype: 'textfield',
-				    fieldLabel: gettext('Send email to'),
-				    name: 'mailto',
-				    bind: {
-					disabled: '{!showMailtoFields}',
+					hidden: '{!showMailtoFields}',
+					disabled: '{!enableMailnotificationField}',
+					value: '{mailNotification}',
 				    },
 				},
 				{
