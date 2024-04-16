@@ -196,6 +196,11 @@ Ext.define('PVE.dc.BackupEdit', {
 				PVE.Utils.unEscapeNotesTemplate(data['notes-template']);
 			}
 
+			if (data.performance) {
+			    Object.assign(data, data.performance);
+			    delete data.performance;
+			}
+
 			view.setValues(data);
 		    },
 		});
@@ -465,6 +470,13 @@ Ext.define('PVE.dc.BackupEdit', {
 				),
 			},
 		    ],
+		},
+		{
+		    xtype: 'pveBackupAdvancedOptionsPanel',
+		    title: gettext('Advanced'),
+		    cbind: {
+			isCreate: '{isCreate}',
+		    },
 		},
 	    ],
 	},

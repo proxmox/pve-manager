@@ -97,6 +97,7 @@ JSSRC= 							\
 	grid/Replication.js				\
 	grid/ResourceGrid.js				\
 	panel/ConfigPanel.js				\
+	panel/BackupAdvancedOptions.js			\
 	panel/BackupJobPrune.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
