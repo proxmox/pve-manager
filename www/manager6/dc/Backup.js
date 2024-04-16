@@ -145,6 +145,18 @@ Ext.define('PVE.dc.BackupEdit', {
 	    }
 	},
 
+	compressionChange: function(f, value, oldValue) {
+	    this.getView().lookup('backupAdvanced').updateCompression(value, f.isDisabled());
+	},
+
+	compressionDisable: function(f) {
+	    this.getView().lookup('backupAdvanced').updateCompression(f.getValue(), true);
+	},
+
+	compressionEnable: function(f) {
+	    this.getView().lookup('backupAdvanced').updateCompression(f.getValue(), false);
+	},
+
 	init: function(view) {
 	    let me = this;
 	    if (view.isCreate) {
@@ -359,6 +371,11 @@ Ext.define('PVE.dc.BackupEdit', {
 					deleteEmpty: '{!isCreate}',
 				    },
 				    value: 'zstd',
+				    listeners: {
+					change: 'compressionChange',
+					disable: 'compressionDisable',
+					enable: 'compressionEnable',
+				    },
 				},
 				{
 				    xtype: 'pveBackupModeSelector',
@@ -473,6 +490,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		},
 		{
 		    xtype: 'pveBackupAdvancedOptionsPanel',
+		    reference: 'backupAdvanced',
 		    title: gettext('Advanced'),
 		    cbind: {
 			isCreate: '{isCreate}',

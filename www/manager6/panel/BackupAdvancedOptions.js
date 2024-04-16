@@ -12,6 +12,10 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	return {};
     },
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+    },
+
     onGetValues: function(formValues) {
 	if (this.needMask) { // isMasked() may not yet be true if not rendered once
 	    return {};
@@ -54,6 +58,14 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	return options;
     },
 
+    updateCompression: function(value, disabled) {
+	if (!disabled && value === 'zstd') {
+	    this.lookup('zstdThreadCount').setDisabled(false);
+	} else {
+	    this.lookup('zstdThreadCount').setDisabled(true);
+	}
+    },
+
     column1: [
 	{
 	    xtype: 'pveBandwidthField',
@@ -71,6 +83,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	{
 	    xtype: 'proxmoxintegerfield',
 	    name: 'zstd',
+	    reference: 'zstdThreadCount',
 	    fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
 	    fieldStyle: 'text-align: right',
 	    emptyText: gettext('use fallback'),
