@@ -277,8 +277,14 @@ sub read_vzdump_defaults {
 	     defined($default) ? ($_ => $default) : ()
 	} keys %$confdesc_for_defaults
     };
+    my $performance_fmt = PVE::JSONSchema::get_format('backup-performance');
+    $defaults->{performance} = {
+	map {
+	    my $default = $performance_fmt->{$_}->{default};
+	    defined($default) ? ($_ => $default) : ()
+	} keys $performance_fmt->%*
+    };
     $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
-    parse_performance($defaults);
 
     my $raw;
     eval { $raw = PVE::Tools::file_get_contents($fn); };
