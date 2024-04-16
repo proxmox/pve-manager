@@ -418,18 +418,6 @@ Ext.define('PVE.dc.BackupEdit', {
 				    },
 				},
 			    ],
-			    advancedColumn1: [
-				{
-				    xtype: 'proxmoxcheckbox',
-				    fieldLabel: gettext('Repeat missed'),
-				    name: 'repeat-missed',
-				    uncheckedValue: 0,
-				    defaultValue: 0,
-				    cbind: {
-					deleteDefaultValue: '{!isCreate}',
-				    },
-				},
-			    ],
 			    onGetValues: function(values) {
 				return this.up('window').getController().onGetValues(values);
 			    },

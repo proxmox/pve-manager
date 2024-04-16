@@ -122,6 +122,16 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		deleteEmpty: '{!isCreate}',
 	    },
 	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Repeat missed'),
+	    name: 'repeat-missed',
+	    uncheckedValue: 0,
+	    defaultValue: 0,
+	    cbind: {
+		deleteDefaultValue: '{!isCreate}',
+	    },
+	},
     ],
 
     column2: [
@@ -141,6 +151,10 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    xtype: 'displayfield',
 	    value: 'TODO',
 	    hidden: true, // see definition of pbs-entries-max field
+	},
+	{
+	    xtype: 'displayfield',
+	    value: gettext('Run missed jobs as soon as possible'),
 	},
     ],
 
