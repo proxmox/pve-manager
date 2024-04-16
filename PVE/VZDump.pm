@@ -139,6 +139,17 @@ my sub parse_performance {
     }
 }
 
+my sub merge_performance {
+    my ($prefer, $fallback) = @_;
+
+    my $res = {};
+    for my $opt (keys PVE::JSONSchema::get_format('backup-performance')->%*) {
+	$res->{$opt} = $prefer->{$opt} // $fallback->{$opt}
+	    if defined($prefer->{$opt}) || defined($fallback->{$opt});
+    }
+    return $res;
+}
+
 my $parse_prune_backups_maxfiles = sub {
     my ($param, $kind) = @_;
 
@@ -312,8 +323,12 @@ sub read_vzdump_defaults {
     $parse_prune_backups_maxfiles->($res, "options in '$fn'");
     parse_performance($res);
 
-    foreach my $key (keys %$defaults) {
-	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
+    for my $key (keys $defaults->%*) {
+	if (!defined($res->{$key})) {
+	    $res->{$key} = $defaults->{$key};
+	} elsif ($key eq 'performance') {
+	    $res->{$key} = merge_performance($res->{$key}, $defaults->{$key});
+	}
     }
 
     if (defined($res->{storage}) && defined($res->{dumpdir})) {
@@ -598,8 +613,10 @@ sub new {
 	if ($k eq 'dumpdir' || $k eq 'storage') {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{dumpdir}) &&
 		!defined ($opts->{storage});
-	} else {
-	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{$k});
+	} elsif (!defined($opts->{$k})) {
+	    $opts->{$k} = $defaults->{$k};
+	} elsif ($k eq 'performance') {
+	    $opts->{$k} = merge_performance($opts->{$k}, $defaults->{$k});
 	}
     }
 
