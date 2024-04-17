@@ -55,13 +55,7 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    allowBlank: false,
 	    fieldLabel: gettext('Device Path'),
 	    emptyText: '/dev/xyz',
-	    validator: function(value) {
-		if (value.startsWith('/dev/')) {
-		    return true;
-		}
-
-		return "Path has to start with /dev/";
-	    },
+	    validator: v => v.startsWith('/dev/') ? true : gettext("Path has to start with /dev/"),
 	},
     ],
 
@@ -95,8 +89,7 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 		if (/^0[0-7]{3}$|^$/i.test(value)) {
 		    return true;
 		}
-
-		return "Access mode has to be an octal number";
+		return gettext("Access mode has to be an octal number");
 	    },
 	},
     ],
