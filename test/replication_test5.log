@@ -5,6 +5,7 @@
 1000 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_1000__' on local-zfs:vm-900-disk-1
 1000 job_900_to_node2: using secure transmission, rate limit: none
 1000 job_900_to_node2: full sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_1000__)
+1000 job_900_to_node2: delete previous replication snapshot '__replicate_job_900_to_node2_0__' on local-zfs:vm-900-disk-1
 1000 job_900_to_node2: end replication job
 1000 job_900_to_node2: changed config next_sync => 1800
 1000 job_900_to_node2: changed state last_node => node1, last_try => 1000, last_sync => 1000
@@ -37,6 +38,7 @@
 3040 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_1840__ => __replicate_job_900_to_node2_3040__)
 3040 job_900_to_node2: full sync 'local-zfs:vm-900-disk-2' (__replicate_job_900_to_node2_3040__)
 3040 job_900_to_node2: delete previous replication snapshot '__replicate_job_900_to_node2_1840__' on local-zfs:vm-900-disk-1
+3040 job_900_to_node2: delete previous replication snapshot '__replicate_job_900_to_node2_1840__' on local-zfs:vm-900-disk-2
 3040 job_900_to_node2: end replication job
 3040 job_900_to_node2: changed config next_sync => 3600
 3040 job_900_to_node2: changed state last_try => 3040, last_sync => 3040, fail_count => 0, error => 
