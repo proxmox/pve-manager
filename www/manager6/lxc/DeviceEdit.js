@@ -13,8 +13,7 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	me.vmconfig = vmconfig;
 
 	if (me.isCreate) {
-	    PVE.Utils.forEachLxcDev((i) => {
-		let name = "dev" + i.toString();
+	    PVE.Utils.forEachLxcDev((i, name) => {
 		if (!Ext.isDefined(vmconfig[name])) {
 		    me.confid = name;
 		    me.down('field[name=devid]').setValue(i);

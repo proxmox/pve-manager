@@ -87,8 +87,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	let me = this;
 
 	me.updateVMConfig(vmconfig);
-	PVE.Utils.forEachLxcMP((bus, i) => {
-	    let name = "mp" + i.toString();
+	PVE.Utils.forEachLxcMP((bus, i, name) => {
 	    if (!Ext.isDefined(vmconfig[name])) {
 		me.down('field[name=mpid]').setValue(i);
 		return false;

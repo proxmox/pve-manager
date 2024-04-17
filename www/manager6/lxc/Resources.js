@@ -28,7 +28,6 @@ Ext.define('PVE.lxc.RessourceView', {
 
     initComponent: function() {
 	var me = this;
-	let confid;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
@@ -116,8 +115,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	};
 
-	PVE.Utils.forEachLxcMP(function(bus, i) {
-	    confid = bus + i;
+	PVE.Utils.forEachLxcMP(function(bus, i, confid) {
 	    var group = 5;
 	    var header;
 	    if (bus === 'mp') {
@@ -137,8 +135,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	let deveditor = Proxmox.UserName === 'root@pam' ? 'PVE.lxc.DeviceEdit' : undefined;
 
-	PVE.Utils.forEachLxcDev(function(i) {
-	    confid = 'dev' + i;
+	PVE.Utils.forEachLxcDev(function(i, confid) {
 	    rows[confid] = {
 		group: 7,
 		order: i,

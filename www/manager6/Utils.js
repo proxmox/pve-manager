@@ -1597,7 +1597,7 @@ Ext.define('PVE.Utils', {
 
     forEachLxcMP: function(func, includeUnused) {
 	for (let i = 0; i < PVE.Utils.lxc_mp_counts.mp; i++) {
-	    let cont = func('mp', i);
+	    let cont = func('mp', i, `mp${i}`);
 	    if (!cont && cont !== undefined) {
 		return;
 	    }
@@ -1608,7 +1608,7 @@ Ext.define('PVE.Utils', {
 	}
 
 	for (let i = 0; i < PVE.Utils.lxc_mp_counts.unused; i++) {
-	    let cont = func('unused', i);
+	    let cont = func('unused', i, `unused${i}`);
 	    if (!cont && cont !== undefined) {
 		return;
 	    }
@@ -1619,7 +1619,7 @@ Ext.define('PVE.Utils', {
 
     forEachLxcDev: function(func) {
 	for (let i = 0; i < PVE.Utils.lxc_dev_count; i++) {
-	    let cont = func(i);
+	    let cont = func(i, `dev${i}`);
 	    if (!cont && cont !== undefined) {
 		return;
 	    }
