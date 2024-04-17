@@ -7,6 +7,7 @@ Ext.define('PVE.dc.BackupEdit', {
     defaultFocus: undefined,
 
     subject: gettext("Backup Job"),
+    width: 720,
     bodyPadding: 0,
 
     url: '/api2/extjs/cluster/backup',
