@@ -49,7 +49,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	},
 	{
 	    xtype: 'textfield',
-	    type: 'device',
 	    name: 'path',
 	    editable: true,
 	    allowBlank: false,
