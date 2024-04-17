@@ -40,7 +40,7 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    name: 'devid',
 	    fieldLabel: gettext('Passthrough ID'),
 	    minValue: 0,
-	    maxValue: PVE.Utils.dev_count - 1,
+	    maxValue: PVE.Utils.lxc_dev_count - 1,
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,
