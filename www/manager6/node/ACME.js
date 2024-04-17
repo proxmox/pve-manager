@@ -10,6 +10,14 @@ Ext.define('PVE.node.ACMEAccountCreate', {
     url: '/cluster/acme/account',
     showTaskViewer: true,
     defaultExists: false,
+    referenceHolder: true,
+    onlineHelp: "sysadmin_certs_acme_account",
+
+    viewModel: {
+	data: {
+	    customDirectory: false,
+	},
+    },
 
     items: [
 	{
@@ -30,22 +38,24 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	},
 	{
 	    xtype: 'proxmoxComboGrid',
-	    name: 'directory',
+	    notFoundIsValid: true,
+	    isFormField: false,
 	    allowBlank: false,
 	    valueField: 'url',
 	    displayField: 'name',
 	    fieldLabel: gettext('ACME Directory'),
 	    store: {
+		listeners: {
+		    'load': function() {
+			this.add({ name: gettext("Custom"), url: '' });
+		    },
+		},
 		autoLoad: true,
 		fields: ['name', 'url'],
 		idProperty: ['name'],
 		proxy: {
 		    type: 'proxmox',
 		    url: '/api2/json/cluster/acme/directories',
-		},
-		sorters: {
-		    property: 'name',
-		    direction: 'ASC',
 		},
 	    },
 	    listConfig: {
@@ -64,41 +74,93 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	    },
 	    listeners: {
 		change: function(combogrid, value) {
-		    var me = this;
-		    if (!value) {
-			return;
+		    let me = this;
+
+		    let vm = me.up('window').getViewModel();
+		    let dirField = me.up('window').lookupReference('directoryInput');
+		    let tosButton = me.up('window').lookupReference('queryTos');
+
+		    let isCustom = combogrid.getSelection().get('name') === gettext("Custom");
+		    vm.set('customDirectory', isCustom);
+
+		    dirField.setValue(value);
+
+		    if (!isCustom) {
+			tosButton.click();
+		    } else {
+			me.up('window').clearToSFields();
 		    }
-
-		    var disp = me.up('window').down('#tos_url_display');
-		    var field = me.up('window').down('#tos_url');
-		    var checkbox = me.up('window').down('#tos_checkbox');
-
-		    disp.setValue(gettext('Loading'));
-		    field.setValue(undefined);
-		    checkbox.setValue(undefined);
-		    checkbox.setHidden(true);
-
-		    Proxmox.Utils.API2Request({
-			url: '/cluster/acme/meta',
-			method: 'GET',
-			params: {
-			    directory: value,
-			},
-			success: function(response, opt) {
-			    if (response.result.data.termsOfService) {
-				field.setValue(response.result.data.termsOfService);
-				disp.setValue(response.result.data.termsOfService);
-				checkbox.setHidden(false);
-			    } else {
-				disp.setValue(undefined);
-			    }
-			},
-			failure: function(response, opt) {
-			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			},
-		    });
 		},
 	    },
+	},
+	{
+	    xtype: 'fieldcontainer',
+	    layout: 'hbox',
+	    fieldLabel: gettext('URL'),
+	    bind: {
+		hidden: '{!customDirectory}',
+	    },
+	    items: [
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'directory',
+		    reference: 'directoryInput',
+		    flex: 1,
+		    allowBlank: false,
+		    listeners: {
+			change: function(textbox, value) {
+			    let me = this;
+			    me.up('window').clearToSFields();
+			},
+		    },
+		},
+		{
+		    xtype: 'proxmoxButton',
+		    margin: '0 0 0 5',
+		    reference: 'queryTos',
+		    text: gettext('Query URL'),
+		    listeners: {
+			click: function(button) {
+			    let me = this;
+
+			    let w = me.up('window');
+			    let disp = w.down('#tos_url_display');
+			    let field = w.down('#tos_url');
+			    let checkbox = w.down('#tos_checkbox');
+			    let value = w.lookupReference('directoryInput').getValue();
+			    w.clearToSFields();
+
+			    if (!value) {
+				return;
+			    } else {
+				disp.setValue(gettext("Loading"));
+			    }
+
+			    Proxmox.Utils.API2Request({
+				url: '/cluster/acme/meta',
+				method: 'GET',
+				params: {
+				    directory: value,
+				},
+				success: function(response, opt) {
+				    if (response.result.data.termsOfService) {
+					field.setValue(response.result.data.termsOfService);
+					disp.setValue(response.result.data.termsOfService);
+					checkbox.setHidden(false);
+				    } else {
+					checkbox.setValue(false);
+					disp.setValue("No terms of service agreement required");
+				    }
+				},
+				failure: function(response, opt) {
+				    disp.setValue(undefined);
+				    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+				},
+			    });
+			},
+		    },
+		},
+	    ],
 	},
 	{
 	    xtype: 'displayfield',
@@ -124,6 +186,19 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	    },
 	},
     ],
+
+    clearToSFields: function() {
+	let me = this;
+
+	let disp = me.down('#tos_url_display');
+	let field = me.down('#tos_url');
+	let checkbox = me.down('#tos_checkbox');
+
+	disp.setValue("Terms of service not fetched yet");
+	field.setValue(undefined);
+	checkbox.setValue(undefined);
+	checkbox.setHidden(true);
+    },
 
 });
 
