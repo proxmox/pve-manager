@@ -38,25 +38,13 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	{
 	    xtype: 'proxmoxintegerfield',
 	    name: 'devid',
-	    fieldLabel: gettext('Passthrough ID'),
 	    minValue: 0,
 	    maxValue: PVE.Utils.lxc_dev_count - 1,
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,
 	    cbind: {
-		hidden: '{!isCreate}',
 		disabled: '{!isCreate}',
-	    },
-	    validator: function(value) {
-		let view = this.up('inputpanel');
-		if (!view.vmconfig) {
-		    return undefined;
-		}
-		if (Ext.isDefined(view.vmconfig["dev" + value])) {
-		    return "Device passthrough is already in use.";
-		}
-		return true;
 	    },
 	},
 	{
