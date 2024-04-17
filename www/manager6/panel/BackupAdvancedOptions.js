@@ -101,7 +101,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    name: 'max-workers',
 	    minValue: 1,
 	    maxValue: 256,
-	    fieldLabel: gettext('VM Workers'),
+	    fieldLabel: gettext('IO-Workers'),
 	    fieldStyle: 'text-align: right',
 	    emptyText: gettext('use fallback'),
 	    cbind: {
