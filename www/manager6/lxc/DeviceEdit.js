@@ -50,9 +50,10 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	{
 	    xtype: 'textfield',
 	    name: 'path',
+	    fieldLabel: gettext('Device Path'),
+	    labelWidth: 120,
 	    editable: true,
 	    allowBlank: false,
-	    fieldLabel: gettext('Device Path'),
 	    emptyText: '/dev/xyz',
 	    validator: v => v.startsWith('/dev/') ? true : gettext("Path has to start with /dev/"),
 	},
@@ -63,7 +64,8 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'uid',
 	    editable: true,
-	    fieldLabel: 'UID',
+	    fieldLabel: Ext.String.format(gettext('{0} in CT'), 'UID'),
+	    labelWidth: 120,
 	    emptyText: '0',
 	    minValue: 0,
 	},
@@ -71,7 +73,8 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'gid',
 	    editable: true,
-	    fieldLabel: 'GID',
+	    fieldLabel: Ext.String.format(gettext('{0} in CT'), 'GID'),
+	    labelWidth: 120,
 	    emptyText: '0',
 	    minValue: 0,
 	},
@@ -82,7 +85,8 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    xtype: 'textfield',
 	    name: 'mode',
 	    editable: true,
-	    fieldLabel: gettext('Access Mode'),
+	    fieldLabel: Ext.String.format(gettext('Access Mode in CT')),
+	    labelWidth: 120,
 	    emptyText: '0660',
 	    validator: function(value) {
 		if (/^0[0-7]{3}$|^$/i.test(value)) {
@@ -100,7 +104,7 @@ Ext.define('PVE.lxc.DeviceEdit', {
     vmconfig: undefined,
 
     isAdd: true,
-    width: 400,
+    width: 450,
 
     initComponent: function() {
 	let me = this;
