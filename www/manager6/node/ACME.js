@@ -16,6 +16,12 @@ Ext.define('PVE.node.ACMEAccountCreate', {
     viewModel: {
 	data: {
 	    customDirectory: false,
+	    eabRequired: false,
+	},
+	formulas: {
+	    eabEmptyText: function(get) {
+		return get('eabRequired') ? gettext("required") : gettext("optional");
+	    },
 	},
     },
 
@@ -124,6 +130,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 			    let me = this;
 
 			    let w = me.up('window');
+			    let vm = w.getViewModel();
 			    let disp = w.down('#tos_url_display');
 			    let field = w.down('#tos_url');
 			    let checkbox = w.down('#tos_checkbox');
@@ -151,6 +158,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 					checkbox.setValue(false);
 					disp.setValue("No terms of service agreement required");
 				    }
+				    vm.set('eabRequired', !!response.result.data.externalAccountRequired);
 				},
 				failure: function(response, opt) {
 				    disp.setValue(undefined);
@@ -183,6 +191,26 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		    return true;
 		}
 		return false;
+	    },
+	},
+	{
+	    xtype: 'proxmoxtextfield',
+	    name: 'eab-kid',
+	    fieldLabel: gettext('EAB Key ID'),
+	    bind: {
+		hidden: '{!customDirectory}',
+		allowBlank: '{!eabRequired}',
+		emptyText: '{eabEmptyText}',
+	    },
+	},
+	{
+	    xtype: 'proxmoxtextfield',
+	    name: 'eab-hmac-key',
+	    fieldLabel: gettext('EAB Key'),
+	    bind: {
+		hidden: '{!customDirectory}',
+		allowBlank: '{!eabRequired}',
+		emptyText: '{eabEmptyText}',
 	    },
 	},
     ],
