@@ -116,7 +116,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	};
 
-	PVE.Utils.forEachMP(function(bus, i) {
+	PVE.Utils.forEachLxcMP(function(bus, i) {
 	    confid = bus + i;
 	    var group = 5;
 	    var header;

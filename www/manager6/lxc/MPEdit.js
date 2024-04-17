@@ -87,7 +87,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	let me = this;
 
 	me.updateVMConfig(vmconfig);
-	PVE.Utils.forEachMP((bus, i) => {
+	PVE.Utils.forEachLxcMP((bus, i) => {
 	    let name = "mp" + i.toString();
 	    if (!Ext.isDefined(vmconfig[name])) {
 		me.down('field[name=mpid]').setValue(i);
@@ -194,7 +194,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    name: 'mpid',
 	    fieldLabel: gettext('Mount Point ID'),
 	    minValue: 0,
-	    maxValue: PVE.Utils.mp_counts.mp - 1,
+	    maxValue: PVE.Utils.lxc_mp_counts.mp - 1,
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,

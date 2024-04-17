@@ -1590,13 +1590,13 @@ Ext.define('PVE.Utils', {
 	}
     },
 
-    mp_counts: {
+    lxc_mp_counts: {
 	mp: 256,
 	unused: 256,
     },
 
-    forEachMP: function(func, includeUnused) {
-	for (let i = 0; i < PVE.Utils.mp_counts.mp; i++) {
+    forEachLxcMP: function(func, includeUnused) {
+	for (let i = 0; i < PVE.Utils.lxc_mp_counts.mp; i++) {
 	    let cont = func('mp', i);
 	    if (!cont && cont !== undefined) {
 		return;
@@ -1607,7 +1607,7 @@ Ext.define('PVE.Utils', {
 	    return;
 	}
 
-	for (let i = 0; i < PVE.Utils.mp_counts.unused; i++) {
+	for (let i = 0; i < PVE.Utils.lxc_mp_counts.unused; i++) {
 	    let cont = func('unused', i);
 	    if (!cont && cont !== undefined) {
 		return;
@@ -1871,8 +1871,8 @@ Ext.define('PVE.Utils', {
 	return undefined;
     },
 
-    nextFreeMP: function(type, config) {
-	for (let i = 0; i < PVE.Utils.mp_counts[type]; i++) {
+    nextFreeLxcMP: function(type, config) {
+	for (let i = 0; i < PVE.Utils.lxc_mp_counts[type]; i++) {
 	    let confid = `${type}${i}`;
 	    if (!Ext.isDefined(config[confid])) {
 		return {

@@ -8,7 +8,7 @@ Ext.define('PVE.lxc.MultiMPPanel', {
 	xclass: 'Ext.app.ViewController',
 
 	// count of mps + rootfs
-	maxCount: PVE.Utils.mp_counts.mp + 1,
+	maxCount: PVE.Utils.lxc_mp_counts.mp + 1,
 
 	getNextFreeDisk: function(vmconfig) {
 	    let nextFreeDisk;
@@ -17,7 +17,7 @@ Ext.define('PVE.lxc.MultiMPPanel', {
 		    confid: 'rootfs',
 		};
 	    } else {
-		for (let i = 0; i < PVE.Utils.mp_counts.mp; i++) {
+		for (let i = 0; i < PVE.Utils.lxc_mp_counts.mp; i++) {
 		    let confid = `mp${i}`;
 		    if (!vmconfig[confid]) {
 			nextFreeDisk = {

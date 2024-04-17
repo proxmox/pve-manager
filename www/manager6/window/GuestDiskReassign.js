@@ -17,8 +17,8 @@ Ext.define('PVE.window.GuestDiskReassign', {
 	},
 	formulas: {
 	    mpMaxCount: get => get('mpType') === 'mp'
-		? PVE.Utils.mp_counts.mps - 1
-		: PVE.Utils.mp_counts.unused - 1,
+		? PVE.Utils.lxc_mp_counts.mps - 1
+		: PVE.Utils.lxc_mp_counts.unused - 1,
 	},
     },
 
@@ -103,7 +103,7 @@ Ext.define('PVE.window.GuestDiskReassign', {
 			view.VMConfig = result.data;
 
 			mpIdSelector.setValue(
-			    PVE.Utils.nextFreeMP(
+			    PVE.Utils.nextFreeLxcMP(
 				view.getViewModel().get('mpType'),
 				view.VMConfig,
 			    ).id,
