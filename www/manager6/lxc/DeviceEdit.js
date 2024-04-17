@@ -44,7 +44,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,
-	    labelAlign: 'right',
 	    cbind: {
 		hidden: '{!isCreate}',
 		disabled: '{!isCreate}',
@@ -68,7 +67,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    allowBlank: false,
 	    fieldLabel: gettext('Device Path'),
 	    emptyText: '/dev/xyz',
-	    labelAlign: 'right',
 	    validator: function(value) {
 		if (value.startsWith('/dev/')) {
 		    return true;
@@ -87,7 +85,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    fieldLabel: 'UID',
 	    emptyText: '0',
 	    minValue: 0,
-	    labelAlign: 'right',
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -96,7 +93,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    fieldLabel: 'GID',
 	    emptyText: '0',
 	    minValue: 0,
-	    labelAlign: 'right',
 	},
     ],
 
@@ -107,7 +103,6 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 	    editable: true,
 	    fieldLabel: gettext('Access Mode'),
 	    emptyText: '0660',
-	    labelAlign: 'right',
 	    validator: function(value) {
 		if (/^0[0-7]{3}$|^$/i.test(value)) {
 		    return true;
