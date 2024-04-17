@@ -1615,6 +1615,17 @@ Ext.define('PVE.Utils', {
 	}
     },
 
+    lxc_dev_count: 256,
+
+    forEachLxcDev: function(func) {
+	for (let i = 0; i < PVE.Utils.lxc_dev_count; i++) {
+	    let cont = func(i);
+	    if (!cont && cont !== undefined) {
+		return;
+	    }
+	}
+    },
+
     hardware_counts: {
 	net: 32,
 	usb: 14,

@@ -188,6 +188,7 @@ JSSRC= 							\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
+	lxc/DeviceEdit.js				\
 	lxc/DNS.js					\
 	lxc/FeaturesEdit.js				\
 	lxc/MPEdit.js					\
