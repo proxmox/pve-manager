@@ -161,9 +161,9 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
     columnB: [
 	{
 	    xtype: 'component',
-	    userCls: 'pmx-hint',
 	    padding: '5 1',
-	    html: gettext("Note that vzdump.conf is used as a fallback"),
+	    html: `<span class="pmx-hint">${gettext('Note')}</span>: ${
+	        gettext("The node-specific vzdump.conf is used to determine fallback values")}`,
 	},
     ],
 });
