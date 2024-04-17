@@ -71,7 +71,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    xtype: 'pveBandwidthField',
 	    name: 'bwlimit',
 	    fieldLabel: gettext('Bandwidth Limit'),
-	    emptyText: gettext('use fallback'),
+	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 0),
 	    backendUnit: 'KiB',
 	    allowZero: true,
 	    emptyValue: '',
@@ -86,7 +86,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    reference: 'zstdThreadCount',
 	    fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
 	    fieldStyle: 'text-align: right',
-	    emptyText: gettext('use fallback'),
+	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 1),
 	    minValue: 0,
 	    cbind: {
 		deleteEmpty: '{!isCreate}',
@@ -103,7 +103,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    maxValue: 256,
 	    fieldLabel: gettext('IO-Workers'),
 	    fieldStyle: 'text-align: right',
-	    emptyText: gettext('use fallback'),
+	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 16),
 	    cbind: {
 		deleteEmpty: '{!isCreate}',
 	    },
@@ -117,7 +117,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    hidden: true,
 	    fieldLabel: 'TODO',
 	    fieldStyle: 'text-align: right',
-	    emptyText: gettext('use fallback'),
+	    emptyText: 'TODO',
 	    cbind: {
 		deleteEmpty: '{!isCreate}',
 	    },
@@ -137,15 +137,15 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
     column2: [
 	{
 	    xtype: 'displayfield',
-	    value: gettext('Limit I/O bandwidth'),
+	    value: gettext('Limit I/O bandwidth.'),
 	},
 	{
 	    xtype: 'displayfield',
-	    value: `${gettext('Threads used for zstd compression')} (${gettext('non-PBS')})`,
+	    value: gettext('Threads used for zstd compression (non-PBS).'),
 	},
 	{
 	    xtype: 'displayfield',
-	    value: `${gettext('I/O workers in the QEMU process')} (${gettext('VM only')})`,
+	    value: gettext('I/O workers in the QEMU process (VMs only).'),
 	},
 	{
 	    xtype: 'displayfield',
@@ -154,7 +154,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	},
 	{
 	    xtype: 'displayfield',
-	    value: gettext('Run missed jobs as soon as possible'),
+	    value: gettext("Run jobs as soon as possible if they couldn't start on schedule, for example, due to the node being offline."),
 	},
     ],
 
