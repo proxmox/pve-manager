@@ -31,6 +31,7 @@ my $init_report_cmds = sub {
 	    cmds => [
 		'hostname',
 		'date -R',
+		'cat /proc/cmdline',
 		'pveversion --verbose',
 		'cat /etc/hosts',
 		'pvesubscription get',
