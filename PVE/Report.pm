@@ -99,6 +99,12 @@ my $init_report_cmds = sub {
 		'cat /etc/pve/datacenter.cfg',
 	    ],
 	},
+	jobs => {
+	    order => 65,
+	    cmds => [
+		'cat /etc/pve/jobs.cfg',
+	    ],
+	},
 	hardware => {
 	    order => 70,
 	    cmds => [
