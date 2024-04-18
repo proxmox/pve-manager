@@ -38,6 +38,7 @@ my $init_report_cmds = sub {
 		'cat /etc/apt/sources.list',
 		sub { dir2text('/etc/apt/sources.list.d/', '.+\.list') },
 		sub { dir2text('/etc/apt/sources.list.d/', '.+\.sources') },
+		'apt-cache policy | grep -vP "^ +origin "',
 		'lscpu',
 		'pvesh get /cluster/resources --type node --output-format=yaml',
 	    ],
