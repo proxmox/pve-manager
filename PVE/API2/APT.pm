@@ -776,6 +776,7 @@ __PACKAGE__->register_method({
 	    proxmox-backup-file-restore
 	    proxmox-kernel-helper
 	    proxmox-offline-mirror-helper
+	    pve-esxi-import-tools
 	    pve-zsync
 	    zfsutils-linux
 	);
