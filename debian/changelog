@@ -1,3 +1,56 @@
+pve-manager (8.1.11) bookworm; urgency=medium
+
+  * fix #4136: backup: implement fleecing option for improved guest
+    stability when the backup target is slow
+
+  * api: notifications: add missing 'smtp' to index
+
+  * use SSH command helper for pvesh and to get VNC connection info to benefit
+    from improvements like known host key pinning
+
+  * system report: list held-back and pinned APT packages and priorities of APT
+    sources
+
+  * system report: avoid printing the contents of certain wrongly named
+    configuration files
+
+  * system report: output cluster-wide job configuration
+
+  * system report: output kernel command line from current boot
+
+  * ui: acl: allow searching by typing in the group selector
+
+  * api: apt versions: track optional amd64-/intel-microcode and
+    pve-esxi-import-tools packages
+
+  * ui: acme: add External Account Binding (EAB) related fields
+
+  * fix #5093: ui: acme: expose custom directory option
+
+  * d/postinst: make deb-systemd-invoke non-fatal to avoid potentially
+    breaking an update for unrelated reasons
+
+  * fix #4513: ui: backup job: add tab for advanced options
+
+  * vzdump: improve handling performance settings, by using a per-property
+    fallback and honoring the schema defaults
+
+  * ui: lxc: add edit window for device passthrough
+
+  * ui: lxc: add firewall log view filtering
+
+  * fix #4963: ui: firewall: fix edge case where editing firewall rules using
+    ips / cidrs would be broken
+
+  * fix #1905: ui: VM: allow moving unused disks
+
+  * fix #4759: ceph: configure ceph-crash.service and its key
+
+  * sdn: evpn: allow empty primary exit node in zone form which was broken by a
+    change in libpve-network-perl
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Apr 2024 16:24:37 +0200
+
 pve-manager (8.1.10) bookworm; urgency=medium
 
   * guest import: allow setting VLAN-tag for network devices in advanced tab
