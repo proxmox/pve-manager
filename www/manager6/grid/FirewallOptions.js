@@ -83,6 +83,7 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('log_level_out');
 	    add_log_row('tcp_flags_log_level', 120);
 	    add_log_row('smurf_log_level');
+	    add_boolean_row('nftables', gettext('nftables (tech preview)'), 0);
 	} else if (me.fwtype === 'vm') {
 	    me.rows.enable = {
 		required: true,
