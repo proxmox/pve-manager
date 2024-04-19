@@ -50,7 +50,7 @@ my $opt_verbose;
 if (!GetOptions ('verbose' => \$opt_verbose)) {
     print_usage ();
     exit (-1);
-} 
+}
 
 if (scalar (@ARGV) != 0) {
     print_usage ();
@@ -76,7 +76,7 @@ __END__
 
 =head1 NAME
 
-pveversion - Proxmox  VE version info
+pveversion - Proxmox VE version info
 
 =head1 SYNOPSIS
 
