@@ -41,6 +41,7 @@ Ext.define('PVE.window.Settings', {
 	    me.lookup('summarycolumns').setValue(summarycolumns);
 
 	    me.lookup('guestNotesCollapse').setValue(sp.get('guest-notes-collapse', 'never'));
+	    me.lookup('editNotesOnDoubleClick').setValue(sp.get('edit-notes-on-double-click', false));
 
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
 	    settings.forEach(function(setting) {
@@ -146,6 +147,9 @@ Ext.define('PVE.window.Settings', {
 	    'field[reference=guestNotesCollapse]': {
 		change: (e, v) => Ext.state.Manager.getProvider().set('guest-notes-collapse', v),
 	    },
+	    'field[reference=editNotesOnDoubleClick]': {
+		change: (e, v) => Ext.state.Manager.getProvider().set('edit-notes-on-double-click', v),
+	    },
 	},
     },
 
@@ -250,7 +254,7 @@ Ext.define('PVE.window.Settings', {
 	    {
 		xtype: 'proxmoxKVComboBox',
 		fieldLabel: gettext('Summary columns') + ':',
-		labelWidth: 150,
+		labelWidth: 125,
 		stateId: 'summarycolumns',
 		reference: 'summarycolumns',
 		comboItems: [
@@ -263,7 +267,7 @@ Ext.define('PVE.window.Settings', {
 	    {
 		xtype: 'proxmoxKVComboBox',
 		fieldLabel: gettext('Guest Notes') + ':',
-		labelWidth: 150,
+		labelWidth: 125,
 		stateId: 'guest-notes-collapse',
 		reference: 'guestNotesCollapse',
 		comboItems: [
@@ -271,6 +275,15 @@ Ext.define('PVE.window.Settings', {
 		    ['always', 'Collapse by default'],
 		    ['auto', 'auto (Collapse if empty)'],
 		],
+	    },
+	    {
+		xtype: 'checkbox',
+		fieldLabel: gettext('Notes'),
+		labelWidth: 125,
+		boxLabel: gettext('Open editor on double-click'),
+		reference: 'editNotesOnDoubleClick',
+		inputValue: true,
+		uncheckedValue: false,
 	    },
 	],
     },
