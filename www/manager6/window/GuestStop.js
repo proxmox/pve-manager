@@ -24,14 +24,13 @@ Ext.define('PVE.GuestStop', {
 
 	// offer to overrule if there is at least one matching shutdown task and the guest is not
 	// HA-enabled. Also allow users to abort tasks started by one of their API tokens.
-	let shutdownTaskIdx = Ext.getStore('pve-cluster-tasks')?.findBy(task =>
+	let activeShutdownTask = Ext.getStore('pve-cluster-tasks')?.findBy(task =>
 	    (hasSysModify || task.data.user === Proxmox.UserName) &&
 	    task.data.id === me.vm.vmid.toString() &&
 	    task.data.status === undefined &&
 	    task.data.type === overruleTaskType,
-	);
+	) !== -1;
 	let haEnabled = me.vm.hastate && me.vm.hastate !== 'unmanaged';
-	me.askOverrule = !haEnabled && shutdownTaskIdx >= 0;
 
 	me.callParent();
 
@@ -39,18 +38,21 @@ Ext.define('PVE.GuestStop', {
 	me.promptContainer.add({
 	    xtype: 'proxmoxcheckbox',
 	    name: 'overrule-shutdown',
-	    checked: true,
+	    checked: !haEnabled && activeShutdownTask,
 	    boxLabel: gettext('Overrule active shutdown tasks'),
-	    hidden: !me.askOverrule,
+	    hidden: !(hasSysModify || activeShutdownTask),
+	    disabled: !(hasSysModify || activeShutdownTask) || haEnabled,
+	    padding: '3 0 0 0',
 	});
     },
 
     handler: function(btn) {
 	let me = this;
 	if (btn === 'yes') {
-	    let checkbox = me.promptContainer.down('proxmoxcheckbox[name=overrule-shutdown]');
-	    let overruleShutdown = me.askOverrule && checkbox.getSubmitValue();
-	    let params = overruleShutdown ? { 'overrule-shutdown': 1 } : undefined;
+	    let overruleField = me.promptContainer.down('proxmoxcheckbox[name=overrule-shutdown]');
+	    let params = !overruleField.isDisabled() && overruleField.getSubmitValue()
+		? { 'overrule-shutdown': 1 }
+		: undefined;
 	    Proxmox.Utils.API2Request({
 		url: me.url,
 		waitMsgTarget: me,
