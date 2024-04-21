@@ -158,63 +158,67 @@ Ext.define('PVE.dc.BackupEdit', {
 	    this.getView().lookup('backupAdvanced').updateCompression(f.getValue(), false);
 	},
 
+	prepareValues: function(data) {
+	    let me = this;
+	    let viewModel = me.getViewModel();
+
+	    // Migrate 'new'-old notification-policy back to old-old mailnotification.
+	    // Only should affect users who used pve-manager from pvetest. This was a remnant of
+	    // notifications before the  overhaul.
+	    let policy = data['notification-policy'];
+	    if (policy === 'always' || policy === 'failure') {
+		data.mailnotification = policy;
+	    }
+
+	    if (data.exclude) {
+		data.vmid = data.exclude;
+		data.selMode = 'exclude';
+	    } else if (data.all) {
+		data.vmid = '';
+		data.selMode = 'all';
+	    } else if (data.pool) {
+		data.selMode = 'pool';
+		data.selPool = data.pool;
+	    } else {
+		data.selMode = 'include';
+	    }
+	    viewModel.set('selMode', data.selMode);
+
+	    if (data['prune-backups']) {
+		Object.assign(data, data['prune-backups']);
+		delete data['prune-backups'];
+	    } else if (data.maxfiles !== undefined) {
+		if (data.maxfiles > 0) {
+		    data['keep-last'] = data.maxfiles;
+		} else {
+		    data['keep-all'] = 1;
+		}
+		delete data.maxfiles;
+	    }
+
+	    if (data['notes-template']) {
+		data['notes-template'] =
+		    PVE.Utils.unEscapeNotesTemplate(data['notes-template']);
+	    }
+
+	    if (data.performance) {
+		Object.assign(data, data.performance);
+		delete data.performance;
+	    }
+
+	    return data;
+	},
+
 	init: function(view) {
 	    let me = this;
+
 	    if (view.isCreate) {
 		me.lookup('modeSelector').setValue('include');
 	    } else {
 		view.load({
 		    success: function(response, _options) {
-			let data = response.result.data;
-
-			// Migrate 'new'-old notification-policy back to
-			// old-old mailnotification. Only should affect
-			// users who used pve-manager from pvetest.
-			// This was a remnant of notifications before the
-			// overhaul.
-			let policy = data['notification-policy'];
-			if (policy === 'always' || policy === 'failure') {
-			    data.mailnotification = policy;
-			}
-
-			if (data.exclude) {
-			    data.vmid = data.exclude;
-			    data.selMode = 'exclude';
-			} else if (data.all) {
-			    data.vmid = '';
-			    data.selMode = 'all';
-			} else if (data.pool) {
-			    data.selMode = 'pool';
-			    data.selPool = data.pool;
-			} else {
-			    data.selMode = 'include';
-			}
-
-			me.getViewModel().set('selMode', data.selMode);
-
-			if (data['prune-backups']) {
-			    Object.assign(data, data['prune-backups']);
-			    delete data['prune-backups'];
-			} else if (data.maxfiles !== undefined) {
-			    if (data.maxfiles > 0) {
-				data['keep-last'] = data.maxfiles;
-			    } else {
-				data['keep-all'] = 1;
-			    }
-			    delete data.maxfiles;
-			}
-
-			if (data['notes-template']) {
-			    data['notes-template'] =
-				PVE.Utils.unEscapeNotesTemplate(data['notes-template']);
-			}
-
-			if (data.performance) {
-			    Object.assign(data, data.performance);
-			    delete data.performance;
-			}
-
-			view.setValues(data);
+			let values = me.prepareValues(response.result.data);
+			view.setValues(values);
 		    },
 		});
 	    }
