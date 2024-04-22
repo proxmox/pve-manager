@@ -11,6 +11,33 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	return { vga: ret };
     },
 
+    viewModel: {
+	data: {
+	    type: '__default__',
+	    clipboard: '__default__',
+	},
+	formulas: {
+	    matchNonGUIOption: function(get) {
+		return get('type').match(/^(serial\d|none)$/);
+	    },
+	    memoryEmptyText: function(get) {
+		let val = get('type');
+		if (val === "cirrus") {
+		    return "4";
+		} else if (val === "std" || val.match(/^qxl\d?$/) || val === "vmware") {
+		    return "16";
+		} else if (val.match(/^virtio/)) {
+		    return "256";
+		} else if (get('matchNonGUIOption')) {
+		    return "N/A";
+		} else {
+		    console.debug("unexpected display type", val);
+		    return Proxmox.Utils.defaultText;
+		}
+	    },
+	},
+    },
+
     items: [{
 	name: 'type',
 	xtype: 'proxmoxKVComboBox',
@@ -27,29 +54,8 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	    }
 	    return true;
 	},
-	listeners: {
-	    change: function(cb, val) {
-		if (!val) {
-		    return;
-		}
-		let memoryfield = this.up('panel').down('field[name=memory]');
-		let disableMemoryField = false;
-
-		if (val === "cirrus") {
-		    memoryfield.setEmptyText("4");
-		} else if (val === "std" || val.match(/^qxl\d?$/) || val === "vmware") {
-		    memoryfield.setEmptyText("16");
-		} else if (val.match(/^virtio/)) {
-		    memoryfield.setEmptyText("256");
-		} else if (val.match(/^(serial\d|none)$/)) {
-		    memoryfield.setEmptyText("N/A");
-		    disableMemoryField = true;
-		} else {
-		    console.debug("unexpected display type", val);
-		    memoryfield.setEmptyText(Proxmox.Utils.defaultText);
-		}
-		memoryfield.setDisabled(disableMemoryField);
-	    },
+	bind: {
+	    value: '{type}',
 	},
     },
     {
@@ -60,6 +66,10 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	maxValue: 512,
 	step: 4,
 	name: 'memory',
+	bind: {
+	    emptyText: '{memoryEmptyText}',
+	    disabled: '{matchNonGUIOption}',
+	},
     }],
 });
 
