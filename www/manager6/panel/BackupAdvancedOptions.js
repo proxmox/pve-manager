@@ -17,28 +17,35 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
     },
 
     onGetValues: function(formValues) {
-	if (this.needMask) { // isMasked() may not yet be true if not rendered once
+	let me = this;
+	if (me.needMask) { // isMasked() may not yet be true if not rendered once
 	    return {};
 	}
 
-	let options = { 'delete': [] };
+	let options = {};
 
-	let performance = {};
-	let performanceOptions = ['max-workers', 'pbs-entries-max'];
+	if (!me.isCreate) {
+	    options.delete = []; // to avoid having to check this all the time
+	}
+	const deletePropertyOnEdit = me.isCreate
+	    ? () => { /* no-op on create */ }
+	    : key => options.delete.push(key);
+
+	let performance = {}, performanceOptions = ['max-workers', 'pbs-entries-max'];
 
 	for (const [key, value] of Object.entries(formValues)) {
 	    if (performanceOptions.includes(key)) {
 		performance[key] = value;
 	    // deleteEmpty is not currently implemented for pveBandwidthField
 	    } else if (key === 'bwlimit' && value === '') {
-		options.delete.push('bwlimit');
+		deletePropertyOnEdit('bwlimit');
 	    } else if (key === 'delete') {
 		if (Array.isArray(value)) {
 		    value.filter(opt => !performanceOptions.includes(opt)).forEach(
-			opt => options.delete.push(opt),
+			opt => deletePropertyOnEdit(opt),
 		    );
 		} else if (!performanceOptions.includes(formValues.delete)) {
-		    options.delete.push(value);
+		    deletePropertyOnEdit(value);
 		}
 	    } else {
 		options[key] = value;
@@ -48,11 +55,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	if (Object.keys(performance).length > 0) {
 	    options.performance = PVE.Parser.printPropertyString(performance);
 	} else {
-	    options.delete.push('performance');
-	}
-
-	if (this.isCreate) {
-	    delete options.delete;
+	    deletePropertyOnEdit('performance');
 	}
 
 	return options;
