@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.MachineInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveMachineInputPanel',
-    onlineHelp: 'qm_system_settings',
+    onlineHelp: 'qm_machine_type',
 
     viewModel: {
 	data: {
