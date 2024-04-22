@@ -59,11 +59,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
     },
 
     updateCompression: function(value, disabled) {
-	if (!disabled && value === 'zstd') {
-	    this.lookup('zstdThreadCount').setDisabled(false);
-	} else {
-	    this.lookup('zstdThreadCount').setDisabled(true);
-	}
+	this.lookup('zstdThreadCount').setDisabled(disabled || value !== 'zstd');
     },
 
     items: [
