@@ -73,7 +73,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		xtype: 'pveBandwidthField',
 		name: 'bwlimit',
 		fieldLabel: gettext('Bandwidth Limit'),
-		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 0),
+		emptyText: gettext('Fallback'),
 		backendUnit: 'KiB',
 		allowZero: true,
 		emptyValue: '',
@@ -85,7 +85,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    endFlex: 2,
 	    endColumn: {
 		xtype: 'displayfield',
-		value: gettext('Limit I/O bandwidth.'),
+		value: `${gettext('Limit I/O bandwidth.')} ${Ext.String.format(gettext("Schema default: {0}"), 0)}`,
 	    },
 	},
 	{
@@ -96,7 +96,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		reference: 'zstdThreadCount',
 		fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
 		fieldStyle: 'text-align: right',
-		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 1),
+		emptyText: gettext('Fallback'),
 		minValue: 0,
 		cbind: {
 		    deleteEmpty: '{!isCreate}',
@@ -109,7 +109,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    endFlex: 2,
 	    endColumn: {
 		xtype: 'displayfield',
-		value: gettext('Threads used for zstd compression (non-PBS).'),
+		value: `${gettext('Threads used for zstd compression (non-PBS).')} ${Ext.String.format(gettext("Schema default: {0}"), 1)}`,
 	    },
 	},
 	{
@@ -121,7 +121,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		maxValue: 256,
 		fieldLabel: gettext('IO-Workers'),
 		fieldStyle: 'text-align: right',
-		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 16),
+		emptyText: gettext('Fallback'),
 		cbind: {
 		    deleteEmpty: '{!isCreate}',
 		},
@@ -129,7 +129,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    endFlex: 2,
 	    endColumn: {
 		xtype: 'displayfield',
-		value: gettext('I/O workers in the QEMU process (VMs only).'),
+		value: `${gettext('I/O workers in the QEMU process (VMs only).')} ${Ext.String.format(gettext("Schema default: {0}"), 16)}`,
 	    },
 	},
 	{
@@ -168,7 +168,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    xtype: 'component',
 	    padding: '5 1',
 	    html: `<span class="pmx-hint">${gettext('Note')}</span>: ${
-	        gettext("The node-specific vzdump.conf is used to determine fallback values")}`,
+	        gettext("The node-specific 'vzdump.conf' or, if this is not set, the default from the config schema is used to determine fallback values.")}`,
 	},
     ],
 });
