@@ -12,6 +12,10 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	return {};
     },
 
+    viewModel: {
+	data: {},
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
     },
@@ -31,6 +35,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    ? () => { /* no-op on create */ }
 	    : key => options.delete.push(key);
 
+	let fleecing = {}, fleecingOptions = ['fleecing-enabled', 'fleecing-storage'];
 	let performance = {}, performanceOptions = ['max-workers', 'pbs-entries-max'];
 
 	for (const [key, value] of Object.entries(formValues)) {
@@ -47,6 +52,9 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		} else if (!performanceOptions.includes(formValues.delete)) {
 		    deletePropertyOnEdit(value);
 		}
+	    } else if (fleecingOptions.includes(key)) {
+		let fleecingKey = key.slice('fleecing-'.length);
+		fleecing[fleecingKey] = value;
 	    } else {
 		options[key] = value;
 	    }
@@ -58,7 +66,27 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    deletePropertyOnEdit('performance');
 	}
 
+	if (Object.keys(fleecing).length > 0) {
+	    options.fleecing = PVE.Parser.printPropertyString(fleecing);
+	} else {
+	    deletePropertyOnEdit('fleecing');
+	}
+
+	if (me.isCreate) {
+	    delete options.delete;
+	}
+
 	return options;
+    },
+
+    onSetValues: function(values) {
+	if (values.fleecing) {
+	    for (const [key, value] of Object.entries(values.fleecing)) {
+		values[`fleecing-${key}`] = value;
+	    }
+	    delete values.fleecing;
+	}
+	return values;
     },
 
     updateCompression: function(value, disabled) {
@@ -129,6 +157,42 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    endColumn: {
 		xtype: 'displayfield',
 		value: `${gettext('I/O workers in the QEMU process (VMs only).')} ${Ext.String.format(gettext("Schema default: {0}"), 16)}`,
+	    },
+	},
+	{
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'proxmoxcheckbox',
+		name: 'fleecing-enabled',
+		reference: 'fleecingEnabled',
+		fieldLabel: gettext('Fleecing'),
+		uncheckedValue: 0,
+		value: 0,
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('Backup write cache that can reduce IO pressure inside guests (VMs only).'),
+	    },
+	},
+	{
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'pveStorageSelector',
+		name: 'fleecing-storage',
+		fieldLabel: gettext('Fleecing Storage'),
+		reference: 'storageSelector',
+		clusterView: true,
+		storageContent: 'images',
+		allowBlank: false,
+		bind: {
+		    disabled: '{!fleecingEnabled.checked}',
+		},
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('Prefer a fast and local storage, ideally with support for discard and thin-provisioning or sparse files.'),
 	    },
 	},
 	{
