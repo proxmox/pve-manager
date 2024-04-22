@@ -35,6 +35,9 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 		    return Proxmox.Utils.defaultText;
 		}
 	    },
+	    isVNC: get => get('clipboard') === 'vnc',
+	    hideDefaultHint: get => get('isVNC') || get('matchNonGUIOption'),
+	    hideVNCHint: get => !get('isVNC') || get('matchNonGUIOption'),
 	},
     },
 
@@ -71,6 +74,44 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	    disabled: '{matchNonGUIOption}',
 	},
     }],
+
+    advancedItems: [
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'clipboard',
+	    deleteEmpty: false,
+	    value: '__default__',
+	    fieldLabel: gettext('Clipboard'),
+	    comboItems: [
+		['__default__', Proxmox.Utils.defaultText],
+		['vnc', 'VNC'],
+	    ],
+	    bind: {
+		value: '{clipboard}',
+		disabled: '{matchNonGUIOption}',
+	    },
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'vncHint',
+	    userCls: 'pmx-hint',
+	    value: gettext('You cannot use the default SPICE clipboard if the VNC Clipboard is selected.') + ' ' +
+		gettext('VNC Clipboard requires spice-tools installed in the Guest-VM.'),
+	    bind: {
+		hidden: '{hideVNCHint}',
+	    },
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'defaultHint',
+	    userCls: 'pmx-hint',
+	    value: gettext('This option depends on your display type.') + ' ' +
+		gettext('If the display type uses SPICE you are able to use the default SPICE Clipboard.'),
+	    bind: {
+		hidden: '{hideDefaultHint}',
+	    },
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.DisplayEdit', {
