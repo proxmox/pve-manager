@@ -16,6 +16,7 @@ JSSRC= 							\
 	data/PermPathStore.js				\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
+	container/TwoColumnContainer.js			\
 	form/ACMEAPISelector.js 			\
 	form/ACMEAccountSelector.js			\
 	form/ACMEPluginSelector.js			\
