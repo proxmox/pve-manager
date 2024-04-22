@@ -150,15 +150,18 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 				    directory: value,
 				},
 				success: function(response, opt) {
-				    if (response.result.data.termsOfService) {
+				    if (response.result.data && response.result.data.termsOfService) {
 					field.setValue(response.result.data.termsOfService);
 					disp.setValue(response.result.data.termsOfService);
 					checkbox.setHidden(false);
 				    } else {
-					checkbox.setValue(false);
+					// Needed to pass input verification and enable register button
+					// has no influence on the submitted form
+					checkbox.setValue(true);
 					disp.setValue("No terms of service agreement required");
 				    }
-				    vm.set('eabRequired', !!response.result.data.externalAccountRequired);
+				    vm.set('eabRequired', !!(response.result.data &&
+					response.result.data.externalAccountRequired));
 				},
 				failure: function(response, opt) {
 				    disp.setValue(undefined);
