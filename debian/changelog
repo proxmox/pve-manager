@@ -1,3 +1,24 @@
+pve-manager (8.2.1) bookworm; urgency=medium
+
+  * d/control: add proxmox-firewall as recommended dependency
+
+  * ui: backup job: correctly align descriptions with fields in advanced
+    options
+
+  * ui: backup job: rework empty-text for advanced fields again, mention schema
+    default values at the end of the descriptions
+
+  * ui: acme eab: handle missing meta field in directory response
+
+  * ui: qemu: add clipboard selection as advanced option to display editor
+
+  * ui: qemu: allow one to enable a vIOMMU (emulated IOMMU) in the machine
+    editor
+
+  * ui: backup job: allow setting up fleecing for a job in advanced config
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 22 Apr 2024 19:36:21 +0200
+
 pve-manager (8.2.0) bookworm; urgency=medium
 
   * node: firewall options: add setting to select new nftables-based firewall
