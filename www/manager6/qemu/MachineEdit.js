@@ -150,7 +150,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    value: '__default__',
 	    comboItems: [
 		['__default__', Proxmox.Utils.defaultText + ' (None)'],
-		['intel', 'Intel'],
+		['intel', gettext('Intel (AMD Compatible)')],
 		['virtio', 'VirtIO'],
 	    ],
 	    bind: {
