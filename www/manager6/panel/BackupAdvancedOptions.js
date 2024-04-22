@@ -66,46 +66,70 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	}
     },
 
-    column1: [
+    items: [
 	{
-	    xtype: 'pveBandwidthField',
-	    name: 'bwlimit',
-	    fieldLabel: gettext('Bandwidth Limit'),
-	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 0),
-	    backendUnit: 'KiB',
-	    allowZero: true,
-	    emptyValue: '',
-	    autoEl: {
-		tag: 'div',
-		'data-qtip': Ext.String.format(gettext('Use {0} for unlimited'), 0),
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'pveBandwidthField',
+		name: 'bwlimit',
+		fieldLabel: gettext('Bandwidth Limit'),
+		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 0),
+		backendUnit: 'KiB',
+		allowZero: true,
+		emptyValue: '',
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': Ext.String.format(gettext('Use {0} for unlimited'), 0),
+		},
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('Limit I/O bandwidth.'),
 	    },
 	},
 	{
-	    xtype: 'proxmoxintegerfield',
-	    name: 'zstd',
-	    reference: 'zstdThreadCount',
-	    fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
-	    fieldStyle: 'text-align: right',
-	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 1),
-	    minValue: 0,
-	    cbind: {
-		deleteEmpty: '{!isCreate}',
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'proxmoxintegerfield',
+		name: 'zstd',
+		reference: 'zstdThreadCount',
+		fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
+		fieldStyle: 'text-align: right',
+		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 1),
+		minValue: 0,
+		cbind: {
+		    deleteEmpty: '{!isCreate}',
+		},
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': gettext('With 0, half of the available cores are used'),
+		},
 	    },
-	    autoEl: {
-		tag: 'div',
-		'data-qtip': gettext('With 0, half of the available cores are used'),
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('Threads used for zstd compression (non-PBS).'),
 	    },
 	},
 	{
-	    xtype: 'proxmoxintegerfield',
-	    name: 'max-workers',
-	    minValue: 1,
-	    maxValue: 256,
-	    fieldLabel: gettext('IO-Workers'),
-	    fieldStyle: 'text-align: right',
-	    emptyText: Ext.String.format(gettext('Fallback (default {0})'), 16),
-	    cbind: {
-		deleteEmpty: '{!isCreate}',
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'proxmoxintegerfield',
+		name: 'max-workers',
+		minValue: 1,
+		maxValue: 256,
+		fieldLabel: gettext('IO-Workers'),
+		fieldStyle: 'text-align: right',
+		emptyText: Ext.String.format(gettext('Fallback (default {0})'), 16),
+		cbind: {
+		    deleteEmpty: '{!isCreate}',
+		},
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('I/O workers in the QEMU process (VMs only).'),
 	    },
 	},
 	{
@@ -123,42 +147,23 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    },
 	},
 	{
-	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('Repeat missed'),
-	    name: 'repeat-missed',
-	    uncheckedValue: 0,
-	    defaultValue: 0,
-	    cbind: {
-		deleteDefaultValue: '{!isCreate}',
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Repeat missed'),
+		name: 'repeat-missed',
+		uncheckedValue: 0,
+		defaultValue: 0,
+		cbind: {
+		    deleteDefaultValue: '{!isCreate}',
+		},
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext("Run jobs as soon as possible if they couldn't start on schedule, for example, due to the node being offline."),
 	    },
 	},
-    ],
-
-    column2: [
-	{
-	    xtype: 'displayfield',
-	    value: gettext('Limit I/O bandwidth.'),
-	},
-	{
-	    xtype: 'displayfield',
-	    value: gettext('Threads used for zstd compression (non-PBS).'),
-	},
-	{
-	    xtype: 'displayfield',
-	    value: gettext('I/O workers in the QEMU process (VMs only).'),
-	},
-	{
-	    xtype: 'displayfield',
-	    value: 'TODO',
-	    hidden: true, // see definition of pbs-entries-max field
-	},
-	{
-	    xtype: 'displayfield',
-	    value: gettext("Run jobs as soon as possible if they couldn't start on schedule, for example, due to the node being offline."),
-	},
-    ],
-
-    columnB: [
 	{
 	    xtype: 'component',
 	    padding: '5 1',
