@@ -617,7 +617,7 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job['repeat-missed'];
 	    job.all = job.all === true ? 1 : 0;
 
-	    ['performance', 'prune-backups'].forEach(key => {
+	    ['performance', 'prune-backups', 'fleecing'].forEach(key => {
 		if (job[key]) {
 		    job[key] = PVE.Parser.printPropertyString(job[key]);
 		}
