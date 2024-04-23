@@ -18,6 +18,17 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 
     controller: {
 	xclass: 'Ext.app.ViewController',
+
+	toggleFleecing: function(cb, value) {
+	    let me = this;
+	    me.lookup('fleecingStorage').setDisabled(!value);
+	},
+
+	control: {
+	    'proxmoxcheckbox[reference=fleecingEnabled]': {
+		change: 'toggleFleecing',
+	    },
+	}
     },
 
     onGetValues: function(formValues) {
@@ -181,14 +192,11 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		xtype: 'pveStorageSelector',
 		name: 'fleecing-storage',
 		fieldLabel: gettext('Fleecing Storage'),
-		reference: 'storageSelector',
+		reference: 'fleecingStorage',
 		clusterView: true,
 		storageContent: 'images',
 		allowBlank: false,
 		disabled: true,
-		bind: {
-		    disabled: '{!fleecingEnabled.checked}',
-		},
 	    },
 	    endFlex: 2,
 	    endColumn: {
