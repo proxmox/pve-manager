@@ -1,3 +1,24 @@
+pve-manager (8.2.2) bookworm; urgency=medium
+
+  * ui: fix form-reset behavior of backup job editor
+
+  * ui: backup jobs: fix fleecing parameters for 'run now' button
+
+  * ui: mobile: fix login for users that have a TOTP based second factor set up
+
+  * ui: mobile: show is setup is lacking the best recommendations for
+    enterprise production set ups
+
+  * vzdump: also warn when hook script fails for backup-abort or log-end phase
+
+  * ui: user edit: protect user's TFA settings for new factor variants
+
+  * fix #5251: ui: login: set autocomplete on password and user
+
+  * ui: esxi importer: try to better convey what live-import does
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 23 Apr 2024 21:33:31 +0200
+
 pve-manager (8.2.1) bookworm; urgency=medium
 
   * d/control: add proxmox-firewall as recommended dependency
