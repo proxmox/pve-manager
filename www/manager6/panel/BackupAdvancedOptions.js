@@ -28,7 +28,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    'proxmoxcheckbox[reference=fleecingEnabled]': {
 		change: 'toggleFleecing',
 	    },
-	}
+	},
     },
 
     onGetValues: function(formValues) {
