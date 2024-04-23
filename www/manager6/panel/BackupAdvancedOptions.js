@@ -185,6 +185,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		clusterView: true,
 		storageContent: 'images',
 		allowBlank: false,
+		disabled: true,
 		bind: {
 		    disabled: '{!fleecingEnabled.checked}',
 		},

@@ -350,6 +350,7 @@ Ext.define('PVE.dc.BackupEdit', {
 				    ],
 				    fieldLabel: gettext('Notification mode'),
 				    name: 'notification-mode',
+				    value: '__default__',
 				    cbind: {
 					deleteEmpty: '{!isCreate}',
 				    },
