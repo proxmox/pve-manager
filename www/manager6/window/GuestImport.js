@@ -561,10 +561,17 @@ Ext.define('PVE.window.GuestImport', {
 			fieldLabel: gettext('Live Import'),
 			reference: 'liveimport',
 			isFormField: false,
-			boxLabelCls: 'pmx-hint black x-form-cb-label',
+			boxLabel: gettext('Starts a previously stopped VM on Proxmox VE and imports the disks in the background.'),
 			bind: {
 			    value: '{liveImport}',
-			    boxLabel: '{liveImportNote}',
+			},
+		    },
+		    {
+			xtype: 'displayfield',
+			userCls: 'pmx-hint black',
+			value: gettext('Note: If anything goes wrong during the live-import, new data written by the VM may be lost.'),
+			bind: {
+			    hidden: '{!liveImport}',
 			},
 		    },
 		    {
