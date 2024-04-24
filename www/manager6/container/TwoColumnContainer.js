@@ -10,7 +10,7 @@ Ext.define('PVE.container.TwoColumnContainer', {
 
     layout: {
 	type: 'hbox',
-	align: 'stretch',
+	align: 'begin',
     },
 
     // The default ratio of the start widget. It an be an integer or a floating point number
