@@ -774,6 +774,7 @@ __PACKAGE__->register_method({
 	    libpve-network-perl
 	    openvswitch-switch
 	    proxmox-backup-file-restore
+	    proxmox-firewall
 	    proxmox-kernel-helper
 	    proxmox-offline-mirror-helper
 	    pve-esxi-import-tools
