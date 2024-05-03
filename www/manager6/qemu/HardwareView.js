@@ -486,17 +486,19 @@ Ext.define('PVE.qemu.HardwareView', {
 		return msg;
 	    },
 	    handler: function(btn, e, rec) {
+		let params = { 'delete': rec.data.key };
+		if (btn.RESTMethod === 'POST') {
+		    params.background_delay = 5;
+		}
 		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
 		    method: btn.RESTMethod,
-		    params: {
-			'delete': rec.data.key,
-		    },
+		    params: params,
 		    callback: () => me.reload(),
 		    failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		    success: function(response, options) {
-			if (btn.RESTMethod === 'POST') {
+			if (btn.RESTMethod === 'POST' && response.result.data !== null) {
 			    Ext.create('Proxmox.window.TaskProgress', {
 				autoShow: true,
 				upid: response.result.data,
