@@ -608,6 +608,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    const deleted = !!rec.data.delete;
 	    const pending = deleted || me.hasPendingChanges(key);
+	    const isRunning = me.pveSelNode.data.running;
 
 	    const isCloudInit = isCloudInitKey(value);
 	    const isCDRom = value && !!value.toString().match(/media=cdrom/);
@@ -616,7 +617,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const isUsedDisk = !isUnusedDisk && row.isOnStorageBus && !isCDRom;
 	    const isDisk = isUnusedDisk || isUsedDisk;
 	    const isEfi = key === 'efidisk0';
-	    const tpmMoveable = key === 'tpmstate0' && !me.pveSelNode.data.running;
+	    const tpmMoveable = key === 'tpmstate0' && !isRunning;
 
 	    let cannotDelete = deleted || row.never_delete;
 	    cannotDelete ||= isCDRom && !cdromCap;
@@ -625,7 +626,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    remove_btn.setDisabled(cannotDelete);
 
 	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
-	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
+	    remove_btn.RESTMethod = isUnusedDisk || (isDisk && isRunning) ? 'POST' : 'PUT';
 
 	    edit_btn.setDisabled(
 	        deleted || !row.editor || isCloudInit || (isCDRom && !cdromCap) || (isDisk && !diskCap));
