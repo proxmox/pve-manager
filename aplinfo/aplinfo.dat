@@ -205,20 +205,6 @@ Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 7.3
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
-Package: proxmox-mailgateway-8.0-standard
-Version: 8.0-1
-Type: lxc
-OS: debian-12
-Section: mail
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: mail/proxmox-mailgateway-8.0-standard_8.0-1_amd64.tar.zst
-md5sum: 7d321e5dfc6e1005231586d1871e3625
-sha512sum: be5efcb8ee97f2bb1c638360191eda19f49e2063acb88da55c948c90c091063972cc9ea29e6aeaa4a85733e0fb2c99ea905d665ac693cb2bf06b091c4baf781f
-Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 8.0
- A full featured mail proxy for spam and virus filtering, optimized for container environment.
-
 Package: rockylinux-9-default
 Version: 20221109
 Type: lxc
@@ -287,3 +273,17 @@ sha512sum: 84bcb7348ba86026176ed35e5b798f89cb64b0bcbe27081e3f97e3002a6ec34d836bb
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 23.10 Mantic (standard)
  A small Ubuntu 23.10 Mantic Minotaur system including all standard packages.
+
+Package: ubuntu-24.04-standard
+Version: 24.04-2
+Type: lxc
+OS: ubuntu-24.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-24.04-standard_24.04-2_amd64.tar.zst
+md5sum: 4030982618eeae70854e8f9711adbd09
+sha512sum: 45c2978e6b97fe292ada95fe06834276015e5739a594db4de2fdfd830fa0c37942e8ae118fc1e32ffd9154b3f9378b592738b668ea3957db41f2907b86f219de
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 24.04 Noble (standard)
+ A small Ubuntu 24.04 Noble Numbat system including all standard packages.
