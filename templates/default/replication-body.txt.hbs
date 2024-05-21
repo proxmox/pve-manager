@@ -1,0 +1,12 @@
+Replication job '{{job-id}}' with target '{{job-target}}' and schedule '{{job-schedule}}' failed!
+
+Last successful sync: {{timestamp last-sync}}
+Next sync try: {{timestamp next-sync}}
+Failure count: {{failure-count}}
+
+{{#if (eq failure-count 3)}}
+Note: The system  will now reduce the frequency of error reports, as the job
+appears to be stuck.
+{{/if}}
+Error:
+{{ error }}

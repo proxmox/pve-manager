@@ -92,23 +92,6 @@ my sub _should_mail_at_failcount {
     return $i * 48 == $fail_count;
 };
 
-my $replication_error_subject_template = "Replication Job: '{{job-id}}' failed";
-my $replication_error_body_template = <<EOT;
-{{#verbatim}}
-Replication job '{{job-id}}' with target '{{job-target}}' and schedule '{{job-schedule}}' failed!
-
-Last successful sync: {{timestamp last-sync}}
-Next sync try: {{timestamp next-sync}}
-Failure count: {{failure-count}}
-
-{{#if (eq failure-count 3)}}
-Note: The system  will now reduce the frequency of error reports, as the job
-appears to be stuck.
-{{/if}}
-Error:
-{{verbatim-monospaced error}}
-{{/verbatim}}
-EOT
 
 my sub _handle_job_err {
     my ($job, $err, $mail) = @_;
@@ -146,8 +129,7 @@ my sub _handle_job_err {
 
     eval {
 	PVE::Notify::error(
-	    $replication_error_subject_template,
-	    $replication_error_body_template,
+	    "replication",
 	    $template_data,
 	    $metadata_fields
 	);

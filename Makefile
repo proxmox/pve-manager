@@ -10,7 +10,7 @@ DSC=$(PACKAGE)_$(DEB_VERSION).dsc
 DEB=$(PACKAGE)_$(DEB_VERSION)_$(DEB_HOST_ARCH).deb
 
 DESTDIR=
-SUBDIRS = aplinfo PVE bin www services configs network-hooks test
+SUBDIRS = aplinfo PVE bin www services configs network-hooks test templates
 
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done

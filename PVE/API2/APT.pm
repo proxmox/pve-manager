@@ -238,12 +238,6 @@ __PACKAGE__->register_method({
 	return $pkglist;
     }});
 
-my $updates_available_subject_template = "New software packages available ({{hostname}})";
-my $updates_available_body_template = <<EOT;
-The following updates are available:
-{{table updates}}
-EOT
-
 __PACKAGE__->register_method({
     name => 'update_database',
     path => 'update',
@@ -358,8 +352,7 @@ __PACKAGE__->register_method({
 		};
 
 		PVE::Notify::info(
-		    $updates_available_subject_template,
-		    $updates_available_body_template,
+		    "package-updates",
 		    $template_data,
 		    $metadata_fields,
 		);

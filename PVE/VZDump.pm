@@ -477,20 +477,6 @@ my sub get_hostname {
     return $hostname;
 }
 
-my $subject_template = "vzdump backup status ({{hostname}}): {{status-text}}";
-
-my $body_template = <<EOT;
-{{error-message}}
-{{heading-1 "Details"}}
-{{table guest-table}}
-{{#verbatim}}
-Total running time: {{duration total-time}}
-Total size: {{human-bytes total-size}}
-{{/verbatim}}
-{{heading-1 "Logs"}}
-{{verbatim-monospaced logs}}
-EOT
-
 use constant MAX_LOG_SIZE => 1024*1024;
 
 sub send_notification {
@@ -588,8 +574,7 @@ sub send_notification {
 
 	    PVE::Notify::notify(
 		$severity,
-		$subject_template,
-		$body_template,
+		"vzdump",
 		$notification_props,
 		$fields,
 		$notification_config
@@ -600,8 +585,7 @@ sub send_notification {
 	# no email addresses were configured.
 	PVE::Notify::notify(
 	    $severity,
-	    $subject_template,
-	    $body_template,
+	    "vzdump",
 	    $notification_props,
 	    $fields,
 	);
