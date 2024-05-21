@@ -9,3 +9,5 @@ dest/
 /www/mobile/pvemanager-mobile.js
 /www/touch/touch-[0-9]*/
 /pve-manager-[0-9]*/
+/test/.mocked_*
+/test/*.tmp
