@@ -1,3 +1,17 @@
+pve-manager (8.2.3) bookworm; urgency=medium
+
+  * update shipped appliance info index
+
+  * api: add proxmox-firewall to versions pkg list
+
+  * gitignore: ignore any test artifacts
+
+  * tests: remove vzdump_notification test
+
+  * notifications: use named templates instead of in-code templates
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 04 Jun 2024 11:08:41 +0200
+
 pve-manager (8.2.2) bookworm; urgency=medium
 
   * ui: fix form-reset behavior of backup job editor
