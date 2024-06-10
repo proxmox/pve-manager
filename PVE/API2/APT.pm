@@ -348,7 +348,8 @@ __PACKAGE__->register_method({
 		# matchers.
 		my $metadata_fields = {
 		    type => 'package-updates',
-		    hostname => $hostname,
+		    # Hostname (without domain part)
+		    hostname => PVE::INotify::nodename(),
 		};
 
 		PVE::Notify::info(
