@@ -97,6 +97,9 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    }
 	    delete values.fleecing;
 	}
+	if (values["pbs-change-detection-mode"] === '__default__') {
+	    delete values["pbs-change-detection-mode"];
+	}
 	return values;
     },
 
@@ -234,6 +237,26 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    endColumn: {
 		xtype: 'displayfield',
 		value: gettext("Run jobs as soon as possible if they couldn't start on schedule, for example, due to the node being offline."),
+	    },
+	},
+	{
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'proxmoxKVComboBox',
+		fieldLabel: gettext('PBS change detection mode'),
+		name: 'pbs-change-detection-mode',
+		deleteEmpty: true,
+		value: '__default__',
+		comboItems: [
+		    ['__default__', "Default"],
+		    ['data', "Data"],
+		    ['metadata', "Metadata"],
+		],
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext("EXPERIMENTAL: Mode to detect file changes and archive encoding format for container backups."),
 	    },
 	},
 	{
