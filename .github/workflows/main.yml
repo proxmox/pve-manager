@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+
+jobs:
+  build:
+
+    runs-on:  Linux
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: install tools
+      run: sudo apt install debhelper-compat libapt-pkg-perl libfile-readbackwards-perl libhttp-daemon-perl libpod-parser-perl libproxmox-acme-perl libproxmox-rs-perl libpve-access-control libpve-cluster-api-perl libpve-cluster-perl libpve-common-perl libpve-guest-common-perl libpve-http-server-perl libpve-notify-perl libpve-rs-perl libpve-storage-perl libtemplate-perl libtest-mockmodule-perl lintian proxmox-widget-toolkit pve-cluster pve-container pve-doc-generator pve-eslint qemu-server sq unzip -y
+
+    - name: run make
+      run: make deb
+
+    - name: upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+          name: pve-manager
+          path: ./*.deb
+
+    - name: upload-release
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd # v2.9.0
+      with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./*.deb
+          tag: ${{ github.ref }}
+          file_glob: true
