@@ -1084,7 +1084,7 @@ sub exec_backup_task {
 	$task->{mode} = $mode;
 
    	debugmsg ('info', "backup mode: $mode", $logfd);
-	debugmsg ('info', "bandwidth limit: $opts->{bwlimit} KB/s", $logfd)  if $opts->{bwlimit};
+	debugmsg ('info', "bandwidth limit: $opts->{bwlimit} KiB/s", $logfd)  if $opts->{bwlimit};
 	debugmsg ('info', "ionice priority: $opts->{ionice}", $logfd);
 
 	if ($mode eq 'stop') {
