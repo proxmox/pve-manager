@@ -57,24 +57,25 @@ my $config_files = {
 sub get_local_version {
     my ($noerr) = @_;
 
-    if (check_ceph_installed('ceph_bin', $noerr)) {
-	my $ceph_version;
-	run_command(
-	    [ $ceph_service->{ceph_bin}, '--version' ],
-	    noerr => $noerr,
-	    outfunc => sub { $ceph_version = shift if !defined $ceph_version },
-	);
-	return undef if !defined $ceph_version;
+    return undef if !check_ceph_installed('ceph_bin', $noerr);
 
-	if ($ceph_version =~ /^ceph.*\sv?(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
-	    my ($version, $buildcommit) = ($1, $2);
-	    my $subversions = [ split(/\.|-/, $version) ];
+    my $ceph_version;
+    run_command(
+	[ $ceph_service->{ceph_bin}, '--version' ],
+	noerr => $noerr,
+	outfunc => sub { $ceph_version = shift if !defined $ceph_version },
+    );
 
-	    # return (version, buildid, major, minor, ...) : major;
-	    return wantarray
-		? ($version, $buildcommit, $subversions)
-		: $subversions->[0];
-	}
+    return undef if !defined $ceph_version;
+
+    if ($ceph_version =~ /^ceph.*\sv?(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
+	my ($version, $buildcommit) = ($1, $2);
+	my $subversions = [ split(/\.|-/, $version) ];
+
+	# return (version, buildid, major, minor, ...) : major;
+	return wantarray
+	    ? ($version, $buildcommit, $subversions)
+	    : $subversions->[0];
     }
 
     return undef;
