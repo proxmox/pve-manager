@@ -118,7 +118,8 @@ Ext.define('PVE.Utils', {
 	}
 
 	if (service.ceph_version) {
-	    var match = service.ceph_version.match(/version (\d+(\.\d+)*)/);
+	    // See PVE/Ceph/Tools.pm - get_local_version
+	    const match = service.ceph_version.match(/^ceph.*\sv?(\d+(?:\.\d+)+)/);
 	    if (match) {
 		return match[1];
 	    }
