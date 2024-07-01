@@ -68,11 +68,33 @@ sub get_local_version {
 
     return undef if !defined $ceph_version;
 
-    if ($ceph_version =~ /^ceph.*\sv?(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
+    my ($version, $buildcommit, $subversions) = parse_ceph_version($ceph_version);
+
+    return undef if !defined($version);
+
+    # return (version, buildid, [major, minor, ...]) : major;
+    return wantarray ? ($version, $buildcommit, $subversions) : $subversions->[0];
+}
+
+sub parse_ceph_version : prototype($) {
+    my ($ceph_version) = @_;
+
+    my $re_ceph_version = qr/
+	# Skip ahead to the version, which may optionally start with 'v'
+	^ceph.*\sv?
+
+	# Parse the version X.Y, X.Y.Z, etc.
+	( \d+ (?:\.\d+)+ ) \s+
+
+	# Parse the git commit hash between parentheses
+	(?: \( ([a-zA-Z0-9]+) \) )
+    /x;
+
+    if ($ceph_version =~ /$re_ceph_version/) {
 	my ($version, $buildcommit) = ($1, $2);
 	my $subversions = [ split(/\.|-/, $version) ];
 
-	# return (version, buildid, major, minor, ...) : major;
+	# return (version, buildid, [major, minor, ...]) : major;
 	return wantarray
 	    ? ($version, $buildcommit, $subversions)
 	    : $subversions->[0];
