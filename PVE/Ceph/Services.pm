@@ -50,26 +50,26 @@ sub broadcast_ceph_services {
 sub broadcast_ceph_versions {
     my ($version, $buildcommit, $vers_parts) = PVE::Ceph::Tools::get_local_version(1);
 
-    if ($version) {
-	my $nodename = PVE::INotify::nodename();
-	my $old = PVE::Cluster::get_node_kv("ceph-versions", $nodename);
-	if (defined($old->{$nodename})) {
-	    $old = eval { decode_json($old->{$nodename}) };
-	    warn $@ if $@; # should not happen
-	    if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{version}->{str} eq $version) {
-		return; # up to date, nothing to do so avoid (not exactly cheap) broadcast
-	    }
-	}
+    return undef if !$version;
 
-	my $node_versions = {
-	    version => {
-		str => $version,
-		parts => $vers_parts,
-	    },
-	    buildcommit => $buildcommit,
-	};
-	PVE::Cluster::broadcast_node_kv("ceph-versions", encode_json($node_versions));
+    my $nodename = PVE::INotify::nodename();
+    my $old = PVE::Cluster::get_node_kv("ceph-versions", $nodename);
+    if (defined($old->{$nodename})) {
+	$old = eval { decode_json($old->{$nodename}) };
+	warn $@ if $@; # should not happen
+	if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{version}->{str} eq $version) {
+	    return; # up to date, nothing to do so avoid (not exactly cheap) broadcast
+	}
     }
+
+    my $node_versions = {
+	version => {
+	    str => $version,
+	    parts => $vers_parts,
+	},
+	buildcommit => $buildcommit,
+    };
+    PVE::Cluster::broadcast_node_kv("ceph-versions", encode_json($node_versions));
 }
 
 sub get_ceph_versions {
