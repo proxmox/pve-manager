@@ -204,17 +204,30 @@ sub check_pve_packages {
 	}
 
 	# FIXME: better differentiate between 6.2 from bullseye or bookworm
-	my ($krunning, $kinstalled) = (qr/6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/, 'proxmox-kernel-6.2');
+	my $kinstalled = 'proxmox-kernel-6.2';
 	if (!$upgraded) {
 	    # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
-	    ($krunning, $kinstalled) = (qr/(?:5\.(?:13|15)|6\.2)/, 'pve-kernel-5.15');
+	    $kinstalled = 'pve-kernel-5.15';
 	}
+
+	my $kernel_version_is_expected = sub {
+	    my ($version) = @_;
+
+	    return $version =~ m/^(?:5\.(?:13|15)|6\.2)/ if !$upgraded;
+
+	    if ($version =~ m/^6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/) {
+		return 1;
+	    } elsif ($version =~ m/^(\d+).(\d+)[^~]*-pve$/) {
+		return $1 >= 6 && $2 >= 2;
+	    }
+	    return 0;
+	};
 
 	print "\nChecking running kernel version..\n";
 	my $kernel_ver = $proxmox_ve->{RunningKernel};
 	if (!defined($kernel_ver)) {
 	    log_fail("unable to determine running kernel version.");
-	} elsif ($kernel_ver =~ /^$krunning/) {
+	} elsif ($kernel_version_is_expected->($kernel_ver)) {
 	    if ($upgraded) {
 		log_pass("running new kernel '$kernel_ver' after upgrade.");
 	    } else {
@@ -227,7 +240,7 @@ sub check_pve_packages {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
 
-	if ($upgraded && $kernel_ver =~ /^$krunning/) {
+	if ($upgraded && $kernel_version_is_expected->($kernel_ver)) {
 	    my $outdated_kernel_meta_pkgs = [];
 	    for my $kernel_meta_version ('5.4', '5.11', '5.13', '5.15') {
 		my $pkg = "pve-kernel-${kernel_meta_version}";
