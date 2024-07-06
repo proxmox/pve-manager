@@ -123,8 +123,10 @@ my sub _handle_job_err {
     };
 
     my $metadata_fields = {
-	# TODO: Add job-id?
 	type => "replication",
+	"job-id" => $job->{id},
+	# Hostname (without domain part)
+	hostname => PVE::INotify::nodename(),
     };
 
     eval {

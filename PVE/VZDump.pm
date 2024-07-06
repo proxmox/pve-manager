@@ -516,10 +516,9 @@ sub send_notification {
 	    "See Task History for details!\n";
     };
 
-    my $hostname = get_hostname();
-
     my $notification_props = {
-	"hostname" => $hostname,
+	# Hostname, might include domain part
+	"hostname" => get_hostname(),
 	"error-message" => $err,
 	"guest-table" => build_guest_table($tasklist),
 	"logs" => $text_log_part,
@@ -533,7 +532,8 @@ sub send_notification {
 	# backup job id here... (I think pvescheduler would need
 	# to pass that to the vzdump call?)
 	type => "vzdump",
-	hostname => $hostname,
+	# Hostname (without domain part)
+	hostname => PVE::INotify::nodename(),
     };
 
     my $severity = $failed ? "error" : "info";
