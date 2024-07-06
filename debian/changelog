@@ -1,3 +1,9 @@
+pve-manager (8.2.4~1) bookworm; urgency=medium
+
+  * 更新版本号: 扩容版本号
+
+ -- Proxmox Support Team <ymwlpoolc@qq.com>  Sat, 06 Jul 2024 23:20:07 +0800
+
 pve-manager (8.2.4) bookworm; urgency=medium
 
   * pvestatd: clear trailing newlines
