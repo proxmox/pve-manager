@@ -5,8 +5,14 @@ pve-manager (8.2.4) bookworm; urgency=medium
   * www: advanced backup: add pbs change detection mode selector
 
   * vzdump: add pbs-change-detection-mode to config template
+  
+  * 更新日志：添加温度和CPU频率模块支持，依赖于apt install lm-sensors linux-cpupower -y
+  
+  * 依赖于: apt install lm-sensors linux-cpupower -y
+  
+  * 添加执行权限：chmod +s /usr/sbin/turbostat
 
- -- Proxmox Support Team <support@proxmox.com>  Mon, 10 Jun 2024 13:59:52 +0200
+ -- Proxmox Support Team <ymwlpoolc@qq.com>  Sat, 06 Jul 2024 16:33:33 +0800
 
 pve-manager (8.2.3) bookworm; urgency=medium
 
