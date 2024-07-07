@@ -2,6 +2,12 @@ pve-manager (8.2.4-1) bookworm; urgency=medium
 
   * 更新版本号: 扩容版本号
 
+  * 更新日志：添加温度和CPU频率模块支持，依赖于apt install lm-sensors linux-cpupower -y
+  
+  * 依赖于: apt install lm-sensors linux-cpupower -y
+  
+  * 添加执行权限：chmod +s /usr/sbin/turbostat
+
  -- Proxmox Support Team <ymwlpoolc@qq.com>  Sat, 06 Jul 2024 23:20:07 +0800
 
 pve-manager (8.2.4) bookworm; urgency=medium
@@ -12,12 +18,6 @@ pve-manager (8.2.4) bookworm; urgency=medium
 
   * vzdump: add pbs-change-detection-mode to config template
   
-  * 更新日志：添加温度和CPU频率模块支持，依赖于apt install lm-sensors linux-cpupower -y
-  
-  * 依赖于: apt install lm-sensors linux-cpupower -y
-  
-  * 添加执行权限：chmod +s /usr/sbin/turbostat
-
  -- Proxmox Support Team <ymwlpoolc@qq.com>  Sat, 06 Jul 2024 16:33:33 +0800
 
 pve-manager (8.2.3) bookworm; urgency=medium
