@@ -483,6 +483,7 @@ sub send_notification {
     my ($self, $tasklist, $total_time, $err, $detail_pre, $detail_post) = @_;
 
     my $opts = $self->{opts};
+    my $job_id = $opts->{'job-id'};
     my $mailto = $opts->{mailto};
     my $cmdline = $self->{cmdline};
     my $policy = $opts->{mailnotification} // 'always';
@@ -528,13 +529,12 @@ sub send_notification {
     };
 
     my $fields = {
-	# TODO: There is no straight-forward way yet to get the
-	# backup job id here... (I think pvescheduler would need
-	# to pass that to the vzdump call?)
 	type => "vzdump",
 	# Hostname (without domain part)
 	hostname => PVE::INotify::nodename(),
     };
+    # Add backup-job metadata field in case this is a backup job.
+    $fields->{'job-id'} = $job_id if $job_id;
 
     my $severity = $failed ? "error" : "info";
     my $email_configured = $mailto && scalar(@$mailto);

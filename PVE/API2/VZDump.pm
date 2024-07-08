@@ -42,8 +42,8 @@ __PACKAGE__->register_method ({
     permissions => {
 	description => "The user needs 'VM.Backup' permissions on any VM, and "
 	    ."'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing "
-	    ."is used). The 'tmpdir', 'dumpdir' and 'script' parameters are restricted to the "
-	    ."'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require "
+	    ."is used). The 'tmpdir', 'dumpdir', 'script' and 'job-id' parameters are restricted "
+	    ."to the 'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require "
 	    ."'Datastore.Allocate' on the backup storage. The 'bwlimit', 'performance' and "
 	    ."'ionice' parameters require 'Sys.Modify' on '/'.",
 	user => 'all',
@@ -53,6 +53,15 @@ __PACKAGE__->register_method ({
     parameters => {
 	additionalProperties => 0,
 	properties => PVE::VZDump::Common::json_config_properties({
+	    'job-id' => {
+		description => "The ID of the backup job. If set, the 'backup-job' metadata field"
+		    . " of the backup notification will be set to this value. Only root\@pam"
+		    . " can set this parameter.",
+		type => 'string',
+		format => 'pve-configid',
+		maxLength => 256,
+		optional => 1,
+	    },
 	    stdout => {
 		type => 'boolean',
 		description => "Write tar to stdout, not to a file.",
