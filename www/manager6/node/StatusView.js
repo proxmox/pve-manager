@@ -130,14 +130,12 @@ Ext.define('PVE.node.StatusView', {
         const packageTemp = temperatures[coreTempPrefix]['Package id 0']?.temp1_input;
         if (packageTemp && !isNaN(parseFloat(packageTemp))) {
             cpu1Temps.push(`${parseFloat(packageTemp).toFixed(1)}℃`);
-            //cpu1Temps.push(`${(parseFloat(packageTemp)).toFixed(1)}℃`);
         }
         for (let i = 0; i <= 15; i++) {
             const tempKey = `temp${i + 2}_input`;// 因为从temp2_input开始，所以i+2
             const tempValue = temperatures[coreTempPrefix][`Core ${i}`]?.[tempKey];
             if (tempValue && !isNaN(parseFloat(tempValue))) {
                 cpu1Temps.push(`${parseFloat(tempValue).toFixed(1)}℃`);
-                //cpu1Temps.push(`${(parseFloat(tempValue)).toFixed(1)}℃`);
             }
         }
         // 使用filter方法过滤掉'N/A'（在这个例子中，我们其实没有添加'N/A'，因为只有当tempValue是数字时才添加)
@@ -226,7 +224,6 @@ Ext.define('PVE.node.StatusView', {
                     const tempKey = `temp${i}_input`;
                     if (sensor[tempKey] && !isNaN(parseFloat(sensor[tempKey]))) {
                         nvmeTemps.push(parseFloat(sensor[tempKey]).toFixed(1) + '℃');
-                        //nvmeTemps.push((parseFloat(sensor[tempKey])).toFixed(1) + '℃');
                     }
                 }
             }
