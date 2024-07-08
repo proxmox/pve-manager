@@ -37,6 +37,10 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 	    return {};
 	}
 
+	if (!formValues.id && me.isCreate) {
+	    formValues.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
+	}
+
 	let options = {};
 
 	if (!me.isCreate) {
@@ -108,6 +112,25 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
     },
 
     items: [
+	{
+	    xtype: 'pveTwoColumnContainer',
+	    startColumn: {
+		xtype: 'pmxDisplayEditField',
+		vtype: 'ConfigId',
+		fieldLabel: gettext('Job ID'),
+		emptyText: gettext('Autogenerate'),
+		name: 'id',
+		allowBlank: true,
+		cbind: {
+		    editable: '{isCreate}',
+		},
+	    },
+	    endFlex: 2,
+	    endColumn: {
+		xtype: 'displayfield',
+		value: gettext('Can be used in notification matchers to match this job.'),
+	    },
+	},
 	{
 	    xtype: 'pveTwoColumnContainer',
 	    startColumn: {
