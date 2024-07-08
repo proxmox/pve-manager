@@ -2061,6 +2061,17 @@ Ext.define('PVE.Utils', {
 	    zfscreate: [gettext('ZFS Storage'), gettext('Create')],
 	    zfsremove: ['ZFS Pool', gettext('Remove')],
 	});
+
+	Proxmox.Utils.overrideNotificationFieldName({
+	    'job-id': gettext('Job ID'),
+	});
+
+	Proxmox.Utils.overrideNotificationFieldValue({
+	    'package-updates': gettext('Package updates are available'),
+	    'vzdump': gettext('Backup notifications'),
+	    'replication': gettext('Replication job notifications'),
+	    'fencing': gettext('Node fencing notifications'),
+	});
     },
 
 });
