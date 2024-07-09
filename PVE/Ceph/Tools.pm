@@ -285,8 +285,16 @@ sub set_pool {
     my $keys = [ grep { $_ ne 'size' } sort keys %$param ];
     unshift @$keys, 'size' if exists $param->{size};
 
+    my $current_properties = get_pool_properties($pool, $rados);
+
     for my $setting (@$keys) {
 	my $value = $param->{$setting};
+
+	if (defined($current_properties->{$setting}) && $value eq $current_properties->{$setting}) {
+	    print "skipping '${setting}', did not change\n";
+	    delete $param->{$setting};
+	    next;
+	}
 
 	print "pool $pool: applying $setting = $value\n";
 	if (my $err = $set_pool_setting->($pool, $setting, $value, $rados)) {
