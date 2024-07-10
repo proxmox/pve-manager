@@ -133,6 +133,8 @@ __PACKAGE__->register_method ({
 
 	my $mds_id = $param->{name} // $nodename;
 
+	die "ID of the MDS cannot start with a number!\n" if ($mds_id =~ /^[0-9]/);
+
 	my $worker = sub {
 	    my $timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
 	    my $rados = PVE::RADOS->new(timeout => $timeout);
