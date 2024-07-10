@@ -222,7 +222,7 @@ sub check_pve_packages {
 	    }
 	} elsif ($get_pkg->($kinstalled)) {
 	    # with 6.2 kernel being available in both we might want to fine-tune the check?
-	    log_warn("a suitable kernel ($kinstalled) is intalled, but an unsuitable ($kernel_ver) is booted, missing reboot?!");
+	    log_warn("a suitable kernel ($kinstalled) is installed, but an unsuitable ($kernel_ver) is booted, missing reboot?!");
 	} else {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
