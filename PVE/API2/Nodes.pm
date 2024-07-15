@@ -417,7 +417,7 @@ __PACKAGE__->register_method({
 		},
 	    },
 	    'current-kernel' => {
-		description => "The uptime of the system in seconds.",
+		description => "Meta-information about the currently booted kernel of this node.",
 		type => 'object',
 		properties => {
 		    sysname => {
