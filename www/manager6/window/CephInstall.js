@@ -66,12 +66,12 @@ Ext.define('PVE.ceph.Install', {
 	    },
 	    handler: function() {
 		let view = this.up('pveCephInstallWindow');
-		let wizzard = Ext.create('PVE.ceph.CephInstallWizard', {
+		let wizard = Ext.create('PVE.ceph.CephInstallWizard', {
 		    nodename: view.nodename,
 		});
-		wizzard.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
-		wizzard.show();
-		view.mon(wizzard, 'beforeClose', function() {
+		wizard.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
+		wizard.show();
+		view.mon(wizard, 'beforeClose', function() {
 		    view.fireEvent("cephInstallWindowClosed");
 		    view.close();
 		});
