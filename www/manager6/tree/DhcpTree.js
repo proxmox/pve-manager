@@ -156,15 +156,20 @@ Ext.define('PVE.sdn.DhcpTree', {
 	openEditWindow: function(data) {
 	    let me = this;
 
+	    let extraRequestParams = {
+		mac: data.mac,
+		zone: data.zone,
+		vnet: data.vnet,
+	    };
+
+	    if (data.vmid) {
+		extraRequestParams.vmid = data.vmid;
+	    }
+
 	    Ext.create('PVE.sdn.IpamEdit', {
 		autoShow: true,
 		mapping: data,
-		extraRequestParams: {
-		    vmid: data.vmid,
-		    mac: data.mac,
-		    zone: data.zone,
-		    vnet: data.vnet,
-		},
+		extraRequestParams,
 		listeners: {
 		    destroy: () => me.reload(),
 		},
