@@ -1079,8 +1079,9 @@ Ext.define('PVE.Utils', {
 	}
 
 	var per = (record.data.cpu/maxcpu) * record.data.maxcpu * 100;
+	const cpu_label = maxcpu > 1 ? 'CPUs' : 'CPU';
 
-	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
+	return `${per.toFixed(1)}% of ${maxcpu} ${cpu_label}`;
     },
 
     render_bandwidth: function(value) {
