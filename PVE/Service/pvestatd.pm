@@ -103,7 +103,7 @@ sub update_supported_cpuflags {
 
 	$supported_cpuflags = {};
     } else {
-	# only set cached version if there's actually something to braodcast
+	# only set cached version if there's actually something to broadcast
 	$cached_kvm_version = $kvm_version;
     }
 

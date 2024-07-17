@@ -399,7 +399,7 @@ __PACKAGE__->register_method({
 	type => "object",
 	additionalProperties => 1,
 	properties => {
-	    # TODO: document remaing ones
+	    # TODO: document remaining ones
 	    'boot-info' => {
 		description => "Meta-information about the boot mode.",
 		type => 'object',

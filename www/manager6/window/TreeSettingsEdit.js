@@ -5,7 +5,7 @@ Ext.define('PVE.window.TreeSettingsEdit', {
     title: gettext('Tree Settings'),
     isCreate: false,
 
-    url: '#', // ignored as submit() gets overriden here, but the parent class requires it
+    url: '#', // ignored as submit() gets overridden here, but the parent class requires it
 
     width: 450,
     fieldDefaults: {

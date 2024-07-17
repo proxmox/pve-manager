@@ -43,7 +43,7 @@ Ext.define('PVE.lxc.CPUEdit', {
     },
 });
 
-// The view model of the parent shoul contain a 'cgroupMode' variable (or params for v2 are used).
+// The view model of the parent should contain a 'cgroupMode' variable (or params for v2 are used).
 Ext.define('PVE.lxc.CPUInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveLxcCPUInputPanel',

@@ -180,7 +180,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		columnWidth: 1,
 		padding: '0 0 10 0',
 		itemId: 'iommuwarning',
-		value: 'The selected Device is not in a seperate IOMMU group, make sure this is intended.',
+		value: 'The selected Device is not in a separate IOMMU group, make sure this is intended.',
 		userCls: 'pmx-hint',
 	    },
 	];

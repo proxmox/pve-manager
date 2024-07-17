@@ -61,7 +61,7 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    networkCard: 'virtio',
 	});
 
-	// recommandation from http://wiki.qemu.org/Windows2000
+	// recommendation from http://wiki.qemu.org/Windows2000
 	addOS({
 	    pveOS: 'w2k',
 	    parent: 'generic',
