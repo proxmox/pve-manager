@@ -1074,7 +1074,7 @@ Ext.define('PVE.Utils', {
 	}
 	var maxcpu = node.data.maxcpu || 1;
 
-	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
+	if (!Ext.isNumeric(maxcpu) || maxcpu < 1) {
 	    return '';
 	}
 
