@@ -51,7 +51,7 @@ Ext.define('PVE.CephCreateService', {
 	    regex: /^([a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?)$/,
 	    regexText: gettext('ID may consist of alphanumeric characters and hyphen. It cannot start with a number or end in a hyphen.'),
 	    submitValue: false,
-	    emptyText: Proxmox.Utils.NoneText,
+	    allowBlank: false,
 	    cbind: {
 		disabled: get => get('type') !== 'mds',
 		hidden: get => get('type') !== 'mds',
