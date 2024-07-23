@@ -57,24 +57,47 @@ my $config_files = {
 sub get_local_version {
     my ($noerr) = @_;
 
-    if (check_ceph_installed('ceph_bin', $noerr)) {
-	my $ceph_version;
-	run_command(
-	    [ $ceph_service->{ceph_bin}, '--version' ],
-	    noerr => $noerr,
-	    outfunc => sub { $ceph_version = shift if !defined $ceph_version },
-	);
-	return undef if !defined $ceph_version;
+    return undef if !check_ceph_installed('ceph_bin', $noerr);
 
-	if ($ceph_version =~ /^ceph.*\sv?(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
-	    my ($version, $buildcommit) = ($1, $2);
-	    my $subversions = [ split(/\.|-/, $version) ];
+    my $ceph_version;
+    run_command(
+	[ $ceph_service->{ceph_bin}, '--version' ],
+	noerr => $noerr,
+	outfunc => sub { $ceph_version = shift if !defined $ceph_version },
+    );
 
-	    # return (version, buildid, major, minor, ...) : major;
-	    return wantarray
-		? ($version, $buildcommit, $subversions)
-		: $subversions->[0];
-	}
+    return undef if !defined $ceph_version;
+
+    my ($version, $buildcommit, $subversions) = parse_ceph_version($ceph_version);
+
+    return undef if !defined($version);
+
+    # return (version, buildid, [major, minor, ...]) : major;
+    return wantarray ? ($version, $buildcommit, $subversions) : $subversions->[0];
+}
+
+sub parse_ceph_version : prototype($) {
+    my ($ceph_version) = @_;
+
+    my $re_ceph_version = qr/
+	# Skip ahead to the version, which may optionally start with 'v'
+	^ceph.*\sv?
+
+	# Parse the version X.Y, X.Y.Z, etc.
+	( \d+ (?:\.\d+)+ ) \s+
+
+	# Parse the git commit hash between parentheses
+	(?: \( ([a-zA-Z0-9]+) \) )
+    /x;
+
+    if ($ceph_version =~ /$re_ceph_version/) {
+	my ($version, $buildcommit) = ($1, $2);
+	my $subversions = [ split(/\.|-/, $version) ];
+
+	# return (version, buildid, [major, minor, ...]) : major;
+	return wantarray
+	    ? ($version, $buildcommit, $subversions)
+	    : $subversions->[0];
     }
 
     return undef;
@@ -262,8 +285,16 @@ sub set_pool {
     my $keys = [ grep { $_ ne 'size' } sort keys %$param ];
     unshift @$keys, 'size' if exists $param->{size};
 
+    my $current_properties = get_pool_properties($pool, $rados);
+
     for my $setting (@$keys) {
 	my $value = $param->{$setting};
+
+	if (defined($current_properties->{$setting}) && $value eq $current_properties->{$setting}) {
+	    print "skipping '${setting}', did not change\n";
+	    delete $param->{$setting};
+	    next;
+	}
 
 	print "pool $pool: applying $setting = $value\n";
 	if (my $err = $set_pool_setting->($pool, $setting, $value, $rados)) {

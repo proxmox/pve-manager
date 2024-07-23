@@ -89,7 +89,7 @@ sub _send_batch_size {
     return $mtu - 50; # a bit more than 48byte to allow for safe room
 }
 
-# call with the smalles $data chunks possible
+# call with the smallest $data chunks possible
 sub add_metric_data {
     my ($class, $txn, $data) = @_;
     return if !defined($data);

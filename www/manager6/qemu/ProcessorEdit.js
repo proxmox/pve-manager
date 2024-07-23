@@ -1,4 +1,4 @@
-// The view model of the parent shoul contain a 'cgroupMode' variable (or params for v2 are used).
+// The view model of the parent should contain a 'cgroupMode' variable (or params for v2 are used).
 Ext.define('PVE.qemu.ProcessorInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuProcessorPanel',

@@ -45,7 +45,7 @@ sub assert_param_permission_common {
     my ($rpcenv, $user, $param, $is_delete) = @_;
     return if $user eq 'root@pam'; # always OK
 
-    for my $key (qw(tmpdir dumpdir script)) {
+    for my $key (qw(tmpdir dumpdir script job-id)) {
 	raise_param_exc({ $key => "Only root may set this option."}) if exists $param->{$key};
     }
 

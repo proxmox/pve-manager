@@ -124,7 +124,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		datafield.setValue(extradata.join('\n'));
 		if (!me.createdInitially) {
 		    datafield.resetOriginalValue();
-		    me.createdInitially = true; // save that we initally set that
+		    me.createdInitially = true; // save that we initially set that
 		}
 	    },
 	    onGetValues: function(values) {

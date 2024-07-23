@@ -323,7 +323,7 @@ __PACKAGE__->register_method ({
 	# 'ceph-volume lvm batch' and they don't make a lot of sense on fast NVMEs anyway.
 	if ($param->{'osds-per-device'}) {
 	    for my $type ( qw(db_dev wal_dev) ) {
-		raise_param_exc({ $type => "canot use 'osds-per-device' parameter with '${type}'" })
+		raise_param_exc({ $type => "cannot use 'osds-per-device' parameter with '${type}'" })
 		    if $param->{$type};
 	    }
 	}

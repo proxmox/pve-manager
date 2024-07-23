@@ -37,7 +37,7 @@ Ext.define('PVE.form.SizeField', {
     unit: 'MiB',
     unitPostfix: '',
 
-    // use this if the backend saves values in another unit tha bytes, e.g.,
+    // use this if the backend saves values in a unit other than bytes, e.g.,
     // for KiB set it to 'KiB'
     backendUnit: undefined,
 

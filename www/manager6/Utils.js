@@ -118,7 +118,8 @@ Ext.define('PVE.Utils', {
 	}
 
 	if (service.ceph_version) {
-	    var match = service.ceph_version.match(/version (\d+(\.\d+)*)/);
+	    // See PVE/Ceph/Tools.pm - get_local_version
+	    const match = service.ceph_version.match(/^ceph.*\sv?(\d+(?:\.\d+)+)/);
 	    if (match) {
 		return match[1];
 	    }
@@ -1073,13 +1074,14 @@ Ext.define('PVE.Utils', {
 	}
 	var maxcpu = node.data.maxcpu || 1;
 
-	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
+	if (!Ext.isNumeric(maxcpu) || maxcpu < 1) {
 	    return '';
 	}
 
 	var per = (record.data.cpu/maxcpu) * record.data.maxcpu * 100;
+	const cpu_label = maxcpu > 1 ? 'CPUs' : 'CPU';
 
-	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
+	return `${per.toFixed(1)}% of ${maxcpu} ${cpu_label}`;
     },
 
     render_bandwidth: function(value) {
@@ -2058,6 +2060,17 @@ Ext.define('PVE.Utils', {
 	    vzumount: ['CT', gettext('Unmount')],
 	    zfscreate: [gettext('ZFS Storage'), gettext('Create')],
 	    zfsremove: ['ZFS Pool', gettext('Remove')],
+	});
+
+	Proxmox.Utils.overrideNotificationFieldName({
+	    'job-id': gettext('Job ID'),
+	});
+
+	Proxmox.Utils.overrideNotificationFieldValue({
+	    'package-updates': gettext('Package updates are available'),
+	    'vzdump': gettext('Backup notifications'),
+	    'replication': gettext('Replication job notifications'),
+	    'fencing': gettext('Node fencing notifications'),
 	});
     },
 

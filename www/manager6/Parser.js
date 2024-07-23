@@ -65,7 +65,7 @@ Ext.define('PVE.Parser', {
 		    if (Ext.isDefined(res[defaultKey])) {
 			throw 'defaultKey may be only defined once in propertyString';
 		    }
-		    res[defaultKey] = k; // k ist the value in this case
+		    res[defaultKey] = k; // k is the value in this case
 		} else {
 		    throw `Failed to parse key-value pair: ${property}`;
 		}

@@ -132,7 +132,7 @@ Ext.define('PVE.window.Restore', {
 
 			if (key === '#qmdump#map') {
 			    let match = value.match(/^(\S+):(\S+):(\S*):(\S*):$/) ?? [];
-			    // if a /dev/XYZ disk was backed up, ther is no storage hint
+			    // if a /dev/XYZ disk was backed up, there is no storage hint
 			    allStoragesAvailable &&= !!match[3] && !!PVE.data.ResourceStore.getById(
 				`storage/${view.nodename}/${match[3]}`);
 			} else if (key === 'name' || key === 'hostname') {

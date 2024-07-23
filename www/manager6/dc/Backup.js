@@ -45,10 +45,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		Proxmox.Utils.assemble_field_data(values, { 'delete': 'notification-target' });
 	    }
 
-	    if (!values.id && isCreate) {
-		values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
-	    }
-
 	    let selMode = values.selMode;
 	    delete values.selMode;
 

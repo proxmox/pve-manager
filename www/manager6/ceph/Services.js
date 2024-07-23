@@ -265,7 +265,7 @@ Ext.define('PVE.ceph.ServiceList', {
 		});
 		me.ids.push(list[i].id);
 	    } else {
-		delete pendingRemoval[list[i].id]; // drop exisiting from for-removal
+		delete pendingRemoval[list[i].id]; // drop existing from for-removal
 	    }
 	    service.updateService(list[i].title, list[i].text, list[i].health);
 	}

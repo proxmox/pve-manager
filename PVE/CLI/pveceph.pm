@@ -216,7 +216,7 @@ __PACKAGE__->register_method ({
 
 	print "start installation\n";
 
-	# this flag helps to determine when apt is actually done installing (vs. partial extracing)
+	# this flag helps to determine when apt is actually done installing (vs. partial extracting)
 	my $install_flag_fn = PVE::Ceph::Tools::ceph_install_flag_file();
 	open(my $install_flag, '>', $install_flag_fn) or die "could not create install flag - $!\n";
 	close $install_flag;

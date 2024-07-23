@@ -102,7 +102,7 @@ Ext.define('PVE.window.Migrate', {
 	},
 
 	onTargetChange: function(nodeSelector) {
-	    // Always display the storages of the currently seleceted migration target
+	    // Always display the storages of the currently selected migration target
 	    this.lookup('pveDiskStorageSelector').setNodename(nodeSelector.value);
 	    this.checkMigratePreconditions();
 	},

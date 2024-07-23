@@ -13,18 +13,17 @@ Ext.define('PVE.CephCreateService', {
 	me.nodename = node;
 	me.updateUrl();
     },
-    setExtraID: function(extraID) {
+    setServiceID: function(value) {
 	let me = this;
-	me.extraID = me.type === 'mds' ? `-${extraID}` : '';
+	me.serviceID = value;
 	me.updateUrl();
     },
     updateUrl: function() {
 	let me = this;
-
-	let extraID = me.extraID ?? '';
 	let node = me.nodename;
+	let serviceID = me.serviceID ?? me.nodename;
 
-	me.url = `/nodes/${node}/ceph/${me.type}/${node}${extraID}`;
+	me.url = `/nodes/${node}/ceph/${me.type}/${serviceID}`;
     },
 
     defaults: {
@@ -40,17 +39,19 @@ Ext.define('PVE.CephCreateService', {
 	    listeners: {
 		change: function(f, value) {
 		    let view = this.up('pveCephCreateService');
+		    view.lookup('mds-id').setValue(value);
 		    view.setNode(value);
 		},
 	    },
 	},
 	{
 	    xtype: 'textfield',
-	    fieldLabel: gettext('Extra ID'),
-	    regex: /[a-zA-Z0-9]+/,
-	    regexText: gettext('ID may only consist of alphanumeric characters'),
+	    reference: 'mds-id',
+	    fieldLabel: gettext('MDS ID'),
+	    regex: /^([a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?)$/,
+	    regexText: gettext('ID may consist of alphanumeric characters and hyphen. It cannot start with a number or end in a hyphen.'),
 	    submitValue: false,
-	    emptyText: Proxmox.Utils.NoneText,
+	    allowBlank: false,
 	    cbind: {
 		disabled: get => get('type') !== 'mds',
 		hidden: get => get('type') !== 'mds',
@@ -58,7 +59,7 @@ Ext.define('PVE.CephCreateService', {
 	    listeners: {
 		change: function(f, value) {
 		    let view = this.up('pveCephCreateService');
-		    view.setExtraID(value);
+		    view.setServiceID(value);
 		},
 	    },
 	},
@@ -73,7 +74,7 @@ Ext.define('PVE.CephCreateService', {
 	    cbind: {
 		hidden: get => get('type') !== 'mds',
 	    },
-	    html: gettext('The Extra ID allows creating multiple MDS per node, which increases redundancy with more than one CephFS.'),
+	    html: gettext('By using different IDs, you can have multiple MDS per node, which increases redundancy with more than one CephFS.'),
 	},
     ],
 

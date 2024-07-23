@@ -79,9 +79,148 @@ __PACKAGE__->register_method ({
 	    { name => 'endpoints' },
 	    { name => 'matchers' },
 	    { name => 'targets' },
+	    { name => 'matcher-fields' },
+	    { name => 'matcher-field-values' },
 	];
 
 	return $result;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_matcher_fields',
+    path => 'matcher-fields',
+    method => 'GET',
+    description => 'Returns known notification metadata fields',
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	],
+    },
+    protected => 0,
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => {
+		name => {
+		    description => 'Name of the field.',
+		    type => 'string',
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	# TODO: Adapt this API handler once we have a 'notification registry'
+
+	my $result = [
+	    { name => 'type' },
+	    { name => 'hostname' },
+	    { name => 'job-id' },
+	];
+
+	return $result;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_matcher_field_values',
+    path => 'matcher-field-values',
+    method => 'GET',
+    description => 'Returns known notification metadata fields and their known values',
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	],
+    },
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => {
+		'value' => {
+		    description => 'Notification metadata value known by the system.',
+		    type => 'string'
+		},
+		'comment' => {
+		    description => 'Additional comment for this value.',
+		    type => 'string',
+		    optional => 1,
+		},
+		'field' => {
+		    description => 'Field this value belongs to.',
+		    type => 'string',
+		},
+	    },
+	},
+    },
+    code => sub {
+	# TODO: Adapt this API handler once we have a 'notification registry'
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $values = [
+	    {
+		value => 'package-updates',
+		field => 'type',
+	    },
+	    {
+		value => 'fencing',
+		field => 'type',
+	    },
+	    {
+		value => 'replication',
+		field => 'type',
+	    },
+	    {
+		value => 'vzdump',
+		field => 'type',
+	    },
+	    {
+		value => 'system-mail',
+		field => 'type',
+	    },
+	];
+
+	# Here we need a manual permission check.
+	if ($rpcenv->check($user, "/", ["Sys.Audit"], 1)) {
+	    for my $backup_job (@{PVE::API2::Backup->index({})}) {
+		push @$values, {
+		    value => $backup_job->{id},
+		    comment => $backup_job->{comment},
+		    field => 'job-id'
+		};
+	    }
+	}
+	# The API call returns only returns jobs for which the user
+	# has adequate permissions.
+	for my $sync_job (@{PVE::API2::ReplicationConfig->index({})}) {
+	    push @$values, {
+		value => $sync_job->{id},
+		comment => $sync_job->{comment},
+		field => 'job-id'
+	    };
+	}
+
+	for my $node (@{PVE::Cluster::get_nodelist()}) {
+	    push @$values, {
+		value => $node,
+		field => 'hostname',
+	    }
+	}
+
+	return $values;
     }
 });
 
