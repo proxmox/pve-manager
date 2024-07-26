@@ -101,9 +101,11 @@ Ext.define('PVE.window.USBMapEditWindow', {
 	    usbsel.setDisabled(!value);
 	},
 
-	nodeChange: function(_field, value) {
-	    this.lookup('id').setNodename(value);
-	    this.lookup('path').setNodename(value);
+	nodeChange: function(field, value) {
+	    if (!field.isDisabled()) {
+		this.lookup('id').setNodename(value);
+		this.lookup('path').setNodename(value);
+	    }
 	},
 
 
