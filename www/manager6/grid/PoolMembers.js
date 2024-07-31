@@ -148,8 +148,6 @@ Ext.define('PVE.grid.PoolMembers', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pvePoolMembers'],
 
-    // fixme: dynamic status update ?
-
     stateful: true,
     stateId: 'grid-pool-members',
 
@@ -160,19 +158,25 @@ Ext.define('PVE.grid.PoolMembers', {
 	    throw "no pool specified";
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
+	    interval: 10000,
 	    model: 'PVEResources',
+	    proxy: {
+		type: 'proxmox',
+		root: 'data[0].members',
+		url: `/api2/json/pools/?poolid=${me.pool}`,
+	    },
+	    autoStart: true,
+	});
+
+	let store = Ext.create('Proxmox.data.DiffStore', {
+	    rstore: me.rstore,
 	    sorters: [
 		{
 		    property: 'type',
 		    direction: 'ASC',
 		},
 	    ],
-	    proxy: {
-		type: 'proxmox',
-		root: 'data[0].members',
-		url: "/api2/json/pools/?poolid=" + me.pool,
-	    },
 	});
 
 	var coldef = PVE.data.ResourceStore.defaultColumns().filter((c) =>
@@ -260,6 +264,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		    ws.selectById(record.data.id);
 		},
 		activate: reload,
+		destroy: () => me.rstore.stopUpdate(),
 	    },
 	});
 
