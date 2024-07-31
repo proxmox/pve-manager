@@ -40,7 +40,7 @@ Ext.define('PVE.form.SDNZoneSelector', {
 }, function() {
     Ext.define('pve-sdn-zone', {
 	extend: 'Ext.data.Model',
-	fields: ['zone'],
+	fields: ['zone', 'type'],
 	proxy: {
             type: 'proxmox',
 	    url: "/api2/json/cluster/sdn/zones",

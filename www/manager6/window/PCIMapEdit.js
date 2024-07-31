@@ -126,8 +126,10 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 	    this.lookup('pciselector').setMdev(value);
 	},
 
-	nodeChange: function(_field, value) {
-	    this.lookup('pciselector').setNodename(value);
+	nodeChange: function(field, value) {
+	    if (!field.isDisabled()) {
+		this.lookup('pciselector').setNodename(value);
+	    }
 	},
 
 	pciChange: function(_field, value) {
