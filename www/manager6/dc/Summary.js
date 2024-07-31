@@ -170,6 +170,11 @@ Ext.define('PVE.dc.Summary', {
 			} else if (countedStorage[sid]) {
 			    break;
 			}
+
+			if (data.status === "unknown") {
+			    break;
+			}
+
 			used += data.disk;
 			total += data.maxdisk;
 			countedStorage[sid] = true;
