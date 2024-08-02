@@ -84,7 +84,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    let filename = data.filename || "";
 		    let compression = '__default__';
 		    if (view.content === 'iso') {
-			const matches = filename.match(/^(.+)\.(gz|lzo|zst)$/i);
+			const matches = filename.match(/^(.+)\.(gz|lzo|zst|bz2)$/i);
 			if (matches) {
 			    filename = matches[1];
 			    compression = matches[2].toLowerCase();
@@ -228,6 +228,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 				['lzo', 'LZO'],
 				['gz', 'GZIP'],
 				['zst', 'ZSTD'],
+				['bz2', 'bzip2'],
 		    ],
 		    cbind: {
 			hidden: get => get('content') !== 'iso',
