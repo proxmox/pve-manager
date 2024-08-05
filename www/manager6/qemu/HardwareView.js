@@ -593,7 +593,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addNet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
 	    me.down('#addRng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
-	    me.down('#addTpmState').setDisabled(noSysConsolePerm || isAtLimit('tpmstate'));
+	    me.down('#addTpmState').setDisabled(noVMConfigDiskPerm || isAtLimit('tpmstate'));
 	    me.down('#addCloudinitDrive').setDisabled(noVMConfigCDROMPerm || noVMConfigCloudinitPerm || hasCloudInit);
 
 	    if (!rec) {
