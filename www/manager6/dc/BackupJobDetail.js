@@ -238,7 +238,7 @@ Ext.define('PVE.dc.BackupInfo', {
 		const modeToDisplay = {
 		    snapshot: gettext('Snapshot'),
 		    stop: gettext('Stop'),
-		    suspend: gettext('Snapshot'),
+		    suspend: gettext('Suspend'),
 		};
 		return modeToDisplay[value] ?? gettext('Unknown');
 	    },
