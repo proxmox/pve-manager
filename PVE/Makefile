@@ -13,6 +13,7 @@ PERLSOURCE = 			\
 	HTTPServer.pm		\
 	Jobs.pm			\
 	NodeConfig.pm		\
+	PullMetric.pm		\
 	Report.pm		\
 	VZDump.pm
 

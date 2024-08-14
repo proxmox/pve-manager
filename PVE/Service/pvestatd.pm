@@ -31,6 +31,7 @@ use PVE::Ceph::Tools;
 use PVE::pvecfg;
 
 use PVE::ExtMetric;
+use PVE::PullMetric;
 use PVE::Status::Plugin;
 
 use base qw(PVE::Daemon);
@@ -147,7 +148,7 @@ my sub broadcast_static_node_info {
 }
 
 sub update_node_status {
-    my ($status_cfg) = @_;
+    my ($status_cfg, $pull_txn) = @_;
 
     my ($uptime) = PVE::ProcFSTools::read_proc_uptime();
 
@@ -199,6 +200,8 @@ sub update_node_status {
     PVE::ExtMetric::update_all($transactions, 'node', $nodename, $node_metric, $ctime);
     PVE::ExtMetric::transactions_finish($transactions);
 
+    PVE::PullMetric::update($pull_txn, 'node', $node_metric, $ctime);
+
     broadcast_static_node_info($maxcpu, $meminfo->{memtotal});
 }
 
@@ -231,7 +234,7 @@ sub auto_balloning {
 }
 
 sub update_qemu_status {
-    my ($status_cfg) = @_;
+    my ($status_cfg, $pull_txn) = @_;
 
     my $ctime = time();
     my $vmstatus = PVE::QemuServer::vmstatus(undef, 1);
@@ -261,6 +264,8 @@ sub update_qemu_status {
     }
 
     PVE::ExtMetric::transactions_finish($transactions);
+
+    PVE::PullMetric::update($pull_txn, 'qemu', $vmstatus, $ctime);
 }
 
 sub remove_stale_lxc_consoles {
@@ -440,7 +445,7 @@ sub rebalance_lxc_containers {
 }
 
 sub update_lxc_status {
-    my ($status_cfg) = @_;
+    my ($status_cfg, $pull_txn) = @_;
 
     my $ctime = time();
     my $vmstatus = PVE::LXC::vmstatus();
@@ -469,10 +474,12 @@ sub update_lxc_status {
 	PVE::ExtMetric::update_all($transactions, 'lxc', $vmid, $d, $ctime, $nodename);
     }
     PVE::ExtMetric::transactions_finish($transactions);
+
+    PVE::PullMetric::update($pull_txn, 'lxc', $vmstatus, $ctime);
 }
 
 sub update_storage_status {
-    my ($status_cfg) = @_;
+    my ($status_cfg, $pull_txn) = @_;
 
     my $cfg = PVE::Storage::config();
     my $ctime = time();
@@ -492,6 +499,8 @@ sub update_storage_status {
 	PVE::ExtMetric::update_all($transactions, 'storage', $nodename, $storeid, $d, $ctime);
     }
     PVE::ExtMetric::transactions_finish($transactions);
+
+    PVE::PullMetric::update($pull_txn, 'storage', $info, $ctime);
 }
 
 sub rotate_authkeys {
@@ -532,6 +541,8 @@ sub update_status {
     # correct list in case of an unexpected crash.
     my $rpcenv = PVE::RPCEnvironment::get();
 
+    my $pull_txn = PVE::PullMetric::transaction_start();
+
     eval {
 	my $tlist = $rpcenv->active_workers();
 	PVE::Cluster::broadcast_tasklist($tlist);
@@ -542,19 +553,19 @@ sub update_status {
     my $status_cfg = PVE::Cluster::cfs_read_file('status.cfg');
 
     eval {
-	update_node_status($status_cfg);
+	update_node_status($status_cfg, $pull_txn);
     };
     $err = $@;
     syslog('err', "node status update error: $err") if $err;
 
     eval {
-	update_qemu_status($status_cfg);
+	update_qemu_status($status_cfg, $pull_txn);
     };
     $err = $@;
     syslog('err', "qemu status update error: $err") if $err;
 
     eval {
-	update_lxc_status($status_cfg);
+	update_lxc_status($status_cfg, $pull_txn);
     };
     $err = $@;
     syslog('err', "lxc status update error: $err") if $err;
@@ -566,7 +577,7 @@ sub update_status {
     syslog('err', "lxc cpuset rebalance error: $err") if $err;
 
     eval {
-	update_storage_status($status_cfg);
+	update_storage_status($status_cfg, $pull_txn);
     };
     $err = $@;
     syslog('err', "storage status update error: $err") if $err;
@@ -600,6 +611,12 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "version info update error: $err") if $err;
+
+    eval {
+	PVE::PullMetric::transaction_finish($pull_txn);
+    };
+    $err = $@;
+    syslog('err', "could not populate metric data cache: $err") if $err;
 }
 
 my $next_update = 0;

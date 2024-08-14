@@ -6,8 +6,11 @@ use strict;
 use PVE::Tools qw(extract_param extract_sensitive_params);
 use PVE::Exception qw(raise_perm_exc raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::ExtMetric;
+use PVE::PullMetric;
+use PVE::SafeSyslog;
 
 use PVE::RESTHandler;
 
@@ -287,5 +290,185 @@ __PACKAGE__->register_method ({
 
 	return;
     }});
+
+__PACKAGE__->register_method ({
+    name => 'export',
+    path => 'export',
+    method => 'GET',
+    protected => 1,
+    description => "Retrieve metrics of the cluster.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Audit']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    'local-only' => {
+		type => 'boolean',
+		description =>
+		    'Only return metrics for the current node instead of the whole cluster',
+		optional => 1,
+		default => 0,
+	    },
+	    'start-time' => {
+		type => 'integer',
+		description => 'Only include metrics with a timestamp > start-time.',
+		optional => 1,
+		default => 0,
+	    },
+	    'history' => {
+		type => 'boolean',
+		description => 'Also return historic values.'
+		  . ' Returns full available metric history unless `start-time` is also set',
+		optional => 1,
+		default => 0,
+	    },
+	},
+    },
+    returns => {
+	type => 'object',
+	additionalProperties => 0,
+	properties => {
+	    data => {
+		type => 'array',
+		description => 'Array of system metrics. Metrics are sorted by their timestamp.',
+		items => {
+		    type => 'object',
+		    additionalProperties => 0,
+		    properties => {
+			timestamp => {
+			    type => 'integer',
+			    description => 'Time at which this metric was observed',
+			},
+			id => {
+			    type => 'string',
+			    description => "Unique identifier for this metric object,"
+				. " for instance 'node/<nodename>' or"
+				. " 'qemu/<vmid>'."
+			},
+			metric => {
+			    type => 'string',
+			    description => "Name of the metric.",
+			},
+			value => {
+			    type => 'number',
+			    description => 'Metric value.',
+			},
+			type => {
+			    type => 'string',
+			    description => 'Type of the metric.',
+			    enum => [qw(gauge counter derive)],
+			}
+		    }
+		},
+
+	    },
+
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+	my $local_only = $param->{'local-only'} // 0;
+	my $start = $param->{'start-time'};
+	my $history = $param->{'history'} // 0;
+
+	my $now = time();
+
+	my $generations;
+	if ($history) {
+	    # Assuming update loop time of pvestatd of 10 seconds.
+	    if (defined($start)) {
+		my $delta = $now - $start;
+		$generations = int($delta / 10);
+	    } else {
+		$generations = PVE::PullMetric::max_generations();
+	    }
+
+	} else {
+	    $generations = 0;
+	};
+
+	my @metrics = @{PVE::PullMetric::get_local_metrics($generations)};
+
+	if (defined($start)) {
+	    @metrics = grep {
+		$_->{timestamp} > ($start)
+	    } @metrics;
+	}
+
+	my $nodename = PVE::INotify::nodename();
+
+	# Fan out to cluster members
+	# Do NOT remove this check
+	if (!$local_only) {
+	    my $members = PVE::Cluster::get_members();
+
+	    my $rpcenv = PVE::RPCEnvironment::get();
+	    my $authuser = $rpcenv->get_user();
+
+	    my ($user, undef) = PVE::AccessControl::split_tokenid($authuser, 1);
+
+	    my $ticket;
+	    if ($user) {
+		# Theoretically, we might now bypass token privilege separation, since
+		# we use the regular user instead of the token, but
+		# since we already passed the permission check for this handler,
+		# this should be fine.
+		$ticket = PVE::AccessControl::assemble_ticket($user);
+	    } else {
+		$ticket = PVE::AccessControl::assemble_ticket($authuser);
+	    }
+
+	    for my $name (keys %$members) {
+		if ($name eq $nodename) {
+		    # Skip own node, for that one we already have the metrics
+		    next;
+		}
+
+		if (!$members->{$name}->{online}) {
+		    next;
+		}
+
+		my $status = eval {
+		    my $fingerprint = PVE::Cluster::get_node_fingerprint($name);
+		    my $ip = scalar(PVE::Cluster::remote_node_ip($name));
+
+		    my $conn_args = {
+			protocol => 'https',
+			host => $ip,
+			port => 8006,
+			ticket => $ticket,
+			timeout => 5,
+		    };
+
+		    $conn_args->{cached_fingerprints} = { $fingerprint => 1 };
+
+		    my $api_client = PVE::APIClient::LWP->new(%$conn_args);
+
+		    my $params = {
+			# Do NOT remove 'local-only' - potential for request recursion!
+			'local-only' => 1,
+			history => $history,
+		    };
+		    $params->{'start-time'} = $start if defined($start);
+
+		    $api_client->get('/cluster/metrics/export', $params);
+		};
+
+		if ($@) {
+		    syslog('warning', "could not fetch metrics from $name: $@");
+		} else {
+		    push @metrics, $status->{data}->@*;
+		}
+	    }
+	}
+
+	my @sorted = sort {$a->{timestamp} <=> $b->{timestamp}} @metrics;
+
+	return {
+	    data => \@sorted,
+	};
+    },
+});
 
 1;
