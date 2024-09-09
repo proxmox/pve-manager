@@ -95,6 +95,13 @@ Ext.define('PVE.lxc.DeviceInputPanel', {
 		return gettext("Access mode has to be an octal number");
 	    },
 	},
+	{
+	    xtype: 'checkbox',
+	    name: 'deny-write',
+	    fieldLabel: gettext('Read only'),
+	    labelWidth: 120,
+	    checked: false,
+	},
     ],
 });
 
@@ -145,6 +152,7 @@ Ext.define('PVE.lxc.DeviceEdit', {
 		    mode: data.mode,
 		    uid: data.uid,
 		    gid: data.gid,
+		    'deny-write': data['deny-write'],
 		};
 
 		ipanel.setValues(values);
