@@ -34,7 +34,7 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Package: pve-manager
 Section: admin
 Priority: optional
-Architecture: any
+Architecture: all
 Depends: apt (>= 1.5~),
          ca-certificates,
          cstream,
@@ -97,7 +97,6 @@ Depends: apt (>= 1.5~),
          zstd,
          ${misc:Depends},
          ${perl:Depends},
-         ${shlibs:Depends},
 Recommends: libpve-network-perl (>= 0.9~),
             proxmox-firewall,
             proxmox-offline-mirror-helper,
