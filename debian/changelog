@@ -1,3 +1,84 @@
+pve-manager (8.2.5-1) bookworm; urgency=medium
+
+  * 将8.2.4-1版本中的更改合并进入8.2.5
+
+  * 合并主库
+
+  * 同步变更日志，更新版本号为8.2.5-1
+  
+ -- Proxmox Support Team <ymwlpoolc@qq.com>  Tue, 17 Sep 2024 11:33:54 +0800
+ 
+pve-manager (8.2.5) bookworm; urgency=medium
+
+  * ui: qemu hardware: use background delay for asynchronous remove tasks so
+    that the task log window doesn't get shown if the task already finished.
+
+  * ui: qemu hardware: use asynchronous remove API call for disk hot-unplug to
+    expand the task duration timeout from 30 seconds to 10 minutes, helping
+    overloaded and/or slow systems.
+
+  * vzdump config: add fleecing property string to make it clear that fleecing
+    can be configured as a node-wide default too.
+
+  * ui: fix align mode of the two-column container widget, which is used for
+    the advanced tab of the backup job edit window.
+
+  * vzdump: fix unit for bandwidth limit in log message, it's in KiB (base 2)
+    not KB (base 10)
+
+  * pve7to8: allow one to run arbitrary newer Proxmox kernels after upgrade
+
+  * api: replication: add 'job-id' to notification metadata to allow users to
+    create notification match rules for specific replication jobs.
+
+  * vzdump: apt: notification: do not include domain in 'hostname' field.
+
+  * api: replication: include 'hostname' field for notifications.
+
+  * pve7to8: fix typo in log message.
+
+  * ui: backup job: clarify experimental change detection modes.
+
+  * ui: fix `maxcpu` validity check in the host CPU renderer to add a missing
+    space, making it consistent with the CPU usage column.
+
+  * ui: utils: fix inconsistency in host cpu usage display in search view,
+    adding a missing space between the number of CPUs and the actual label.
+
+  * ui: sdn ipam: fix editing custom mappings
+
+  * api: ceph mds: ensure the ID for a new MDS does not start with a number,
+    as Ceph doesn't supports that.
+
+  * fix #5570 ui: ceph: make the MDS ID fully configurable to avoid a issue
+    when the hostname, which is was used as base for the ID, starts with a
+    number. This also made the "extra ID" field redundant.
+
+  * fix #5010: ceph: pool set only properties that actually changed to avoid
+    false-positive errors.
+
+  * api: backup jobs: pass the job ID parameter to make it accessible for the
+    notification system.
+
+  * ui: backup jobs: allow one to set custom job ID in advanced settings
+
+  * ui: resource mappings: fix editing of mapping for non first node
+
+  * ui: sdn vnets: hide irrelevant fields depending on zone type
+
+  * ui: dc summary: fix calculation of storage size when one or more nodes are
+    offline
+
+
+  * api: metrics: add /cluster/metrics/export endpoint
+
+  * ui: qemu: hardware: fix permission check for enabling the button to add a
+    TPM-state volume
+
+  * update shipped appliance info index
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 12 Sep 2024 14:37:24 +0200
+
 pve-manager (8.2.4-1) bookworm; urgency=medium
 
   * 更新版本号: 扩容版本号
