@@ -351,7 +351,12 @@ sub call_api_method {
 
 	$data = $handler->handle($info, $param);
 
-	if (ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH' && $info->{download}) {
+	# TODO: remove 'download' check with PVE 9.0
+	if (
+	    ref($data) eq 'HASH'
+	    && ref($data->{download}) eq 'HASH'
+	    && ($info->{download_allowed} || $info->{download})
+	) {
 	    $data = $handle_streamed_response->($data->{download})
 	}
     }

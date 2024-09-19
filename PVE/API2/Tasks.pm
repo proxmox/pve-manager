@@ -327,7 +327,7 @@ __PACKAGE__->register_method({
 	user => 'all',
     },
     protected => 1,
-    download => 1,
+    download_allowed => 1,
     description => "Read task log.",
     proxyto => 'node',
     parameters => {
