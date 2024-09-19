@@ -351,7 +351,7 @@ sub call_api_method {
 
 	$data = $handler->handle($info, $param);
 
-	if (ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH') {
+	if (ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH' && $info->{download}) {
 	    $data = $handle_streamed_response->($data->{download})
 	}
     }
