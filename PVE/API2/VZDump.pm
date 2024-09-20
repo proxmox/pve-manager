@@ -53,15 +53,12 @@ __PACKAGE__->register_method ({
     parameters => {
 	additionalProperties => 0,
 	properties => PVE::VZDump::Common::json_config_properties({
-	    'job-id' => {
+	    'job-id' => get_standard_option('pve-backup-jobid', {
 		description => "The ID of the backup job. If set, the 'backup-job' metadata field"
 		    . " of the backup notification will be set to this value. Only root\@pam"
 		    . " can set this parameter.",
-		type => 'string',
-		format => 'pve-configid',
-		maxLength => 256,
 		optional => 1,
-	    },
+	    }),
 	    stdout => {
 		type => 'boolean',
 		description => "Write tar to stdout, not to a file.",

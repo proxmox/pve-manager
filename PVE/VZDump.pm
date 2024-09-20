@@ -35,6 +35,7 @@ PVE::JSONSchema::register_standard_option('pve-backup-jobid', {
     type => 'string',
     description => "The job ID.",
     maxLength => 50,
+    pattern => '\S+',
 });
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
