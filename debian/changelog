@@ -1,3 +1,9 @@
+pve-manager (7.4-19) bullseye; urgency=medium
+
+  * api: annotate download endpoints
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 20 Sep 2024 13:19:44 +0200
+
 pve-manager (7.4-18) bullseye; urgency=medium
 
   * pve7to8: check for proper grub meta-package for bootmode
