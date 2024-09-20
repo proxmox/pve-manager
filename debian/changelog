@@ -1,3 +1,9 @@
+pve-manager (8.2.6) bookworm; urgency=medium
+
+  * fix #5731: vzdump jobs: fix execution of converted jobs
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 20 Sep 2024 17:47:17 +0200
+
 pve-manager (8.2.5) bookworm; urgency=medium
 
   * ui: qemu hardware: use background delay for asynchronous remove tasks so
