@@ -10,7 +10,7 @@ use PVE::Tools qw(extract_param);
 use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
-use PVE::JSONSchema;
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::Storage;
 use PVE::Exception qw(raise_param_exc);
 use PVE::VZDump;
@@ -33,12 +33,6 @@ sub verify_day_of_week {
 
     die "invalid day '$value'\n";
 }
-
-my $vzdump_job_id_prop = {
-    type => 'string',
-    description => "The job ID.",
-    maxLength => 50
-};
 
 # NOTE: also used by the vzdump API call.
 sub assert_param_permission_common {
@@ -142,7 +136,7 @@ __PACKAGE__->register_method({
 	items => {
 	    type => "object",
 	    properties => {
-		id => $vzdump_job_id_prop
+		id => get_standard_option('pve-backup-jobid'),
 	    },
 	},
 	links => [ { rel => 'child', href => "{id}" } ],
@@ -298,7 +292,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => {
-	    id => $vzdump_job_id_prop
+	    id => get_standard_option('pve-backup-jobid'),
 	},
     },
     returns => {
@@ -346,7 +340,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => {
-	    id => $vzdump_job_id_prop
+	    id => get_standard_option('pve-backup-jobid'),
 	},
     },
     returns => { type => 'null' },
@@ -412,7 +406,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::Common::json_config_properties({
-	    id => $vzdump_job_id_prop,
+	    id => get_standard_option('pve-backup-jobid'),
 	    schedule => {
 		description => "Backup schedule. The format is a subset of `systemd` calendar events.",
 		type => 'string', format => 'pve-calendar-event',
@@ -570,7 +564,7 @@ __PACKAGE__->register_method({
     parameters => {
 	additionalProperties => 0,
 	properties => {
-	    id => $vzdump_job_id_prop
+	    id => get_standard_option('pve-backup-jobid'),
 	},
     },
     returns => {

@@ -27,6 +27,16 @@ use PVE::VZDump::Plugin;
 use PVE::Tools qw(extract_param split_list);
 use PVE::API2Tools;
 
+# section config header/ID, this needs to cover UUIDs, user given values
+# and `$digest:$counter` values converted from vzdump.cron
+# TODO move to a better place once cycle
+# Jobs::VZDump -> API2::VZDump -> API2::Backups -> Jobs::VZDump is broken..
+PVE::JSONSchema::register_standard_option('pve-backup-jobid', {
+    type => 'string',
+    description => "The job ID.",
+    maxLength => 50,
+});
+
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
 my $lockfile = '/var/run/vzdump.lock';
