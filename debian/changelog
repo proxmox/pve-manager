@@ -1,3 +1,13 @@
+pve-manager (8.2.7) bookworm; urgency=medium
+
+  * api: add missing schema annotations for download endpoints and adapt
+    existing ones to renaming the respective property to 'download_allowed'.
+
+  * pvesh: limit download handling to annotated endpoints to unify the
+    behaviour with pve-http-server.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Sep 2024 11:43:24 +0200
+
 pve-manager (8.2.6) bookworm; urgency=medium
 
   * fix #5731: vzdump jobs: fix execution of converted jobs
