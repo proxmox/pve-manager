@@ -3,32 +3,32 @@ package PVE::CLI::pveceph;
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Fcntl ':flock';
 use File::Path;
 use IO::File;
 use JSON;
-use Data::Dumper;
 use LWP::UserAgent;
 
 use Proxmox::RS::Subscription;
 
-use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
+use PVE::SafeSyslog;
 use PVE::Storage;
 use PVE::Tools qw(run_command);
-use PVE::JSONSchema qw(get_standard_option);
-use PVE::Ceph::Tools;
+
 use PVE::Ceph::Services;
+use PVE::Ceph::Tools;
+
 use PVE::API2::Ceph;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
 use PVE::API2::Ceph::MGR;
 use PVE::API2::Ceph::MON;
 use PVE::API2::Ceph::OSD;
-
-use PVE::CLIHandler;
 
 use base qw(PVE::CLIHandler);
 
