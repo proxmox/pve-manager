@@ -2,28 +2,27 @@ package PVE::API2::Subscription;
 
 use strict;
 use warnings;
+
 use Digest::MD5 qw(md5_hex md5_base64);
-use MIME::Base64;
 use HTTP::Request;
-use LWP::UserAgent;
 use JSON;
+use LWP::UserAgent;
+use MIME::Base64;
 
 use Proxmox::RS::Subscription;
 
-use PVE::Tools;
-use PVE::ProcFSTools;
-use PVE::Exception qw(raise_param_exc);
-use PVE::INotify;
+use PVE::AccessControl;
 use PVE::Cluster qw (cfs_read_file cfs_write_file);
 use PVE::DataCenterConfig;
-use PVE::AccessControl;
-use PVE::Storage;
+use PVE::Exception qw(raise_param_exc);
+use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
-
+use PVE::ProcFSTools;
 use PVE::SafeSyslog;
+use PVE::Storage;
+use PVE::Tools;
 
 use PVE::API2Tools;
-use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
