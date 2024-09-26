@@ -75,7 +75,6 @@ pve-manager (8.2.5) bookworm; urgency=medium
   * ui: dc summary: fix calculation of storage size when one or more nodes are
     offline
 
-
   * api: metrics: add /cluster/metrics/export endpoint
 
   * ui: qemu: hardware: fix permission check for enabling the button to add a
