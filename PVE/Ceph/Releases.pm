@@ -69,6 +69,15 @@ my sub get_ceph_release_def {
 		8 => 1,
 	    },
 	},
+	squid => {
+	    release => '19.2',
+	    unsupported => 1, # not yet released on enterprise
+	    'initial-upstream-release' => '2024-09-27',
+	    'estimated-end-of-upstream-support' => '2026-09-19',
+	    'available-for-pve-release' => {
+		8 => 1,
+	    },
+	},
     };
 
     my $current_pve_major_release = get_current_pve_major_release();
