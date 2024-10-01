@@ -94,7 +94,7 @@ sub write_etc_subscription {
         $filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
 
     if (!(defined($info->{key}) && defined($info->{serverid}))) {
-	unlink "/etc/apt/auth.conf.d/ceph.conf";
+	unlink "/etc/apt/auth.conf.d/ceph.conf" or $!{ENOENT} or die "failed to remove apt auth ceph.conf - $!";
     } else {
 	# FIXME: improve this, especially the selection of valid ceph-releases
 	# NOTE: currently we should add future ceph releases as early as possible, to ensure that
