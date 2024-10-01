@@ -20,6 +20,7 @@ use PVE::SafeSyslog;
 use PVE::Storage;
 use PVE::Tools qw(run_command);
 
+use PVE::Ceph::Releases;
 use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
 
@@ -114,8 +115,8 @@ my sub has_valid_subscription {
     return $info->{status} && $info->{status} eq 'active'; # age check?
 }
 
-my $supported_ceph_versions = ['quincy', 'reef'];
-my $default_ceph_version = 'quincy';
+my $available_ceph_release_codenames = PVE::Ceph::Releases::get_available_ceph_release_codenames(1);
+my $default_ceph_version = PVE::Ceph::Releases::get_default_ceph_release_codename();
 
 __PACKAGE__->register_method ({
     name => 'install',
@@ -127,7 +128,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		enum => $supported_ceph_versions,
+		enum => $available_ceph_release_codenames,
 		default => $default_ceph_version,
 		description => "Ceph version to install.",
 		optional => 1,
@@ -170,14 +171,10 @@ __PACKAGE__->register_method ({
 		." the official Proxmox support!\n\n"
 	}
 
-	my $repolist;
-	if ($cephver eq 'reef') {
-	    $repolist = "deb ${cdn}/debian/ceph-reef bookworm $repo\n";
-	} elsif ($cephver eq 'quincy') {
-	    $repolist = "deb ${cdn}/debian/ceph-quincy bookworm $repo\n";
-	} else {
-	    die "unsupported ceph version: $cephver";
-	}
+	my $available_ceph_releases = PVE::Ceph::Releases::get_all_available_ceph_releases();
+	die "unsupported ceph version: $cephver" if !exists($available_ceph_releases->{$cephver});
+
+	my $repolist = "deb ${cdn}/debian/ceph-${cephver} bookworm $repo\n";
 
 	if (-t STDOUT && !$param->{version}) {
 	    print "This will install Ceph " . ucfirst($cephver) . " - continue (y/N)? ";
@@ -190,8 +187,8 @@ __PACKAGE__->register_method ({
 
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
-	my $supported_re = join('|', $supported_ceph_versions->@*);
-	warn "WARNING: installing non-default ceph release '$cephver'!\n" if $cephver !~ qr/^(?:$supported_re)$/;
+	warn "WARNING: installing non-default ceph release '$cephver'!\n"
+	    if $available_ceph_releases->{$cephver}->{unsupported};
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
