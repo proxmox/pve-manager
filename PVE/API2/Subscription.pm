@@ -85,7 +85,7 @@ sub write_etc_subscription {
     Proxmox::RS::Subscription::write_subscription($filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
 
     if (!(defined($info->{key}) && defined($info->{serverid}))) {
-	unlink "/etc/apt/auth.conf.d/ceph.conf";
+	unlink "/etc/apt/auth.conf.d/ceph.conf" or $!{ENOENT} or die "failed to remove apt auth ceph.conf - $!";
     } else {
 	# NOTE: preparation for easier upgrade to Proxmox VE 8, which introduced the ceph enterprise repo
 	my $ceph_auth = '';
