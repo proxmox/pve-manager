@@ -187,8 +187,19 @@ __PACKAGE__->register_method ({
 
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
-	warn "WARNING: installing non-default ceph release '$cephver'!\n"
-	    if $available_ceph_releases->{$cephver}->{unsupported};
+	if ($available_ceph_releases->{$cephver}->{unsupported}) {
+	    if ($param->{'allow-experimental'}) {
+		warn "NOTE: installing experimental/tech-preview ceph release '$cephver'!\n";
+	    } elsif (-t STDOUT) {
+		print "Ceph " . ucfirst($cephver) . " is currently considered experimental for Proxmox VE - continue (y/N)? ";
+		my $answer = <STDIN>;
+		my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
+
+		die "Aborting installation as requested\n" if !$continue;
+	    } else {
+		die "refusing to instal experimental ceph release '$cephver' without 'allow-experimental' parameter!\n";
+	    }
+	}
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
