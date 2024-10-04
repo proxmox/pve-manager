@@ -36,7 +36,7 @@ Ext.define('PVE.dc.UserEdit', {
 	pwfield = Ext.createWidget('textfield', {
 	    inputType: 'password',
 	    fieldLabel: gettext('Password'),
-	    minLength: 5,
+	    minLength: 8,
 	    name: 'password',
 	    disabled: true,
 	    hidden: true,

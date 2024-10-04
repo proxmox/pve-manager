@@ -72,6 +72,7 @@ Ext.define('PVE.dc.UserView', {
 		    userid: rec.data.userid,
 		    confirmCurrentPassword: Proxmox.UserName !== 'root@pam',
 		    autoShow: true,
+		    minLength: 8,
 		    listeners: {
 			destroy: () => reload(),
 		    },
