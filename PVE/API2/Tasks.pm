@@ -482,6 +482,9 @@ __PACKAGE__->register_method({
 	    starttime => {
 		type => 'number',
 	    },
+	    pstart => {
+		type => 'integer',
+	    },
 	    node => {
 		type => 'string',
 	    },
