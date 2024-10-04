@@ -176,8 +176,9 @@ __PACKAGE__->register_method ({
 
 	my $repolist = "deb ${cdn}/debian/ceph-${cephver} bookworm $repo\n";
 
+	my $rendered_release = $available_ceph_releases->{$cephver}->{release} . ' ' . ucfirst($cephver);
 	if (-t STDOUT && !$param->{version}) {
-	    print "This will install Ceph " . ucfirst($cephver) . " - continue (y/N)? ";
+	    print "This will install Ceph ${rendered_release} - continue (y/N)? ";
 
 	    my $answer = <STDIN>;
 	    my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
@@ -189,15 +190,15 @@ __PACKAGE__->register_method ({
 
 	if ($available_ceph_releases->{$cephver}->{unsupported}) {
 	    if ($param->{'allow-experimental'}) {
-		warn "NOTE: installing experimental/tech-preview ceph release '$cephver'!\n";
+		warn "NOTE: installing experimental/tech-preview Ceph release ${rendered_release}!\n";
 	    } elsif (-t STDOUT) {
-		print "Ceph " . ucfirst($cephver) . " is currently considered experimental for Proxmox VE - continue (y/N)? ";
+		print "Ceph ${rendered_release} is currently considered experimental for Proxmox VE - continue (y/N)? ";
 		my $answer = <STDIN>;
 		my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
 
 		die "Aborting installation as requested\n" if !$continue;
 	    } else {
-		die "refusing to instal experimental ceph release '$cephver' without 'allow-experimental' parameter!\n";
+		die "refusing to instal experimental ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
 	    }
 	}
 
@@ -234,7 +235,7 @@ __PACKAGE__->register_method ({
 	    die "apt failed during ceph installation ($?)\n";
 	}
 
-	print "\ninstalled ceph $cephver successfully!\n";
+	print "\ninstalled Ceph ${rendered_release} successfully!\n";
 	# done: drop flag file so that the PVE::Ceph::Tools check returns Ok now.
 	unlink $install_flag_fn or warn "could not remove Ceph installation flag - $!";
 
