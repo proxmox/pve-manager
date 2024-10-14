@@ -305,7 +305,7 @@ Ext.define('PVE.node.Certificates', {
 	    dataIndex: 'subject',
 	},
 	{
-	    header: gettext('Public Key Alogrithm'),
+	    header: gettext('Public Key Algorithm'),
 	    flex: 1,
 	    dataIndex: 'public-key-type',
 	    hidden: true,

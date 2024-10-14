@@ -169,7 +169,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    return ''; // should be hidden
 		} else if (repo === 'no-subscription') {
 		    return allSub
-		        ? gettext("Cluster has active subscriptions and would be elligible for using the enterprise repository.")
+		        ? gettext("Cluster has active subscriptions and would be eligible for using the enterprise repository.")
 		        : gettext("The no-subscription repository is not the best choice for production setups.");
 		} else {
 		    return gettext('The test repository should only be used for test setups or after consulting the official Proxmox support!');
