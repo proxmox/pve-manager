@@ -103,7 +103,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		tdCls: 'pve-itype-icon-cpu',
 		group: 3,
 		defaultValue: '1',
-		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
+		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits', 'affinity'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
 		    var sockets = me.getObjectValue('sockets', 1, pending);
 		    var model = me.getObjectValue('cpu', undefined, pending);
@@ -112,6 +112,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    var vcpus = me.getObjectValue('vcpus', undefined, pending);
 		    var cpulimit = me.getObjectValue('cpulimit', undefined, pending);
 		    var cpuunits = me.getObjectValue('cpuunits', undefined, pending);
+		    var cpuaffinity = me.getObjectValue('affinity', undefined, pending);
 
 		    let res = Ext.String.format(
 		        '{0} ({1} sockets, {2} cores)', sockets * cores, sockets, cores);
@@ -130,6 +131,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		    }
 		    if (cpuunits) {
 			res += ' [cpuunits=' + cpuunits +']';
+		    }
+		    if (cpuaffinity) {
+			res += ' [cpuaffinity=' + cpuaffinity + ']';
 		    }
 
 		    return res;
@@ -212,6 +216,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false,
 	    },
 	    ostype: {
+		visible: false,
+	    },
+	    affinity: {
 		visible: false,
 	    },
 	};
