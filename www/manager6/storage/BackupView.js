@@ -1,6 +1,8 @@
 Ext.define('PVE.storage.BackupView', {
     extend: 'PVE.storage.ContentView',
 
+    onlineHelp: 'chapter_vzdump',
+
     alias: 'widget.pveStorageBackupView',
 
     showColumns: ['name', 'notes', 'protected', 'date', 'format', 'size'],
