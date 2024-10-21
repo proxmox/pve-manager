@@ -295,6 +295,20 @@ __PACKAGE__->register_method({
 		    optional => 1,
 		    renderer => 'bytes',
 		},
+		netin => {
+		    description => "The amount of traffic that was sent to the guest since it's"
+			." start, in bytes. (type in qemu,lxc)",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		netout => {
+		    description => "The amount of traffic that was sent from the guest since it's"
+			." start, in bytes. (type in qemu,lxc)",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
 		level => {
 		    description => "Support level (when type == node).",
 		    type => 'string',
@@ -325,6 +339,20 @@ __PACKAGE__->register_method({
 		    renderer => 'bytes',
 		    minimum => 0,
 		},
+		diskread => {
+		    description => "The amount of bytes the guest read from it's disks since the"
+			." process start in bytes. (type in qemu,lxc)",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		diskwrite => {
+		    description => "The amount of bytes the guest wrote to it's disks since the"
+			." process start in bytes. (type in qemu,lxc)",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
 		content => {
 		    description => "Allowed storage content types (when type == storage).",
 		    type => 'string',
@@ -344,6 +372,12 @@ __PACKAGE__->register_method({
 		    description => "The cgroup mode the node operates under (when type == node).",
 		    type => 'integer',
 		    optional => 1,
+		},
+		template => {
+		    description => "Determines if the guest is a template. (type in qemu,lxc)",
+		    type => 'boolean',
+		    optional => 1,
+		    default => 0,
 		},
 	    },
 	},
