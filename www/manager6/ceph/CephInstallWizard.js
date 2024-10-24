@@ -302,11 +302,19 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 				let record = me.store.findRecord('release', release, 0, false, true, true);
 				let releaseIsTechPreview = !!record.data.preview;
 				wizard.getViewModel().set('selectedReleaseIsTechPreview', releaseIsTechPreview);
+
+				let repoSelector = wizard.down('#repoSelector');
+				if (releaseIsTechPreview) {
+				    repoSelector.store.filterBy(entry => entry.get('key') !== 'enterprise');
+				} else {
+				    repoSelector.store.clearFilter();
+				}
 			    },
 			},
 		    },
 		    {
 			xtype: 'proxmoxKVComboBox',
+			id: 'repoSelector', // TODO: use name or reference (how to lookup that here?)
 			fieldLabel: gettext('Repository'),
 			padding: '0 0 0 10',
 			comboItems: [
