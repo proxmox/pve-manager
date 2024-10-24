@@ -192,13 +192,13 @@ __PACKAGE__->register_method ({
 	    if ($param->{'allow-experimental'}) {
 		warn "NOTE: installing experimental/tech-preview Ceph release ${rendered_release}!\n";
 	    } elsif (-t STDOUT) {
-		print "Ceph ${rendered_release} is currently considered experimental for Proxmox VE - continue (y/N)? ";
+		print "Ceph ${rendered_release} is currently considered a technology preview for Proxmox VE - continue (y/N)? ";
 		my $answer = <STDIN>;
 		my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
 
 		die "Aborting installation as requested\n" if !$continue;
 	    } else {
-		die "refusing to instal experimental ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
+		die "refusing to instal tech-preview ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
 	    }
 	}
 
