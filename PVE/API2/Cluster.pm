@@ -296,15 +296,15 @@ __PACKAGE__->register_method({
 		    renderer => 'bytes',
 		},
 		netin => {
-		    description => "The amount of traffic that was sent to the guest since it's"
-			." start, in bytes. (type in qemu,lxc)",
+		    description => "The amount of traffic in bytes that was sent to the guest over"
+			." the network since it was started. (for type 'qemu' and 'lxc')",
 		    type => 'integer',
 		    optional => 1,
 		    renderer => 'bytes',
 		},
 		netout => {
-		    description => "The amount of traffic that was sent from the guest since it's"
-			." start, in bytes. (type in qemu,lxc)",
+		    description => "The amount of traffic in bytes that was sent from the guest over"
+			." the network since it was started. (for type 'qemu' and 'lxc')",
 		    type => 'integer',
 		    optional => 1,
 		    renderer => 'bytes',
@@ -315,7 +315,7 @@ __PACKAGE__->register_method({
 		    optional => 1,
 		},
 		uptime => {
-		    description => "Node uptime in seconds (when type in node,qemu,lxc).",
+		    description => "Uptime of node or virtual guest in seconds (when type in node,qemu,lxc).",
 		    type => 'integer',
 		    optional => 1,
 		    renderer => 'duration',
@@ -340,15 +340,17 @@ __PACKAGE__->register_method({
 		    minimum => 0,
 		},
 		diskread => {
-		    description => "The amount of bytes the guest read from it's disks since the"
-			." process start in bytes. (type in qemu,lxc)",
+		    description => "The amount of bytes the guest read from it's block devices since"
+			." the guest was started. This info is not available for all storage types."
+			." (for type 'qemu' and 'lxc')",
 		    type => 'integer',
 		    optional => 1,
 		    renderer => 'bytes',
 		},
 		diskwrite => {
-		    description => "The amount of bytes the guest wrote to it's disks since the"
-			." process start in bytes. (type in qemu,lxc)",
+		    description => "The amount of bytes the guest wrote to it's block devices since"
+			." the guest was started. This info is not available for all storage types."
+			." (for type 'qemu' and 'lxc')",
 		    type => 'integer',
 		    optional => 1,
 		    renderer => 'bytes',
