@@ -227,6 +227,7 @@ __PACKAGE__->register_method({
 	properties => {
 	    type => {
 		type => 'string',
+		description => 'Resource type.',
 		optional => 1,
 		enum => ['vm', 'storage', 'node', 'sdn'],
 	    },
