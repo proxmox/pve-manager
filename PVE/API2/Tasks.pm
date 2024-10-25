@@ -480,7 +480,7 @@ __PACKAGE__->register_method({
 		type => 'string',
 	    },
 	    starttime => {
-		type => 'number',
+		type => 'integer',
 	    },
 	    pstart => {
 		type => 'integer',
