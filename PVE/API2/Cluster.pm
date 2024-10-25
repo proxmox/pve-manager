@@ -315,6 +315,11 @@ __PACKAGE__->register_method({
 		    type => 'string',
 		    optional => 1,
 		},
+		lock => {
+		    description => "The current config lock of the guets (type in qemu,lxc)",
+		    type => 'string',
+		    optional => 1,
+		},
 		uptime => {
 		    description => "Uptime of node or virtual guest in seconds (when type in node,qemu,lxc).",
 		    type => 'integer',
@@ -374,6 +379,11 @@ __PACKAGE__->register_method({
 		'cgroup-mode' => {
 		    description => "The cgroup mode the node operates under (when type == node).",
 		    type => 'integer',
+		    optional => 1,
+		},
+		tags => {
+		    description => "The set tags of the guest (type in qemu,lxc)",
+		    type  => "string",
 		    optional => 1,
 		},
 		template => {
