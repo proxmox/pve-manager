@@ -198,7 +198,7 @@ __PACKAGE__->register_method ({
 
 		die "Aborting installation as requested\n" if !$continue;
 	    } else {
-		die "refusing to instal tech-preview ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
+		die "refusing to install tech-preview Ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
 	    }
 	}
 
