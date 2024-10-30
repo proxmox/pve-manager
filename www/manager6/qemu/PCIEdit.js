@@ -67,17 +67,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 
 	    let path = value;
 	    if (pciDev.data.map) {
-		// find local mapping
-		for (const entry of pciDev.data.map) {
-		    let mapping = PVE.Parser.parsePropertyString(entry);
-		    if (mapping.node === pcisel.up('inputpanel').nodename) {
-			path = mapping.path.split(';')[0];
-			break;
-		    }
-		}
-		if (path.indexOf('.') === -1) {
-		    path += '.0';
-		}
+		path = pciDev.data.id;
 	    }
 
 	    if (pciDev.data.mdev) {

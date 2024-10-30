@@ -135,7 +135,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'pciindex',
-    path => '{pciid}',
+    path => '{pci-id-or-mapping}',
     method => 'GET',
     description => "Index of available pci methods",
     permissions => {
@@ -145,9 +145,9 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    pciid => {
+	    'pci-id-or-mapping' => {
 		type => 'string',
-		pattern => '(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]',
+		pattern => '(?:(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F])|([a-zA-Z][a-zA-Z0-9_-]+)',
 	    },
 	},
     },
@@ -171,7 +171,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'mdevscan',
-    path => '{pciid}/mdev',
+    path => '{pci-id-or-mapping}/mdev',
     method => 'GET',
     description => "List mediated device types for given PCI device.",
     protected => 1,
@@ -183,10 +183,10 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    pciid => {
+	    'pci-id-or-mapping' => {
 		type => 'string',
-		pattern => '(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]',
-		description => "The PCI ID to list the mdev types for."
+		pattern => '(?:(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F])|([a-zA-Z][a-zA-Z0-9_-]+)',
+		description => "The PCI ID or mapping to list the mdev types for."
 	    },
 	},
     },
@@ -206,6 +206,12 @@ __PACKAGE__->register_method ({
 		},
 		description => {
 		    type => 'string',
+		    description => "Additional description of the type."
+		},
+		name => {
+		    type => 'string',
+		    optional => 1,
+		    description => 'A human readable name for the type.',
 		},
 	    },
 	},
@@ -213,5 +219,28 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	return PVE::SysFSTools::get_mdev_types($param->{pciid});
+	if ($param->{'pci-id-or-mapping'} =~ m/^(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]$/) {
+	    return PVE::SysFSTools::get_mdev_types($param->{'pci-id-or-mapping'}); # PCI ID
+	} else {
+	    my $mapping = $param->{'pci-id-or-mapping'};
+
+	    my $types = {};
+	    my $devices = PVE::Mapping::PCI::find_on_current_node($mapping);
+	    for my $device ($devices->@*) {
+		my $id = $device->{path};
+		next if $id =~ m/;/; # mdev not supported for multifunction devices
+
+		my $device_types = PVE::SysFSTools::get_mdev_types($id);
+
+		for my $type_definition ($device_types->@*) {
+		    my $type = $type_definition->{type};
+		    if (!defined($types->{$type})) {
+			$types->{$type} = $type_definition;
+		    }
+		}
+	    }
+
+	    return [sort { $a->{type} cmp $b->{type} } values($types->%*)];
+	}
+
     }});
