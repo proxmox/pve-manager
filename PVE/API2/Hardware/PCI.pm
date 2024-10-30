@@ -13,7 +13,7 @@ use base qw(PVE::RESTHandler);
 my $default_class_blacklist = "05;06;0b";
 
 __PACKAGE__->register_method ({
-    name => 'pciscan',
+    name => 'pci_scan',
     path => '',
     method => 'GET',
     description => "List local PCI devices.",
@@ -31,18 +31,16 @@ __PACKAGE__->register_method ({
 		format => 'string-list',
 		default => $default_class_blacklist,
 		optional => 1,
-		description => "A list of blacklisted PCI classes, which will ".
-			       "not be returned. Following are filtered by ".
-			       "default: Memory Controller (05), Bridge (06) and ".
-			       "Processor (0b).",
+		description => "A list of blacklisted PCI classes, which will not be returned."
+		    ." Following are filtered by default: Memory Controller (05), Bridge (06) and"
+		    ." Processor (0b).",
 	    },
 	    verbose => {
 		type => 'boolean',
 		default => 1,
 		optional => 1,
-		description => "If disabled, does only print the PCI IDs. "
-			      ."Otherwise, additional information like vendor "
-			      ."and device will be returned.",
+		description => "If disabled, does only print the PCI IDs. Otherwise, additional"
+		    ." information like vendor and device will be returned.",
 	    },
 	},
     },
@@ -96,15 +94,15 @@ __PACKAGE__->register_method ({
 		},
 		iommugroup => {
 		    type => 'integer',
-		    description => "The IOMMU group in which the device is in.".
-				   " If no IOMMU group is detected, it is set to -1.",
+		    description => "The IOMMU group in which the device is in. If no IOMMU group is"
+			." detected, it is set to -1.",
 		},
 		mdev => {
 		    type => 'boolean',
 		    optional => 1,
-		    description => "If set, marks that the device is capable "
-				  ."of creating mediated devices.",
-		}
+		    description => "If set, marks that the device is capable of creating mediated"
+			." devices.",
+		},
 	    },
 	},
     },
@@ -134,7 +132,7 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'pciindex',
+    name => 'pci_index',
     path => '{pci-id-or-mapping}',
     method => 'GET',
     description => "Index of available pci methods",
@@ -201,8 +199,7 @@ __PACKAGE__->register_method ({
 		},
 		available => {
 		    type => 'integer',
-		    description => "The number of still available instances of"
-				  ." this type.",
+		    description => "The number of still available instances of this type.",
 		},
 		description => {
 		    type => 'string',
