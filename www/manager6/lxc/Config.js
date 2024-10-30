@@ -59,7 +59,7 @@ Ext.define('PVE.lxc.Config', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
 	    hidden: template,
-	    confirmMsg: Proxmox.Utils.format_task_description('vzshutdown', vmid),
+	    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('vzshutdown', vmid, vm.name),
 	    handler: function() {
 		vm_command('shutdown');
 	    },
@@ -67,7 +67,7 @@ Ext.define('PVE.lxc.Config', {
 		items: [{
 		    text: gettext('Reboot'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: Proxmox.Utils.format_task_description('vzreboot', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('vzreboot', vmid, vm.name),
 		    tooltip: Ext.String.format(gettext('Reboot {0}'), 'CT'),
 		    handler: function() {
 			vm_command("reboot");
@@ -124,7 +124,7 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
 		    hidden: !caps.vms['VM.Allocate'],
-		    confirmMsg: Proxmox.Utils.format_task_description('vztemplate', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('vztemplate', vmid, vm.name),
 		    handler: function() {
 			Proxmox.Utils.API2Request({
 			    url: base_url + '/template',

@@ -1960,6 +1960,10 @@ Ext.define('PVE.Utils', {
 	}
 	return languageCookie || Proxmox.defaultLang || 'en';
     },
+
+    formatGuestTaskConfirmation: function(taskType, vmid, guestName) {
+	return Proxmox.Utils.format_task_description(taskType, `${vmid} (${guestName})`);
+    },
 },
 
     singleton: true,

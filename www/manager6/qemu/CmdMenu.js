@@ -23,7 +23,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	};
 	let confirmedVMCommand = (cmd, params, confirmTask) => {
 	    let task = confirmTask || `qm${cmd}`;
-	    let msg = Proxmox.Utils.format_task_description(task, info.vmid);
+	    let msg = PVE.Utils.formatGuestTaskConfirmation(task, info.vmid, info.name);
 	    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
 		if (btn === 'yes') {
 		    vm_command(cmd, params);
@@ -136,7 +136,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-file-o',
 		hidden: !caps.vms['VM.Allocate'],
 		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmtemplate', info.vmid);
+		    let msg = PVE.Utils.formatGuestTaskConfirmation('qmtemplate', info.vmid, info.name);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
 			if (btn === 'yes') {
 			    Proxmox.Utils.API2Request({

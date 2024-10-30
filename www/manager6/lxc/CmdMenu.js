@@ -22,7 +22,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    });
 	};
 	let confirmedVMCommand = (cmd, params) => {
-	    let msg = Proxmox.Utils.format_task_description(`vz${cmd}`, info.vmid);
+	    let msg = PVE.Utils.formatGuestTaskConfirmation(`vz${cmd}`, info.vmid, info.name);
 	    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
 		if (btn === 'yes') {
 		    vm_command(cmd, params);
@@ -108,7 +108,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Convert to template'),
 		iconCls: 'fa fa-fw fa-file-o',
 		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('vztemplate', info.vmid);
+		    let msg = PVE.Utils.formatGuestTaskConfirmation('vztemplate', info.vmid, info.name);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn === 'yes') {
 			    Proxmox.Utils.API2Request({

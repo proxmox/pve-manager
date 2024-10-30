@@ -97,7 +97,7 @@ Ext.define('PVE.qemu.Config', {
 		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
 		    hidden: !caps.vms['VM.Allocate'],
-		    confirmMsg: Proxmox.Utils.format_task_description('qmtemplate', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmtemplate', vmid, vm.name),
 		    handler: function() {
 			Proxmox.Utils.API2Request({
 			    url: base_url + '/template',
@@ -142,7 +142,7 @@ Ext.define('PVE.qemu.Config', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
 	    hidden: template,
-	    confirmMsg: Proxmox.Utils.format_task_description('qmshutdown', vmid),
+	    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmshutdown', vmid, vm.name),
 	    handler: function() {
 		vm_command('shutdown');
 	    },
@@ -151,7 +151,7 @@ Ext.define('PVE.qemu.Config', {
 		    text: gettext('Reboot'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    tooltip: Ext.String.format(gettext('Shutdown, apply pending changes and reboot {0}'), 'VM'),
-		    confirmMsg: Proxmox.Utils.format_task_description('qmreboot', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmreboot', vmid, vm.name),
 		    handler: function() {
 			vm_command("reboot");
 		    },
@@ -159,7 +159,7 @@ Ext.define('PVE.qemu.Config', {
 		}, {
 		    text: gettext('Pause'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: Proxmox.Utils.format_task_description('qmpause', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmpause', vmid, vm.name),
 		    handler: function() {
 			vm_command("suspend");
 		    },
@@ -167,7 +167,7 @@ Ext.define('PVE.qemu.Config', {
 		}, {
 		    text: gettext('Hibernate'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: Proxmox.Utils.format_task_description('qmsuspend', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmsuspend', vmid, vm.name),
 		    tooltip: gettext('Suspend to disk'),
 		    handler: function() {
 			vm_command("suspend", { todisk: 1 });
@@ -189,7 +189,7 @@ Ext.define('PVE.qemu.Config', {
 		    text: gettext('Reset'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    tooltip: Ext.String.format(gettext('Reset {0} immediately'), 'VM'),
-		    confirmMsg: Proxmox.Utils.format_task_description('qmreset', vmid),
+		    confirmMsg: PVE.Utils.formatGuestTaskConfirmation('qmreset', vmid, vm.name),
 		    handler: function() {
 			vm_command("reset");
 		    },

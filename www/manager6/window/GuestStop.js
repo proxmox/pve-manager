@@ -68,7 +68,7 @@ Ext.define('PVE.GuestStop', {
 	let cfg = {
 	    title: gettext('Confirm'),
 	    icon: Ext.Msg.WARNING,
-	    msg: Proxmox.Utils.format_task_description(me.taskType, me.vm.vmid),
+	    msg: PVE.Utils.formatGuestTaskConfirmation(me.taskType, me.vm.vmid, me.vm.name),
 	    buttons: Ext.Msg.YESNO,
 	    callback: btn => me.handler(btn),
 	};
