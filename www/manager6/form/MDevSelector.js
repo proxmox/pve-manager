@@ -50,14 +50,14 @@ Ext.define('PVE.form.MDevSelector', {
 	],
     },
 
-    setPciID: function(pciid, force) {
+    setPciIdOrMapping: function(pciIdOrMapping, force) {
 	var me = this;
 
-	if (!force && (!pciid || me.pciid === pciid)) {
+	if (!force && (!pciIdOrMapping || me.pciIdOrMapping === pciIdOrMapping)) {
 	    return;
 	}
 
-	me.pciid = pciid;
+	me.pciIdOrMapping = pciIdOrMapping;
 	me.updateProxy();
     },
 
@@ -77,7 +77,7 @@ Ext.define('PVE.form.MDevSelector', {
 	var me = this;
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci/' + me.pciid + '/mdev',
+	    url: `/api2/json/nodes/${me.nodename}/hardware/pci/${me.pciIdOrMapping}/mdev`,
 	});
 	me.store.load();
     },
@@ -91,8 +91,8 @@ Ext.define('PVE.form.MDevSelector', {
 
         me.callParent();
 
-	if (me.pciid) {
-	    me.setPciID(me.pciid, true);
+	if (me.pciIdOrMapping) {
+	    me.setPciIdOrMapping(me.pciIdOrMapping, true);
 	}
     },
 });

@@ -71,7 +71,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    }
 
 	    if (pciDev.data.mdev) {
-		mdevfield.setPciID(path);
+		mdevfield.setPciIdOrMapping(path);
 	    }
 	    if (pcisel.reference === 'selector') {
 		let iommu = pciDev.data.iommugroup;
