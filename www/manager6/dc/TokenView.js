@@ -74,7 +74,6 @@ Ext.define('PVE.dc.TokenView', {
         let tbar = [
             {
 		text: gettext('Add'),
-		disabled: !caps.access['User.Modify'],
 		handler: function(btn, e) {
 		    let data = {};
 		    let win = Ext.create('PVE.dc.TokenEdit', {
