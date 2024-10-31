@@ -57,8 +57,12 @@ Ext.define('PVE.dc.TokenView', {
 	    return `/access/users/${uid}/token/${tid}`;
 	};
 
+	let hasTokenCRUDPermissions = function(userid) {
+	    return userid === Proxmox.UserName || !!caps.access['User.Modify'];
+	};
+
 	let run_editor = function(rec) {
-	    if (!caps.access['User.Modify']) {
+	    if (!hasTokenCRUDPermissions(rec.data.userid)) {
 		return;
 	    }
 
@@ -88,14 +92,14 @@ Ext.define('PVE.dc.TokenView', {
 		xtype: 'proxmoxButton',
 		text: gettext('Edit'),
 		disabled: true,
-		enableFn: (rec) => !!caps.access['User.Modify'],
+		enableFn: (rec) => hasTokenCRUDPermissions(rec.data.userid),
 		selModel: sm,
 		handler: (btn, e, rec) => run_editor(rec),
 	    },
 	    {
 		xtype: 'proxmoxStdRemoveButton',
 		selModel: sm,
-		enableFn: (rec) => !!caps.access['User.Modify'],
+		enableFn: (rec) => hasTokenCRUDPermissions(rec.data.userid),
 		callback: reload,
 		getUrl: urlFromRecord,
 	    },
