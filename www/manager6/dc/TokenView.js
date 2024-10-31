@@ -106,13 +106,11 @@ Ext.define('PVE.dc.TokenView', {
             {
 		text: gettext('Add'),
 		disabled: !caps.access['User.Modify'],
-		handler: function(btn, e, rec) {
+		handler: function(btn, e) {
 		    let data = {};
 		    if (me.fixedUser) {
 			data.userid = me.fixedUser;
 			data.fixedUser = true;
-		    } else if (rec && rec.data) {
-			data.userid = rec.data.userid;
 		    }
 		    let win = Ext.create('PVE.dc.TokenEdit', {
 			isCreate: true,
