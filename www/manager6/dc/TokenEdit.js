@@ -8,7 +8,6 @@ Ext.define('PVE.dc.TokenEdit', {
 
     isAdd: true,
     isCreate: false,
-    fixedUser: false,
 
     method: 'POST',
     url: '/api2/extjs/access/users/',
@@ -33,7 +32,7 @@ Ext.define('PVE.dc.TokenEdit', {
 	    {
 		xtype: 'pmxDisplayEditField',
 		cbind: {
-		    editable: (get) => get('isCreate') && !get('fixedUser'),
+		    editable: '{isCreate}',
 		},
 		submitValue: true,
 		editConfig: {

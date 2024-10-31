@@ -7,9 +7,6 @@ Ext.define('PVE.dc.TokenView', {
     stateful: true,
     stateId: 'grid-tokens',
 
-    // use fixed user
-    fixedUser: undefined,
-
     initComponent: function() {
 	let me = this;
 
@@ -22,34 +19,6 @@ Ext.define('PVE.dc.TokenView', {
 	});
 
 	let reload = function() {
-	    if (me.fixedUser) {
-		Proxmox.Utils.API2Request({
-		    url: `/access/users/${encodeURIComponent(me.fixedUser)}/token`,
-		    method: 'GET',
-		    failure: function(response, opts) {
-			Proxmox.Utils.setErrorMask(me, response.htmlStatus);
-			me.load_task.delay(me.load_delay);
-		    },
-		    success: function(response, opts) {
-			Proxmox.Utils.setErrorMask(me, false);
-			let result = Ext.decode(response.responseText);
-			let data = result.data || [];
-			let records = [];
-			Ext.Array.each(data, function(token) {
-			    let r = {};
-			    r.id = me.fixedUser + '!' + token.tokenid;
-			    r.userid = me.fixedUser;
-			    r.tokenid = token.tokenid;
-			    r.comment = token.comment;
-			    r.expire = token.expire;
-			    r.privsep = token.privsep === 1;
-			    records.push(r);
-			});
-			store.loadData(records);
-		    },
-		});
-		return;
-	    }
 	    Proxmox.Utils.API2Request({
 		url: '/access/users/?full=1',
 		method: 'GET',
@@ -108,13 +77,8 @@ Ext.define('PVE.dc.TokenView', {
 		disabled: !caps.access['User.Modify'],
 		handler: function(btn, e) {
 		    let data = {};
-		    if (me.fixedUser) {
-			data.userid = me.fixedUser;
-			data.fixedUser = true;
-		    }
 		    let win = Ext.create('PVE.dc.TokenEdit', {
 			isCreate: true,
-			fixedUser: me.fixedUser,
 		    });
 		    win.setValues(data);
 		    win.on('destroy', reload);
@@ -168,7 +132,6 @@ Ext.define('PVE.dc.TokenView', {
 			let realm = Ext.String.htmlEncode(uid.substr(realmIndex));
 			return `${user} <span style='float:right;'>${realm}</span>`;
 		    },
-		    hidden: !!me.fixedUser,
 		    flex: 2,
 		},
 		{
@@ -204,31 +167,6 @@ Ext.define('PVE.dc.TokenView', {
 	    },
 	});
 
-	if (me.fixedUser) {
-	    reload();
-	}
-
 	me.callParent();
     },
-});
-
-Ext.define('PVE.window.TokenView', {
-    extend: 'Ext.window.Window',
-    mixins: ['Proxmox.Mixin.CBind'],
-
-    modal: true,
-    subject: gettext('API Tokens'),
-    scrollable: true,
-    layout: 'fit',
-    width: 800,
-    height: 400,
-    cbind: {
-	title: gettext('API Tokens') + ' - {userid}',
-    },
-    items: [{
-	xtype: 'pveTokenView',
-	cbind: {
-	    fixedUser: '{userid}',
-	},
-    }],
 });
