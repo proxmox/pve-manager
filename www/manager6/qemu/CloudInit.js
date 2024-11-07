@@ -120,7 +120,10 @@ Ext.define('PVE.qemu.CloudInit', {
 		}
 	});
 
-	me.down('#savebtn').setDisabled(!found);
+	let caps = Ext.state.Manager.get('GuiCap');
+	let canRegenerateImage = !!caps.vms['VM.Config.Cloudinit'];
+	me.down('#savebtn').setDisabled(!found || !canRegenerateImage);
+
 	me.setDisabled(!found);
 	if (!found) {
 	    me.getView().mask(gettext('No CloudInit Drive found'), ['pve-static-mask']);
