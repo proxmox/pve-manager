@@ -108,6 +108,7 @@ JSSRC= 							\
 	panel/GuestSummary.js				\
 	panel/TemplateStatusView.js			\
 	panel/MultiDiskEdit.js				\
+	panel/TagConfig.js				\
 	tree/ResourceTree.js				\
 	tree/SnapshotTree.js				\
 	tree/ResourceMapTree.js				\

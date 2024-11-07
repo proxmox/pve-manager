@@ -44,7 +44,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		    return;
 		}
 		for (let child of node.childNodes) {
-		    let orgNode = rstore.data.get(child.data.id);
+		    let orgNode = rstore.data.get(child.data.realId ?? child.data.id);
 		    if (orgNode) {
 			if ((!filterfn || filterfn(child)) && (!textfilter || textfilterMatch(child))) {
 			    nodeidx[child.data.id] = orgNode;
