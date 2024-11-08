@@ -309,39 +309,7 @@ __PACKAGE__->register_method ({
 	my $config = PVE::Notify::read_config();
 
 	my $targets = eval {
-	    my $result = [];
-
-	    for my $target (@{$config->get_sendmail_endpoints()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'sendmail',
-		    disable => $target->{disable},
-		    origin => $target->{origin},
-		};
-	    }
-
-	    for my $target (@{$config->get_gotify_endpoints()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'gotify',
-		    disable => $target->{disable},
-		    origin => $target->{origin},
-		};
-	    }
-
-	    for my $target (@{$config->get_smtp_endpoints()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'smtp',
-		    disable => $target->{disable},
-		    origin => $target->{origin},
-		};
-	    }
-
-	    $result
+	    $config->get_targets();
 	};
 
 	raise_api_error($@) if $@;
