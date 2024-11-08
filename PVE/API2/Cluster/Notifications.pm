@@ -247,6 +247,7 @@ __PACKAGE__->register_method ({
 	    { name => 'gotify' },
 	    { name => 'sendmail' },
 	    { name => 'smtp' },
+	    { name => 'webhook' },
 	];
 
 	return $result;
@@ -283,7 +284,7 @@ __PACKAGE__->register_method ({
 		'type' => {
 		    description => 'Type of the target.',
 		    type  => 'string',
-		    enum => [qw(sendmail gotify smtp)],
+		    enum => [qw(sendmail gotify smtp webhook)],
 		},
 		'comment' => {
 		    description => 'Comment',
@@ -1229,6 +1230,266 @@ __PACKAGE__->register_method ({
 	};
 
 	raise_api_error($@) if ($@);
+	return;
+    }
+});
+
+my $webhook_properties = {
+    name => {
+	description => 'The name of the endpoint.',
+	type => 'string',
+	format => 'pve-configid',
+    },
+    url => {
+	description => 'Server URL',
+	type => 'string',
+    },
+    method => {
+	description => 'HTTP method',
+	type => 'string',
+	enum => [qw(post put get)],
+    },
+    header => {
+	description => 'HTTP headers to set. These have to be formatted as'
+	  . ' a property string in the format name=<name>,value=<base64 of value>',
+	type => 'array',
+	items => {
+	    type => 'string',
+	},
+	optional => 1,
+    },
+    body => {
+	description => 'HTTP body, base64 encoded',
+	type => 'string',
+	optional => 1,
+    },
+    secret => {
+	description => 'Secrets to set. These have to be formatted as'
+	  . ' a property string in the format name=<name>,value=<base64 of value>',
+	type => 'array',
+	items => {
+	    type => 'string',
+	},
+	optional => 1,
+    },
+    comment => {
+	description => 'Comment',
+	type => 'string',
+	optional => 1,
+    },
+    disable => {
+	description => 'Disable this target',
+	type => 'boolean',
+	optional => 1,
+	default => 0,
+    },
+};
+
+__PACKAGE__->register_method ({
+    name => 'get_webhook_endpoints',
+    path => 'endpoints/webhook',
+    method => 'GET',
+    description => 'Returns a list of all webhook endpoints',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => ['perm', '/mapping/notifications', ['Mapping.Audit']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => {
+		%$webhook_properties,
+		'origin' => {
+		    description => 'Show if this entry was created by a user or was built-in',
+		    type  => 'string',
+		    enum => [qw(user-created builtin modified-builtin)],
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => '{name}' } ],
+    },
+    code => sub {
+	my $config = PVE::Notify::read_config();
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $entities = eval {
+	    $config->get_webhook_endpoints();
+	};
+	raise_api_error($@) if $@;
+
+	return $entities;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'get_webhook_endpoint',
+    path => 'endpoints/webhook/{name}',
+    method => 'GET',
+    description => 'Return a specific webhook endpoint',
+    protected => 1,
+    permissions => {
+	check => ['or',
+	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	    ['perm', '/mapping/notifications', ['Mapping.Audit']],
+	],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+		description => 'Name of the endpoint.'
+	    },
+	}
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    %$webhook_properties,
+	    digest => get_standard_option('pve-config-digest'),
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	my $config = PVE::Notify::read_config();
+	my $endpoint = eval {
+	    $config->get_webhook_endpoint($name)
+	};
+
+	raise_api_error($@) if $@;
+	$endpoint->{digest} = $config->digest();
+
+	return $endpoint;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'create_webhook_endpoint',
+    path => 'endpoints/webhook',
+    protected => 1,
+    method => 'POST',
+    description => 'Create a new webhook endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => $webhook_properties,
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->add_webhook_endpoint(
+		    $param,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'update_webhook_endpoint',
+    path => 'endpoints/webhook/{name}',
+    protected => 1,
+    method => 'PUT',
+    description => 'Update existing webhook endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    %{ make_properties_optional($webhook_properties) },
+	    delete => {
+		type => 'array',
+		items => {
+		    type => 'string',
+		    format => 'pve-configid',
+		},
+		optional => 1,
+		description => 'A list of settings you want to delete.',
+	    },
+	    digest => get_standard_option('pve-config-digest'),
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $name = extract_param($param, 'name');
+	my $delete = extract_param($param, 'delete');
+	my $digest = extract_param($param, 'digest');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+
+		$config->update_webhook_endpoint(
+		    $name,
+		    $param,                # Config updater
+		    $delete,
+		    $digest,
+		);
+
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
+	return;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'delete_webhook_endpoint',
+    protected => 1,
+    path => 'endpoints/webhook/{name}',
+    method => 'DELETE',
+    description => 'Remove webhook endpoint',
+    permissions => {
+	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    name => {
+		type => 'string',
+		format => 'pve-configid',
+	    },
+	}
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+	my $name = extract_param($param, 'name');
+
+	eval {
+	    PVE::Notify::lock_config(sub {
+		my $config = PVE::Notify::read_config();
+		$config->delete_webhook_endpoint($name);
+		PVE::Notify::write_config($config);
+	    });
+	};
+
+	raise_api_error($@) if $@;
 	return;
     }
 });
