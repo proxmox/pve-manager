@@ -52,9 +52,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		    waitMsgTarget: view,
 		    method: 'PUT',
 		    params: params,
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    },
+		    failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		    callback: function() {
 			view.reload();
 		    },
@@ -87,9 +85,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		    url: view.baseurl + '/cloudinit',
 		    waitMsgTarget: view,
 		    method: 'PUT',
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    },
+		    failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		    callback: function() {
 			view.reload();
 		    },
