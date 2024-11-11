@@ -228,7 +228,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 				['lzo', 'LZO'],
 				['gz', 'GZIP'],
 				['zst', 'ZSTD'],
-				['bz2', 'bzip2'],
+				['bz2', 'BZIP2'],
 		    ],
 		    cbind: {
 			hidden: get => get('content') !== 'iso',
