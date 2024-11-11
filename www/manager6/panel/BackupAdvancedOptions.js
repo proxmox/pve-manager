@@ -272,14 +272,14 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		value: '__default__',
 		comboItems: [
 		    ['__default__', "Default"],
-		    ['data', "Data (experimental)"],
-		    ['metadata', "Metadata (experimental)"],
+		    ['data', "Data"],
+		    ['metadata', "Metadata"],
 		],
 	    },
 	    endFlex: 2,
 	    endColumn: {
 		xtype: 'displayfield',
-		value: gettext("Mode to detect file changes and switch archive encoding format for container backups (NOTE: `data` and `metadata` modes are experimental)."),
+		value: gettext("Mode to detect file changes and switch archive encoding format for container backups."),
 	    },
 	},
 	{
