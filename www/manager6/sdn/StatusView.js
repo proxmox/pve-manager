@@ -41,12 +41,20 @@ Ext.define('PVE.sdn.StatusView', {
 		{
 		    text: gettext('Apply'),
 		    handler: function() {
-			Proxmox.Utils.API2Request({
-			    url: '/cluster/sdn/',
-			    method: 'PUT',
-			    waitMsgTarget: me,
-			    failure: function(response, opts) {
-				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			Ext.Msg.show({
+			    title: gettext('Confirm'),
+			    icon: Ext.Msg.QUESTION,
+			    msg: gettext('Applying pending SDN changes will also apply any pending local node network changes. Proceed?'),
+			    buttons: Ext.Msg.YESNO,
+			    callback: function(btn) {
+				if (btn === 'yes') {
+				    Proxmox.Utils.API2Request({
+					url: '/cluster/sdn/',
+					method: 'PUT',
+					waitMsgTarget: me,
+					failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+				    });
+				}
 			    },
 			});
 		    },
