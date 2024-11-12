@@ -71,6 +71,18 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 		deleteEmpty: "{!isCreate}",
 	    },
 	},
+    ],
+    advancedItems: [
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'isolate-ports',
+	    uncheckedValue: null,
+	    checked: false,
+	    fieldLabel: gettext('Isolate Ports'),
+	    cbind: {
+		deleteEmpty: "{!isCreate}",
+	    },
+	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    itemId: 'sdnVnetVlanAwareField',
