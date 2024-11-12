@@ -30,12 +30,12 @@ Ext.define('PVE.form.ViewSelector', {
 		text: gettext('Pool View'),
 		groups: ['pool'],
 		// Pool View only lists VMs and Containers
-		filterfn: ({ data }) => data.type === 'qemu' || data.type === 'lxc' || data.type === 'pool',
+		getFilterFn: () => ({ data }) => data.type === 'qemu' || data.type === 'lxc' || data.type === 'pool',
 	    },
 	    tags: {
 		text: gettext('Tag View'),
 		groups: ['tag'],
-		filterfn: ({ data }) => data.type === 'qemu' || data.type === 'lxc',
+		getFilterFn: () => ({ data }) => data.type === 'qemu' || data.type === 'lxc',
 		groupRenderer: function(info) {
 		    let tag = PVE.Utils.renderTags(info.tag, PVE.UIOptions.tagOverrides);
 		    return `<span class="proxmox-tags-full">${tag}</span>`;

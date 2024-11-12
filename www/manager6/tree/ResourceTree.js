@@ -327,7 +327,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	    // also check for name for when the tree is sorted by name
 	    let moveCheckAttrs = groups.concat(['node', 'template', 'name']);
-	    let filterfn = me.viewFilter.filterfn;
+	    let filterFn = me.viewFilter.getFilterFn ? me.viewFilter.getFilterFn() : Ext.identityFn;
 
 	    let reselect = false; // for disappeared nodes
 	    let index = pdata.dataIndex;
@@ -399,7 +399,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (olditem) {
 		    return;
 		}
-		if (filterfn && !filterfn(item)) {
+		if (filterFn && !filterFn(item)) {
 		    return;
 		}
 		let info = Ext.apply({ leaf: true }, item.data);
