@@ -516,6 +516,9 @@ __PACKAGE__->register_method({
 		if (defined(my $mode = $info->{'cgroup-mode'})) {
 		    $entry->{'cgroup-mode'} = int($mode);
 		}
+		if (defined(my $status = $hastatus->{node_status}->{$node})) {
+		    $entry->{'hastate'} = $status;
+		}
 
 		push @$res, $entry;
 	    }

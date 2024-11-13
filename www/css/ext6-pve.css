@@ -206,6 +206,16 @@
     font-size: 0.75em;
 }
 
+/* blue wrench */
+.x-tree-icon-custom.ha-maintenance:after,
+.x-grid-icon-custom.ha-maintenance:after {
+    content: "\f0ad";
+    color: #3892d4;
+    /* make it a little bigger since the icon is very small */
+    font-size: 14px;
+}
+
+
 /* yellow ! triangle */
 .x-tree-icon-custom.pending:after,
 .x-grid-icon-custom.pending:after,
