@@ -149,7 +149,6 @@ JSSRC= 							\
 	ha/StatusView.js				\
 	dc/ACLView.js					\
 	dc/ACMEClusterView.js				\
-	dc/ACMEPluginEdit.js				\
 	dc/AuthEditBase.js				\
 	dc/AuthEditAD.js				\
 	dc/AuthEditLDAP.js				\
