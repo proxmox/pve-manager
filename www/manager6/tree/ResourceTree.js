@@ -150,13 +150,13 @@ Ext.define('PVE.tree.ResourceTree', {
     getToolTip: function(info) {
 	let qtips = [];
 	if (info.qmpstatus || info.status) {
-	    qtips.push(gettext('Status') + ': ' + (info.qmpstatus || info.status));
+	    qtips.push(Ext.String.format(gettext('Status: {0}'), info.qmpstatus || info.status));
 	}
 	if (info.lock) {
 	    qtips.push(Ext.String.format(gettext('Config locked ({0})'), info.lock));
 	}
 	if (info.hastate !== 'unmanaged') {
-	    qtips.push(gettext('HA State') + ": " + info.hastate);
+	    qtips.push(Ext.String.format(gettext('HA State: {0}'), info.hastate));
 	}
 	if (info.type === 'storage') {
 	    let usage = info.disk / info.maxdisk;
