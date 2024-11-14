@@ -67,6 +67,7 @@ utilities: {
 
     language_map: { //language map is sorted alphabetically by iso 639-1
 	ar: `العربية - ${gettext("Arabic")}`,
+	bg: `Български - ${gettext("Bulgarian")}`,
 	ca: `Català - ${gettext("Catalan")}`,
 	da: `Dansk - ${gettext("Danish")}`,
 	de: `Deutsch - ${gettext("German")}`,
