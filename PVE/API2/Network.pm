@@ -66,6 +66,11 @@ my $confdesc = {
 	type => 'boolean',
 	optional => 1,
     },
+    bridge_vids => {
+	description => "Specify the allowed VLANs. For example: '2 4 100-200'. Only used if the bridge is VLAN aware.",
+	optional => 1,
+	type => 'string', format => 'pve-vlan-id-or-range-list',
+    },
     bridge_ports => {
 	description => "Specify the interfaces you want to add to your bridge.",
 	optional => 1,
@@ -469,6 +474,14 @@ __PACKAGE__->register_method({
 		    if ! grep { $_ eq $iface } @ports;
 	    }
 
+	    if ($param->{bridge_vids} && scalar(PVE::Tools::split_list($param->{bridge_vids}) == 0)) {
+		raise_param_exc({ bridge_vids => "VLAN list items are empty" });
+	    }
+	    # make sure the list is space separated! other separators will cause problems in the
+	    # network configuration
+	    $param->{bridge_vids} = join(" ", PVE::Tools::split_list($param->{bridge_vids}))
+		if $param->{bridge_vids};
+
 	    $ifaces->{$iface} = $param;
 
 	    PVE::INotify::write_file('interfaces', $config);
@@ -558,7 +571,15 @@ __PACKAGE__->register_method({
 	    foreach my $k (keys %$param) {
 		$ifaces->{$iface}->{$k} = $param->{$k};
 	    }
-	    
+
+	    if ($param->{bridge_vids} && scalar(PVE::Tools::split_list($param->{bridge_vids}) == 0)) {
+		raise_param_exc({ bridge_vids => "VLAN list items are empty" });
+	    }
+	    # make sure the list is space separated! other separators will cause problems in the
+	    # network configuration
+	    $param->{bridge_vids} = join(" ", PVE::Tools::split_list($param->{bridge_vids}))
+		if $param->{bridge_vids};
+
 	    PVE::INotify::write_file('interfaces', $config);
 	};
 
