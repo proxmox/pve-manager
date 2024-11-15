@@ -194,6 +194,9 @@ Ext.define('PVE.node.Config', {
 		    showApplyBtn: true,
 		    groups: ['services'],
 		    nodename: nodename,
+		    editOptions: {
+			enableBridgeVlanIds: true,
+		    },
 		    onlineHelp: 'sysadmin_network_configuration',
 		},
 		{
