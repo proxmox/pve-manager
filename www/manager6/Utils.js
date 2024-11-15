@@ -1246,7 +1246,7 @@ Ext.define('PVE.Utils', {
 	    // templates
 	    objType = 'template';
 	    status = type;
-	} else if (type === 'storage' && record.content.indexOf('import') !== -1) {
+	} else if (type === 'storage' && record.content === 'import') {
 	    return 'fa fa-cloud-download';
 	} else {
 	    // everything else
