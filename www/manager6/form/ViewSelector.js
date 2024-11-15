@@ -35,7 +35,7 @@ Ext.define('PVE.form.ViewSelector', {
 	    tags: {
 		text: gettext('Tag View'),
 		groups: ['tag'],
-		getFilterFn: () => ({ data }) => data.type === 'qemu' || data.type === 'lxc',
+		getFilterFn: () => ({ data }) => ['qemu', 'lxc', 'node', 'storage'].indexOf(data.type) !== -1,
 		groupRenderer: function(info) {
 		    let tag = PVE.Utils.renderTags(info.tag, PVE.UIOptions.tagOverrides);
 		    return `<span class="proxmox-tags-full">${tag}</span>`;
