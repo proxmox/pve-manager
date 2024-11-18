@@ -315,6 +315,8 @@ Ext.define('PVE.window.GuestImport', {
 	    liveImportNote: get => !get('liveImport') ? ''
 	        : gettext('Note: If anything goes wrong during the live-import, new data written by the VM may be lost.'),
 	    isWindows: get => (get('os') ?? '').startsWith('w'),
+	    liveImportText: get => get('isOva') ? gettext('Starts a VM and imports the disks in the background')
+		: gettext('Starts a previously stopped VM on Proxmox VE and imports the disks in the background.'),
 	},
     },
 
@@ -582,9 +584,9 @@ Ext.define('PVE.window.GuestImport', {
 			fieldLabel: gettext('Live Import'),
 			reference: 'liveimport',
 			isFormField: false,
-			boxLabel: gettext('Starts a previously stopped VM on Proxmox VE and imports the disks in the background.'),
 			bind: {
 			    value: '{liveImport}',
+			    boxLabel: '{liveImportText}',
 			},
 		    },
 		    {
