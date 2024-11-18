@@ -28,7 +28,9 @@ Ext.define('PVE.storage.Browser', {
 	let res = storageInfo.data;
 	let plugin = res.plugintype;
 
-	me.items = plugin !== 'esxi' ? [
+	let isEsxi = plugin === 'esxi';
+
+	me.items = !isEsxi ? [
 	    {
 		title: gettext('Summary'),
 		xtype: 'pveStorageSummary',
@@ -142,8 +144,11 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-desktop',
 		    itemId: 'contentImport',
 		    content: 'import',
-		    useCustomRemoveButton: true, // hide default remove button
+		    useCustomRemoveButton: isEsxi, // hide default remove button for esxi
 		    showColumns: ['name', 'format'],
+		    enableUploadButton: enableUpload && !isEsxi,
+		    enableDownloadUrlButton: enableDownloadUrl && !isEsxi,
+		    useUploadButton: !isEsxi,
 		    itemdblclick: (view, record) => createGuestImportWindow(record),
 		    tbar: [
 			{

@@ -9,6 +9,7 @@ Ext.define('PVE.window.UploadToStorage', {
     title: gettext('Upload'),
 
     acceptedExtensions: {
+	'import': ['.ova'],
 	iso: ['.img', '.iso'],
 	vztmpl: ['.tar.gz', '.tar.xz', '.tar.zst'],
     },
