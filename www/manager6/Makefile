@@ -264,6 +264,7 @@ JSSRC= 							\
 	qemu/SSHKey.js					\
 	qemu/ScsiHwEdit.js				\
 	qemu/SerialEdit.js				\
+	qemu/SevEdit.js					\
 	qemu/Smbios1Edit.js				\
 	qemu/SystemEdit.js				\
 	qemu/USBEdit.js					\

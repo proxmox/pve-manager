@@ -338,6 +338,17 @@ Ext.define('PVE.qemu.Options', {
 		    },
 		} : undefined,
 	    },
+	    'amd-sev': {
+		header: gettext('AMD SEV'),
+		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.SevEdit' : undefined,
+		defaultValue: Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')',
+		renderer: function(value, metaData, record, ri, ci, store, pending) {
+		    let amd_sev = PVE.Parser.parsePropertyString(value, "type");
+		    if (amd_sev.type === 'std') return 'AMD SEV (' + value + ')';
+		    if (amd_sev.type === 'es') return 'AMD SEV-ES (' + value + ')';
+		    return value;
+		},
+	    },
 	    hookscript: {
 		header: gettext('Hookscript'),
 	    },
