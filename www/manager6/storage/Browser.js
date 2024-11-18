@@ -141,8 +141,10 @@ Ext.define('PVE.storage.Browser', {
 		};
 		me.items.push({
 		    xtype: 'pveStorageContentView',
-		    title: gettext('Virtual Guests'),
-		    iconCls: 'fa fa-desktop',
+		    // each gettext needs to be in a separate line
+		    title: isEsxi ? gettext('Virtual Guests')
+			: gettext('Import'),
+		    iconCls: isEsxi ? 'fa fa-desktop' : 'fa fa-cloud-download',
 		    itemId: 'contentImport',
 		    content: 'import',
 		    useCustomRemoveButton: isEsxi, // hide default remove button for esxi
