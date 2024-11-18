@@ -691,6 +691,7 @@ Ext.define('PVE.Utils', {
 	'iso': gettext('ISO image'),
 	'rootdir': gettext('Container'),
 	'snippets': gettext('Snippets'),
+	'import': gettext('Import'),
     },
 
     volume_is_qemu_backup: function(volid, format) {
