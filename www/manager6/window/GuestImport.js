@@ -303,6 +303,7 @@ Ext.define('PVE.window.GuestImport', {
 	    os: 'l26',
 	    maxCdDrives: false,
 	    uniqueMACAdresses: false,
+	    isOva: false,
 	    warnings: [],
 	},
 
@@ -432,6 +433,10 @@ Ext.define('PVE.window.GuestImport', {
 			}
 		    }
 
+		    if (config['import-working-storage'] === '') {
+			delete config['import-working-storage'];
+		    }
+
 		    return config;
 		},
 
@@ -552,6 +557,22 @@ Ext.define('PVE.window.GuestImport', {
 			name: 'defaultBridge',
 			allowBlank: false,
 			fieldLabel: gettext('Default Bridge'),
+		    },
+		    {
+			xtype: 'pveStorageSelector',
+			reference: 'extractionStorage',
+			fieldLabel: gettext('Import Working Storage'),
+			storageContent: 'images',
+			emptyText: gettext('Import Storage'),
+			autoSelect: false,
+			name: 'import-working-storage',
+			disabled: true,
+			hidden: true,
+			allowBlank: true,
+			bind: {
+			    disabled: '{!isOva}',
+			    hidden: '{!isOva}',
+			},
 		    },
 		],
 
@@ -925,6 +946,7 @@ Ext.define('PVE.window.GuestImport', {
 
 	me.lookup('defaultStorage').setNodename(me.nodename);
 	me.lookup('defaultBridge').setNodename(me.nodename);
+	me.lookup('extractionStorage').setNodename(me.nodename);
 
 	let renderWarning = w => {
 	    const warningsCatalogue = {
@@ -1006,6 +1028,7 @@ Ext.define('PVE.window.GuestImport', {
 		}
 
 		me.getViewModel().set('warnings', data.warnings.map(w => renderWarning(w)));
+		me.getViewModel().set('isOva', data.warnings.map(w => w.type).indexOf('ova-needs-extracting') !== -1);
 
 		let osinfo = PVE.Utils.get_kvm_osinfo(me.vmConfig.ostype ?? '');
 		let prepareForVirtIO = (me.vmConfig.ostype ?? '').startsWith('w') && (me.vmConfig.bios ?? '').indexOf('ovmf') !== -1;
