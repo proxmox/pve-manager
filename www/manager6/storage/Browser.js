@@ -124,6 +124,7 @@ Ext.define('PVE.storage.Browser', {
 		});
 	    }
 	    if (contents.includes('import')) {
+		let isImportable = format => ['ova', 'ovf', 'vmx'].indexOf(format) !== -1;
 		let createGuestImportWindow = (selection) => {
 		    if (!selection) {
 			return;
@@ -149,13 +150,18 @@ Ext.define('PVE.storage.Browser', {
 		    enableUploadButton: enableUpload && !isEsxi,
 		    enableDownloadUrlButton: enableDownloadUrl && !isEsxi,
 		    useUploadButton: !isEsxi,
-		    itemdblclick: (view, record) => createGuestImportWindow(record),
+		    itemdblclick: (view, record) => {
+			if (isImportable(record.data.format)) {
+			    createGuestImportWindow(record);
+			}
+		    },
 		    tbar: [
 			{
 			    xtype: 'proxmoxButton',
 			    disabled: true,
 			    text: gettext('Import'),
 			    iconCls: 'fa fa-cloud-download',
+			    enableFn: rec => isImportable(rec.data.format),
 			    handler: function() {
 				let grid = this.up('pveStorageContentView');
 				let selection = grid.getSelection()?.[0];
