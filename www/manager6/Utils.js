@@ -1025,7 +1025,13 @@ Ext.define('PVE.Utils', {
 		Ext.String.leftPad(data.channel, 2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
 	} else if (data.content === 'import') {
-	    result = data.volid.replace(/^.*?:/, '');
+	    if (data.volid.match(/^.*?:import\//)) {
+		// dir-based storages
+		result = data.volid.replace(/^.*?:import\//, '');
+	    } else {
+		// esxi storage
+		result = data.volid.replace(/^.*?:/, '');
+	    }
 	} else {
 	    result = data.volid.replace(/^.*?:(.*?\/)?/, '');
 	}
