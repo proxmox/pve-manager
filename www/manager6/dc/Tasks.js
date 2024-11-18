@@ -127,6 +127,23 @@ Ext.define('PVE.dc.Tasks', {
 			return Proxmox.Utils.format_task_status(value);
 		    },
 		},
+		{
+		    xtype: 'actioncolumn',
+		    width: 30,
+		    align: 'center',
+		    tooltip: gettext('Actions'),
+		    items: [{
+			iconCls: 'fa fa-chevron-right',
+			tooltip: gettext('View Task'),
+			handler: function(_grid, _rowIndex, _colIndex, _item, _e, rec) {
+			    Ext.create('Proxmox.window.TaskViewer', {
+				autoShow: true,
+				upid: rec.data.upid,
+				endtime: rec.data.endtime,
+			    });
+			},
+		    }],
+		},
 	    ],
 	    listeners: {
 		itemdblclick: run_task_viewer,
