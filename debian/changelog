@@ -1,3 +1,73 @@
+pve-manager (8.2.9) bookworm; urgency=medium
+
+  * api/ui: improve mdev listing for PCI mappings. Extend the parameter for
+    the PCI ID to accept both, PCI IDs or named mappings, and for the latter
+    mappings, iterate over all local PCI devices in it and extract the mdev
+    types.
+
+  * ui: implement 'Tag View' for the resource tree, which groups guests by
+    their tags. Guests with multiple tags are visible under each of them.
+    Guests without tags and nodes and storages are added to the end of the
+    tree.
+
+  * ui: cloudinit: use cloudinit update api when regenerating images.
+
+  * ui: cloudinit: avoid suggesting to unprivileged users that they can
+    re-generate the image, disable the button in this case.
+
+  * fix #5787: ui: display guest name in confirmation dialog for actions like
+    start, stop, shut down, or converting to a template.
+
+  * ui: lxc: add readonly option for device passthrough.
+
+  * ui: lxc: add the "discard" mount option.
+
+  * ui: expose the newly supported BZIP2 as available compressor for backups.
+
+  * fix #5722: ui: api token: allow unprivileged users to create their own api
+    tokens, they are self-service after all.
+
+  * api: add routes for webhook notification endpoints.
+
+  * ui: workspace/user view: change password minimum length to 8 to follow
+    recent NIST recommendations.
+
+  * ui: pool: dynamic status update every 10s in members screen
+
+  * ui: pbs storage: fix reset behavior when editing existing entry
+
+  * api/ui: include the node ha status in resources call and show as icon
+
+  * ui: acme: switch cluster view items over to those from widget-toolkit
+
+  * ui: tree: show tooltips for all entries that have sensible information
+
+  * fix #3893: api/ui: node network: expose bridge VLAN IDs option to allow
+    one to configure VLAN ranges, This can be useful for devices that support
+    hardware offloading them, but only support a limited amount.
+
+  * ui: remove experimental from change detection modes description
+
+  * ui: add import content type for file-based storages to allow handling
+    imports of OVA/OVF backed archives more conveniently.
+
+  * ui: guest import: add storage selector for overriding the OVA staging
+    storage for the temporary extraction.
+
+  * ui: import: show size for dir-based storages
+
+  * ui: enable upload/download/remove buttons for 'import' type storages
+
+  * ui: qemu: add AMD SEV configuration to Options
+
+  * fix #5879: ui: add tooltip to security group comments
+
+  * fix #5810: ui: show confirmation/warning dialog for sdn apply
+
+  * api: package repositories: add Ceph Squid to available repos
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 18 Nov 2024 23:20:04 +0100
+
 pve-manager (8.2.8) bookworm; urgency=medium
 
   * fix #5734: provide missing methods for Proxmox.Utils for mobile UI
@@ -23,7 +93,7 @@ pve-manager (8.2.8) bookworm; urgency=medium
 
   * ui: ceph wizard: filter out enterprise repo for tech-preview releases
 
-  *  ui: ceph wizard: add Ceph 19.2 Squid as installable release
+  * ui: ceph wizard: add Ceph 19.2 Squid as installable release
 
   * api: improve the API JSON schema of various API calls
 
