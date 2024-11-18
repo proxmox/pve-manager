@@ -937,6 +937,7 @@ Ext.define('PVE.window.GuestImport', {
 		    gettext('EFI state cannot be imported, you may need to reconfigure the boot order (see {0})'),
 		    '<a href="https://pve.proxmox.com/wiki/OVMF/UEFI_Boot_Entries">OVMF/UEFI Boot Entries</a>',
 		),
+		'ova-needs-extracting': gettext('Importing an OVA temporarily requires extra space on the working storage while extracting the contained disks for further processing.'),
 	    };
             let message = warningsCatalogue[w.type];
 	    if (!w.type || !message) {
