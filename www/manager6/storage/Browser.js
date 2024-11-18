@@ -148,7 +148,7 @@ Ext.define('PVE.storage.Browser', {
 		    itemId: 'contentImport',
 		    content: 'import',
 		    useCustomRemoveButton: isEsxi, // hide default remove button for esxi
-		    showColumns: ['name', 'format'],
+		    showColumns: isEsxi ? ['name', 'format'] : ['name', 'size', 'format'],
 		    enableUploadButton: enableUpload && !isEsxi,
 		    enableDownloadUrlButton: enableDownloadUrl && !isEsxi,
 		    useUploadButton: !isEsxi,
