@@ -500,7 +500,15 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new sendmail endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -548,7 +556,15 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing sendmail endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -764,7 +780,15 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new gotify endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -808,7 +832,15 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing gotify endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1067,8 +1099,14 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new smtp endpoint',
     permissions => {
-	check => ['or',
-	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
 	],
     },
     parameters => {
@@ -1127,8 +1165,14 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing smtp endpoint',
     permissions => {
-	check => ['or',
-	    ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
 	],
     },
     parameters => {
@@ -1379,7 +1423,15 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => 'Create a new webhook endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
@@ -1412,7 +1464,15 @@ __PACKAGE__->register_method ({
     method => 'PUT',
     description => 'Update existing webhook endpoint',
     permissions => {
-	check => ['perm', '/mapping/notifications', ['Mapping.Modify']],
+	check => [
+	    ['and',
+		['perm', '/mapping/notifications', ['Mapping.Modify']],
+		['or',
+		    ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+		    ['perm', '/', [ 'Sys.AccessNetwork' ]],
+		],
+	    ],
+	],
     },
     parameters => {
 	additionalProperties => 0,
