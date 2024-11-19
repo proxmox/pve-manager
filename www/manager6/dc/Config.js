@@ -241,6 +241,7 @@ Ext.define('PVE.dc.Config', {
 		list_refs_url: '/cluster/firewall/refs',
 		iconCls: 'fa fa-shield',
 		itemId: 'firewall',
+		firewall_type: 'dc',
 	    },
 	    {
 		xtype: 'pveFirewallOptions',

@@ -296,6 +296,7 @@ Ext.define('PVE.node.Config', {
 		    base_url: '/nodes/' + nodename + '/firewall/rules',
 		    list_refs_url: '/cluster/firewall/refs',
 		    itemId: 'firewall',
+		    firewall_type: 'node',
 		},
 		{
 		    xtype: 'pveFirewallOptions',

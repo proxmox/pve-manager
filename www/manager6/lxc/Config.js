@@ -316,6 +316,7 @@ Ext.define('PVE.lxc.Config', {
 		    base_url: base_url + '/firewall/rules',
 		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall',
+		    firewall_type: 'vm',
 		},
 		{
 		    xtype: 'pveFirewallOptions',

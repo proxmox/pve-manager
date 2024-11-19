@@ -214,6 +214,7 @@ Ext.define('PVE.SecurityGroups', {
 	    list_refs_url: '/cluster/firewall/refs',
 	    tbar_prefix: '<b>' + gettext('Rules') + ':</b>',
 	    border: false,
+	    firewall_type: 'group',
 	},
 	{
 	    xtype: 'pveSecurityGroupList',
