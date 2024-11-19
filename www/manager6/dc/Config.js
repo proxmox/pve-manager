@@ -221,6 +221,14 @@ Ext.define('PVE.dc.Config', {
 		    hidden: true,
 		    iconCls: 'fa fa-map-signs',
 		    itemId: 'sdnmappings',
+		},
+		{
+		    xtype: 'pveSDNFirewall',
+		    groups: ['sdn'],
+		    title: gettext('Firewall'),
+		    hidden: true,
+		    iconCls: 'fa fa-shield',
+		    itemId: 'sdnfirewall',
 		});
 	    }
 
