@@ -2,7 +2,7 @@ Ext.define('PVE.FirewallOptions', {
     extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveFirewallOptions'],
 
-    fwtype: undefined, // 'dc', 'node' or 'vm'
+    fwtype: undefined, // 'dc', 'node', 'vm' or 'vnet'
 
     base_url: undefined,
 
@@ -13,12 +13,12 @@ Ext.define('PVE.FirewallOptions', {
 	    throw "missing base_url configuration";
 	}
 
-	if (me.fwtype === 'dc' || me.fwtype === 'node' || me.fwtype === 'vm') {
-	    if (me.fwtype === 'node') {
-		me.cwidth1 = 250;
-	    }
-	} else {
+	if (!['dc', 'node', 'vm', 'vnet'].includes(me.fwtype)) {
 	    throw "unknown firewall option type";
+	}
+
+	if (me.fwtype === 'node') {
+	    me.cwidth1 = 250;
 	}
 
 	let caps = Ext.state.Manager.get('GuiCap');
@@ -81,6 +81,7 @@ Ext.define('PVE.FirewallOptions', {
 			    'nf_conntrack_tcp_timeout_established', 7875, 250);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
+	    add_log_row('log_level_forward');
 	    add_log_row('tcp_flags_log_level', 120);
 	    add_log_row('smurf_log_level');
 	    add_boolean_row('nftables', gettext('nftables (tech preview)'), 0);
@@ -114,6 +115,9 @@ Ext.define('PVE.FirewallOptions', {
 		    defaultValue: 'enable=1',
 		},
 	    };
+	} else if (me.fwtype === 'vnet') {
+	    add_boolean_row('enable', gettext('Firewall'), 0);
+	    add_log_row('log_level_forward');
 	}
 
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {
@@ -145,6 +149,28 @@ Ext.define('PVE.FirewallOptions', {
 			name: 'policy_out',
 			value: 'ACCEPT',
 			fieldLabel: gettext('Output Policy'),
+		    },
+		},
+	    };
+	}
+
+	if (me.fwtype === 'vnet' || me.fwtype === 'dc') {
+	    me.rows.policy_forward = {
+		header: gettext('Forward Policy'),
+		required: true,
+		defaultValue: 'ACCEPT',
+		editor: {
+		    xtype: 'proxmoxWindowEdit',
+		    subject: gettext('Forward Policy'),
+		    items: {
+			xtype: 'pveFirewallPolicySelector',
+			name: 'policy_forward',
+			value: 'ACCEPT',
+			fieldLabel: gettext('Forward Policy'),
+			comboItems: [
+			    ['ACCEPT', 'ACCEPT'],
+			    ['DROP', 'DROP'],
+			],
 		    },
 		},
 	    };
