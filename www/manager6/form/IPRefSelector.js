@@ -67,6 +67,12 @@ Ext.define('PVE.form.IPRefSelector', {
 	    });
 	}
 
+	let scopes = {
+	    'dc': gettext("Datacenter"),
+	    'guest': gettext("Guest"),
+	    'sdn': gettext("SDN"),
+	};
+
 	columns.push(
 	    {
 		header: gettext('Name'),
@@ -80,7 +86,7 @@ Ext.define('PVE.form.IPRefSelector', {
 		hideable: false,
 		width: 140,
 		renderer: function(value) {
-		    return value === 'dc' ? gettext("Datacenter") : gettext("Guest");
+		    return scopes[value] ?? "unknown scope";
 		},
 	    },
 	    {
