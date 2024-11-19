@@ -9,10 +9,6 @@ Ext.define('PVE.FirewallOptions', {
     initComponent: function() {
 	var me = this;
 
-	if (!me.base_url) {
-	    throw "missing base_url configuration";
-	}
-
 	if (!['dc', 'node', 'vm', 'vnet'].includes(me.fwtype)) {
 	    throw "unknown firewall option type";
 	}
@@ -197,22 +193,48 @@ Ext.define('PVE.FirewallOptions', {
 	};
 
 	Ext.apply(me, {
-	    url: "/api2/json" + me.base_url,
 	    tbar: [edit_btn],
-	    editorConfig: {
-		url: '/api2/extjs/' + me.base_url,
-	    },
 	    listeners: {
 		itemdblclick: () => { if (canEdit) { me.run_editor(); } },
 		selectionchange: set_button_status,
 	    },
 	});
 
+	if (me.base_url) {
+	    me.applyUrl(me.base_url);
+	} else {
+	    me.rstore = Ext.create('Proxmox.data.ObjectStore', {
+		interval: me.interval,
+		extraParams: me.extraParams,
+		rows: me.rows,
+	    });
+	}
+
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
+    },
+    applyUrl: function(url) {
+	let me = this;
+
+	Ext.apply(me, {
+	    url: "/api2/json" + url,
+	    editorConfig: {
+		url: '/api2/extjs/' + url,
+	    },
+	});
+    },
+    setBaseUrl: function(url) {
+	let me = this;
+
+	me.base_url = url;
+
+	me.applyUrl(url);
+
+	me.rstore.getProxy().setConfig('url', `/api2/extjs/${url}`);
+	me.rstore.reload();
     },
 });
 
