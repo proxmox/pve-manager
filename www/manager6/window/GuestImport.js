@@ -4,6 +4,8 @@ Ext.define('PVE.window.GuestImport', {
 
     title: gettext('Import Guest'),
 
+    onlineHelp: 'qm_import_virtual_machines',
+
     width: 720,
     bodyPadding: 0,
 
