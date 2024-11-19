@@ -71,7 +71,6 @@ my sub get_ceph_release_def {
 	},
 	squid => {
 	    release => '19.2',
-	    unsupported => 1, # not yet released on enterprise
 	    'initial-upstream-release' => '2024-09-27',
 	    'estimated-end-of-upstream-support' => '2026-09-19',
 	    'available-for-pve-release' => {
