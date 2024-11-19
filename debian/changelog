@@ -1,3 +1,22 @@
+pve-manager (8.2.10) bookworm; urgency=medium
+
+  * ui: firewall: add sdn as valid scope to IP-set selector
+
+  * ui: firewall: add forward direction to rule panel
+
+  * ui: sdn: add firewall panel
+
+  * ui: firewall: show warning when creating forward rules
+
+  * ui: import: clarify working storage emptyText
+
+  * change recommendation of pve-network packages to hard dependency, it's now
+    pulled in by pve-firewall anyway
+
+  * api: notifications: require powerful privileges for target management
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 19 Nov 2024 19:44:36 +0100
+
 pve-manager (8.2.9) bookworm; urgency=medium
 
   * api/ui: improve mdev listing for PCI mappings. Extend the parameter for
