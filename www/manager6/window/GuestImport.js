@@ -567,7 +567,7 @@ Ext.define('PVE.window.GuestImport', {
 			reference: 'extractionStorage',
 			fieldLabel: gettext('Import Working Storage'),
 			storageContent: 'images',
-			emptyText: gettext('Import Storage'),
+			emptyText: gettext('Source Storage'),
 			autoSelect: false,
 			name: 'import-working-storage',
 			disabled: true,
