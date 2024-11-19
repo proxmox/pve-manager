@@ -174,6 +174,7 @@ Ext.define('PVE.FirewallRulePanel', {
 
     firewall_type: undefined,
     action_selector: undefined,
+    forward_warning: undefined,
 
     onGetValues: function(values) {
 	var me = this;
@@ -199,11 +200,17 @@ Ext.define('PVE.FirewallRulePanel', {
 	me.action_selector.setComboItems(allowed_actions.map((action) => [action, action]));
     },
 
+    setForwardWarning: function(type) {
+	let me = this;
+	me.forward_warning.setHidden(type !== 'forward');
+    },
+
     onSetValues: function(values) {
 	let me = this;
 
 	if (values.type) {
 	    me.setValidActions(values.type);
+	    me.setForwardWarning(values.type);
 	}
 
 	return values;
@@ -227,6 +234,12 @@ Ext.define('PVE.FirewallRulePanel', {
 	    allowBlank: false,
 	});
 
+	me.forward_warning = Ext.create('Proxmox.form.field.DisplayEdit', {
+	    userCls: 'pmx-hint',
+	    value: gettext('Forward rules only take effect when the nftables firewall is activated in the host options'),
+	    hidden: true,
+	});
+
 	me.column1 = [
 	    {
 		// hack: we use this field to mark the form 'dirty' when the
@@ -246,6 +259,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		listeners: {
 		    change: function(f, value) {
 			me.setValidActions(value);
+			me.setForwardWarning(value);
                     },
                 },
 	    },
@@ -420,9 +434,17 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: '',
 		fieldLabel: gettext('Comment'),
 	    },
+	    me.forward_warning,
 	];
 
 	me.callParent();
+
+	if (me.isCreate) {
+	    // on create we never change the values, so we need to trigger this
+	    // manually
+	    me.setValidActions(me.getValues().type);
+	    me.setForwardWarning(me.getValues().type);
+	}
     },
 });
 
