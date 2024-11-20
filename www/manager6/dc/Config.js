@@ -225,7 +225,7 @@ Ext.define('PVE.dc.Config', {
 		{
 		    xtype: 'pveSDNFirewall',
 		    groups: ['sdn'],
-		    title: gettext('Firewall'),
+		    title: gettext('VNet Firewall'),
 		    hidden: true,
 		    iconCls: 'fa fa-shield',
 		    itemId: 'sdnfirewall',
