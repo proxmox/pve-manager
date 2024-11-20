@@ -125,19 +125,6 @@ Infopage: https://devuan.org
 Description: Devuan 5 (standard)
  A small Devuan Daedalus system including a minimal set of essential packages.
 
-Package: fedora-39-default
-Version: 20231118
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-39-default_20231118_amd64.tar.xz
-md5sum: 5e50babc8d5a70ec0bb00a0bc147c64d
-sha512sum: 921cde6021e3c109e0d560b3e8ff4968c885fad8bcd8c2796d9ca733d362be8dd407d0cb4322d5039f306e4a9bfc8f00b66e138bb513c0c9853c20a5fed379f7
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 39 (20231118)
-
 Package: fedora-40-default
 Version: 20240909
 Type: lxc
@@ -151,6 +138,19 @@ sha512sum: 1d13bbebf18b01917c05e46e1d6d5ce4c8a8c015a510f9a526783e57e2b4821cd8f54
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 40 (20240909)
 
+Package: fedora-41-default
+Version: 20241118
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-41-default_20241118_amd64.tar.xz
+md5sum: 18b1b7dc10e77d382809a6dd7777949f
+sha512sum: cc3b7a326f7d8d24eaf5676b6a1eee4167946a11465e036d2ed9624393a2e7af6d4767a3c8826a168f62682120817ed503003dc14ebdd42499f0b30a03dbe102
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 41 (20241118)
+
 Package: gentoo-current-openrc
 Version: 20231009
 Type: lxc
@@ -163,6 +163,19 @@ md5sum: ecf4836300bb0973618b7ae30077f2c1
 sha512sum: 40926859f0a777e8dfa7de10c76eb78ee92aa554e0598a09beec7f260ec7a02f19dfc2f620beaa1ea42feb02c682111d70e81e67e7641da3e0643f2692e75430
 Infopage: https://linuxcontainers.org
 Description: LXC openrc image for gentoo current (20231009)
+
+Package: openeuler-24.09-default
+Version: 20241118
+Type: lxc
+OS: openeuler
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/openeuler-24.09-default_20241118_amd64.tar.xz
+md5sum: 6334a54574d445c3d22eb36ab5c879b7
+sha512sum: cd76cfca8e2f26dcac518d2f75628ed04d2fed0abd8e7d492b5a0336a3a6ac50e44420cd9d9696c3ab1e19ede1ad162a4e635f670774871815ea4b9b6ae69ee7
+Infopage: https://linuxcontainers.org
+Description: LXC default image for openeuler 24.09 (20241118)
 
 Package: opensuse-15.5-default
 Version: 20231118
@@ -272,3 +285,17 @@ sha512sum: 45c2978e6b97fe292ada95fe06834276015e5739a594db4de2fdfd830fa0c37942e8a
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 24.04 Noble (standard)
  A small Ubuntu 24.04 Noble Numbat system including all standard packages.
+
+Package: ubuntu-24.10-standard
+Version: 24.10-1
+Type: lxc
+OS: ubuntu-24.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-24.10-standard_24.10-1_amd64.tar.zst
+md5sum: ac4cb1924de8091eb91226a80453186c
+sha512sum: 1ceb32855e6bdc86b21128f979f235244b8a3bf7644ca444454f7f2082f6a14cdd6f116869a88ca9044adbbe9aecc3bb8b644ceddf767e3692d87ca063818633
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 24.10 Oracular (standard)
+ A small Ubuntu 24.10 Oracular Oriole system including all standard packages.
