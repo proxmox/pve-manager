@@ -1,3 +1,19 @@
+pve-manager (8.3.0) bookworm; urgency=medium
+
+  * ceph: drop preview flag for the Ceph Squid release
+
+  * aplinfo: update TurnkeyLinux key after expiry
+
+  * update shipped aplliance info index
+
+  * ui: firewall rules: add empty text to grid
+
+  * ui: sdn vnet, zone: add empty text to grids
+
+  * ui: sdn: add VNET prefix to vnet-specific firewall navigation label
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Nov 2024 11:39:37 +0100
+
 pve-manager (8.2.10) bookworm; urgency=medium
 
   * ui: firewall: add sdn as valid scope to IP-set selector
