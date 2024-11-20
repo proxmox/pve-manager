@@ -1,10 +1,12 @@
 Ext.define('PVE.form.FWMacroSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveFWMacroSelector',
+
     allowBlank: true,
     autoSelect: false,
     valueField: 'macro',
     displayField: 'macro',
+
     listConfig: {
 	columns: [
 	    {
@@ -49,10 +51,12 @@ Ext.define('PVE.form.FWMacroSelector', {
 Ext.define('PVE.form.ICMPTypeSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveICMPTypeSelector',
+
     allowBlank: true,
     autoSelect: false,
     valueField: 'name',
     displayField: 'name',
+
     listConfig: {
 	columns: [
 	    {
@@ -610,6 +614,7 @@ Ext.define('PVE.FirewallRules', {
     alias: 'widget.pveFirewallRules',
 
     onlineHelp: 'chapter_pve_firewall',
+    emptyText: gettext('No firewall rule configured here.'),
 
     stateful: true,
     stateId: 'grid-firewall-rules',
