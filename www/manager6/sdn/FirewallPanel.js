@@ -4,6 +4,8 @@ Ext.define('PVE.sdn.FirewallPanel', {
 
     title: 'VNet',
 
+    onlineHelp: 'pvesdn_firewall_integration',
+
     initComponent: function() {
 	let me = this;
 
