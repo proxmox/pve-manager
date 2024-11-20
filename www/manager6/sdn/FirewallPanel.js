@@ -1,4 +1,3 @@
-
 Ext.define('PVE.sdn.FirewallPanel', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveSDNFirewall',

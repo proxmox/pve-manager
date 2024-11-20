@@ -7,6 +7,8 @@ Ext.define('PVE.sdn.FirewallVnetView', {
 
     tabPanel: undefined,
 
+    emptyText: gettext('No VNet configured.'),
+
     getRulesPanel: function() {
 	let me = this;
 	return me.tabPanel.items.getAt(0);

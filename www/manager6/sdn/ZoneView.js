@@ -3,6 +3,7 @@ Ext.define('PVE.sdn.ZoneView', {
     alias: ['widget.pveSDNZoneView'],
 
     onlineHelp: 'pvesdn_config_zone',
+    emptyText: gettext('No zone configured.'),
 
     stateful: true,
     stateId: 'grid-sdn-zone',

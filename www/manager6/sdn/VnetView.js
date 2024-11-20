@@ -3,6 +3,7 @@ Ext.define('PVE.sdn.VnetView', {
     alias: 'widget.pveSDNVnetView',
 
     onlineHelp: 'pvesdn_config_vnet',
+    emptyText: gettext('No VNet configured.'),
 
     stateful: true,
     stateId: 'grid-sdn-vnet',
