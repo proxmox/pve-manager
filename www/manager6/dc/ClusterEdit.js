@@ -116,6 +116,7 @@ Ext.define('PVE.ClusterInfoWindow', {
 		document.execCommand("copy");
 	    },
 	    text: gettext('Copy Information'),
+	    iconCls: 'fa fa-clipboard',
 	}],
     }],
 });
