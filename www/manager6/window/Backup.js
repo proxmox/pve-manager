@@ -53,6 +53,19 @@ Ext.define('PVE.window.Backup', {
 	    },
 	});
 
+	let pbsChangeDetectionModeSelector = Ext.create({
+	    xtype: 'proxmoxKVComboBox',
+	    fieldLabel: gettext('PBS change detection mode'),
+	    name: 'pbs-change-detection-mode',
+	    deleteEmpty: true,
+	    value: '__default__',
+	    comboItems: [
+		['__default__', "Default"],
+		['data', "Data"],
+		['metadata', "Metadata"],
+	    ],
+	});
+
 	const keepNames = [
 	    ['keep-last', gettext('Keep Last')],
 	    ['keep-hourly', gettext('Keep Hourly')],
@@ -110,9 +123,17 @@ Ext.define('PVE.window.Backup', {
 		    if (rec && rec.data && rec.data.type === 'pbs') {
 			compressionSelector.setValue('zstd');
 			compressionSelector.setDisabled(true);
-		    } else if (!compressionSelector.getEditable()) {
-			compressionSelector.setDisabled(false);
+			if (me.vmtype === 'lxc') {
+			    pbsChangeDetectionModeSelector.setValue('__default__');
+			    pbsChangeDetectionModeSelector.setDisabled(false);
+			}
+		    } else {
+			if (!compressionSelector.getEditable()) {
+			    compressionSelector.setDisabled(false);
+			}
+			pbsChangeDetectionModeSelector.setDisabled(true);
 		    }
+
 
 		    Proxmox.Utils.API2Request({
 			url: `/nodes/${me.nodename}/vzdump/defaults`,
@@ -193,6 +214,13 @@ Ext.define('PVE.window.Backup', {
 		storagesel,
 		modeSelector,
 		protectedCheckbox,
+		{
+		    xtype: 'box',
+		    html: `<i class="fa fa-question-circle" data-qtip="
+			${gettext("Mode to detect file changes and switch archive encoding format for container backups to Proxmox Backup Server. Not available for VM backups.")}
+		    "></i>`,
+		},
+		pbsChangeDetectionModeSelector,
 	    ],
 	    column2: [
 		compressionSelector,
@@ -287,6 +315,10 @@ Ext.define('PVE.window.Backup', {
 
 		if (values.protected) {
 		    params.protected = values.protected;
+		}
+
+		if (values['pbs-change-detection-mode']) {
+		    params['pbs-change-detection-mode'] = values['pbs-change-detection-mode'];
 		}
 
 		if (values['notes-template']) {
