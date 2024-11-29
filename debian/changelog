@@ -1,3 +1,15 @@
+pve-manager (8.3.1) bookworm; urgency=medium
+
+  * ui: sdn firewall: add online help reference
+
+  * ui: cluster join info: add clipboard icon to "Copy Information" button
+
+  * external metric server: influxdb: always quote tags
+
+  * api: notification targets: fix permission check for POST/PUT
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 29 Nov 2024 11:42:46 +0100
+
 pve-manager (8.3.0) bookworm; urgency=medium
 
   * ceph: drop preview flag for the Ceph Squid release
