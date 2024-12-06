@@ -310,6 +310,14 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    hidden: true,
 	},
 	{
+	    text: gettext('Application'),
+	    minWidth: 100,
+	    flex: 1,
+	    dataIndex: 'application_metadata',
+	    hidden: true,
+	    renderer: (v, _meta, _rec) => Object.keys(v).toString(),
+	},
+	{
 	    text: gettext('Size') + '/min',
 	    minWidth: 100,
 	    flex: 1,
