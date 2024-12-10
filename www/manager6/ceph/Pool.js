@@ -16,8 +16,10 @@ Ext.define('PVE.CephPoolInputPanel', {
 
 	init: function(view) {
 	    let vm = this.getViewModel();
-	    vm.set('size', Number(view.defaultSize));
-	    vm.set('minSize', Number(view.defaultMinSize));
+	    if (view.isCreate) {
+		vm.set('size', Number(view.defaultSize));
+		vm.set('minSize', Number(view.defaultMinSize));
+	    }
 	},
 	sizeChange: function(field, val) {
 	    let vm = this.getViewModel();
