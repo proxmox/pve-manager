@@ -220,10 +220,16 @@ sub get_index {
 	}
     }
 
-    if (!$lang) {
+    my $consent_text;
+    eval {
 	my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	$lang = $dc_conf->{language} // 'en';
-    }
+	$consent_text = $dc_conf->{'consent-text'};
+
+	if (!$lang) {
+	    $lang = $dc_conf->{language} // 'en';
+	}
+    };
+    warn "$@\n" if $@;
 
     my $mobile = (is_phone($r->header('User-Agent')) && (!defined($args->{mobile}) || $args->{mobile})) || $args->{mobile};
 
@@ -253,6 +259,7 @@ sub get_index {
 	version => "$version",
 	wtversion => $wtversion,
 	theme => $theme,
+	consenttext => $consent_text
     };
 
     # by default, load the normal index

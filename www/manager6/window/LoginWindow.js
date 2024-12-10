@@ -18,8 +18,18 @@ Ext.define('PVE.window.LoginWindow', {
     },
 
     controller: {
-
 	xclass: 'Ext.app.ViewController',
+
+	init: async function() {
+	    if (Proxmox.ConsentText) {
+		Ext.create("Proxmox.window.ConsentModal", {
+		    autoShow: true,
+		    consent: Proxmox.Markdown.parse(
+			Proxmox.Utils.base64ToUtf8(Proxmox.ConsentText),
+		    ),
+		});
+	    }
+	},
 
 	onLogon: async function() {
 	    var me = this;

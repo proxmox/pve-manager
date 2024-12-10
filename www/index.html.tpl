@@ -41,7 +41,8 @@
 	defaultLang: '[% lang %]',
 	NodeName: '[% nodename %]',
 	UserName: '[% username %]',
-	CSRFPreventionToken: '[% token %]'
+	CSRFPreventionToken: '[% token %]',
+	ConsentText: '[% consenttext %]'
     };
     </script>
     <script type="text/javascript" src="/proxmoxlib.js?ver=[% wtversion %]"></script>

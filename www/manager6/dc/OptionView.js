@@ -519,6 +519,14 @@ Ext.define('PVE.dc.OptionView', {
 	    },
 	};
 
+	me.add_textareafield_row('consent-text', gettext('Consent Text'), {
+	    deleteEmpty: true,
+	    fieldOpts: {
+		maxLength: 64 * 1024,
+	    },
+	    // TODO: add onlineHelp to 'gui_consent_banner' once available.
+	});
+
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
 	Ext.apply(me, {
