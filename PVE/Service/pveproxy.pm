@@ -115,6 +115,8 @@ sub init {
 	    honor_cipher_order => $proxyconf->{HONOR_CIPHER_ORDER},
 	},
 	compression => $proxyconf->{COMPRESSION},
+	proxy_real_ip_header => $proxyconf->{PROXY_REAL_IP_HEADER},
+	proxy_real_ip_allow_from => $proxyconf->{PROXY_REAL_IP_ALLOW_FROM},
 	# Note: there is no authentication for those pages and dirs!
 	pages => {
 	    '/' => sub { get_index($self->{nodename}, @_) },
