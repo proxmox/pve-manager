@@ -1,3 +1,20 @@
+pve-manager (8.3.2) bookworm; urgency=medium
+
+  * api: network: add return schema for interface listing
+
+  * ui: ceph pool: indentation clean-up
+
+  * ui: ceph: don't set default size/min-size when editing existing pool
+
+  * ui: ceph pool: add opt-in column for the configured pool application
+
+  * ui: qemu: improve error handling and rendering the QGA provided IP
+    addresses of the guest.
+
+  * api: node status: complete API return schema
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 16 Dec 2024 17:52:29 +0100
+
 pve-manager (8.3.1) bookworm; urgency=medium
 
   * ui: sdn firewall: add online help reference
