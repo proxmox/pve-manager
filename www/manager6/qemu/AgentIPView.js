@@ -19,11 +19,13 @@ Ext.define('PVE.window.IPInfo', {
 		{
 		    dataIndex: 'name',
 		    text: gettext('Name'),
+		    renderer: Ext.htmlEncode,
 		    flex: 3,
 		},
 		{
 		    dataIndex: 'hardware-address',
 		    text: gettext('MAC address'),
+		    renderer: Ext.htmlEncode,
 		    width: 140,
 		},
 		{
@@ -40,7 +42,7 @@ Ext.define('PVE.window.IPInfo', {
 			    var addr = ip['ip-address'];
 			    var pref = ip.prefix;
 			    if (addr && pref) {
-				ips.push(addr + '/' + pref);
+				ips.push(Ext.htmlEncode(addr + '/' + pref));
 			    }
 			});
 			return ips.join('<br>');
@@ -114,7 +116,7 @@ Ext.define('PVE.qemu.AgentIPView', {
 		    var p = ip['ip-address'];
 		    // show 2 ips at maximum
 		    if (ips.length < 2) {
-			ips.push(p);
+			ips.push(Ext.htmlEncode(p));
 		    }
 		});
 	    }
