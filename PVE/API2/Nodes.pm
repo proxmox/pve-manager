@@ -438,6 +438,81 @@ __PACKAGE__->register_method({
 		    },
 		},
 	    },
+	    cpu => {
+		type => "number",
+		description => "The current cpu usage.",
+	    },
+	    cpuinfo => {
+		type => "object",
+		properties => {
+		    cores => {
+			type => "integer",
+			description => "The number of physical cores of the CPU.",
+		    },
+		    cpus => {
+			type => "integer",
+			description => "The number of logical threads of the CPU.",
+		    },
+		    model => {
+			type => "string",
+			description => "The CPU model",
+		    },
+		    sockets => {
+			type => "integer",
+			description => "The number of logical threads of the CPU.",
+		    },
+		},
+	    },
+	    loadavg => {
+		type => 'array',
+		description => "An array of load avg for 1, 5 and 15 minutes respectively.",
+		items => {
+		    type => 'string',
+		    description => "The value of the load.",
+		}
+	    },
+	    memory => {
+		type => "object",
+		properties => {
+		    free => {
+			type => "integer",
+			description => "The free memory in bytes.",
+		    },
+		    total => {
+			type => "integer",
+			description => "The total memory in bytes.",
+		    },
+		    used => {
+			type => "integer",
+			description => "The used memory in bytes.",
+		    },
+		},
+	    },
+	    pveversion => {
+		type => 'string',
+		description => "The PVE version string.",
+	    },
+	    rootfs => {
+		type => "object",
+		properties => {
+		    free => {
+			type => "integer",
+			description => "The free bytes on the root filesystem.",
+		    },
+		    total => {
+			type => "integer",
+			description => "The total size of the root filesystem in bytes.",
+		    },
+		    used => {
+			type => "integer",
+			description => "The used bytes in the root filesystem.",
+		    },
+		    avail => {
+			type => "integer",
+			description => "The available bytes in the root filesystem.",
+		    },
+		},
+	    }
 	},
     },
     code => sub {
