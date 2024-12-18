@@ -56,6 +56,19 @@ sha512sum: 8b675c373533c096ded4168edbf2fba2a6e3ed2d91a550b0d128e472d2a0d65a8f2e5
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.20 (20240908)
 
+Package: alpine-3.21-default
+Version: 20241217
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.21-default_20241217_amd64.tar.xz
+md5sum: 3e5ded410fae18bd05031f47179f2394
+sha512sum: 211ac75f4b66494e78a6e72acc206b8ac490e0d174a778ae5be2970b0a1a57a8dddea8fc5880886a3794b8bb787fe93297a1cad3aee75d07623d8443ea9062e4
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.21 (20241217)
+
 Package: archlinux-base
 Version: 20240911-1
 Type: lxc
