@@ -103,7 +103,7 @@ my sub get_node_metrics {
     push @$metrics, gauge($id, $timestamp, "cpu_avg15", $cpustat->{avg15});
     push @$metrics, gauge($id, $timestamp, "cpu_max", $cpustat->{cpus});
     push @$metrics, gauge($id, $timestamp, "cpu_current", $cpustat->{cpu});
-    push @$metrics, gauge($id, $timestamp, "cpu_iowait", $cpustat->{iowait});
+    push @$metrics, gauge($id, $timestamp, "cpu_iowait", $cpustat->{wait});
 
     my $memory = $data->{memory};
     push @$metrics, gauge($id, $timestamp, "mem_total", $memory->{memtotal});
