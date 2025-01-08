@@ -278,13 +278,13 @@ __PACKAGE__->register_method({
 		method => {
 		    type => "string",
 		    description => "The network configuration method for IPv4.",
-		    enum => ["manual", "static", "auto"],
+		    enum => ["loopback", "dhcp", "manual", "static", "auto"],
 		    optional => 1,
 		},
 		method6 => {
 		    type => "string",
 		    description => "The network configuration method for IPv6.",
-		    enum => ["manual", "static", "auto"],
+		    enum => ["loopback", "dhcp", "manual", "static", "auto"],
 		    optional => 1,
 		},
 		options => {
