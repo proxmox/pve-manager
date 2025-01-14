@@ -103,6 +103,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		editor: mpeditor,
 		iconCls: 'hdd-o',
 		group: 4,
+		renderer: Ext.htmlEncode,
 	    },
 	    cpulimit: {
 		visible: false,
@@ -130,6 +131,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
 		header: header,
+		renderer: Ext.htmlEncode,
 	    };
 	}, true);
 
@@ -142,6 +144,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		tdCls: 'pve-itype-icon-pci',
 		editor: deveditor,
 		header: gettext('Device') + ' (' + confid + ')',
+		renderer: Ext.htmlEncode,
 	    };
 	});
 

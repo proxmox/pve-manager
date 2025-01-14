@@ -233,6 +233,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
 		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')',
+		renderer: Ext.htmlEncode,
 	    };
 	});
 	for (let i = 0; i < PVE.Utils.hardware_counts.net; i++) {
@@ -252,6 +253,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    editor: null,
 	    never_delete: !caps.vms['VM.Config.Disk'],
 	    header: gettext('EFI Disk'),
+	    renderer: Ext.htmlEncode,
 	};
 	rows.tpmstate0 = {
 	    group: 22,
@@ -259,6 +261,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    editor: null,
 	    never_delete: !caps.vms['VM.Config.Disk'],
 	    header: gettext('TPM State'),
+	    renderer: Ext.htmlEncode,
 	};
 	for (let i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
 	    let confid = "usb" + i.toString();
