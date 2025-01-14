@@ -248,7 +248,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    },
 		    columns: [
 			{ header: 'Key', width: 150, dataIndex: 'key' },
-			{ header: 'Value', flex: 1, dataIndex: 'value' },
+			{ header: 'Value', flex: 1, dataIndex: 'value', renderer: Ext.htmlEncode },
 		    ],
 		},
 	    ],
