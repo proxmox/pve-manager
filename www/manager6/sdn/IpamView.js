@@ -99,6 +99,7 @@ Ext.define('PVE.sdn.IpamView', {
 		    header: 'ID',
 		    flex: 2,
 		    dataIndex: 'ipam',
+		    renderer: Ext.htmlEncode,
 		},
 		{
 		    header: gettext('Type'),
@@ -110,6 +111,7 @@ Ext.define('PVE.sdn.IpamView', {
 		    header: 'url',
 		    flex: 1,
 		    dataIndex: 'url',
+		    renderer: Ext.htmlEncode,
 		},
 	    ],
 	    listeners: {

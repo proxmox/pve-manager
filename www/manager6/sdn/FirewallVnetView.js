@@ -55,11 +55,13 @@ Ext.define('PVE.sdn.FirewallVnetView', {
 		    header: gettext('Zone'),
 		    flex: 1,
 		    dataIndex: 'zone',
+		    renderer: Ext.htmlEncode,
 		},
 		{
 		    header: gettext('Alias'),
 		    flex: 1,
 		    dataIndex: 'alias',
+		    renderer: Ext.htmlEncode,
 		},
 	    ],
 	    listeners: {

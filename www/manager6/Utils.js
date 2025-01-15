@@ -185,23 +185,23 @@ Ext.define('PVE.Utils', {
 
     render_sdn_pending: function(rec, value, key, index) {
 	if (rec.data.state === undefined || rec.data.state === null) {
-	    return value;
+	    return Ext.htmlEncode(value);
 	}
 
 	if (rec.data.state === 'deleted') {
 	    if (value === undefined) {
 		return ' ';
 	    } else {
-		return '<div style="text-decoration: line-through;">'+ value +'</div>';
+		return `<div style="text-decoration: line-through;">${Ext.htmlEncode(value)}</div>`;
 	    }
 	} else if (rec.data.pending[key] !== undefined && rec.data.pending[key] !== null) {
 	    if (rec.data.pending[key] === 'deleted') {
 		return ' ';
 	    } else {
-		return rec.data.pending[key];
+		return Ext.htmlEncode(rec.data.pending[key]);
 	    }
 	}
-	return value;
+	return Ext.htmlEncode(value);
     },
 
     render_sdn_pending_state: function(rec, value) {
@@ -212,7 +212,7 @@ Ext.define('PVE.Utils', {
 	let icon = `<i class="fa fa-fw fa-refresh warning"></i>`;
 
 	if (value === 'deleted') {
-	    return '<span>' + icon + value + '</span>';
+	    return `<span>${icon}${Ext.htmlEncode(value)}</span>`;
 	}
 
 	let tip = gettext('Pending Changes') + ': <br>';
@@ -221,10 +221,10 @@ Ext.define('PVE.Utils', {
 	    if ((rec.data[key] !== undefined && rec.data.pending[key] !== rec.data[key]) ||
 		rec.data[key] === undefined
 	    ) {
-		tip += `${key}: ${keyvalue} <br>`;
+		tip += `${Ext.htmlEncode(key)}: ${Ext.htmlEncode(keyvalue)} <br>`;
 	    }
 	}
-	return '<span data-qtip="' + tip + '">'+ icon + value + '</span>';
+	return `<span data-qtip="${Ext.htmlEncode(tip)}">${icon}${Ext.htmlEncode(value)}</span>`;
     },
 
     render_ceph_health: function(healthObj) {

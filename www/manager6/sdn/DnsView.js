@@ -101,6 +101,7 @@ Ext.define('PVE.sdn.DnsView', {
 		    header: 'ID',
 		    flex: 2,
 		    dataIndex: 'dns',
+		    renderer: Ext.htmlEncode,
 		},
 		{
 		    header: gettext('Type'),
@@ -112,6 +113,7 @@ Ext.define('PVE.sdn.DnsView', {
 		    header: 'url',
 		    flex: 1,
 		    dataIndex: 'url',
+		    renderer: Ext.htmlEncode,
 		},
 	    ],
 	    listeners: {

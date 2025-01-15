@@ -855,10 +855,10 @@ Ext.define('PVE.FirewallRules', {
 	    let errors = record.data.errors;
 	    if (errors && errors[name]) {
 		metaData.tdCls = 'proxmox-invalid-row';
-		let html = '<p>' + Ext.htmlEncode(errors[name]) + '</p>';
+		let html = Ext.htmlEncode(`<p>${Ext.htmlEncode(errors[name])}`);
 		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + html + '"';
 	    }
-	    return value;
+	    return Ext.htmlEncode(value);
 	};
 
 	let columns = [
@@ -1001,9 +1001,9 @@ Ext.define('PVE.FirewallRules', {
 		flex: 10,
 		minWidth: 75,
 		renderer: function(value, metaData, record) {
-		    let comment = render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record) || '';
+		    let comment = render_errors('comment', value, metaData, record) || '';
 		    if (comment.length * 12 > metaData.column.cellWidth) {
-			comment = `<span data-qtip="${comment}">${comment}</span>`;
+			comment = `<span data-qtip="${Ext.htmlEncode(comment)}">${comment}</span>`;
 		    }
 		    return comment;
 		},
