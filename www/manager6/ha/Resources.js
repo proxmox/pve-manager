@@ -143,7 +143,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    renderer: function(value, metaData, { data }) {
 			if (data.errors && data.errors.group) {
 			    metaData.tdCls = 'proxmox-invalid-row';
-			    let html = `<p>${Ext.htmlEncode(data.errors.group)}</p>`;
+			    let html = Ext.htmlEncode(`<p>${Ext.htmlEncode(data.errors.group)}</p>`);
 			    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + html + '"';
 			}
 			return value;
