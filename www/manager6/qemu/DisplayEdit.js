@@ -95,8 +95,8 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	    xtype: 'displayfield',
 	    name: 'vncHint',
 	    userCls: 'pmx-hint',
-	    value: gettext('You cannot use the default SPICE clipboard if the VNC Clipboard is selected.') + ' ' +
-		gettext('VNC Clipboard requires spice-tools installed in the Guest-VM.'),
+	    value: gettext('You cannot use the default SPICE clipboard if the VNC clipboard is selected.') + ' ' +
+		gettext('VNC clipboard requires spice-tools installed in the Guest-VM.'),
 	    bind: {
 		hidden: '{hideVNCHint}',
 	    },
@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	    name: 'defaultHint',
 	    userCls: 'pmx-hint',
 	    value: gettext('This option depends on your display type.') + ' ' +
-		gettext('If the display type uses SPICE you are able to use the default SPICE Clipboard.'),
+		gettext('If the display type uses SPICE you are able to use the default SPICE clipboard.'),
 	    bind: {
 		hidden: '{hideDefaultHint}',
 	    },
