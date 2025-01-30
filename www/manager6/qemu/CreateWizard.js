@@ -28,9 +28,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 
     // fot the special case that we have 2 cdrom drives
     //
-    // emulates part of the backend bootorder logic, but includes all
-    // cdrom drives since we don't know which one the user put in a bootable iso
-    // and hardcodes the known values (ide0/2, net0)
+    // emulates part of the backend bootorder logic, but includes all cdrom drives since the backend
+    // cannot know which one is a bootable iso and hardcodes the known values (ide0/2, net0)
     calculateBootOrder: function(values) {
 	// user selected windows + second cdrom
 	if (values.ide0 && values.ide0.match(/media=cdrom/)) {
@@ -51,7 +50,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    if (disk) {
 		order.push(disk);
 	    }
-	    order.push('ide0', 'ide2');
+	    order.push('ide2', 'ide0'); // ide2 is the install ISO and should be first
 	    if (values.net0) {
 		order.push('net0');
 	    }
