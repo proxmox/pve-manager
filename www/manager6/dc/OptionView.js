@@ -115,6 +115,9 @@ Ext.define('PVE.dc.OptionView', {
 		emptyText: Proxmox.Utils.defaultText,
 		autoSelect: false,
 		skipEmptyText: true,
+		editable: true,
+		notFoundIsValid: true,
+		vtype: 'IP64CIDRAddress',
 	    }],
 	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
