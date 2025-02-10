@@ -567,15 +567,10 @@ Ext.define('PVE.storage.PBSInputPanel', {
 
 	me.columnB = [
 	    {
-		xtype: 'proxmoxtextfield',
+		xtype: 'pmxFingerprintField',
 		name: 'fingerprint',
 		value: me.isCreate ? null : undefined,
-		fieldLabel: gettext('Fingerprint'),
-		emptyText: gettext('Server certificate SHA-256 fingerprint, required for self-signed certificates'),
-		regex: /[A-Fa-f0-9]{2}(:[A-Fa-f0-9]{2}){31}/,
-		regexText: gettext('Example') + ': AB:CD:EF:...',
 		deleteEmpty: !me.isCreate,
-		allowBlank: true,
 	    },
 	];
 
