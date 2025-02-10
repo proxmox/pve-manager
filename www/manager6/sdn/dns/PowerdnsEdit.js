@@ -18,7 +18,7 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
     initComponent: function() {
 	var me = this;
 
-	me.items = [
+	me.column1 = [
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'dns',
@@ -29,14 +29,16 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
 	    },
 	    {
 		xtype: 'textfield',
-		name: 'url',
-		fieldLabel: 'URL',
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'textfield',
 		name: 'key',
 		fieldLabel: gettext('API Key'),
+		allowBlank: false,
+	    },
+	];
+	me.column2 = [
+	    {
+		xtype: 'textfield',
+		name: 'url',
+		fieldLabel: 'URL',
 		allowBlank: false,
 	    },
 	    {

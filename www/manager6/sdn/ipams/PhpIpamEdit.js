@@ -18,7 +18,7 @@ Ext.define('PVE.sdn.ipams.PhpIpamInputPanel', {
     initComponent: function() {
 	var me = this;
 
-	me.items = [
+	me.column1 = [
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'ipam',
@@ -29,14 +29,16 @@ Ext.define('PVE.sdn.ipams.PhpIpamInputPanel', {
 	    },
 	    {
 		xtype: 'textfield',
-		name: 'url',
-		fieldLabel: gettext('URL'),
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'textfield',
 		name: 'token',
 		fieldLabel: gettext('Token'),
+		allowBlank: false,
+	    },
+	];
+	me.column2 = [
+	    {
+		xtype: 'textfield',
+		name: 'url',
+		fieldLabel: gettext('URL'),
 		allowBlank: false,
 	    },
 	    {
