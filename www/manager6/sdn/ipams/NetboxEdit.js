@@ -44,6 +44,15 @@ Ext.define('PVE.sdn.ipams.NetboxInputPanel', {
 	    },
 	];
 
+	me.columnB = [
+	    {
+		xtype: 'pmxFingerprintField',
+		name: 'fingerprint',
+		value: me.isCreate ? null : undefined,
+		deleteEmpty: !me.isCreate,
+	    },
+	];
+
 	me.callParent();
     },
 });

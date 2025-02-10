@@ -49,6 +49,15 @@ Ext.define('PVE.sdn.ipams.PhpIpamInputPanel', {
 	    },
 	];
 
+	me.columnB = [
+	    {
+		xtype: 'pmxFingerprintField',
+		name: 'fingerprint',
+		value: me.isCreate ? null : undefined,
+		deleteEmpty: !me.isCreate,
+	    },
+	];
+
 	me.callParent();
     },
 });
