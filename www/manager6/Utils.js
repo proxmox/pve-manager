@@ -686,7 +686,7 @@ Ext.define('PVE.Utils', {
 
     contentTypes: {
 	'images': gettext('Disk image'),
-	'backup': gettext('VZDump backup file'),
+	'backup': gettext('Backup'),
 	'vztmpl': gettext('Container template'),
 	'iso': gettext('ISO image'),
 	'rootdir': gettext('Container'),
