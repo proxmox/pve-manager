@@ -35,12 +35,6 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 		    limitWarning.setHidden(!!newVal);
 		},
 	    },
-	    '#source': {
-		change: function(el, newVal) {
-		    let limitWarning = this.lookupReference('sourceWarning');
-		    limitWarning.setHidden(newVal !== '/dev/random');
-		},
-	    },
 	},
     },
 
@@ -76,13 +70,6 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	fieldLabel: gettext('Period') + ' (ms)',
 	labelWidth: 130,
 	emptyText: '1000',
-    },
-    {
-	xtype: 'displayfield',
-	reference: 'sourceWarning',
-	value: gettext('Using /dev/random as entropy source is discouraged, as it can lead to host entropy starvation. /dev/urandom is preferred, and does not lead to a decrease in security in practice.'),
-	userCls: 'pmx-hint',
-	hidden: true,
     },
     {
 	xtype: 'displayfield',
