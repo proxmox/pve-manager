@@ -1,3 +1,33 @@
+pve-manager (8.3.4) bookworm; urgency=medium
+
+  * fix #5699: add support to define a HTTP header from which the real IP of a
+    connection should be parsed from. This can be useful for setups with a
+    reverse proxy in front of the API server. On top of that add support for
+    optionally configuring an allow-list of IP networks that the real source
+    IP must match one to allow the connection to be handled.
+    The related config variables are named `PROXY_REAL_IP_HEADER` and
+    `PROXY_REAL_IP_ALLOW_FROM` respectively.
+
+  * api: network: improve completeness of return schema.
+
+  * ui: qemu: add hint that VMs using the VNC clipboard cannot be live
+    migrated.
+
+  * fix #6142: ui: datacenter options: allow custom CIDRs for migration
+    network to cover cases where the network CIDR is not configured on any
+    network interfaces on the node, like for example in a routed full-mesh
+    configuration.
+
+  * pull metric: fix node 'iowait' metric, return the percentage of time spent
+    on waiting on IO in a certain time frame instead of returning the total
+    amount of time that was spent waiting on IO, similar to how the push based
+    metric servers do.
+
+  * d/control: add new pve-nvidia-vgpu-helper package as recommended
+    dependency.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Feb 2025 15:26:20 +0100
+
 pve-manager (8.3.3) bookworm; urgency=medium
 
   * update shipped appliance info index
