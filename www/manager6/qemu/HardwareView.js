@@ -315,8 +315,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	rows.rng0 = {
 	    group: 45,
 	    tdCls: 'pve-itype-icon-die',
-	    editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.RNGEdit' : undefined,
-	    never_delete: !caps.nodes['Sys.Console'],
+	    editor: caps.vms['VM.Config.HWType'] || caps.mapping.hwrng['Mapping.Use'] ? 'PVE.qemu.RNGEdit' : undefined,
+	    never_delete: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
 	    header: gettext("VirtIO RNG"),
 	};
 
@@ -588,7 +588,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    });
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
-	    const noSysConsolePerm = !caps.nodes['Sys.Console'];
 	    const noHWPerm = !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'];
 	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
@@ -601,7 +600,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addAudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
 	    me.down('#addSerial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
 	    me.down('#addNet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
-	    me.down('#addRng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
+	    me.down('#addRng').setDisabled(noVMConfigHWTypePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
 	    me.down('#addTpmState').setDisabled(noVMConfigDiskPerm || isAtLimit('tpmstate'));
 	    me.down('#addCloudinitDrive').setDisabled(noVMConfigCDROMPerm || noVMConfigCloudinitPerm || hasCloudInit);
@@ -745,7 +744,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				text: gettext("VirtIO RNG"),
 				itemId: 'addRng',
 				iconCls: 'pve-itype-icon-die',
-				disabled: !caps.nodes['Sys.Console'],
+				disabled: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
 				handler: editorFactory('RNGEdit'),
 			    },
 			],
