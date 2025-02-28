@@ -17,19 +17,6 @@ sha512sum: 4c3c5c2616b46fbb0b831a87669e6f323167c2f67cca487723ff3b00284309c547fec
 Infopage: https://linuxcontainers.org
 Description: LXC default image for almalinux 9 (20240911)
 
-Package: alpine-3.18-default
-Version: 20230607
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.18-default_20230607_amd64.tar.xz
-md5sum: 298d21830b18f9d1fc98f6797bd36967
-sha512sum: f9d19b4a6d3c6201cf7a4624baf2d16ef08e7668adec0b7ea1a9c0ab8d854c8a9d11da48cc6f89ddb50a873bd339cfd4d76c402e8548f425469afba1a148479a
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.18 (20230607)
-
 Package: alpine-3.19-default
 Version: 20240207
 Type: lxc
@@ -190,19 +177,6 @@ sha512sum: cd76cfca8e2f26dcac518d2f75628ed04d2fed0abd8e7d492b5a0336a3a6ac50e4442
 Infopage: https://linuxcontainers.org
 Description: LXC default image for openeuler 24.09 (20241118)
 
-Package: opensuse-15.5-default
-Version: 20231118
-Type: lxc
-OS: opensuse
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/opensuse-15.5-default_20231118_amd64.tar.xz
-md5sum: 18c8566b848c907ec74cee3a45348957
-sha512sum: f3a6785c347da3867d074345b68db9c99ec2b269e454f715d234935014ca1dc9f723956f15e4fcc714fa993e4d7c7997faf6bbcc2add6c74d4754c217b6d1712
-Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 15.5 (20231118)
-
 Package: opensuse-15.6-default
 Version: 20240910
 Type: lxc
@@ -216,18 +190,18 @@ sha512sum: a0154162ef5128ebce176cab67d98b3d0c1db7bde92ac13e89b799de81a9b99f80d9f
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.6 (20240910)
 
-Package: proxmox-mail-gateway-8.1-standard
-Version: 8.1-1
+Package: proxmox-mail-gateway-8.2-standard
+Version: 8.2-1
 Type: lxc
 OS: debian-12
 Section: mail
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: mail/proxmox-mail-gateway-8.1-standard_8.1-1_amd64.tar.zst
-md5sum: f227d87298985adf3e8aa1e946437a0e
-sha512sum: 9739d43874faaa8670e8b0cc593476e6a4bc49f8f641e2ef5b6b24366b2df34d752d98be87c4ffc22d5a3d08a75414e708a7769a1c3054ef60a90323b032a50b
+Location: mail/proxmox-mail-gateway-8.2-standard_8.2-1_amd64.tar.zst
+md5sum: 0dd1c7dca99aca52a785a7b83f39d069
+sha512sum: 2631776cc7014e6a5562bba951cfad1ad9caa58e3626a28136b15add42d8c7769c25d0dcdc86c4d421384160481e9d9a1975c41f11bbdb0004a8f8695b92900b
 Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
-Description: Proxmox Mail Gateway 8.1
+Description: Proxmox Mail Gateway 8.2
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: proxmox-mailgateway-7.3-standard
