@@ -195,7 +195,7 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'box',
 		height: 25,
 		html: `<span class='pmx-hint'>${gettext('Note:')}</span> `
-		    + Ext.String.format(gettext('{0} is deprecated, use {1}'), 'U2F', 'WebAuthn'),
+		    + gettext('U2F is deprecated, use WebAuthn'),
 	    },
 	    {
 		xtype: 'displayfield',

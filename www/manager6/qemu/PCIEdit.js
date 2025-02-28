@@ -290,7 +290,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'vendor-id',
-		fieldLabel: Ext.String.format(gettext('{0} ID'), gettext('Vendor')),
+		fieldLabel: gettext('Vendor ID'),
 		emptyText: gettext('From Device'),
 		vtype: 'PciId',
 		allowBlank: true,
@@ -299,7 +299,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'device-id',
-		fieldLabel: Ext.String.format(gettext('{0} ID'), gettext('Device')),
+		fieldLabel: gettext('Device ID'),
 		emptyText: gettext('From Device'),
 		vtype: 'PciId',
 		allowBlank: true,
@@ -317,7 +317,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'sub-vendor-id',
-		fieldLabel: Ext.String.format(gettext('{0} ID'), gettext('Sub-Vendor')),
+		fieldLabel: gettext('Sub-Vendor ID'),
 		emptyText: gettext('From Device'),
 		vtype: 'PciId',
 		allowBlank: true,
@@ -326,7 +326,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'sub-device-id',
-		fieldLabel: Ext.String.format(gettext('{0} ID'), gettext('Sub-Device')),
+		fieldLabel: gettext('Sub-Device ID'),
 		emptyText: gettext('From Device'),
 		vtype: 'PciId',
 		allowBlank: true,

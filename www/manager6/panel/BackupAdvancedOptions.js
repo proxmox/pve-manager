@@ -158,7 +158,7 @@ Ext.define('PVE.panel.BackupAdvancedOptions', {
 		xtype: 'proxmoxintegerfield',
 		name: 'zstd',
 		reference: 'zstdThreadCount',
-		fieldLabel: Ext.String.format(gettext('{0} Threads'), 'Zstd'),
+		fieldLabel: gettext('Zstd Threads'),
 		fieldStyle: 'text-align: right',
 		emptyText: gettext('Fallback'),
 		minValue: 0,

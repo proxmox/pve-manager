@@ -233,7 +233,7 @@ Ext.define('PVE.CephSetFlags', {
 
     onlineHelp: 'pve_ceph_osds',
     isCreate: true,
-    title: Ext.String.format(gettext('Manage {0}'), 'Global OSD Flags'),
+    title: gettext('Manage Global OSD Flags'),
     submitText: gettext('Apply'),
 
     items: [
@@ -837,11 +837,11 @@ Ext.define('PVE.node.CephOsdTree', {
 	    },
 	    '-',
 	    {
-		text: gettext('Create') + ': OSD',
+		text: gettext('Create: OSD'),
 		handler: 'create_osd',
 	    },
 	    {
-		text: Ext.String.format(gettext('Manage {0}'), 'Global Flags'),
+		text: gettext('Manage Global Flags'),
 		handler: 'set_flags',
 	    },
 	    '->',
