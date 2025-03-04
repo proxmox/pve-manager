@@ -43,10 +43,10 @@ Ext.define('PVE.storage.ContentView', {
 		    content: content,
 		},
 	    },
-	    sorters: {
-		property: 'volid',
-		direction: 'ASC',
-	    },
+	    sorters: [
+		(a, b) => a.data.text.toString().localeCompare(
+		    b.data.text.toString(), undefined, { numeric: true }),
+	    ],
 	});
 
 	if (!me.sm) {
@@ -153,6 +153,8 @@ Ext.define('PVE.storage.ContentView', {
 		flex: 2,
 		sortable: true,
 		renderer: PVE.Utils.render_storage_content,
+		sorter: (a, b) => a.data.text.toString().localeCompare(
+		    b.data.text.toString(), undefined, { numeric: true }),
 		dataIndex: 'text',
 	    },
 	    'notes': {
