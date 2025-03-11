@@ -104,7 +104,7 @@ Ext.define('PVE.window.Migrate', {
 	onTargetChange: function(nodeSelector) {
 	    // Always display the storages of the currently selected migration target
 	    this.lookup('pveDiskStorageSelector').setNodename(nodeSelector.value);
-	    this.checkMigratePreconditions();
+	    this.checkMigratePreconditions(true);
 	},
 
 	startMigration: function() {
@@ -214,12 +214,12 @@ Ext.define('PVE.window.Migrate', {
 		migration.possible = true;
 	    }
 	    migration.preconditions = [];
+	    let target = me.lookup('pveNodeSelector').value;
+	    let disallowed = migrateStats.not_allowed_nodes?.[target] ?? {};
 
-	    if (migrateStats.allowed_nodes) {
+	    if (migrateStats.allowed_nodes && !vm.get('running')) {
 		migration.allowedNodes = migrateStats.allowed_nodes;
-		let target = me.lookup('pveNodeSelector').value;
 		if (target.length && !migrateStats.allowed_nodes.includes(target)) {
-		    let disallowed = migrateStats.not_allowed_nodes[target] ?? {};
 		    if (disallowed.unavailable_storages !== undefined) {
 			let missingStorages = disallowed.unavailable_storages.join(', ');
 
@@ -230,17 +230,17 @@ Ext.define('PVE.window.Migrate', {
 			    severity: 'error',
 			});
 		    }
-
-		    if (disallowed['unavailable-resources'] !== undefined) {
-			let unavailableResources = disallowed['unavailable-resources'].join(', ');
-
-			migration.possible = false;
-			migration.preconditions.push({
-			    text: 'Mapped Resources (' + unavailableResources + ') not available on selected target. ',
-			    severity: 'error',
-			});
-		    }
 		}
+	    }
+
+	    if (disallowed['unavailable-resources'] !== undefined) {
+		let unavailableResources = disallowed['unavailable-resources'].join(', ');
+
+		migration.possible = false;
+		migration.preconditions.push({
+		    text: 'Mapped Resources (' + unavailableResources + ') not available on selected target. ',
+		    severity: 'error',
+		});
 	    }
 
 	    let blockingResources = [];
