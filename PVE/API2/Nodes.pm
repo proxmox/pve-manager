@@ -2336,6 +2336,18 @@ my $create_migrate_worker = sub {
 	    $invalidConditions .= join(', ', @{$preconditions->{local_resources}});
 	}
 
+	if (my $not_allowed_nodes = $preconditions->{not_allowed_nodes}) {
+	    if (my $unavail_storages = $not_allowed_nodes->{$target}->{unavailable_storages}) {
+		$invalidConditions .= "\n  Has unavailable storages: ";
+		$invalidConditions .= join(', ', $unavail_storages->@*);
+	    }
+
+	    if (my $unavail_resources = $not_allowed_nodes->{$target}->{'unavailable-resources'}) {
+		$invalidConditions .= "\n  Has unavailable resources: ";
+		$invalidConditions .= join(', ', $unavail_resources->@*);
+	    }
+	}
+
 	if ($invalidConditions && $invalidConditions ne '') {
 	    print STDERR "skip VM $vmid - precondition check failed:";
 	    die "$invalidConditions\n";
