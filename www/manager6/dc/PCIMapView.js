@@ -20,10 +20,17 @@ Ext.define('PVE.dc.PCIMapView', {
 	data.forEach((entry) => {
 	    ids[entry.id] = entry;
 	});
+	// extract the mdev property from the global entry and insert to the individiual entries,
+	// so we can reuse the normal checking logic
+	let mdev;
 	me.getRootNode()?.cascade(function(rec) {
+	    if (rec.data.type === 'entry') {
+		mdev = rec.data.mdev ?? 0;
+	    }
 	    if (rec.data.node !== node || rec.data.type !== 'map') {
 		return;
 	    }
+	    rec.data.mdev = mdev;
 
 	    let id = rec.data.path;
 	    if (!id.match(/\.\d$/)) {
@@ -44,6 +51,7 @@ Ext.define('PVE.dc.PCIMapView', {
 	    let toCheck = {
 		id: deviceId,
 		'subsystem-id': subId,
+		mdev: device.mdev ?? 0,
 		iommugroup: device.iommugroup !== -1 ? device.iommugroup : undefined,
 	    };
 

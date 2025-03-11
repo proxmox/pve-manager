@@ -115,7 +115,7 @@ __PACKAGE__->register_method ({
 			};
 		    }
 		    for my $mapping ($mappings->@*) {
-			eval { PVE::Mapping::PCI::assert_valid($id, $mapping) };
+			eval { PVE::Mapping::PCI::assert_valid($id, $mapping, $entry) };
 			if (my $err = $@) {
 			    push $entry->{checks}->@*, {
 				severity => 'error',
