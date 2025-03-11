@@ -244,10 +244,10 @@ Ext.define('PVE.window.Migrate', {
 	    }
 
 	    let blockingResources = [];
-	    let mappedResources = migrateStats['mapped-resources'] ?? [];
+	    let mappedResources = migrateStats['mapped-resource-info'] ?? {};
 
 	    for (const res of migrateStats.local_resources) {
-		if (mappedResources.indexOf(res) === -1) {
+		if (!mappedResources[res]) {
 		    blockingResources.push(res);
 		}
 	    }
@@ -271,13 +271,28 @@ Ext.define('PVE.window.Migrate', {
 		}
 	    }
 
-	    if (mappedResources && mappedResources.length) {
-		if (vm.get('running')) {
+	    if (vm.get('running')) {
+		let allowed = [];
+		let notAllowed = [];
+		for (const [key, resource] of Object.entries(mappedResources)) {
+		    if (resource['live-migration']) {
+			allowed.push(key);
+		    } else {
+			notAllowed.push(key);
+		    }
+		}
+		if (notAllowed.length > 0) {
 		    migration.possible = false;
 		    migration.preconditions.push({
 			text: Ext.String.format('Can\'t migrate running VM with mapped resources: {0}',
-			mappedResources.join(', ')),
+			notAllowed.join(', ')),
 			severity: 'error',
+		    });
+		} else if (allowed.length > 0) {
+		    migration.preconditions.push({
+			text: Ext.String.format('Live-migrating running VM with mapped resources (Experimental): {0}',
+			allowed.join(', ')),
+			severity: 'warning',
 		    });
 		}
 	    }
