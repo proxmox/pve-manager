@@ -15,6 +15,7 @@ use PVE::CpuSet;
 use Filesys::Df;
 use PVE::INotify;
 use PVE::Network;
+use PVE::NodeConfig;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
@@ -215,9 +216,12 @@ sub auto_balloning {
     #$hostmeminfo->{memtotal} = int(2*1024*1024*1024/0.8); # you can set this to test
     my $hostfreemem = $hostmeminfo->{memtotal} - $hostmeminfo->{memused};
 
-    # try to use ~80% host memory; goal is the change amount required to achieve that
-    my $goal = int($hostmeminfo->{memtotal} * 0.8 - $hostmeminfo->{memused});
-    $log->("host goal: $goal free: $hostfreemem total: $hostmeminfo->{memtotal}\n");
+    # try to keep host memory usage at a certain percentage (= target), default is 80%
+    my $config = PVE::NodeConfig::load_config($nodename);
+    my $target = int($config->{'ballooning-target'} // 80);
+    # goal is the change amount required to achieve that
+    my $goal = int($hostmeminfo->{memtotal} * $target / 100 - $hostmeminfo->{memused});
+    $log->("target: $target%% host goal: $goal free: $hostfreemem total: $hostmeminfo->{memtotal}\n");
 
     my $maxchange = 100*1024*1024;
     my $res = PVE::AutoBalloon::compute_alg1($vmstatus, $goal, $maxchange);
