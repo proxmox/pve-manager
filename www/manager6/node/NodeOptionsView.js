@@ -3,6 +3,8 @@ Ext.define('Proxmox.node.NodeOptionsView', {
     alias: ['widget.proxmoxNodeOptionsView'],
     mixins: ['Proxmox.Mixin.CBind'],
 
+    cwidth1: 250,
+
     cbindData: function(_initialconfig) {
 	let me = this;
 
@@ -62,6 +64,22 @@ Ext.define('Proxmox.node.NodeOptionsView', {
 		}
 
 		return value;
+	    },
+	},
+	{
+	    xtype: 'integer',
+	    name: 'ballooning-target',
+	    text: gettext('RAM usage target for ballooning'),
+	    minValue: 0,
+	    maxValue: 100,
+	    deleteEmpty: true,
+	    onlineHelp: 'qm_memory',
+	    renderer: function(value) {
+		if (value === undefined) {
+		    return gettext('Default (80%)');
+		}
+
+		return Ext.htmlEncode(`${value}%`);
 	    },
 	},
     ],
