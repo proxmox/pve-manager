@@ -93,6 +93,14 @@ my $confdesc = {
 	default => 0,
 	optional => 1,
     },
+    'ballooning-target' => {
+	description => 'RAM usage target for ballooning (in percent of total memory)',
+	type => 'integer',
+	minimum => 0,
+	maximum => 100,
+	default => 80,
+	optional => 1,
+    },
 };
 
 my $wakeonlan_desc = {
