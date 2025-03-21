@@ -75,6 +75,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    name: 'features',
 		    inputValue: 'nesting=1',
 		    value: true,
+		    clearOnDisable: true,
 		    bind: {
 			disabled: '{!unprivileged}',
 		    },
