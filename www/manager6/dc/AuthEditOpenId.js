@@ -139,6 +139,16 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 		deleteEmpty: '{!isCreate}',
 	    },
 	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Query userinfo endpoint'),
+	    name: 'query-userinfo',
+	    checked: true,
+	    uncheckedValue: 0,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
     ],
 
     initComponent: function() {
