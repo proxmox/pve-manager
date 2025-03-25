@@ -32,7 +32,7 @@ Ext.define('PVE.ceph.Services', {
 	    flex: 1,
 	    xtype: 'pveCephServiceList',
 	    itemId: 'mdss',
-	    title: gettext('Meta Data Servers'),
+	    title: gettext('Metadata Servers'),
 	},
     ],
 
