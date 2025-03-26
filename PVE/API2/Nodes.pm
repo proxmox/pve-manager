@@ -1760,7 +1760,7 @@ __PACKAGE__->register_method({
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	if ($dccfg->{http_proxy}) {
-	    $ua->proxy('http', $dccfg->{http_proxy});
+	    $ua->proxy(['http', 'https'], $dccfg->{http_proxy});
 	}
 
 	my $verify = $param->{'verify-certificates'} // 1;
