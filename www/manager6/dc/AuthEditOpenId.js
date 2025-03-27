@@ -40,6 +40,16 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 	    },
 	    name: 'client-key',
 	},
+	{
+	    xtype: 'proxmoxtextfield',
+	    name: 'scopes',
+	    fieldLabel: gettext('Scopes'),
+	    emptyText: `${Proxmox.Utils.defaultText} (email profile)`,
+	    submitEmpty: false,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
     ],
 
     column2: [
@@ -73,11 +83,29 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 	    },
 	},
 	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Autocreate Groups'),
+	    name: 'groups-autocreate',
+	    value: 0,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
+	{
 	    xtype: 'proxmoxtextfield',
-	    name: 'scopes',
-	    fieldLabel: gettext('Scopes'),
-	    emptyText: `${Proxmox.Utils.defaultText} (email profile)`,
+	    name: 'groups-claim',
+	    fieldLabel: gettext('Groups Claim'),
+	    emptyText: `${Proxmox.Utils.defaultText} ${gettext('(none)')}`,
 	    submitEmpty: false,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Overwrite Groups'),
+	    name: 'groups-overwrite',
+	    value: 0,
 	    cbind: {
 		deleteEmpty: '{!isCreate}',
 	    },
