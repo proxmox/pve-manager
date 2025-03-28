@@ -1356,9 +1356,12 @@ sub check_dkms_modules {
 	$count = scalar @_;
     };
 
+    my $sig_pipe = $SIG{PIPE};
+    $SIG{PIPE} = "DEFAULT";
     my $exit_code = eval {
 	run_command(['dkms', 'status', '-k', '`uname -r`'], outfunc => $set_count, noerr => 1)
     };
+    $SIG{PIPE} = $sig_pipe;
 
     if ($exit_code != 0) {
 	log_skip("could not get dkms status");
