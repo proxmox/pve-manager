@@ -112,15 +112,13 @@ my sub _handle_job_err {
     # The replication job is run every 15 mins if no schedule is set.
     my $schedule = $job->{schedule} // '*/15';
 
-    my $template_data = {
-	"failure-count" => $fail_count,
-	"last-sync"     => $jobstate->{last_sync},
-	"next-sync"     => $next_sync,
-	"job-id"        => $job->{id},
-	"job-target"    => $job->{target},
-	"job-schedule"  => $schedule,
-	"error"         => $err,
-    };
+    my $template_data = PVE::Notify::common_template_data();
+    $template_data->{"failure-count"} = $fail_count;
+    $template_data->{"last-sync"} = $jobstate->{last_sync};
+    $template_data->{"job-id"} = $job->{id};
+    $template_data->{"job-target"} = $job->{target};
+    $template_data->{"job-schedule"} = $schedule;
+    $template_data->{"error"} = $err;
 
     my $metadata_fields = {
 	type => "replication",
