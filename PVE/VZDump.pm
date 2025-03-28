@@ -528,16 +528,13 @@ sub send_notification {
 	    "See Task History for details!\n";
     };
 
-    my $notification_props = {
-	# Hostname, might include domain part
-	"hostname" => get_hostname(),
-	"error-message" => $err,
-	"guest-table" => build_guest_table($tasklist),
-	"logs" => $text_log_part,
-	"status-text" => $status_text,
-	"total-time" => $total_time,
-	"total-size" => $total_size,
-    };
+    my $template_data = PVE::Notify::common_template_data();
+    $template_data->{error} = $err;
+    $template_data->{"guest-table"} = build_guest_table($tasklist);
+    $template_data->{logs} = $text_log_part;
+    $template_data->{"status-text"} = $status_text;
+    $template_data->{"total-size"} = $total_size;
+    $template_data->{"total-time"} = $total_time;
 
     my $fields = {
 	type => "vzdump",
@@ -586,7 +583,7 @@ sub send_notification {
 	    PVE::Notify::notify(
 		$severity,
 		"vzdump",
-		$notification_props,
+		$template_data,
 		$fields,
 		$notification_config
 	    );
@@ -597,7 +594,7 @@ sub send_notification {
 	PVE::Notify::notify(
 	    $severity,
 	    "vzdump",
-	    $notification_props,
+	    $template_data,
 	    $fields,
 	);
     }
