@@ -306,24 +306,21 @@ __PACKAGE__->register_method({
 		    schema => {
 			columns => [
 			    {
-				label => "Package",
-				id    => "package",
+				label => "Package Name",
+				id    => "package-name",
 			    },
 			    {
-				label => "Old Version",
-				id    => "old-version",
+				label => "Installed Version",
+				id    => "installed-version",
 			    },
 			    {
-				label => "New Version",
-				id    => "new-version",
+				label => "Available Version",
+				id    => "available-version",
 			    }
 			]
 		    },
 		    data => []
 		};
-
-		my $hostname = `hostname -f` || PVE::INotify::nodename();
-		chomp $hostname;
 
 		my $count = 0;
 		foreach my $p (sort {$a->{Package} cmp $b->{Package} } @$pkglist) {
@@ -331,18 +328,16 @@ __PACKAGE__->register_method({
 		    $count++;
 
 		    push @{$updates_table->{data}}, {
-			"package"     => $p->{Package},
-			"old-version" => $p->{OldVersion},
-			"new-version" => $p->{Version}
+			"package-name" => $p->{Package},
+			"installed-version" => $p->{OldVersion},
+			"available-version" => $p->{Version}
 		    };
 		}
 
 		return if !$count;
 
-		my $template_data = {
-		    updates  => $updates_table,
-		    hostname => $hostname,
-		};
+		my $template_data = PVE::Notify::common_template_data();
+		$template_data->{"available-updates"} = $updates_table;
 
 		# Additional metadata fields that can be used in notification
 		# matchers.
