@@ -259,8 +259,9 @@ Ext.define('PVE.guest.SnapshotTree', {
 		let view = this.up('treepanel');
 		let rec = view.getSelection()[0];
 		let vmid = view.getViewModel().get('vmid');
-		return Proxmox.Utils.format_task_description('qmrollback', vmid) +
+		let message = Proxmox.Utils.format_task_description('qmrollback', vmid) +
 		    ` '${rec.data.name}'? ${gettext("Current state will be lost.")}`;
+		return Ext.htmlEncode(message);
 	    },
 	    handler: 'rollback',
 	},

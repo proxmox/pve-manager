@@ -1288,7 +1288,7 @@ Ext.define('PVE.Utils', {
 	var type = record.data.type;
 	var id = record.data.id;
 
-	return Proxmox.Utils.format_task_description(type, id);
+	return Ext.htmlEncode(Proxmox.Utils.format_task_description(type, id));
     },
 
     render_optional_url: function(value) {
@@ -1969,7 +1969,8 @@ Ext.define('PVE.Utils', {
     },
 
     formatGuestTaskConfirmation: function(taskType, vmid, guestName) {
-	return Proxmox.Utils.format_task_description(taskType, `${vmid} (${guestName})`);
+	let description = Proxmox.Utils.format_task_description(taskType, `${vmid} (${guestName})`);
+	return Ext.htmlEncode(description);
     },
 },
 

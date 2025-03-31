@@ -59,20 +59,21 @@ Ext.define('PVE.window.Restore', {
 		delete params.name;
 	    }
 
-	    let confirmMsg;
+	    let taskDescription;
 	    if (view.vmtype === 'lxc') {
 		params.ostemplate = view.volid;
 		params.restore = 1;
 		if (values.unprivileged !== 'keep') {
 		    params.unprivileged = values.unprivileged;
 		}
-		confirmMsg = Proxmox.Utils.format_task_description('vzrestore', params.vmid);
+		taskDescription = Proxmox.Utils.format_task_description('vzrestore', params.vmid);
 	    } else if (view.vmtype === 'qemu') {
 		params.archive = view.volid;
-		confirmMsg = Proxmox.Utils.format_task_description('qmrestore', params.vmid);
+		taskDescription = Proxmox.Utils.format_task_description('qmrestore', params.vmid);
 	    } else {
 		throw 'unknown VM type';
 	    }
+	    let confirmMsg = Ext.htmlEncode(taskDescription);
 
 	    let executeRestore = () => {
 		Proxmox.Utils.API2Request({
