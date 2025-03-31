@@ -105,7 +105,7 @@ sub write_etc_subscription {
 	}
 	# add a generic one to handle the case where a new ceph release was made available while
 	# the subscription info was not yet updated, and as per APT_AUTH.CONF(5) start-with matches.
-	$ceph_auth .= "machine enterprise.proxmox.com/debian/ceph login $info->{key} password $info->{serverid}\n"
+	$ceph_auth .= "machine enterprise.proxmox.com/debian/ceph login $info->{key} password $info->{serverid}\n";
 	PVE::Tools::file_set_contents("/etc/apt/auth.conf.d/ceph.conf", $ceph_auth);
     }
 }
