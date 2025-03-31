@@ -92,6 +92,7 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		default => 'cephfs',
 		optional => 1,
+		pattern => qr|^[^:/\s]+$|,
 	    },
 	    pg_num => {
 		description => "Number of placement groups for the backing data pool. The metadata pool will use a quarter of this.",

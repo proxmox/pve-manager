@@ -222,6 +222,7 @@ my $ceph_pool_common_options = sub {
 	    title => 'Name',
 	    description => "The name of the pool. It must be unique.",
 	    type => 'string',
+	    pattern => qr|^[^:/\s]+$|,
 	},
 	size => {
 	    title => 'Size',
