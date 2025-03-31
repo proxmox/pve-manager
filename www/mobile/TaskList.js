@@ -26,10 +26,12 @@ Ext.define('PVE.TaskListBase', {
 		    '<small>node: {node}<br /> Status: {[this.status(values)]}</small>',
 		    {
 			desc: function(values) {
-			    return Proxmox.Utils.format_task_description(values.type, values.id);
+			    return Ext.htmlEncode(
+				Proxmox.Utils.format_task_description(values.type, values.id)
+			    );
 			},
 			status: function(values) {
-			    return Ext.String.ellipsis(values.status, 160);
+			    return Ext.htmlEncode(Ext.String.ellipsis(values.status, 160));
 			},
 		    },
 		],

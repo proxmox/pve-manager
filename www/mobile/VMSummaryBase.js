@@ -83,7 +83,7 @@ Ext.define('PVE.VMSummaryBase', {
 		tpl: [
 		    '<table style="margin-bottom:0px;">',
 		    '<tpl for=".">',
-		    '<tr><td>{key}</td><td>{value}</td></tr>',
+		    '<tr><td>{key}</td><td>{value:htmlEncode}</td></tr>',
 		    '</tpl>',
 		    '</table>',
 		],

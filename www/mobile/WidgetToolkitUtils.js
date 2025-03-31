@@ -686,7 +686,7 @@ utilities: {
 	let type = task.type || task.worker_type;
 	let id = task.id || task.worker_id;
 
-	return Proxmox.Utils.format_task_description(type, id);
+	return Ext.htmlEncode(Proxmox.Utils.format_task_description(type, id));
     },
 
     render_uptime: function(value) {

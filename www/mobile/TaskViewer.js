@@ -118,7 +118,7 @@ Ext.define('PVE.TaskViewer', {
 
        me.taskInfo = Proxmox.Utils.parse_task_upid(me.upid);
 
-       me.down('titlebar').setTitle(me.taskInfo.desc);
+       me.down('titlebar').setTitle(Ext.htmlEncode(me.taskInfo.desc));
 
        me.reload();
 
