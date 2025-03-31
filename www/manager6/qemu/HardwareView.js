@@ -310,6 +310,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		del_extra_msg: gettext('This will permanently erase all data.'),
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i.toString(),
+		renderer: Ext.htmlEncode,
 	    };
 	}
 	rows.rng0 = {
