@@ -346,6 +346,7 @@ Ext.define('PVE.qemu.Options', {
 		    let amd_sev = PVE.Parser.parsePropertyString(value, "type");
 		    if (amd_sev.type === 'std') return 'AMD SEV (' + value + ')';
 		    if (amd_sev.type === 'es') return 'AMD SEV-ES (' + value + ')';
+		    if (amd_sev.type === 'snp') return 'AMD SEV-SNP (' + value + ')';
 		    return value;
 		},
 	    },

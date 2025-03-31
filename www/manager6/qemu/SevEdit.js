@@ -9,7 +9,8 @@ Ext.define('PVE.qemu.SevInputPanel', {
 	    type: '__default__',
 	},
 	formulas: {
-	    sevEnabled: get => get('type') !== '__default__',
+	    sevEnabled: get => get('type') === 'std' || get('type') === 'es' || get('type') === 'snp',
+	    snpEnabled: get => get('type') === 'snp',
 	},
     },
 
@@ -21,10 +22,14 @@ Ext.define('PVE.qemu.SevInputPanel', {
 	if (!values.debug) {
 	    values["no-debug"] = 1;
 	}
-	if (!values["key-sharing"]) {
+	if (!values.smt && values.type === 'snp') {
+	    values["allow-smt"] = 0;
+	}
+	if (!values["key-sharing"] && values.type !== 'snp') {
 	    values["no-key-sharing"] = 1;
 	}
 	delete values.debug;
+	delete values.smt;
 	delete values["key-sharing"];
 	let ret = {};
 	ret['amd-sev'] = PVE.Parser.printPropertyString(values, 'type');
@@ -36,13 +41,14 @@ Ext.define('PVE.qemu.SevInputPanel', {
 	if (PVE.Parser.parseBoolean(values["no-debug"])) {
 	    values.debug = 0;
 	}
+	values.smt = PVE.Parser.parseBoolean(values["allow-smt"], 1);
 	if (PVE.Parser.parseBoolean(values["no-key-sharing"])) {
 	    values["key-sharing"] = 0;
 	}
 	this.callParent(arguments);
     },
 
-    items: {
+	items: [{
 	xtype: 'proxmoxKVComboBox',
 	fieldLabel: gettext('AMD SEV Type'),
 	labelWidth: 150,
@@ -52,11 +58,28 @@ Ext.define('PVE.qemu.SevInputPanel', {
 	    ['__default__', Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')'],
 	    ['std', 'AMD SEV'],
 	    ['es', 'AMD SEV-ES (highly experimental)'],
+	    ['snp', 'AMD SEV-SNP (highly experimental)'],
 	],
 	bind: {
 	    value: '{type}',
 	},
     },
+    {
+	xtype: 'displayfield',
+	userCls: 'pmx-hint',
+	value: gettext('WARNING: When using SEV-SNP no EFI disk is loaded as pflash.'),
+	bind: {
+	    hidden: '{!snpEnabled}',
+	},
+    },
+    {
+	xtype: 'displayfield',
+	userCls: 'pmx-hint',
+	value: gettext('Note: SEV-SNP requires host kernel version 6.11 or higher.'),
+	bind: {
+	    hidden: '{!snpEnabled}',
+	},
+    }],
 
     advancedItems: [
 	{
@@ -77,8 +100,19 @@ Ext.define('PVE.qemu.SevInputPanel', {
 	    name: 'key-sharing',
 	    value: 1,
 	    bind: {
-		hidden: '{!sevEnabled}',
-		disabled: '{!sevEnabled}',
+		hidden: '{!sevEnabled || snpEnabled}',
+		disabled: '{!sevEnabled || snpEnabled}',
+	    },
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Allow SMT'),
+	    labelWidth: 150,
+	    name: 'smt',
+	    value: 1,
+	    bind: {
+		hidden: '{!snpEnabled}',
+		disabled: '{!snpEnabled}',
 	    },
 	},
 	{
