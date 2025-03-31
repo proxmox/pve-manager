@@ -141,6 +141,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		nodename: me.nodename,
 		name: 'pool',
 		fieldLabel: gettext('Pool'),
+		renderer: Ext.htmlEncode,
 		allowBlank: false,
 	    });
 	}

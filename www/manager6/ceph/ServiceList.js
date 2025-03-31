@@ -97,7 +97,7 @@ Ext.define('PVE.node.CephServiceController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.CephServiceList',
 
-    render_status: (value, metadata, rec) => value,
+    render_status: (value, metadata, rec) => Ext.htmlEncode(value),
 
     render_version: function(value, metadata, rec) {
 	if (value === undefined) {
@@ -491,7 +491,8 @@ Ext.define('PVE.node.CephMDSServiceController', {
     extend: 'PVE.node.CephServiceController',
     alias: 'controller.CephServiceMDSList',
 
-    render_status: (value, mD, rec) => rec.data.fs_name ? `${value} (${rec.data.fs_name})` : value,
+    render_status: (value, mD, rec) =>
+	Ext.htmlEncode(rec.data.fs_name ? `${value} (${rec.data.fs_name})` : value),
 });
 
 Ext.define('PVE.node.CephMDSList', {

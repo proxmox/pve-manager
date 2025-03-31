@@ -301,6 +301,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    flex: 2,
 	    sortable: true,
 	    dataIndex: 'pool_name',
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    text: gettext('Type'),
@@ -315,7 +316,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    flex: 1,
 	    dataIndex: 'application_metadata',
 	    hidden: true,
-	    renderer: (v, _meta, _rec) => Object.keys(v).toString(),
+	    renderer: (v, _meta, _rec) => Ext.htmlEncode(Object.keys(v).toString()),
 	},
 	{
 	    text: gettext('Size') + '/min',
@@ -391,7 +392,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    flex: 1,
 	    align: 'right',
 	    minWidth: 150,
-	    renderer: (v, meta, rec) => `${v} (${rec.data.crush_rule})`,
+	    renderer: (v, meta, rec) => Ext.htmlEncode(`${v} (${rec.data.crush_rule})`),
 	    dataIndex: 'crush_rule_name',
 	},
 	{

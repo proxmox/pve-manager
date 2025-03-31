@@ -153,7 +153,7 @@ Ext.define('PVE.node.CephStatus', {
 				if (record.get('expanded')) {
 				    metaData.tdCls = 'pmx-column-wrapped';
 				}
-				return value;
+				return Ext.htmlEncode(value);
 			    },
 			    flex: 1,
 			},
@@ -194,7 +194,11 @@ Ext.define('PVE.node.CephStatus', {
 			    ptype: 'rowexpander',
 			    expandOnDblClick: false,
 			    scrollIntoViewOnExpand: false,
-			    rowBodyTpl: '<pre class="pve-ceph-warning-detail {detailsCls}">{detail}</pre>',
+			    rowBodyTpl: [
+				'<pre class="pve-ceph-warning-detail {detailsCls}">',
+				'{detail:htmlEncode}',
+				'</pre>',
+			    ],
 			},
 		    ],
 		},

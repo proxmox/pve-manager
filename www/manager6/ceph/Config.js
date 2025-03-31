@@ -14,27 +14,32 @@ Ext.define('PVE.node.CephConfigDb', {
 	    dataIndex: 'section',
 	    text: 'WHO',
 	    width: 100,
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    dataIndex: 'mask',
 	    text: 'MASK',
 	    hidden: true,
 	    width: 80,
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    dataIndex: 'level',
 	    hidden: true,
 	    text: 'LEVEL',
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    dataIndex: 'name',
 	    flex: 1,
 	    text: 'OPTION',
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    dataIndex: 'value',
 	    flex: 1,
 	    text: 'VALUE',
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    dataIndex: 'can_update_at_runtime',

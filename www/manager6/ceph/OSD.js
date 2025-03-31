@@ -275,6 +275,7 @@ Ext.define('PVE.CephSetFlags', {
 			    text: 'Description',
 			    flex: 1,
 			    dataIndex: 'description',
+			    renderer: Ext.htmlEncode,
 			},
 		    ],
 		},
@@ -732,6 +733,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    dataIndex: 'device_class',
 	    align: 'right',
 	    width: 75,
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    text: "OSD Type",
@@ -745,6 +747,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    align: 'right',
 	    width: 75,
 	    hidden: true,
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    text: "DB Device",
@@ -752,6 +755,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    align: 'right',
 	    width: 75,
 	    hidden: true,
+	    renderer: Ext.htmlEncode,
 	},
 	{
 	    text: "WAL Device",
