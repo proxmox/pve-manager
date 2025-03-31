@@ -5,6 +5,9 @@ Ext.define('PVE.form.CephPoolSelector', {
     allowBlank: false,
     valueField: 'pool_name',
     displayField: 'pool_name',
+    listConfig: {
+	itemTpl: '{pool_name:htmlEncode}',
+    },
     editable: false,
     queryMode: 'local',
 
