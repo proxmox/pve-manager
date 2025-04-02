@@ -2045,6 +2045,7 @@ Ext.define('PVE.Utils', {
 	    qmsuspend: ['VM', gettext('Hibernate')],
 	    qmtemplate: ['VM', gettext('Convert to template')],
 	    resize: ['VM/CT', gettext('Resize')],
+	    reloadnetworkall: ['', gettext('Reload network configuration on all nodes')],
 	    spiceproxy: ['VM/CT', gettext('Console') + ' (Spice)'],
 	    spiceshell: ['', gettext('Shell') + ' (Spice)'],
 	    startall: ['', gettext('Bulk start VMs and Containers')],
