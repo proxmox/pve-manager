@@ -694,12 +694,14 @@ Ext.define('PVE.Utils', {
 	'import': gettext('Import'),
     },
 
-    volume_is_qemu_backup: function(volid, format) {
-	return format === 'pbs-vm' || volid.match(':backup/vzdump-qemu-');
+    volume_is_qemu_backup: function(volume) {
+	return volume.format === 'pbs-vm' || volume.volid.match(':backup/vzdump-qemu-') ||
+	    volume.subtype === 'qemu';
     },
 
-    volume_is_lxc_backup: function(volid, format) {
-	return format === 'pbs-ct' || volid.match(':backup/vzdump-(lxc|openvz)-');
+    volume_is_lxc_backup: function(volume) {
+	return volume.format === 'pbs-ct' || volume.volid.match(':backup/vzdump-(lxc|openvz)-') ||
+	    volume.subtype === 'lxc';
     },
 
     authSchema: {

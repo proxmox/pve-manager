@@ -29,11 +29,11 @@ Ext.define('PVE.grid.BackupView', {
 	var vmtypeFilter;
 	if (vmtype === 'lxc' || vmtype === 'openvz') {
 	    vmtypeFilter = function(item) {
-		return PVE.Utils.volume_is_lxc_backup(item.data.volid, item.data.format);
+		return PVE.Utils.volume_is_lxc_backup(item.data);
 	    };
 	} else if (vmtype === 'qemu') {
 	    vmtypeFilter = function(item) {
-		return PVE.Utils.volume_is_qemu_backup(item.data.volid, item.data.format);
+		return PVE.Utils.volume_is_qemu_backup(item.data);
 	    };
 	} else {
 	    throw "unsupported VM type '" + vmtype + "'";
