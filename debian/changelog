@@ -1,3 +1,17 @@
+pve-manager (7.4-20) bullseye; urgency=medium
+
+  * api subscription: remove ceph APT auth if invalid
+
+  * api subscription: output generic apt-auth stanza for ceph as fallback
+
+  * api subscription: fix permissions for ceph apt-auth file
+
+  * pve7to8: fix broken pipe warning for dkms status invocation
+
+  * pve7to8: fix typo in log message
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 04 Apr 2025 12:46:55 +0200
+
 pve-manager (7.4-19) bullseye; urgency=medium
 
   * api: annotate download endpoints
