@@ -51,6 +51,9 @@ $pve_storage_module->mock(
     activate_storage => sub {
 	return;
     },
+    get_backup_provider => sub {
+	return;
+    },
 );
 
 my $pve_cluster_module = Test::MockModule->new('PVE::Cluster');

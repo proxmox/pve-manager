@@ -217,7 +217,10 @@ sub storage_info {
     $info->{'prune-backups'} = PVE::JSONSchema::parse_property_string('prune-backups', $scfg->{'prune-backups'})
 	if defined($scfg->{'prune-backups'});
 
-    if ($type eq 'pbs') {
+    if (PVE::Storage::storage_has_feature($cfg, $storage, 'backup-provider')) {
+	$info->{'backup-provider'} =
+	    PVE::Storage::new_backup_provider($cfg, $storage, sub { debugmsg($_[0], $_[1]); });
+    } elsif ($type eq 'pbs') {
 	$info->{pbs} = 1;
     } else {
 	$info->{dumpdir} = PVE::Storage::get_backup_dir($cfg, $storage);
@@ -714,6 +717,7 @@ sub new {
 	    $opts->{scfg} = $info->{scfg};
 	    $opts->{pbs} = $info->{pbs};
 	    $opts->{'prune-backups'} //= $info->{'prune-backups'};
+	    $self->{'backup-provider'} = $info->{'backup-provider'} if $info->{'backup-provider'};
 	}
     } elsif ($opts->{dumpdir}) {
 	$add_error->("dumpdir '$opts->{dumpdir}' does not exist")
@@ -998,7 +1002,7 @@ sub exec_backup_task {
 	    }
 	}
 
-	if (!$self->{opts}->{pbs}) {
+	if (!$self->{opts}->{pbs} && !$self->{'backup-provider'}) {
 	    $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 	}
 
@@ -1008,7 +1012,10 @@ sub exec_backup_task {
 	    $ext .= ".${comp_ext}";
 	}
 
-	if ($self->{opts}->{pbs}) {
+	if ($self->{'backup-provider'}) {
+	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
+	    # the archive name $task->{target} is returned by the start hook a bit later
+	} elsif ($self->{opts}->{pbs}) {
 	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
 	    $task->{target} = $pbs_snapshot_name;
 	} else {
@@ -1026,7 +1033,7 @@ sub exec_backup_task {
 	my $pid = $$;
 	if ($opts->{tmpdir}) {
 	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp${pid}_$vmid/";
-	} elsif ($self->{opts}->{pbs}) {
+	} elsif ($self->{opts}->{pbs} || $self->{'backup-provider'}) {
 	    $task->{tmpdir} = "/var/tmp/vzdumptmp${pid}_$vmid";
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
@@ -1095,9 +1102,23 @@ sub exec_backup_task {
 	debugmsg ('info', "bandwidth limit: $opts->{bwlimit} KiB/s", $logfd)  if $opts->{bwlimit};
 	debugmsg ('info', "ionice priority: $opts->{ionice}", $logfd);
 
+	my $backup_provider_init = sub {
+	    my $init_result =
+		$self->{'backup-provider'}->backup_init($vmid, $vmtype, $task->{backup_time});
+	    die "backup init failed: did not receive a valid result from the backup provider\n"
+		if !defined($init_result) || ref($init_result) ne 'HASH';
+	    my $archive_name = $init_result->{'archive-name'};
+	    die "backup init failed: did not receive an archive name from backup provider\n"
+		if !defined($archive_name) || length($archive_name) == 0;
+	    die "backup init failed: illegal characters in archive name '$archive_name'\n"
+		if $archive_name !~ m!^(${PVE::Storage::SAFE_CHAR_CLASS_RE}|/|:)+$!;
+	    $task->{target} = $archive_name;
+	};
+
 	if ($mode eq 'stop') {
 	    $plugin->prepare ($task, $vmid, $mode);
 
+	    $backup_provider_init->() if $self->{'backup-provider'};
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
 	    if ($running) {
@@ -1112,6 +1133,7 @@ sub exec_backup_task {
 	} elsif ($mode eq 'suspend') {
 	    $plugin->prepare ($task, $vmid, $mode);
 
+	    $backup_provider_init->() if $self->{'backup-provider'};
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
 	    if ($vmtype eq 'lxc') {
@@ -1138,6 +1160,7 @@ sub exec_backup_task {
 	    }
 
 	} elsif ($mode eq 'snapshot') {
+	    $backup_provider_init->() if $self->{'backup-provider'};
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
 	    my $snapshot_count = $task->{snapshot_count} || 0;
@@ -1180,11 +1203,13 @@ sub exec_backup_task {
 	    return;
 	}
 
-	my $archive_txt = $self->{opts}->{pbs} ? 'Proxmox Backup Server' : 'vzdump';
+	my $archive_txt = 'vzdump';
+	$archive_txt = 'Proxmox Backup Server' if $self->{opts}->{pbs};
+	$archive_txt = $self->{'backup-provider'}->provider_name() if $self->{'backup-provider'};
 	debugmsg('info', "creating $archive_txt archive '$task->{target}'", $logfd);
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
-	if ($self->{opts}->{pbs}) {
+	if ($self->{'backup-provider'} || $self->{opts}->{pbs}) {
 	    # size is added to task struct in guest vzdump plugins
 	} else {
 	    rename ($task->{tmptar}, $task->{target}) ||
@@ -1198,7 +1223,8 @@ sub exec_backup_task {
 
 	# Mark as protected before pruning.
 	if (my $storeid = $opts->{storage}) {
-	    my $volname = $opts->{pbs} ? $task->{target} : basename($task->{target});
+	    my $volname = $opts->{pbs} || $self->{'backup-provider'} ? $task->{target}
+	                                                             : basename($task->{target});
 	    my $volid = "${storeid}:backup/${volname}";
 
 	    if ($opts->{'notes-template'} && $opts->{'notes-template'} ne '') {
@@ -1251,6 +1277,10 @@ sub exec_backup_task {
 	    debugmsg ('info', "pruned $pruned backup(s)${log_pruned_extra}", $logfd);
 	}
 
+	if ($self->{'backup-provider'}) {
+	    my $cleanup_result = $self->{'backup-provider'}->backup_cleanup($vmid, $vmtype, 1, {});
+	    $task->{size} = $cleanup_result->{stats}->{'archive-size'};
+	}
 	$self->run_hook_script ('backup-end', $task, $logfd);
     };
     my $err = $@;
@@ -1310,6 +1340,14 @@ sub exec_backup_task {
 	debugmsg ('err', "Backup of VM $vmid failed - $err", $logfd, 1);
 	debugmsg ('info', "Failed at " . strftime("%F %H:%M:%S", localtime()));
 
+	if ($self->{'backup-provider'}) {
+	    eval {
+		$self->{'backup-provider'}->backup_cleanup(
+		    $vmid, $task->{vmtype}, 0, { error => $err });
+	    };
+	    debugmsg('warn', "backup cleanup for external provider failed - $@") if $@;
+	}
+
 	eval { $self->run_hook_script ('backup-abort', $task, $logfd); };
 	debugmsg('warn', $@) if $@; # message already contains command with phase name
 
@@ -1337,6 +1375,8 @@ sub exec_backup_task {
 		};
 		debugmsg('warn', "$@") if $@; # $@ contains already error prefix
 	    }
+	} elsif ($self->{'backup-provider'}) {
+	    $self->{'backup-provider'}->backup_handle_log_file($vmid, $task->{tmplog});
 	} elsif ($task->{logfile}) {
 	    system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
 	}
@@ -1395,6 +1435,7 @@ sub exec_backup {
     my $errcount = 0;
     eval {
 
+	$self->{'backup-provider'}->job_init($starttime) if $self->{'backup-provider'};
 	$self->run_hook_script ('job-start', undef, $job_start_fd);
 
 	foreach my $task (@$tasklist) {
@@ -1402,11 +1443,17 @@ sub exec_backup {
 	    $errcount += 1 if $task->{state} ne 'ok';
 	}
 
+	$self->{'backup-provider'}->job_cleanup() if $self->{'backup-provider'};
 	$self->run_hook_script ('job-end', undef, $job_end_fd);
     };
     my $err = $@;
 
     if ($err) {
+	if ($self->{'backup-provider'}) {
+	    eval { $self->{'backup-provider'}->job_cleanup(); };
+	    $err .= "job cleanup for external provider failed - $@" if $@;
+	}
+
 	eval { $self->run_hook_script ('job-abort', undef, $job_end_fd); };
 	$err .= $@ if $@;
 	debugmsg ('err', "Backup job failed - $err", undef, 1);
