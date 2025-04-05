@@ -47,6 +47,7 @@ Ext.define('Proxmox.node.NodeOptionsView', {
 		    return Proxmox.Utils.defaultText;
 		}
 
+		// TODO: simplify once we can use ngetext
 		let secString = value === '1' ? gettext('Second') : gettext('Seconds');
 		return `${value} ${secString}`;
 	    },
@@ -58,13 +59,7 @@ Ext.define('Proxmox.node.NodeOptionsView', {
 	    vtype: 'MacAddress',
 	    labelWidth: 150,
 	    deleteEmpty: true,
-	    renderer: function(value) {
-		if (value === undefined) {
-		    return Proxmox.Utils.NoneText;
-		}
-
-		return value;
-	    },
+	    renderer: value => value !== undefined ? value : Proxmox.Utils.NoneText,
 	},
 	{
 	    xtype: 'integer',
@@ -74,13 +69,7 @@ Ext.define('Proxmox.node.NodeOptionsView', {
 	    maxValue: 100,
 	    deleteEmpty: true,
 	    onlineHelp: 'qm_memory',
-	    renderer: function(value) {
-		if (value === undefined) {
-		    return gettext('Default (80%)');
-		}
-
-		return Ext.htmlEncode(`${value}%`);
-	    },
+	    renderer: value => value !== undefined ? `${value}%` : gettext('Default (80%)'),
 	},
     ],
 });
