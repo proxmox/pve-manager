@@ -9,9 +9,16 @@ Ext.define('PVE.window.UploadToStorage', {
     title: gettext('Upload'),
 
     acceptedExtensions: {
-	'import': ['.ova'],
+	'import': ['.ova', '.qcow2', '.raw', '.vmdk'],
 	iso: ['.img', '.iso'],
 	vztmpl: ['.tar.gz', '.tar.xz', '.tar.zst'],
+    },
+
+    // accepted for file selection, will be renamed to real extension
+    extensionAliases: {
+	'import': {
+	    '.img': '.raw',
+	},
     },
 
     cbindData: function(initialConfig) {
@@ -20,8 +27,10 @@ Ext.define('PVE.window.UploadToStorage', {
 
 	me.url = `/nodes/${me.nodename}/storage/${me.storage}/upload`;
 
+	let fileSelectorExt = ext.concat(Object.keys(me.extensionAliases[me.content] ?? {}));
+
 	return {
-	    extensions: ext.join(', '),
+	    extensions: fileSelectorExt.join(', '),
 	    filenameRegex: RegExp('^.*(?:' + ext.join('|').replaceAll('.', '\\.') + ')$', 'i'),
 	};
     },
@@ -134,8 +143,15 @@ Ext.define('PVE.window.UploadToStorage', {
 	},
 
 	fileChange: function(input) {
-	    const vm = this.getViewModel();
-	    const name = input.value.replace(/^.*(\/|\\)/, '');
+	    const me = this;
+	    const vm = me.getViewModel();
+	    const view = me.getView();
+	    let name = input.value.replace(/^.*(\/|\\)/, '');
+	    for (const [alias, real] of Object.entries(view.extensionAliases[view.content] ?? {})) {
+		if (name.endsWith(alias)) {
+		    name += real;
+		}
+	    }
 	    const fileInput = input.fileInputEl.dom;
 	    vm.set('filename', name);
 	    vm.set('size', (fileInput.files[0] && Proxmox.Utils.format_size(fileInput.files[0].size)) || '-');

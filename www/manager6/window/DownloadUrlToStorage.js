@@ -89,6 +89,10 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			    filename = matches[1];
 			    compression = matches[2].toLowerCase();
 			}
+		    } else if (view.content === 'import') {
+			if (filename.endsWith('.img')) {
+			    filename += '.raw';
+			}
 		    }
 
 		    view.setValues({
