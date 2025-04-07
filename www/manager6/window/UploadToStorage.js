@@ -248,7 +248,7 @@ Ext.define('PVE.window.UploadToStorage', {
 		{
 		    xtype: 'displayfield',
 		    userCls: 'pmx-hint',
-		    value: gettext('Uploads are stored temporarily in /var/tmp/, make sure there is enough free space.'),
+		    value: gettext("Uploads are stored temporarily in '/var/tmp/', make sure there is enough free space."),
 		},
 		{
 		    xtype: 'progressbar',
