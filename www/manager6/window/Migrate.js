@@ -4,6 +4,7 @@ Ext.define('PVE.window.Migrate', {
     vmtype: undefined,
     nodename: undefined,
     vmid: undefined,
+    vmname: undefined,
     maxHeight: 450,
 
     viewModel: {
@@ -92,9 +93,14 @@ Ext.define('PVE.window.Migrate', {
 	    }
 	    vm.set('vmtype', view.vmtype);
 
-	    view.setTitle(
-		Ext.String.format('{0} {1} {2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid),
+	    let title = Ext.String.format(
+		'{0} {1} {2}',
+		gettext('Migrate'),
+		vm.get(view.vmtype).commonName,
+		PVE.Utils.getFormattedGuestIdentifier(view.vmid, view.vmname),
 	    );
+	    view.setTitle(title);
+
 	    me.lookup('proxmoxHelpButton').setHelpConfig({
 		onlineHelp: vm.get(view.vmtype).onlineHelp,
 	    });

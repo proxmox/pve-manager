@@ -100,6 +100,7 @@ Ext.define('PVE.lxc.Config', {
 		    vmtype: 'lxc',
 		    nodename: nodename,
 		    vmid: vmid,
+		    vmname: vm.name,
 		});
 		win.show();
 	    },
@@ -115,7 +116,13 @@ Ext.define('PVE.lxc.Config', {
 		    iconCls: 'fa fa-fw fa-clone',
 		    hidden: !caps.vms['VM.Clone'],
 		    handler: function() {
-			PVE.window.Clone.wrap(nodename, vmid, template, 'lxc');
+			PVE.window.Clone.wrap(
+			    nodename,
+			    vmid,
+			    vm.name,
+			    template,
+			    'lxc',
+			);
 		    },
 		},
 		{
@@ -156,7 +163,11 @@ Ext.define('PVE.lxc.Config', {
 		    handler: function() {
 			Ext.create('PVE.window.SafeDestroyGuest', {
 			    url: base_url,
-			    item: { type: 'CT', id: vmid },
+			    item: {
+				type: 'CT',
+				id: vmid,
+				formattedIdentifier: PVE.Utils.getFormattedGuestIdentifier(vmid, vm.name),
+			    },
 			    taskName: 'vzdestroy',
 			}).show();
 		    },

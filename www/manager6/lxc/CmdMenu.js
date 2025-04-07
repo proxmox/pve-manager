@@ -89,7 +89,13 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
 		hidden: !caps.vms['VM.Clone'],
-		handler: () => PVE.window.Clone.wrap(info.node, info.vmid, me.isTemplate, 'lxc'),
+		handler: () => PVE.window.Clone.wrap(
+		    info.node,
+		    info.vmid,
+		    info.name,
+		    me.isTemplate,
+		    'lxc',
+		),
 	    },
 	    {
 		text: gettext('Migrate'),
@@ -100,6 +106,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 			vmtype: 'lxc',
 			nodename: info.node,
 			vmid: info.vmid,
+			vmname: info.name,
 			autoShow: true,
 		    });
 		},

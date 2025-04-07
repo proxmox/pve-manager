@@ -73,6 +73,7 @@ Ext.define('PVE.qemu.Config', {
 		    vmtype: 'qemu',
 		    nodename: nodename,
 		    vmid: vmid,
+		    vmname: vm.name,
 		});
 		win.show();
 	    },
@@ -88,7 +89,13 @@ Ext.define('PVE.qemu.Config', {
 		    iconCls: 'fa fa-fw fa-clone',
 		    hidden: !caps.vms['VM.Clone'],
 		    handler: function() {
-			PVE.window.Clone.wrap(nodename, vmid, template, 'qemu');
+			PVE.window.Clone.wrap(
+			    nodename,
+			    vmid,
+			    vm.name,
+			    template,
+			    'qemu',
+			);
 		    },
 		},
 		{
@@ -128,7 +135,11 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			Ext.create('PVE.window.SafeDestroyGuest', {
 			    url: base_url,
-			    item: { type: 'VM', id: vmid },
+			    item: {
+				type: 'VM',
+				id: vmid,
+				formattedIdentifier: PVE.Utils.getFormattedGuestIdentifier(vmid, vm.name),
+			    },
 			    taskName: 'qmdestroy',
 			}).show();
 		    },

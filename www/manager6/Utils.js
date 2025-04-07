@@ -1970,8 +1970,19 @@ Ext.define('PVE.Utils', {
 	return languageCookie || Proxmox.defaultLang || 'en';
     },
 
+    getFormattedGuestIdentifier: function(vmid, guestName) {
+	if (PVE.UIOptions.getTreeSortingValue('sort-field') === 'vmid') {
+	    return guestName ? `${vmid} (${guestName})` : vmid;
+	} else {
+	    return guestName ? `${guestName} (${vmid})` : vmid;
+	}
+    },
+
     formatGuestTaskConfirmation: function(taskType, vmid, guestName) {
-	let description = Proxmox.Utils.format_task_description(taskType, `${vmid} (${guestName})`);
+	let description = Proxmox.Utils.format_task_description(
+		taskType,
+		this.getFormattedGuestIdentifier(vmid, guestName),
+	);
 	return Ext.htmlEncode(description);
     },
 },

@@ -39,6 +39,8 @@ Ext.define('PVE.grid.BackupView', {
 	    throw "unsupported VM type '" + vmtype + "'";
 	}
 
+	let vmname = me.pveSelNode.data.name;
+
 	var searchFilter = {
 	    property: 'volid',
 	    value: '',
@@ -167,6 +169,7 @@ Ext.define('PVE.grid.BackupView', {
 		    nodename: nodename,
 		    vmid: vmid,
 		    vmtype: vmtype,
+		    vmname: vmname,
 		    storage: storagesel.getValue(),
 		    listeners: {
 			close: function() {
@@ -189,6 +192,7 @@ Ext.define('PVE.grid.BackupView', {
 		let win = Ext.create('PVE.window.Restore', {
 		    nodename: nodename,
 		    vmid: vmid,
+		    vmname: vmname,
 		    volid: rec.data.volid,
 		    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
 		    vmtype: vmtype,

@@ -137,7 +137,12 @@ Ext.define('PVE.window.Snapshot', {
 
 	let subject;
 	if (me.isCreate) {
-	    subject = (me.type === 'qemu' ? 'VM' : 'CT') + me.vmid + ' ' + gettext('Snapshot');
+	    let guestTypeStr = me.type === 'qemu' ? 'VM' : 'CT';
+	    let formattedGuestIdentifier = PVE.Utils.getFormattedGuestIdentifier(
+		me.vmid,
+		me.vmname,
+	    );
+	    subject = `${guestTypeStr} ${formattedGuestIdentifier} ${gettext('Snapshot')}}`;
 	    me.method = 'POST';
 	    me.showTaskViewer = true;
 	} else {

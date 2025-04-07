@@ -21,7 +21,7 @@ Ext.define('PVE.window.Clone', {
 
     statics: {
 	// display a snapshot selector only if needed
-	wrap: function(nodename, vmid, isTemplate, guestType) {
+	wrap: function(nodename, vmid, vmname, isTemplate, guestType) {
 	    Proxmox.Utils.API2Request({
 		url: '/nodes/' + nodename + '/' + guestType + '/' + vmid +'/snapshot',
 		failure: function(response, opts) {
@@ -36,6 +36,7 @@ Ext.define('PVE.window.Clone', {
 			nodename: nodename,
 			guestType: guestType,
 			vmid: vmid,
+			vmname: vmname,
 			isTemplate: isTemplate,
 			hasSnapshots: hasSnapshots,
 		    }).show();
@@ -155,7 +156,9 @@ Ext.define('PVE.window.Clone', {
 	if (me.isTemplate) {
 	    titletext += ' Template';
 	}
-	me.title = "Clone " + titletext + " " + me.vmid;
+
+	let formattedGuestIdentifier = PVE.Utils.getFormattedGuestIdentifier(me.vmid, me.vmname);
+	me.title = `Clone ${titletext} ${formattedGuestIdentifier}`;
 
 	var col1 = [];
 	var col2 = [];

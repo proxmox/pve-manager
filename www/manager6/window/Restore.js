@@ -357,7 +357,8 @@ Ext.define('PVE.window.Restore', {
 
 	let title = gettext('Restore') + ": " + (me.vmtype === 'lxc' ? 'CT' : 'VM');
 	if (me.vmid) {
-	    title = `${gettext('Overwrite')} ${title} ${me.vmid}`;
+	    let formattedGuestIdentifier = PVE.Utils.getFormattedGuestIdentifier(me.vmid, me.vmname);
+	    title = `${gettext('Overwrite')} ${title} ${formattedGuestIdentifier}`;
 	}
 
 	Ext.apply(me, {

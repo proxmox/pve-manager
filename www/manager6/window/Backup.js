@@ -360,9 +360,9 @@ Ext.define('PVE.window.Backup', {
 	    hidden: false,
 	});
 
-	var title = gettext('Backup') + " " +
-	    (me.vmtype === 'lxc' ? "CT" : "VM") +
-	    " " + me.vmid;
+	let guestTypeStr = me.vmtype === 'lxc' ? "CT" : "VM";
+	let formattedGuestIdentifier = PVE.Utils.getFormattedGuestIdentifier(me.vmid, me.vmname);
+	let title = `${gettext('Backup')} ${guestTypeStr} ${formattedGuestIdentifier}`;
 
 	Ext.apply(me, {
 	    title: title,

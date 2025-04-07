@@ -11,6 +11,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    type: undefined,
 	    nodename: undefined,
 	    vmid: undefined,
+	    vmname: undefined,
 	    snapshotAllowed: false,
 	    rollbackAllowed: false,
 	    snapshotFeature: false,
@@ -50,6 +51,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    let win = Ext.create('PVE.window.Snapshot', {
 		nodename: vm.get('nodename'),
 		vmid: vm.get('vmid'),
+		vmname: vm.get('vmname'),
 		viewonly: !vm.get('snapshotAllowed'),
 		type: vm.get('type'),
 		isCreate: !edit,
@@ -213,6 +215,8 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    }
 	    vm.set('vmid', view.pveSelNode.data.vmid);
 
+	    vm.set('vmname', view.pveSelNode.data.name);
+
 	    let caps = Ext.state.Manager.get('GuiCap');
 	    vm.set('snapshotAllowed', !!caps.vms['VM.Snapshot']);
 	    vm.set('rollbackAllowed', !!caps.vms['VM.Snapshot.Rollback']);
@@ -259,8 +263,12 @@ Ext.define('PVE.guest.SnapshotTree', {
 		let view = this.up('treepanel');
 		let rec = view.getSelection()[0];
 		let vmid = view.getViewModel().get('vmid');
-		let message = Proxmox.Utils.format_task_description('qmrollback', vmid) +
-		    ` '${rec.data.name}'? ${gettext("Current state will be lost.")}`;
+		let vmname = view.getViewModel().get('vmname');
+		let message = PVE.Utils.formatGuestTaskConfirmation(
+		    'qmrollback',
+		    vmid,
+		    vmname,
+		) + ` '${rec.data.name}'? ${gettext("Current state will be lost.")}`;
 		return Ext.htmlEncode(message);
 	    },
 	    handler: 'rollback',

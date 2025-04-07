@@ -121,6 +121,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			vmtype: 'qemu',
 			nodename: info.node,
 			vmid: info.vmid,
+			vmname: info.name,
 			autoShow: true,
 		    });
 		},
@@ -129,7 +130,13 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
 		hidden: !caps.vms['VM.Clone'],
-		handler: () => PVE.window.Clone.wrap(info.node, info.vmid, me.isTemplate, 'qemu'),
+		handler: () => PVE.window.Clone.wrap(
+		    info.node,
+		    info.vmid,
+		    info.name,
+		    me.isTemplate,
+		    'qemu',
+		),
 	    },
 	    {
 		text: gettext('Convert to template'),
