@@ -222,25 +222,26 @@ Ext.define('PVE.window.Migrate', {
 		if (target.length && !migrateStats.allowed_nodes.includes(target)) {
 		    if (disallowed.unavailable_storages !== undefined) {
 			let missingStorages = disallowed.unavailable_storages.join(', ');
+			const text = Ext.String.format(
+			    gettext('Storage(s) ({0}) not available on selected target. Start VM to use live storage migration or select other target node.'),
+			    missingStorages,
+			);
 
 			migration.possible = false;
-			migration.preconditions.push({
-			    text: 'Storage (' + missingStorages + ') not available on selected target. ' +
-			      'Start VM to use live storage migration or select other target node',
-			    severity: 'error',
-			});
+			migration.preconditions.push({ text, severity: 'error' });
 		    }
 		}
 	    }
 
 	    if (disallowed['unavailable-resources'] !== undefined) {
 		let unavailableResources = disallowed['unavailable-resources'].join(', ');
+		const text = Ext.String.format(
+		    gettext('Mapped Resources ({0}) not available on selected target.'),
+		    unavailableResources,
+		);
 
 		migration.possible = false;
-		migration.preconditions.push({
-		    text: 'Mapped Resources (' + unavailableResources + ') not available on selected target. ',
-		    severity: 'error',
-		});
+		migration.preconditions.push({ text, severity: 'error' });
 	    }
 
 	    let blockingResources = [];
@@ -255,19 +256,20 @@ Ext.define('PVE.window.Migrate', {
 	    if (blockingResources.length) {
 		migration.hasLocalResources = true;
 		if (!migration.overwriteLocalResourceCheck || vm.get('running')) {
+		    const text = Ext.String.format(
+			gettext('Cannot migrate VM with local resources: {0}'),
+			blockingResources.join(', '),
+		    );
+
 		    migration.possible = false;
-		    migration.preconditions.push({
-			text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
-			blockingResources.join(', ')),
-			severity: 'error',
-		    });
+		    migration.preconditions.push({ text, severity: 'error' });
 		} else {
-		    migration.preconditions.push({
-			text: Ext.String.format('Migrate VM with local resources: {0}. ' +
-			'This might fail if resources aren\'t available on the target node.',
-			blockingResources.join(', ')),
-			severity: 'warning',
-		    });
+		    const text = Ext.String.format(
+			gettext('Migrating VM with local resources: {0}. This might fail if the resources are not available on the target node.'),
+			blockingResources.join(', '),
+		    );
+
+		    migration.preconditions.push({ text, severity: 'warning' });
 		}
 	    }
 
@@ -282,18 +284,20 @@ Ext.define('PVE.window.Migrate', {
 		    }
 		}
 		if (notAllowed.length > 0) {
+		    const text = Ext.String.format(
+			gettext('Cannot migrate running VM with mapped resources: {0}'),
+			notAllowed.join(', '),
+		    );
+
 		    migration.possible = false;
-		    migration.preconditions.push({
-			text: Ext.String.format('Can\'t migrate running VM with mapped resources: {0}',
-			notAllowed.join(', ')),
-			severity: 'error',
-		    });
+		    migration.preconditions.push({ text, severity: 'error' });
 		} else if (allowed.length > 0) {
-		    migration.preconditions.push({
-			text: Ext.String.format('Live-migrating running VM with mapped resources (Experimental): {0}',
-			allowed.join(', ')),
-			severity: 'warning',
-		    });
+		    const text = Ext.String.format(
+			gettext('Live-migrating running VM with mapped resources (Experimental): {0}'),
+			allowed.join(', '),
+		    );
+
+		    migration.preconditions.push({ text, severity: 'warning' });
 		}
 	    }
 
@@ -303,17 +307,19 @@ Ext.define('PVE.window.Migrate', {
 			if (!disk.volid.includes('vm-' + vm.get('vmid') + '-cloudinit')) {
 			    migration.possible = false;
 			    migration.preconditions.push({
-				text: "Can't migrate VM with local CD/DVD",
+				text: gettext('Cannot migrate VM with local CD/DVD'),
 				severity: 'error',
 			    });
 			}
 		    } else {
 			let size = disk.size ? '(' + Proxmox.Utils.render_size(disk.size) + ')' : '';
+			const text = Ext.String.format(
+			    gettext('Migration with local disk might take long: {0} {1}'),
+			    disk.volid, size,
+			);
+
 			migration['with-local-disks'] = 1;
-			migration.preconditions.push({
-			    text: Ext.String.format('Migration with local disk might take long: {0} {1}', disk.volid, size),
-			    severity: 'warning',
-			});
+			migration.preconditions.push({ text, severity: 'warning' });
 		    }
 		});
 	    }
@@ -397,7 +403,7 @@ Ext.define('PVE.window.Migrate', {
 			fieldLabel: gettext('Force'),
 			autoEl: {
 			    tag: 'div',
-			    'data-qtip': 'Overwrite local resources unavailable check',
+			    'data-qtip': gettext('Overwrite local resources unavailable check'),
 			},
 			bind: {
 			    hidden: '{setLocalResourceCheckboxHidden}',
