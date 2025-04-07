@@ -394,7 +394,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 				    me.up('pveCephInstallWizard').getViewModel().set('configuration', true);
 				    me.down('textfield').setValue('success');
 				} else if (!operation.error.statusText.match("not installed", "i")) {
-				    Proxmox.Utils.setErrorMask(me, operation.error.statusText);
+				    let msg = Ext.htmlEncode(operation.error.statusText);
+				    Proxmox.Utils.setErrorMask(me, msg);
 				}
 			    },
 			},

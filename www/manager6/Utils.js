@@ -1737,7 +1737,7 @@ Ext.define('PVE.Utils', {
 	    } else {
 		msg = gettext('Connection error');
 	    }
-	    Proxmox.Utils.setErrorMask(view, msg);
+	    Proxmox.Utils.setErrorMask(view, Ext.htmlEncode(msg));
 	});
     },
 
