@@ -189,6 +189,7 @@ JSSRC= 							\
 	dc/RealmSyncJob.js				\
 	dc/PCIMapView.js				\
 	dc/USBMapView.js				\
+	dc/DirMapView.js				\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\

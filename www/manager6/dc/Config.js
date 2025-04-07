@@ -331,6 +331,12 @@ Ext.define('PVE.dc.Config', {
 			},
 		    ],
 		},
+		{
+		    xtype: 'pveDcDirMapView',
+		    itemId: 'directories',
+		    title: gettext('Directory Mappings'),
+		    iconCls: 'fa fa-folder',
+		},
 	    );
 	}
 
