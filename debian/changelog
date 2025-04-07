@@ -1,3 +1,97 @@
+pve-manager (8.3.6) bookworm; urgency=medium
+
+  * fix #5175: ui: allow configuring and live-migration of mapped PCI
+    (vGPU) resources.
+
+  * mapping: pci: include mdev in config checks.
+
+  * ui: qemu: add configuration options for AMD SEV-SNP support.
+
+  * fix #5463: show optional consent-banner before user can login. The banner
+    can be configured in the datacenter options.
+
+  * fix #5936: ui: backup: add CT PBS change detection mode selector for
+    manual container backup dialogue.
+
+  * fix #2413: pvestatd: read ballooning RAM usage target from node config.
+
+  * fix #3716: api: use proxy option for https when querying the metadata for
+    a to be downloaded template or ISO file.
+
+  * ui: let non-root users configure VirtIO RNG devices if they have
+    the VM.Config.HWType privilege.
+
+  * ui: remove warning about entropy starvation of /dev/random, it does not
+    apply since kernel 5.6 anymore.
+
+  * ui: permissions: add ACL path for hardware RNG.
+
+  * bulk migrate: improve precondition checks to also includes unavailable
+    storages on the target node.
+
+  * ui: adapt migration window to precondition api additions.
+
+  * ui: fix string used for backup storage content-type for PBS backups.
+
+  * ui: lxc create: do not suggest nesting is enabled for privileged CTs,
+    correctly clear the checkbox state when disabling it for that case.
+
+  * ui: ceph: use common spelling for metadata servers in title
+
+  * api subscription: output generic apt-auth stanza for ceph.
+
+  * api subscription: fix permissions for ceph apt-auth file.
+
+  * system report: add WWN column to lsblk output.
+
+  * pve7to8: fix broken pipe warning for dkms status invocation.
+
+  * ui: ensure various fields are html-encoded to avoid visual glitches.
+
+  * fix #4411: ui: OpenID Connect realm: add fields for new group-mapping
+    support, where a configured user claim is queried for the list of groups
+    that a users should be set or added to.
+
+  * ui: tasks: add icon to better convey that one can open the task log from
+    the list of task entries.
+
+  * notifications: rework and clean-up various templates used to send
+    notifications, including those for apt updates, backups, and replication.
+
+  * node configuration: add per-node option for memory ballooning target and
+    allow one to edit them through the web UI.
+
+  * backup: implement backup for external providers with full integration
+    reusing and extending our custom storage plugin architecture.
+
+  * fix #6116: ui: qemu: create wizard: order main ISO CDROM drive before
+    additional added CDROM drives in the boot order.
+
+  * user: password edit: show hint to clarify that password changes for PAM
+    realm only apply to connected node.
+
+  * ui: guest migrate window: make all user-visible strings translatable.
+
+  * ui: do not split translatable strings.
+
+  * ui: qemu pci edit: select correct radiobutton when editing.
+
+  * ui: add human readable description for `reloadnetworkall` task.
+
+  * close #3181: ui: display guest name alongside VMID in confirm dialogs of
+    potentially destructive actions.
+
+  * ui: storage content: allow upload of guest images for import type.
+
+  * api: add resource map api endpoints for directories.
+
+  * ui: add management for directory mappings in the datacenter view.
+
+  * ui: qemu: allow one to add Virtiofs devices to passthrough a directory
+    mapping managed folder to the VM.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 08 Apr 2025 00:44:51 +0200
+
 pve-manager (8.3.5) bookworm; urgency=medium
 
   * update shipped appliance info index
