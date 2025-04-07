@@ -35,6 +35,7 @@ JSSRC= 							\
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\
 	form/DayOfWeekSelector.js			\
+	form/DirMapSelector.js                          \
 	form/DiskFormatSelector.js			\
 	form/DiskStorageSelector.js			\
 	form/FileSelector.js				\
