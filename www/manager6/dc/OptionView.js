@@ -524,7 +524,7 @@ Ext.define('PVE.dc.OptionView', {
 	    fieldOpts: {
 		maxLength: 64 * 1024,
 	    },
-	    // TODO: add onlineHelp to 'gui_consent_banner' once available.
+	    onlineHelp: 'gui_consent_banner',
 	});
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
