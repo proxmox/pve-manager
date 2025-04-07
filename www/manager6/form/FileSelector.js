@@ -43,6 +43,13 @@ Ext.define('PVE.form.FileSelector', {
 	    url: url,
 	});
 
+	if (Ext.isFunction(me.filter)) {
+	    me.store.clearFilter();
+	    me.store.addFilter([me.filter]);
+	} else {
+	    me.store.clearFilter();
+	}
+
 	me.store.removeAll();
 	me.store.load();
     },
@@ -59,6 +66,9 @@ Ext.define('PVE.form.FileSelector', {
     autoSelect: false,
     valueField: 'volid',
     displayField: 'text',
+
+    // An optional filter function
+    filter: undefined,
 
     listConfig: {
 	width: 600,
