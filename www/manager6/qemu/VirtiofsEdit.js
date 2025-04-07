@@ -30,10 +30,10 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 	me.items = [
 	    {
 		xtype: 'pveDirMapSelector',
-		emptyText: 'dirid',
-		nodename: me.nodename,
-		fieldLabel: gettext('Directory ID'),
 		name: 'dirid',
+		fieldLabel: gettext('Directory ID'),
+		emptyText: gettext('Mapping ID'),
+		nodename: me.nodename,
 		allowBlank: false,
 	    },
 	    {
@@ -45,8 +45,8 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 	me.advancedItems = [
 	    {
 		xtype: 'proxmoxKVComboBox',
-		fieldLabel: gettext('Cache'),
 		name: 'cache',
+		fieldLabel: gettext('Cache'),
 		value: '__default__',
 		deleteDefaultValue: false,
 		comboItems: [
@@ -59,18 +59,20 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Writeback cache'),
 		name: 'writeback',
+		fieldLabel: gettext('Writeback cache'),
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Enable xattr support'),
 		name: 'expose-xattr',
+		fieldLabel: gettext('xattr Support'),
+		boxLabel: gettext('Enable support for extended attributes.'),
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Enable POSIX ACLs support (implies xattr support)'),
 		name: 'expose-acl',
+		fieldLabel: gettext('POSIX ACLs'),
+		boxLabel: gettext('Implies xattr support.'),
 		listeners: {
 		    change: function(f, value) {
 			let xattr = me.down('field[name=expose-xattr]');
@@ -81,8 +83,8 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Allow Direct IO'),
 		name: 'direct-io',
+		fieldLabel: gettext('Allow Direct IO'),
 	    },
 	];
 
@@ -95,7 +97,8 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 Ext.define('PVE.qemu.VirtiofsEdit', {
     extend: 'Proxmox.window.Edit',
 
-    subject: gettext('Filesystem Passthrough'),
+    subject: gettext('Virtiofs Filesystem Passthrough'),
+    width: 450,
 
     initComponent: function() {
 	var me = this;
