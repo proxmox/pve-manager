@@ -1647,6 +1647,7 @@ Ext.define('PVE.Utils', {
 	serial: 4,
 	rng: 1,
 	tpmstate: 1,
+	virtiofs: 10,
     },
 
     // we can have usb6 and up only for specific machine/ostypes

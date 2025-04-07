@@ -320,6 +320,16 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
 	    header: gettext("VirtIO RNG"),
 	};
+	for (let i = 0; i < PVE.Utils.hardware_counts.virtiofs; i++) {
+	    let confid = "virtiofs" + i.toString();
+	    rows[confid] = {
+		group: 50,
+		order: i,
+		iconCls: 'folder',
+		editor: 'PVE.qemu.VirtiofsEdit',
+		header: gettext('Virtiofs') + ' (' + confid +')',
+	    };
+	}
 
 	var sorterFn = function(rec1, rec2) {
 	    var v1 = rec1.data.key;
@@ -595,6 +605,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 	    const noVMConfigCDROMPerm = !caps.vms['VM.Config.CDROM'];
 	    const noVMConfigCloudinitPerm = !caps.vms['VM.Config.Cloudinit'];
+	    const noVMConfigOptionsPerm = !caps.vms['VM.Config.Options'];
 
 	    me.down('#addUsb').setDisabled(noHWPerm || isAtUsbLimit());
 	    me.down('#addPci').setDisabled(noHWPerm || isAtLimit('hostpci'));
@@ -604,6 +615,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addRng').setDisabled(noVMConfigHWTypePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
 	    me.down('#addTpmState').setDisabled(noVMConfigDiskPerm || isAtLimit('tpmstate'));
+	    me.down('#addVirtiofs').setDisabled(noVMConfigOptionsPerm || isAtLimit('virtiofs'));
 	    me.down('#addCloudinitDrive').setDisabled(noVMConfigCDROMPerm || noVMConfigCloudinitPerm || hasCloudInit);
 
 	    if (!rec) {
@@ -747,6 +759,13 @@ Ext.define('PVE.qemu.HardwareView', {
 				iconCls: 'pve-itype-icon-die',
 				disabled: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
 				handler: editorFactory('RNGEdit'),
+			    },
+			    {
+				text: gettext("Virtiofs"),
+				itemId: 'addVirtiofs',
+				iconCls: 'fa fa-folder',
+				disabled: !caps.nodes['Sys.Console'],
+				handler: editorFactory('VirtiofsEdit'),
 			    },
 			],
 		    }),
