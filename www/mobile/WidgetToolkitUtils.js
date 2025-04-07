@@ -466,7 +466,7 @@ utilities: {
 		    } else if (response.status && response.statusText) {
 			msg = gettext('Connection error') + ' ' + response.status + ': ' + response.statusText;
 		    }
-		    response.htmlStatus = msg;
+		    response.htmlStatus = Ext.htmlEncode(msg);
 		    Ext.callback(callbackFn, options.scope, [options, false, response]);
 		    Ext.callback(failureFn, options.scope, [response, options]);
 		},
