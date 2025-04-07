@@ -139,7 +139,7 @@ Ext.define('PVE.window.Migrate', {
 		waitMsgTarget: view,
 		method: 'POST',
 		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    Ext.Msg.alert(Proxmox.Utils.errorText, response.htmlStatus);
 		},
 		success: function(response, options) {
 		    var upid = response.result.data;
@@ -201,7 +201,7 @@ Ext.define('PVE.window.Migrate', {
 		migrateStats = result.data;
 		me.fetchingNodeMigrateInfo = false;
 	    } catch (error) {
-		Ext.Msg.alert(gettext('Error'), error.htmlStatus);
+		Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
 		return;
 	    }
 
