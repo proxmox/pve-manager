@@ -68,10 +68,17 @@ Ext.define('PVE.dc.UserView', {
 		return false;
 	    },
 	    handler: function(btn, event, rec) {
+		let hintHtml;
+		if (rec.data['realm-type'] === 'pam') {
+		    hintHtml =
+			gettext("For the PAM realm, this applies only to the connected node.");
+		}
+
 		Ext.create('Proxmox.window.PasswordEdit', {
 		    userid: rec.data.userid,
 		    confirmCurrentPassword: Proxmox.UserName !== 'root@pam',
 		    autoShow: true,
+		    hintHtml,
 		    minLength: 8,
 		    listeners: {
 			destroy: () => reload(),
