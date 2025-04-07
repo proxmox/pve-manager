@@ -3,10 +3,16 @@ package PVE::API2::Cluster::Mapping;
 use strict;
 use warnings;
 
+use PVE::API2::Cluster::Mapping::Dir;
 use PVE::API2::Cluster::Mapping::PCI;
 use PVE::API2::Cluster::Mapping::USB;
 
 use base qw(PVE::RESTHandler);
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::Mapping::Dir",
+    path => 'dir',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Cluster::Mapping::PCI",
@@ -41,6 +47,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $result = [
+	    { name => 'dir' },
 	    { name => 'pci' },
 	    { name => 'usb' },
 	];
