@@ -59,11 +59,6 @@ Ext.define('PVE.qemu.VirtiofsInputPanel', {
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		name: 'writeback',
-		fieldLabel: gettext('Writeback cache'),
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
 		name: 'expose-xattr',
 		fieldLabel: gettext('xattr Support'),
 		boxLabel: gettext('Enable support for extended attributes.'),
