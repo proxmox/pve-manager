@@ -599,7 +599,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    });
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
-	    const noHWPerm = !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'];
 	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
@@ -607,8 +606,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigCloudinitPerm = !caps.vms['VM.Config.Cloudinit'];
 	    const noVMConfigOptionsPerm = !caps.vms['VM.Config.Options'];
 
-	    me.down('#addUsb').setDisabled(noHWPerm || isAtUsbLimit());
-	    me.down('#addPci').setDisabled(noHWPerm || isAtLimit('hostpci'));
+	    me.down('#addUsb').setDisabled(noVMConfigHWTypePerm || isAtUsbLimit());
+	    me.down('#addPci').setDisabled(noVMConfigHWTypePerm || isAtLimit('hostpci'));
 	    me.down('#addAudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
 	    me.down('#addSerial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
 	    me.down('#addNet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
