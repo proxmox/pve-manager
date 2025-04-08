@@ -23,7 +23,7 @@ Ext.define('PVE.window.DirMapEditWindow', {
 	return `/cluster/mapping/dir/${name}`;
     },
 
-    title: gettext('Add Dir mapping'),
+    title: gettext('Add Directory Mapping'),
 
     onlineHelp: 'resource_mapping',
 
