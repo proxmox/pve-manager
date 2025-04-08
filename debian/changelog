@@ -1,3 +1,14 @@
+pve-manager (8.3.7) bookworm; urgency=medium
+
+  * ui: directory mapping: use actual words in the title
+
+  * ui: virtiofs edit: drop writeback checkbox, this feature is unsafe and
+    behaves in unexpected ways.
+
+  * ui: set error mask: ensure that message is html-encoded to avoid glitches.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 08 Apr 2025 17:39:36 +0200
+
 pve-manager (8.3.6) bookworm; urgency=medium
 
   * fix #5175: ui: allow configuring and live-migration of mapped PCI
