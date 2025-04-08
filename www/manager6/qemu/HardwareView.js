@@ -316,8 +316,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	rows.rng0 = {
 	    group: 45,
 	    tdCls: 'pve-itype-icon-die',
-	    editor: caps.vms['VM.Config.HWType'] || caps.mapping.hwrng['Mapping.Use'] ? 'PVE.qemu.RNGEdit' : undefined,
-	    never_delete: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
+	    editor: caps.vms['VM.Config.HWType'] || caps.mapping['Mapping.Use'] ? 'PVE.qemu.RNGEdit' : undefined,
+	    never_delete: !caps.vms['VM.Config.HWType'] && !caps.mapping['Mapping.Use'],
 	    header: gettext("VirtIO RNG"),
 	};
 	for (let i = 0; i < PVE.Utils.hardware_counts.virtiofs; i++) {
@@ -757,7 +757,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				text: gettext("VirtIO RNG"),
 				itemId: 'addRng',
 				iconCls: 'pve-itype-icon-die',
-				disabled: !caps.vms['VM.Config.HWType'] && !caps.mapping.hwrng['Mapping.Use'],
+				disabled: !caps.vms['VM.Config.HWType'] && !caps.mapping['Mapping.Use'],
 				handler: editorFactory('RNGEdit'),
 			    },
 			    {
