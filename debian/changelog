@@ -1,3 +1,12 @@
+pve-manager (8.4.0) bookworm; urgency=medium
+
+  * ui: qemu: hardware view: fix capability check for using the hardware
+    random number generator (RNG) as users without broad admin privileges.
+
+  * ui: qemu: unify enabled state of PCI, USB and RNG.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Apr 2025 08:40:25 +0200
+
 pve-manager (8.3.7) bookworm; urgency=medium
 
   * ui: directory mapping: use actual words in the title
