@@ -54,7 +54,7 @@ sub broadcast_ceph_versions {
 
     my $nodename = PVE::INotify::nodename();
     my $old_versions = PVE::Cluster::get_node_kv("ceph-versions", $nodename);
-    if (defined(my $old_version_raw = $old_versions->{$nodename})) {
+    if (length(my $old_version_raw = $old_versions->{$nodename})) {
 	my $old = eval { decode_json($old_version_raw) };
 	warn "failed to parse ceph-versions '$old_version_raw' as JSON - $@" if $@; # should not happen
 	if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{version}->{str} eq $version) {
