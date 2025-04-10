@@ -694,9 +694,18 @@ Ext.define('PVE.Utils', {
 	'import': gettext('Import'),
     },
 
-    volume_is_qemu_backup: function(volume) {
-	return volume.format === 'pbs-vm' || volume.volid.match(':backup/vzdump-qemu-') ||
-	    volume.subtype === 'qemu';
+     // volume can be a full volume info object, in which case the format parameter is ignored, or
+     // you can pass the volume ID and format as separate string parameters.
+    volume_is_qemu_backup: function(volume, format) {
+	let volid, subtype;
+	if (typeof volume === 'string') {
+	    volid = volume;
+	} else if (typeof volume === 'object') {
+	    ({ volid, format, subtype } = volume);
+	} else {
+	    console.error("internal error - unexpected type", volume);
+	}
+	return format === 'pbs-vm' || volid.match(':backup/vzdump-qemu-') || subtype === 'qemu';
     },
 
     volume_is_lxc_backup: function(volume) {
