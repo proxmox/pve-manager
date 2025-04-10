@@ -53,18 +53,10 @@ Ext.define('PVE.window.Backup', {
 	    },
 	});
 
-	let pbsChangeDetectionHelp = Ext.create('Ext.Component', {
-	    hidden: true,
-	    html: `<i class="fa fa-question-circle" data-qtip="
-		${gettext("Mode to detect file changes and switch archive encoding format for container backups to Proxmox Backup Server. Not available for VM backups.")}
-	    "></i>`,
-	});
-
 	let pbsChangeDetectionModeSelector = Ext.create({
 	    xtype: 'proxmoxKVComboBox',
-	    hidden: true,
+	    flex: 1,
 	    disabled: true,
-	    fieldLabel: gettext('PBS change detection mode'),
 	    name: 'pbs-change-detection-mode',
 	    deleteEmpty: true,
 	    value: '__default__',
@@ -72,6 +64,25 @@ Ext.define('PVE.window.Backup', {
 		['__default__', "Default"],
 		['data', "Data"],
 		['metadata', "Metadata"],
+	    ],
+	});
+
+	let pbsChangeDetection = Ext.create('Ext.form.FieldContainer', {
+	    fieldLabel: gettext('PBS change detection mode'),
+	    hidden: true,
+	    layout: {
+		type: 'hbox',
+		align: 'center',
+	    },
+	    items: [
+		pbsChangeDetectionModeSelector,
+		{
+		    xtype: 'box',
+		    html: `<i class="fa fa-question-circle" data-qtip="
+			${gettext("Mode to detect file changes and switch archive encoding format for container backups to Proxmox Backup Server. Not available for VM backups.")}
+		    "></i>`,
+		    padding: 5,
+		},
 	    ],
 	});
 
@@ -135,20 +146,17 @@ Ext.define('PVE.window.Backup', {
 			if (me.vmtype === 'lxc') {
 			    pbsChangeDetectionModeSelector.setValue('__default__');
 			    pbsChangeDetectionModeSelector.setDisabled(false);
-			    pbsChangeDetectionModeSelector.setHidden(false);
-			    pbsChangeDetectionHelp.setHidden(false);
+			    pbsChangeDetection.setHidden(false);
 			} else {
 			    pbsChangeDetectionModeSelector.setDisabled(true);
-			    pbsChangeDetectionModeSelector.setHidden(true);
-			    pbsChangeDetectionHelp.setHidden(true);
+			    pbsChangeDetection.setHidden(true);
 			}
 		    } else {
 			if (!compressionSelector.getEditable()) {
 			    compressionSelector.setDisabled(false);
 			}
 			pbsChangeDetectionModeSelector.setDisabled(true);
-			pbsChangeDetectionModeSelector.setHidden(true);
-			pbsChangeDetectionHelp.setHidden(true);
+			pbsChangeDetection.setHidden(true);
 		    }
 
 
@@ -231,8 +239,7 @@ Ext.define('PVE.window.Backup', {
 		storagesel,
 		modeSelector,
 		protectedCheckbox,
-		pbsChangeDetectionHelp,
-		pbsChangeDetectionModeSelector,
+		pbsChangeDetection,
 	    ],
 	    column2: [
 		compressionSelector,
