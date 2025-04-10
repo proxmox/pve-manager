@@ -1,3 +1,15 @@
+pve-manager (8.4.1) bookworm; urgency=medium
+
+  * ui: fix regression with checking if volume is QEMU backup, which could
+    block some dialogues like file-restore.
+
+  * ceph versions: do not try to parse empty string and include raw string in
+    error to make this easier to debug.
+
+  * ui: backup: hide change mode detection for VMs and non-PBS storage.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 10 Apr 2025 12:39:07 +0200
+
 pve-manager (8.4.0) bookworm; urgency=medium
 
   * ui: qemu: hardware view: fix capability check for using the hardware
