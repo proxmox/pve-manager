@@ -22,12 +22,15 @@ Ext.define('PVE.window.LoginWindow', {
 
 	init: async function() {
 	    if (Proxmox.ConsentText) {
-		Ext.create("Proxmox.window.ConsentModal", {
-		    autoShow: true,
-		    consent: Proxmox.Markdown.parse(
-			Proxmox.Utils.base64ToUtf8(Proxmox.ConsentText),
-		    ),
-		});
+		let oidc_auth_redirect = Proxmox.Utils.getOpenIDRedirectionAuthorization();
+		if (oidc_auth_redirect === undefined) {
+		    Ext.create("Proxmox.window.ConsentModal", {
+			autoShow: true,
+			consent: Proxmox.Markdown.parse(
+			    Proxmox.Utils.base64ToUtf8(Proxmox.ConsentText),
+			),
+		    });
+		}
 	    }
 	},
 
