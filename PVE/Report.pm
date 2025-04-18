@@ -80,7 +80,9 @@ my $init_report_cmds = sub {
 		'ip -details -6 route show',
 		'cat /etc/network/interfaces',
 		sub { dir2text('/etc/network/interfaces.d/', '.*') },
-		sub { dir2text('/etc/pve/sdn/', '.*') },
+		'cat /etc/pve/sdn/.running-config',
+		sub { dir2text('/etc/pve/sdn/', '.+\.cfg') },
+		sub { dir2text('/etc/pve/sdn/', '.+\.json') },
 	    ],
 	},
 	firewall => {
@@ -88,6 +90,7 @@ my $init_report_cmds = sub {
 	    cmds => [
 		sub { dir2text('/etc/pve/firewall/', '.+\.fw') },
 		'cat /etc/pve/local/host.fw',
+		sub { dir2text('/etc/pve/sdn/firewall/', '.+\.fw') },
 		'iptables-save -c | column -t -l4 -o" "',
 	    ],
 	},
