@@ -157,6 +157,14 @@ Ext.define('PVE.window.LoginWindow', {
             };
 
             let emsg = gettext('Login failed. Please try again');
+            if (resp.status) {
+                emsg = Ext.String.format(
+                    '{0}<br>{1}<br>{2}',
+                    gettext('Login failed:'),
+                    resp.htmlStatus,
+                    gettext('Please try again'),
+                );
+            }
 
             if (resp.failureType === 'connect') {
                 emsg = gettext(
