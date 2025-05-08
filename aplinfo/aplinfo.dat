@@ -152,17 +152,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 42 (20250428)
 
 Package: gentoo-current-openrc
-Version: 20231009
+Version: 20250508
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-openrc_20231009_amd64.tar.xz
-md5sum: ecf4836300bb0973618b7ae30077f2c1
-sha512sum: 40926859f0a777e8dfa7de10c76eb78ee92aa554e0598a09beec7f260ec7a02f19dfc2f620beaa1ea42feb02c682111d70e81e67e7641da3e0643f2692e75430
+Location: system/gentoo-current-openrc_20250508_amd64.tar.xz
+md5sum: d9a70f0f331b25eace92d00b9d457073
+sha512sum: 50495e3c066aa4f4a8886d8eebbb30ecf662bb7bf7209677fa9edfb82ce2d00172ad2b5ebeba3ee9d319a74691bd975e3b73e079fce503ab72c4a56d2bde8a55
 Infopage: https://linuxcontainers.org
-Description: LXC openrc image for gentoo current (20231009)
+Description: LXC openrc image for gentoo current (20250508)
 
 Package: openeuler-24.03-default
 Version: 20250507
