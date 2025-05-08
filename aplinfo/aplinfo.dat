@@ -164,18 +164,31 @@ sha512sum: 40926859f0a777e8dfa7de10c76eb78ee92aa554e0598a09beec7f260ec7a02f19dfc
 Infopage: https://linuxcontainers.org
 Description: LXC openrc image for gentoo current (20231009)
 
-Package: openeuler-24.09-default
-Version: 20241118
+Package: openeuler-24.03-default
+Version: 20250507
 Type: lxc
 OS: openeuler
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/openeuler-24.09-default_20241118_amd64.tar.xz
-md5sum: 6334a54574d445c3d22eb36ab5c879b7
-sha512sum: cd76cfca8e2f26dcac518d2f75628ed04d2fed0abd8e7d492b5a0336a3a6ac50e44420cd9d9696c3ab1e19ede1ad162a4e635f670774871815ea4b9b6ae69ee7
+Location: system/openeuler-24.03-default_20250507_amd64.tar.xz
+md5sum: db93408ef4ac38193ef25ffb0bfc52db
+sha512sum: e0267c22e6e9401dac8ce8a6f572c51e23131b0d6b77743385a59a63fedcac36d401e818db3d0e98bac98d020e37926aade5a17de6995015733ade97bdd605be
 Infopage: https://linuxcontainers.org
-Description: LXC default image for openeuler 24.09 (20241118)
+Description: LXC default image for openeuler 24.03 (20250507)
+
+Package: openeuler-25.03-default
+Version: 20250507
+Type: lxc
+OS: openeuler
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/openeuler-25.03-default_20250507_amd64.tar.xz
+md5sum: a81f7be61736cbf9753db8a2fd009166
+sha512sum: ecb86973bbd867624513fe5f8f0e72b6ee9be5f9fff592a4dc4bd78610310035270d1917882366ead2d8f3d9af215076552f7a4a35dc8602bf21548e4e2b09e4
+Infopage: https://linuxcontainers.org
+Description: LXC default image for openeuler 25.03 (20250507)
 
 Package: opensuse-15.6-default
 Version: 20240910
