@@ -31,7 +31,7 @@ Ext.define('PVE.window.UploadToStorage', {
 
         return {
             extensions: fileSelectorExt.join(', '),
-            filenameRegex: RegExp('^.*(?:' + ext.join('|').replaceAll('.', '\\.') + ')$', 'i'),
+            filenameRegex: new RegExp('^.*(?:' + ext.join('|').replaceAll('.', '\\.') + ')$', 'i'),
         };
     },
 
