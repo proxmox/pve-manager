@@ -66,7 +66,9 @@ Ext.define('PVE.widget.RunningChart', {
                     tooltip: {
                         trackMouse: true,
                         renderer: function (tooltip, record, ctx) {
-                            if (!record || !record.data) return;
+                            if (!record || !record.data) {
+                                return;
+                            }
                             const view = this.getChart();
                             const date = new Date(record.data.time);
                             const value = view.up().renderer(record.data.val);

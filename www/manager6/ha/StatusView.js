@@ -89,7 +89,9 @@ Ext.define(
                     name: 'vname',
                     convert: function (value, record) {
                         let sid = record.data.sid;
-                        if (!sid) return '';
+                        if (!sid) {
+                            return '';
+                        }
 
                         let res = sid.match(/^(\S+):(\S+)$/);
                         if (res[1] !== 'vm' && res[1] !== 'ct') {

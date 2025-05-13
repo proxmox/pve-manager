@@ -374,9 +374,15 @@ Ext.define('PVE.qemu.Options', {
                 defaultValue: Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')',
                 renderer: function (value, metaData, record, ri, ci, store, pending) {
                     let amd_sev = PVE.Parser.parsePropertyString(value, 'type');
-                    if (amd_sev.type === 'std') return 'AMD SEV (' + value + ')';
-                    if (amd_sev.type === 'es') return 'AMD SEV-ES (' + value + ')';
-                    if (amd_sev.type === 'snp') return 'AMD SEV-SNP (' + value + ')';
+                    if (amd_sev.type === 'std') {
+                        return 'AMD SEV (' + value + ')';
+                    }
+                    if (amd_sev.type === 'es') {
+                        return 'AMD SEV-ES (' + value + ')';
+                    }
+                    if (amd_sev.type === 'snp') {
+                        return 'AMD SEV-SNP (' + value + ')';
+                    }
                     return value;
                 },
             },

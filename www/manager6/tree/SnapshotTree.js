@@ -119,7 +119,9 @@ Ext.define('PVE.guest.SnapshotTree', {
                 url: `/nodes/${nodename}/${type}/${vmid}/snapshot`,
                 method: 'GET',
                 failure: function (response, opts) {
-                    if (me.destroyed) return;
+                    if (me.destroyed) {
+                        return;
+                    }
                     Proxmox.Utils.setErrorMask(view, response.htmlStatus);
                     me.load_task.delay(load_delay);
                 },

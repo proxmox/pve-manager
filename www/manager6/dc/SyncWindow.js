@@ -21,7 +21,9 @@ Ext.define('PVE.dc.SyncWindow', {
             },
             button: {
                 click: function (btn) {
-                    if (btn.reference === 'help_btn') return;
+                    if (btn.reference === 'help_btn') {
+                        return;
+                    }
                     this.sync_realm(btn.reference === 'preview_btn');
                 },
             },

@@ -157,7 +157,9 @@ Ext.define('PVE.Utils', {
                     return 1;
                 } else {
                     let diff = parseInt(av, 10) - parseInt(bv, 10);
-                    if (diff !== 0) return diff;
+                    if (diff !== 0) {
+                        return diff;
+                    }
                     // else we need to look at the next parts
                 }
             }

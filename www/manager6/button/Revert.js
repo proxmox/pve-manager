@@ -12,12 +12,16 @@ Ext.define('PVE.button.PendingRevert', {
     handler: function () {
         if (!this.pendingGrid) {
             this.pendingGrid = this.up('proxmoxPendingObjectGrid');
-            if (!this.pendingGrid) throw 'revert button requires a pendingGrid';
+            if (!this.pendingGrid) {
+                throw 'revert button requires a pendingGrid';
+            }
         }
         let view = this.pendingGrid;
 
         let rec = view.getSelectionModel().getSelection()[0];
-        if (!rec) return;
+        if (!rec) {
+            return;
+        }
 
         let rowdef = view.rows[rec.data.key] || {};
         let keys = rowdef.multiKey || [rec.data.key];

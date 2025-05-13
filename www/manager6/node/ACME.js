@@ -468,7 +468,9 @@ Ext.define('PVE.node.ACME', {
             let view = me.getView();
 
             let selection = view.getSelection();
-            if (selection.length < 1) return;
+            if (selection.length < 1) {
+                return;
+            }
 
             Ext.create('PVE.node.ACMEDomainEdit', {
                 nodename: view.nodename,
@@ -484,7 +486,9 @@ Ext.define('PVE.node.ACME', {
             let me = this;
             let view = me.getView();
             let selection = view.getSelection();
-            if (selection.length < 1) return;
+            if (selection.length < 1) {
+                return;
+            }
 
             let rec = selection[0].data;
             let params = {};
@@ -573,7 +577,9 @@ Ext.define('PVE.node.ACME', {
         },
 
         orderFinished: function (success) {
-            if (!success) return;
+            if (!success) {
+                return;
+            }
             // reload only if the Web UI is open on the same node that the cert was ordered for
             if (this.getView().nodename !== Proxmox.NodeName) {
                 return;
@@ -709,7 +715,9 @@ Ext.define('PVE.node.ACME', {
         if (rec.data.acme) {
             let obj = PVE.Parser.parseACME(rec.data.acme);
             (obj.domains || []).forEach((domain) => {
-                if (domain === '') return;
+                if (domain === '') {
+                    return;
+                }
                 let record = {
                     domain,
                     type: 'standalone',
@@ -734,7 +742,9 @@ Ext.define('PVE.node.ACME', {
 
         for (let i = 0; i < PVE.Utils.acmedomain_count; i++) {
             let acmedomain = rec.data[`acmedomain${i}`];
-            if (!acmedomain) continue;
+            if (!acmedomain) {
+                continue;
+            }
 
             let record = PVE.Parser.parsePropertyString(acmedomain, 'domain');
             record.type = 'dns';
