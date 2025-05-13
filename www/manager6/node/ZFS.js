@@ -355,7 +355,7 @@ Ext.define('PVE.node.ZFSList', {
     },
 
     set_button_status: function () {
-        var me = this;
+        var _me = this;
     },
 
     reload: function () {

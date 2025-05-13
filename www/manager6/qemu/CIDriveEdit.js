@@ -7,7 +7,7 @@ Ext.define('PVE.qemu.CIDriveInputPanel', {
     vmconfig: {}, // used to select usused disks
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         var drive = {};
         var params = {};

@@ -57,7 +57,7 @@ Ext.define('PVE.panel.GuestStatusView', {
             printBar: false,
             multiField: true,
             renderer: function (record) {
-                var me = this;
+                var _me = this;
                 var text = record.data.status;
                 var qmpstatus = record.data.qmpstatus;
                 if (qmpstatus && qmpstatus !== record.data.status) {

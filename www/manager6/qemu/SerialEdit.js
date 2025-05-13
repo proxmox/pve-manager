@@ -18,7 +18,7 @@ Ext.define('PVE.qemu.SerialnputPanel', {
     },
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         var id = 'serial' + values.serialid;
         delete values.serialid;

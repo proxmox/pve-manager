@@ -133,7 +133,7 @@ Ext.define('PVE.sdn.SubnetDhcpRangePanel', {
     },
 
     getErrors: function () {
-        let me = this;
+        let _me = this;
         let errors = [];
 
         return errors;

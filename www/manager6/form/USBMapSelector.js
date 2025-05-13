@@ -31,7 +31,7 @@ Ext.define('PVE.form.USBMapSelector', {
                 dataIndex: 'errors',
                 flex: 2,
                 renderer: function (value) {
-                    let me = this;
+                    let _me = this;
 
                     if (!Ext.isArray(value) || !value?.length) {
                         return `<i class="fa fa-check-circle good"></i> ${gettext('Mapping matches host data')}`;

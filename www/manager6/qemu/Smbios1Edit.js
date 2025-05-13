@@ -7,7 +7,7 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
     smbios1: {},
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         var params = {
             smbios1: PVE.Parser.printQemuSmbios1(values),

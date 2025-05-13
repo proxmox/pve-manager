@@ -116,7 +116,7 @@ Ext.define('PVE.window.Settings', {
             },
             'grid[reference=dashboard-storages]': {
                 selectionchange: function (grid, selected) {
-                    var me = this;
+                    var _me = this;
                     var sp = Ext.state.Manager.getProvider();
 
                     // saves the selected storageids as "id1,id2,id3,..." or clears the variable

@@ -5,7 +5,7 @@ Ext.define('PVE.sdn.IpamEditInputPanel', {
     isCreate: false,
 
     onGetValues: function (values) {
-        let me = this;
+        let _me = this;
 
         if (!values.vmid) {
             delete values.vmid;

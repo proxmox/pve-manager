@@ -105,7 +105,7 @@ Ext.define('PVE.qemu.AgentIPView', {
     ],
 
     getDefaultIps: function (nics) {
-        var me = this;
+        var _me = this;
         var ips = [];
         nics.forEach(function (nic) {
             if (

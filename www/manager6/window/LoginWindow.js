@@ -125,7 +125,7 @@ Ext.define('PVE.window.LoginWindow', {
 
         /* START NEW TFA CODE (pbs copy) */
         performTFAChallenge: async function (data) {
-            let me = this;
+            let _me = this;
 
             let userid = data.username;
             let ticket = data.ticket;

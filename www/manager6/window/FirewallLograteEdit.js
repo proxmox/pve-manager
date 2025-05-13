@@ -56,7 +56,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
     ],
 
     onGetValues: function (values) {
-        let me = this;
+        let _me = this;
 
         let cfg = {
             enable: values.enable !== undefined ? 1 : 0,

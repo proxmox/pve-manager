@@ -132,7 +132,7 @@ Ext.define('PVE.tree.ResourceTree', {
     },
 
     setText: function (info) {
-        let me = this;
+        let _me = this;
 
         let status = '';
         if (info.type === 'storage') {

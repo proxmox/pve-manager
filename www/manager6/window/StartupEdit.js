@@ -3,7 +3,7 @@ Ext.define('PVE.panel.StartupInputPanel', {
     onlineHelp: 'qm_startup_and_shutdown',
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         var res = PVE.Parser.printStartup(values);
 

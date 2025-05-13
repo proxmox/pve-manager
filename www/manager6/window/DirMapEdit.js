@@ -98,7 +98,7 @@ Ext.define('PVE.window.DirMapEditWindow', {
         },
 
         init: function (view) {
-            let me = this;
+            let _me = this;
 
             if (!view.nodename) {
                 //throw "no nodename given";

@@ -33,7 +33,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
     },
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         var res = {};
 

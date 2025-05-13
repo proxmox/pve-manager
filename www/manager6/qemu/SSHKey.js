@@ -5,7 +5,7 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
     insideWizard: false,
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
         if (values.sshkeys) {
             values.sshkeys.trim();
         }

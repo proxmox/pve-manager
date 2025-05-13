@@ -46,7 +46,7 @@ Ext.define('PVE.form.PCIMapSelector', {
                 header: gettext('Status'),
                 dataIndex: 'checks',
                 renderer: function (value) {
-                    let me = this;
+                    let _me = this;
 
                     if (!Ext.isArray(value) || !value?.length) {
                         return `<i class="fa fa-check-circle good"></i> ${gettext('Mapping matches host data')}`;
