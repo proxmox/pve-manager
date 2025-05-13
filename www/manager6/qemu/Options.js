@@ -124,7 +124,7 @@ Ext.define('PVE.qemu.Options', {
                         if (text) {
                             text += ', ';
                         }
-                        var sel = order.substring(i, i + 1);
+                        let sel = order.substring(i, i + 1);
                         if (sel === 'c') {
                             if (bootdisk) {
                                 text += bootdisk;

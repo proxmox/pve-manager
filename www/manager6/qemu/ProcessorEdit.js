@@ -275,7 +275,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                 var data = response.result.data;
                 var value = data.cpu;
                 if (value) {
-                    var cpu = PVE.Parser.parseQemuCpu(value);
+                    let cpu = PVE.Parser.parseQemuCpu(value);
                     ipanel.cpu = cpu;
                     data.cputype = cpu.cputype;
                     if (cpu.flags) {

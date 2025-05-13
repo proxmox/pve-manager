@@ -135,7 +135,7 @@ Ext.define('PVE.widget.RunningChart', {
         // we prevent a memory leak when someone has the site open for a long time
         // with minimal graphical glitches
         if (view.store.count() > panel.timeFrame * 20) {
-            var oldData = view.store.getData().createFiltered(function (item) {
+            let oldData = view.store.getData().createFiltered(function (item) {
                 return item.data.time < begin;
             });
 

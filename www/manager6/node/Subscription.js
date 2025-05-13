@@ -73,7 +73,7 @@ Ext.define('PVE.node.Subscription', {
                         if (window.navigator.msSaveOrOpenBlob) {
                             navigator.msSaveOrOpenBlob(new Blob([fileContent]), fileName);
                         } else {
-                            var element = document.createElement('a');
+                            let element = document.createElement('a');
                             element.setAttribute(
                                 'href',
                                 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent),

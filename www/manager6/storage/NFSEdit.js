@@ -71,7 +71,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
         var i;
         var res = [];
         for (i = 0; i < me.options.length; i++) {
-            var item = me.options[i];
+            let item = me.options[i];
             if (!item.match(/^vers=(.*)$/)) {
                 res.push(item);
             }
@@ -118,7 +118,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
                 listeners: {
                     change: function (f, value) {
                         if (me.isCreate) {
-                            var exportField = me.down('field[name=export]');
+                            let exportField = me.down('field[name=export]');
                             exportField.setServer(value);
                             exportField.setValue('');
                         }

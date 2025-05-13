@@ -143,7 +143,7 @@ Ext.define('PVE.ceph.Services', {
         };
 
         for (let type of ['mon', 'mgr', 'mds']) {
-            var ids = Object.keys(metadata[type] || {});
+            let ids = Object.keys(metadata[type] || {});
             me[type] = {};
 
             for (let id of ids) {

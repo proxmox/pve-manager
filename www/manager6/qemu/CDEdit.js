@@ -152,8 +152,8 @@ Ext.define('PVE.qemu.CDEdit', {
             success: function (response, options) {
                 ipanel.setVMConfig(response.result.data);
                 if (me.confid) {
-                    var value = response.result.data[me.confid];
-                    var drive = PVE.Parser.parseQemuDrive(me.confid, value);
+                    let value = response.result.data[me.confid];
+                    let drive = PVE.Parser.parseQemuDrive(me.confid, value);
                     if (!drive) {
                         Ext.Msg.alert('Error', 'Unable to parse drive options');
                         me.close();

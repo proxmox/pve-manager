@@ -191,7 +191,7 @@ Ext.define('PVE.lxc.DNS', {
                     url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config',
                 });
             } else {
-                var config = Ext.apply(
+                let config = Ext.apply(
                     {
                         pveSelNode: me.pveSelNode,
                         confid: rec.data.key,

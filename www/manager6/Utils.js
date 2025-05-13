@@ -673,7 +673,7 @@ Ext.define('PVE.Utils', {
                     break;
                 case Ext.form.action.Action.CONNECT_FAILURE:
                     msg = gettext('Connection error');
-                    var resp = action.response;
+                    let resp = action.response;
                     if (resp.status && resp.statusText) {
                         msg += ' ' + resp.status + ': ' + resp.statusText;
                     }
@@ -1172,8 +1172,8 @@ Ext.define('PVE.Utils', {
             }
             if (value > 1) {
                 // we got no percentage but bytes
-                var mem = value;
-                var maxmem = record.data.maxmem;
+                let mem = value;
+                let maxmem = record.data.maxmem;
                 if (!record.data.uptime || maxmem === 0 || !Ext.isNumeric(mem)) {
                     return '';
                 }
@@ -1205,7 +1205,7 @@ Ext.define('PVE.Utils', {
 
             if (record.data.mem > 1) {
                 // we got no percentage but bytes
-                var mem = record.data.mem;
+                let mem = record.data.mem;
                 if (!record.data.uptime || maxmem === 0 || !Ext.isNumeric(mem)) {
                     return '';
                 }
@@ -1290,8 +1290,7 @@ Ext.define('PVE.Utils', {
 
             var defaults = PVE.tree.ResourceTree.typeDefaults[objType];
             if (defaults && defaults.iconCls) {
-                var retVal = defaults.iconCls + ' ' + status;
-                return retVal;
+                return defaults.iconCls + ' ' + status;
             }
 
             return '';
@@ -1427,7 +1426,7 @@ Ext.define('PVE.Utils', {
         openVNCViewer: function (vmtype, vmid, nodename, vmname, cmd) {
             let scaling = 'off';
             if (Proxmox.Utils.toolkit !== 'touch') {
-                var sp = Ext.state.Manager.getProvider();
+                let sp = Ext.state.Manager.getProvider();
                 scaling = sp.get('novnc-scaling', 'off');
             }
             var url = Ext.Object.toQueryString({
@@ -1797,8 +1796,8 @@ Ext.define('PVE.Utils', {
                 if (Proxmox.UserName === 'root@pam') {
                     container.el.mask();
                     if (!container.down('pveCephInstallWindow')) {
-                        var isInstalled = !!msg.match(/not initialized/i);
-                        var win = Ext.create('PVE.ceph.Install', {
+                        let isInstalled = !!msg.match(/not initialized/i);
+                        let win = Ext.create('PVE.ceph.Install', {
                             nodename: nodename,
                         });
                         win.getViewModel().set('isInstalled', isInstalled);

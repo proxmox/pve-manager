@@ -77,7 +77,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
         if (values.log_ratelimit !== undefined) {
             properties = PVE.Parser.parsePropertyString(values.log_ratelimit, 'enable');
             if (properties.rate) {
-                var matches = properties.rate.match(/^(\d+)\/(second|minute|hour|day)$/);
+                let matches = properties.rate.match(/^(\d+)\/(second|minute|hour|day)$/);
                 if (matches) {
                     properties.rate = matches[1];
                     properties.unit = matches[2];

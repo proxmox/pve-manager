@@ -113,7 +113,7 @@ Ext.define('PVE.qemu.AgentIPView', {
                 nic['hardware-address'] !== '00:00:00:00:00:00' &&
                 nic['hardware-address'] !== '0:0:0:0:0:0'
             ) {
-                var nic_ips = nic['ip-addresses'] || [];
+                let nic_ips = nic['ip-addresses'] || [];
                 nic_ips.forEach(function (ip) {
                     var p = ip['ip-address'];
                     // show 2 ips at maximum
@@ -138,7 +138,7 @@ Ext.define('PVE.qemu.AgentIPView', {
         var caps = Ext.state.Manager.get('GuiCap');
 
         if (!caps.vms['VM.Monitor']) {
-            var errorText = gettext("Requires '{0}' Privileges");
+            let errorText = gettext("Requires '{0}' Privileges");
             me.updateStatus(false, Ext.String.format(errorText, 'VM.Monitor'));
             return;
         }
@@ -159,7 +159,7 @@ Ext.define('PVE.qemu.AgentIPView', {
         } else if (me.agent && me.running) {
             if (Ext.isArray(me.nics) && me.nics.length) {
                 more = true;
-                var ips = me.getDefaultIps(me.nics);
+                let ips = me.getDefaultIps(me.nics);
                 if (ips.length !== 0) {
                     text = ips.join('<br>');
                 }

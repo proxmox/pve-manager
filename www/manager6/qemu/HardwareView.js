@@ -15,7 +15,7 @@ Ext.define('PVE.qemu.HardwareView', {
         metaData.tdAttr = 'valign=middle';
 
         if (rowdef.isOnStorageBus) {
-            var value = me.getObjectValue(key, '', false);
+            let value = me.getObjectValue(key, '', false);
             if (value === '') {
                 value = me.getObjectValue(key, '', true);
             }

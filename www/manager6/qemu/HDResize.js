@@ -78,7 +78,7 @@ Ext.define('PVE.window.HDResize', {
             text: gettext('Resize disk'),
             handler: function () {
                 if (form.isValid()) {
-                    var values = form.getValues();
+                    let values = form.getValues();
                     me.resize_disk(me.disk, values.size);
                 }
             },

@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.Monitor', {
                             var key = e.getKey();
                             switch (key) {
                                 case e.ENTER:
-                                    var cmd = f.getValue();
+                                    let cmd = f.getValue();
                                     f.setValue('');
                                     executeCmd(cmd);
                                     break;

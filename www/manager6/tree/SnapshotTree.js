@@ -151,7 +151,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 
                         Ext.Array.each(response.result.data, function (item) {
                             if (item.parent && idhash[item.parent]) {
-                                var parent_item = idhash[item.parent];
+                                let parent_item = idhash[item.parent];
                                 parent_item.children.push(item);
                                 parent_item.leaf = false;
                                 parent_item.expanded = true;

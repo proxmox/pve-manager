@@ -76,7 +76,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
                 listeners: {
                     change: function (f, value) {
                         if (me.isCreate) {
-                            var volumeField = me.down('field[name=volume]');
+                            let volumeField = me.down('field[name=volume]');
                             volumeField.setServer(value);
                             volumeField.setValue('');
                         }

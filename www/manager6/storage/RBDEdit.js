@@ -61,7 +61,7 @@ Ext.define('PVE.storage.Ceph.Controller', {
                 var data = response.result.data;
                 if (response.status === 200) {
                     if (data.length > 0) {
-                        var monhost = Ext.Array.pluck(data, 'name').sort().join(',');
+                        let monhost = Ext.Array.pluck(data, 'name').sort().join(',');
                         monhostField.setValue(monhost);
                         monhostField.resetOriginalValue();
                         if (view.isCreate) {

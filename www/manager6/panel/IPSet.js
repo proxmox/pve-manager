@@ -54,7 +54,7 @@ Ext.define('PVE.IPSetList', {
             var oldrec = sm.getSelection()[0];
             store.load(function (records, operation, success) {
                 if (oldrec) {
-                    var rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
+                    let rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
                     if (rec) {
                         sm.select(rec);
                     }
@@ -376,10 +376,10 @@ Ext.define(
             var render_errors = function (value, metaData, record) {
                 var errors = record.data.errors;
                 if (errors) {
-                    var msg = errors.cidr || errors.nomatch;
+                    let msg = errors.cidr || errors.nomatch;
                     if (msg) {
                         metaData.tdCls = 'proxmox-invalid-row';
-                        var html = Ext.htmlEncode(`<p>${Ext.htmlEncode(msg)}</p>`);
+                        let html = Ext.htmlEncode(`<p>${Ext.htmlEncode(msg)}</p>`);
                         metaData.tdAttr = `data-qwidth=600 data-qtitle="ERROR" data-qtip="${html}"`;
                     }
                 }

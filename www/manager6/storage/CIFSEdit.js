@@ -149,7 +149,7 @@ Ext.define('PVE.storage.CIFSInputPanel', {
                 listeners: {
                     change: function (f, value) {
                         if (me.isCreate) {
-                            var exportField = me.down('field[name=share]');
+                            let exportField = me.down('field[name=share]');
                             exportField.setServer(value);
                         }
                     },

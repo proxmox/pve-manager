@@ -119,8 +119,8 @@ Ext.define('PVE.qemu.VirtiofsEdit', {
                 me.conf = response.result.data;
                 var i, confid;
                 if (!me.isCreate) {
-                    var value = me.conf[me.confid];
-                    var virtiofs = PVE.Parser.parsePropertyString(value, 'dirid');
+                    let value = me.conf[me.confid];
+                    let virtiofs = PVE.Parser.parsePropertyString(value, 'dirid');
                     if (!virtiofs) {
                         Ext.Msg.alert(gettext('Error'), 'Unable to parse virtiofs options');
                         me.close();

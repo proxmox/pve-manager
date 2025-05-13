@@ -74,7 +74,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         store.queryBy(Ext.returnTrue).each(function (rec) {
             var s = rec.get('state');
             if (s && s !== '=') {
-                var f = rec.get('flag');
+                let f = rec.get('flag');
                 if (flags === '') {
                     flags = s + f;
                 } else {

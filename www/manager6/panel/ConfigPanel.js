@@ -119,7 +119,7 @@ Ext.define('PVE.panel.Config', {
 
         if (selection) {
             selection.expand();
-            var menu = me.down('#menu');
+            let menu = me.down('#menu');
             menu.setSelection(selection);
             return cardid;
         }
@@ -129,8 +129,8 @@ Ext.define('PVE.panel.Config', {
     activateCard: function (cardid) {
         var me = this;
         if (me.savedItems[cardid]) {
-            var curcard = me.getLayout().getActiveItem();
-            var newcard = me.add(me.savedItems[cardid]);
+            let curcard = me.getLayout().getActiveItem();
+            let newcard = me.add(me.savedItems[cardid]);
             me.helpButton.setOnlineHelp(newcard.onlineHelp || me.onlineHelp);
             if (curcard) {
                 me.setActiveItem(cardid);
@@ -138,7 +138,7 @@ Ext.define('PVE.panel.Config', {
 
                 // trigger state change
 
-                var ncard = cardid;
+                let ncard = cardid;
                 // Note: '' is alias for first tab.
                 // First tab can be 'search' or something else
                 if (cardid === me.firstItem) {
@@ -260,9 +260,9 @@ Ext.define('PVE.panel.Config', {
             // it the state change is for this panel
             if (stateid && key === stateid && state) {
                 // get active item
-                var acard = me.getLayout().getActiveItem().itemId;
+                let acard = me.getLayout().getActiveItem().itemId;
                 // get the itemid of the new value
-                var ncard = state.value || me.firstItem;
+                let ncard = state.value || me.firstItem;
                 if (ncard && acard !== ncard) {
                     // select the chosen item
                     menu.setSelection(root.findChild('id', ncard, true) || root.firstChild);
@@ -300,7 +300,7 @@ Ext.define('PVE.panel.Config', {
             while (Ext.isArray(item.groups) && item.groups.length > 0) {
                 group = item.groups.shift();
 
-                var child = curnode.findChild('id', group);
+                let child = curnode.findChild('id', group);
                 if (child === null) {
                     // did not find the group item
                     // so add it where we are

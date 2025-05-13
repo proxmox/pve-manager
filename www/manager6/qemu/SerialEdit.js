@@ -9,7 +9,7 @@ Ext.define('PVE.qemu.SerialnputPanel', {
         me.vmconfig = vmconfig;
 
         for (i = 0; i < 4; i++) {
-            var port = 'serial' + i.toString();
+            let port = 'serial' + i.toString();
             if (!me.vmconfig[port]) {
                 me.down('field[name=serialid]').setValue(i);
                 break;

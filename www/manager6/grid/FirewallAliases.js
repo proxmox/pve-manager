@@ -114,7 +114,7 @@ Ext.define('PVE.FirewallAliases', {
             let oldrec = sm.getSelection()[0];
             store.load(function (records, operation, success) {
                 if (oldrec) {
-                    var rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
+                    let rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
                     if (rec) {
                         sm.select(rec);
                     }

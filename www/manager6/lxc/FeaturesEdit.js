@@ -95,7 +95,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
         me.viewModel.set('unprivileged', values.unprivileged);
 
         if (values.features) {
-            var res = PVE.Parser.parsePropertyString(values.features);
+            let res = PVE.Parser.parsePropertyString(values.features);
             me.mounts = [];
             if (res.mount) {
                 res.mount.split(/[; ]/).forEach(function (item) {

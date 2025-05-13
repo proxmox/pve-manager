@@ -39,12 +39,12 @@ Ext.define('PVE.storage.ImageView', {
                     var store = PVE.data.ResourceStore;
 
                     if (vmid && store.findVMID(vmid)) {
-                        var guest_node = store.guestNode(vmid);
-                        var storage_path = 'storage/' + nodename + '/' + storage;
+                        let guest_node = store.guestNode(vmid);
+                        let storage_path = 'storage/' + nodename + '/' + storage;
 
                         // allow to delete local backed images if a VMID exists on another node.
                         if (store.storageIsShared(storage_path) || guest_node === nodename) {
-                            var msg = Ext.String.format(
+                            let msg = Ext.String.format(
                                 gettext("Cannot remove image, a guest with VMID '{0}' exists!"),
                                 vmid,
                             );

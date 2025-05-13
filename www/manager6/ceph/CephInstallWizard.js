@@ -604,10 +604,10 @@ Ext.define('PVE.ceph.CephInstallWizard', {
             onSubmit: function () {
                 var me = this;
                 if (!this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
-                    var wizard = me.up('window');
-                    var kv = wizard.getValues();
+                    let wizard = me.up('window');
+                    let kv = wizard.getValues();
                     delete kv.delete;
-                    var nodename = me.nodename;
+                    let nodename = me.nodename;
                     delete kv.nodename;
                     Proxmox.Utils.API2Request({
                         url: `/nodes/${nodename}/ceph/init`,
@@ -660,7 +660,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                     var tp = this.up('#wizcontent');
                     var idx = tp.items.indexOf(this) - 1;
                     for (; idx >= 0; idx--) {
-                        var nc = tp.items.getAt(idx);
+                        let nc = tp.items.getAt(idx);
                         if (nc) {
                             nc.disable();
                         }

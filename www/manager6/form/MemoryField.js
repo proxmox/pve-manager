@@ -53,7 +53,7 @@ Ext.define('PVE.form.MemoryField', {
     onSpinUp: function () {
         var me = this;
         if (!me.readOnly) {
-            var res = me.computeUpDown(me.getValue());
+            let res = me.computeUpDown(me.getValue());
             me.setValue(Ext.Number.constrain(res.up, me.minValue, me.maxValue));
         }
     },
@@ -61,7 +61,7 @@ Ext.define('PVE.form.MemoryField', {
     onSpinDown: function () {
         var me = this;
         if (!me.readOnly) {
-            var res = me.computeUpDown(me.getValue());
+            let res = me.computeUpDown(me.getValue());
             me.setValue(Ext.Number.constrain(res.down, me.minValue, me.maxValue));
         }
     },

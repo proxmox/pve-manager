@@ -67,7 +67,7 @@ Ext.define('PVE.form.SpiceEnhancementSelector', {
             this.down('#spicehint').setVisible(true);
         }
         if (values.spice_enhancements) {
-            var enhancements = PVE.Parser.parsePropertyString(values.spice_enhancements);
+            let enhancements = PVE.Parser.parsePropertyString(values.spice_enhancements);
             enhancements.foldersharing = PVE.Parser.parseBoolean(enhancements.foldersharing, 0);
             this.callParent([enhancements]);
         }

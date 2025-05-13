@@ -230,7 +230,7 @@ Ext.define('PVE.StateProvider', {
         let me = this;
 
         if (typeof me.UIState[name] !== 'undefined') {
-            var newvalue = value ? value.value : null;
+            let newvalue = value ? value.value : null;
             if (me.setHV(name, newvalue, fireevent)) {
                 let htext = me.encodeHToken(me.UIState);
                 Ext.History.add(htext);

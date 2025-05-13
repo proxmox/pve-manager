@@ -49,7 +49,7 @@ Ext.define('PVE.window.Settings', {
             settings.forEach(function (setting) {
                 var val = localStorage.getItem('pve-xterm-' + setting);
                 if (val !== undefined && val !== null) {
-                    var field = me.lookup(setting);
+                    let field = me.lookup(setting);
                     field.setValue(val);
                     field.resetOriginalValue();
                 }
@@ -80,7 +80,7 @@ Ext.define('PVE.window.Settings', {
                     settings.forEach(function (setting) {
                         var field = me.lookup(setting);
                         if (button.reference === 'xtermsave') {
-                            var value = field.getValue();
+                            let value = field.getValue();
                             if (value) {
                                 localStorage.setItem('pve-xterm-' + setting, value);
                             } else {

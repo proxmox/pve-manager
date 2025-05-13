@@ -77,7 +77,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
                 updateVMConfig();
                 me.setWidget('pveBusSelector', 'scsi');
                 let ostype = me.lookup('ostype').getValue();
-                var targetValues = PVE.qemu.OSDefaults.getDefaults(ostype);
+                let targetValues = PVE.qemu.OSDefaults.getDefaults(ostype);
                 me.setWidget('pveBusSelector', targetValues.busType);
             }
         },

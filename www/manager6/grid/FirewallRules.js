@@ -181,7 +181,7 @@ Ext.define('PVE.FirewallRulePanel', {
     forward_warning: undefined,
 
     onGetValues: function (values) {
-        var me = this;
+        var _me = this;
 
         // hack: editable ComboGrid returns nothing when empty, so we need to set ''
         // Also, disabled text fields return nothing, so we need to set ''
@@ -512,7 +512,7 @@ Ext.define('PVE.FirewallRuleEdit', {
                         ipanel.setValues({ 'icmp-type': values['icmp-type'] });
                     }
                     if (values.errors) {
-                        var field = me.query('[isFormField][name=modified_marker]')[0];
+                        let field = me.query('[isFormField][name=modified_marker]')[0];
                         field.setValue(1);
                         Ext.Function.defer(function () {
                             var form = ipanel.up('form').getForm();

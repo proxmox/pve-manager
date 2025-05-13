@@ -237,7 +237,7 @@ Ext.define('PVE.form.VMSelector', {
 
         // only show the relevant guests by default
         if (me.action) {
-            var statusfilter = '';
+            let statusfilter = '';
             switch (me.action) {
                 case 'startall':
                     statusfilter = 'stopped';
