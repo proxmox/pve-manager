@@ -673,13 +673,14 @@ Ext.define('PVE.Utils', {
                 case Ext.form.action.Action.CLIENT_INVALID:
                     msg = gettext('Form fields may not be submitted with invalid values');
                     break;
-                case Ext.form.action.Action.CONNECT_FAILURE:
+                case Ext.form.action.Action.CONNECT_FAILURE: {
                     msg = gettext('Connection error');
                     let resp = action.response;
                     if (resp.status && resp.statusText) {
                         msg += ' ' + resp.status + ': ' + resp.statusText;
                     }
                     break;
+                }
                 case Ext.form.action.Action.LOAD_FAILURE:
                 case Ext.form.action.Action.SERVER_INVALID:
                     msg = Proxmox.Utils.extractRequestError(action.result, true);

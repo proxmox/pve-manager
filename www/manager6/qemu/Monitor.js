@@ -114,11 +114,12 @@ Ext.define('PVE.qemu.Monitor', {
                         specialkey: function (f, e) {
                             var key = e.getKey();
                             switch (key) {
-                                case e.ENTER:
+                                case e.ENTER: {
                                     let cmd = f.getValue();
                                     f.setValue('');
                                     executeCmd(cmd);
                                     break;
+                                }
                                 case e.PAGE_UP:
                                     textbox.scrollBy(0, -0.9 * textbox.getHeight(), false);
                                     break;
