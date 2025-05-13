@@ -14,25 +14,25 @@ Ext.define('PVE.dc.DirMapView', {
     entryIdProperty: 'path',
 
     store: {
-	sorters: 'text',
-	model: 'pve-resource-dir-tree',
-	data: {},
+        sorters: 'text',
+        model: 'pve-resource-dir-tree',
+        data: {},
     },
 
     columns: [
-	{
-	    xtype: 'treecolumn',
-	    text: gettext('ID/Node'),
-	    dataIndex: 'text',
-	    width: 200,
-	},
-	{
-	    header: gettext('Comment'),
-	    dataIndex: 'description',
-	    renderer: function(value, _meta, record) {
-		return Ext.String.htmlEncode(value ?? record.data.comment);
-	    },
-	    flex: 1,
-	},
+        {
+            xtype: 'treecolumn',
+            text: gettext('ID/Node'),
+            dataIndex: 'text',
+            width: 200,
+        },
+        {
+            header: gettext('Comment'),
+            dataIndex: 'description',
+            renderer: function (value, _meta, record) {
+                return Ext.String.htmlEncode(value ?? record.data.comment);
+            },
+            flex: 1,
+        },
     ],
 });

@@ -4,7 +4,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 
     layout: 'fit',
     defaults: {
-	margin: '0 0 5 0',
+        margin: '0 0 5 0',
     },
 
     // the fieldLabel for the storageselector
@@ -35,141 +35,141 @@ Ext.define('PVE.form.DiskStorageSelector', {
     // string because else we get a type confusion
     defaultSize: '32',
 
-    changeStorage: function(f, value) {
-	var me = this;
-	var formatsel = me.getComponent('diskformat');
-	var hdfilesel = me.getComponent('hdimage');
-	var hdsizesel = me.getComponent('disksize');
+    changeStorage: function (f, value) {
+        var me = this;
+        var formatsel = me.getComponent('diskformat');
+        var hdfilesel = me.getComponent('hdimage');
+        var hdsizesel = me.getComponent('disksize');
 
-	// initial store load, and reset/deletion of the storage
-	if (!value) {
-	    hdfilesel.setDisabled(true);
-	    hdfilesel.setVisible(false);
+        // initial store load, and reset/deletion of the storage
+        if (!value) {
+            hdfilesel.setDisabled(true);
+            hdfilesel.setVisible(false);
 
-	    formatsel.setDisabled(true);
-	    return;
-	}
+            formatsel.setDisabled(true);
+            return;
+        }
 
-	var rec = f.store.getById(value);
-	// if the storage is not defined, or valid,
-	// we cannot know what to enable/disable
-	if (!rec) {
-	    return;
-	}
+        var rec = f.store.getById(value);
+        // if the storage is not defined, or valid,
+        // we cannot know what to enable/disable
+        if (!rec) {
+            return;
+        }
 
-	let validFormats = {};
-	let selectFormat = 'raw';
-	if (rec.data.format) {
-	    validFormats = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
-	    delete validFormats.subvol; // we never need subvol in the gui
-	    if (validFormats.qcow2) {
-		selectFormat = 'qcow2';
-	    } else if (validFormats.raw) {
-		selectFormat = 'raw';
-	    } else {
-		selectFormat = rec.data.format[1];
-	    }
-	}
+        let validFormats = {};
+        let selectFormat = 'raw';
+        if (rec.data.format) {
+            validFormats = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
+            delete validFormats.subvol; // we never need subvol in the gui
+            if (validFormats.qcow2) {
+                selectFormat = 'qcow2';
+            } else if (validFormats.raw) {
+                selectFormat = 'raw';
+            } else {
+                selectFormat = rec.data.format[1];
+            }
+        }
 
-	var select = !!rec.data.select_existing && !me.hideSelection;
+        var select = !!rec.data.select_existing && !me.hideSelection;
 
-	formatsel.setDisabled(me.hideFormat || Ext.Object.getSize(validFormats) <= 1);
-	formatsel.setValue(selectFormat);
+        formatsel.setDisabled(me.hideFormat || Ext.Object.getSize(validFormats) <= 1);
+        formatsel.setValue(selectFormat);
 
-	hdfilesel.setDisabled(!select);
-	hdfilesel.setVisible(select);
-	if (select) {
-	    hdfilesel.setStorage(value);
-	}
+        hdfilesel.setDisabled(!select);
+        hdfilesel.setVisible(select);
+        if (select) {
+            hdfilesel.setStorage(value);
+        }
 
-	hdsizesel.setDisabled(select || me.hideSize);
-	hdsizesel.setVisible(!select && !me.hideSize);
+        hdsizesel.setDisabled(select || me.hideSize);
+        hdsizesel.setVisible(!select && !me.hideSize);
     },
 
-    setNodename: function(nodename) {
-	var me = this;
-	var hdstorage = me.getComponent('hdstorage');
-	var hdfilesel = me.getComponent('hdimage');
+    setNodename: function (nodename) {
+        var me = this;
+        var hdstorage = me.getComponent('hdstorage');
+        var hdfilesel = me.getComponent('hdimage');
 
-	hdstorage.setNodename(nodename);
-	hdfilesel.setNodename(nodename);
+        hdstorage.setNodename(nodename);
+        hdfilesel.setNodename(nodename);
     },
 
-    setDisabled: function(value) {
-	var me = this;
-	var hdstorage = me.getComponent('hdstorage');
+    setDisabled: function (value) {
+        var me = this;
+        var hdstorage = me.getComponent('hdstorage');
 
-	// reset on disable
-	if (value) {
-	    hdstorage.setValue();
-	}
-	hdstorage.setDisabled(value);
+        // reset on disable
+        if (value) {
+            hdstorage.setValue();
+        }
+        hdstorage.setDisabled(value);
 
-	// disabling does not always fire this event and we do not need
-	// the value of the validity
-	hdstorage.fireEvent('validitychange');
+        // disabling does not always fire this event and we do not need
+        // the value of the validity
+        hdstorage.fireEvent('validitychange');
     },
 
-    initComponent: function() {
-	var me = this;
+    initComponent: function () {
+        var me = this;
 
-	me.items = [
-	    {
-		xtype: 'pveStorageSelector',
-		itemId: 'hdstorage',
-		name: 'hdstorage',
-		fieldLabel: me.storageLabel,
-		nodename: me.nodename,
-		storageContent: me.storageContent,
-		disabled: me.disabled,
-		autoSelect: me.autoSelect,
-		allowBlank: me.allowBlank,
-		emptyText: me.emptyText,
-		listeners: {
-		    change: {
-			fn: me.changeStorage,
-			scope: me,
-		    },
-		},
-	    },
-	    {
-		xtype: 'pveFileSelector',
-		name: 'hdimage',
-		itemId: 'hdimage',
-		fieldLabel: gettext('Disk image'),
-		nodename: me.nodename,
-		disabled: true,
-		hidden: true,
-	    },
-	    {
-		xtype: 'numberfield',
-		itemId: 'disksize',
-		name: 'disksize',
-		fieldLabel: `${gettext('Disk size')} (${gettext('GiB')})`,
-		hidden: me.hideSize,
-		disabled: me.hideSize,
-		minValue: 0.001,
-		maxValue: 128*1024,
-		decimalPrecision: 3,
-		value: me.defaultSize,
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'pveDiskFormatSelector',
-		itemId: 'diskformat',
-		name: 'diskformat',
-		fieldLabel: gettext('Format'),
-		nodename: me.nodename,
-		disabled: true,
-		hidden: me.hideFormat || me.storageContent === 'rootdir',
-		value: 'qcow2',
-		allowBlank: false,
-	    },
-	];
+        me.items = [
+            {
+                xtype: 'pveStorageSelector',
+                itemId: 'hdstorage',
+                name: 'hdstorage',
+                fieldLabel: me.storageLabel,
+                nodename: me.nodename,
+                storageContent: me.storageContent,
+                disabled: me.disabled,
+                autoSelect: me.autoSelect,
+                allowBlank: me.allowBlank,
+                emptyText: me.emptyText,
+                listeners: {
+                    change: {
+                        fn: me.changeStorage,
+                        scope: me,
+                    },
+                },
+            },
+            {
+                xtype: 'pveFileSelector',
+                name: 'hdimage',
+                itemId: 'hdimage',
+                fieldLabel: gettext('Disk image'),
+                nodename: me.nodename,
+                disabled: true,
+                hidden: true,
+            },
+            {
+                xtype: 'numberfield',
+                itemId: 'disksize',
+                name: 'disksize',
+                fieldLabel: `${gettext('Disk size')} (${gettext('GiB')})`,
+                hidden: me.hideSize,
+                disabled: me.hideSize,
+                minValue: 0.001,
+                maxValue: 128 * 1024,
+                decimalPrecision: 3,
+                value: me.defaultSize,
+                allowBlank: false,
+            },
+            {
+                xtype: 'pveDiskFormatSelector',
+                itemId: 'diskformat',
+                name: 'diskformat',
+                fieldLabel: gettext('Format'),
+                nodename: me.nodename,
+                disabled: true,
+                hidden: me.hideFormat || me.storageContent === 'rootdir',
+                value: 'qcow2',
+                allowBlank: false,
+            },
+        ];
 
-	// use it to disable the children but not ourself
-	me.disabled = false;
+        // use it to disable the children but not ourself
+        me.disabled = false;
 
-	me.callParent();
+        me.callParent();
     },
 });
