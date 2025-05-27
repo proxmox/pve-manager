@@ -353,32 +353,71 @@ Ext.define(
         stateful: true,
         stateId: 'grid-lxc-network',
 
-        load: function () {
+        load: async function () {
             let me = this;
 
             Proxmox.Utils.setErrorMask(me, true);
 
-            Proxmox.Utils.API2Request({
-                url: me.url,
-                failure: function (response, opts) {
-                    Proxmox.Utils.setErrorMask(me, gettext('Error') + ': ' + response.htmlStatus);
-                },
-                success: function (response, opts) {
-                    Proxmox.Utils.setErrorMask(me, false);
-                    let result = Ext.decode(response.responseText);
-                    me.dataCache = result.data || {};
-                    let records = [];
-                    for (const [key, value] of Object.entries(me.dataCache)) {
-                        if (key.match(/^net\d+/)) {
-                            let net = PVE.Parser.parseLxcNetwork(value);
-                            net.id = key;
-                            records.push(net);
+            let nodename = me.pveSelNode.data.node;
+            let vmid = me.pveSelNode.data.vmid;
+
+            try {
+                let ifResponse = await Proxmox.Async.api2({
+                    url: `/nodes/${nodename}/lxc/${vmid}/interfaces`,
+                    method: 'GET',
+                });
+                let confResponse = await Proxmox.Async.api2({
+                    url: me.url,
+                });
+                Proxmox.Utils.setErrorMask(me, false);
+
+                let interfaces = [];
+                for (const [, iface] of Object.entries(ifResponse?.result?.data || {})) {
+                    interfaces[iface['hardware-address']] = iface;
+                }
+
+                let records = [];
+                me.dataCache = confResponse.result.data || {};
+                for (const [key, value] of Object.entries(confResponse.result.data)) {
+                    if (!key.match(/^net\d+/)) {
+                        continue;
+                    }
+                    let config = PVE.Parser.parseLxcNetwork(value);
+                    let net = structuredClone(config);
+                    net.id = key;
+
+                    let iface = interfaces[config.hwaddr.toLowerCase()];
+                    if (iface) {
+                        net.name = iface.name;
+                        net.ip = [];
+                        net.ip6 = [];
+                        for (const i of iface['ip-addresses']) {
+                            let ip_with_prefix = `${i['ip-address']}/${i.prefix}`;
+                            if (i['ip-address-type'] === 'inet') {
+                                if (config.ip === ip_with_prefix) {
+                                    net.ip.push(`${ip_with_prefix} (static)`);
+                                } else {
+                                    // this could be dhcp, but also a static address set directly on the container
+                                    net.ip.push(`${ip_with_prefix} (dynamic)`);
+                                }
+                            } else if (i['ip-address-type'] === 'inet6') {
+                                if (config.ip6 === ip_with_prefix) {
+                                    net.ip6.push(`${ip_with_prefix} (static)`);
+                                } else {
+                                    // this could be dhcp, slaac, but also a static address set directly on the container
+                                    net.ip6.push(`${ip_with_prefix} (dynamic)`);
+                                }
+                            }
                         }
                     }
-                    me.store.loadData(records);
-                    me.down('button[name=addButton]').setDisabled(records.length >= 32);
-                },
-            });
+                    records.push(net);
+                }
+
+                me.store.loadData(records);
+                me.down('button[name=addButton]').setDisabled(records.length >= 32);
+            } catch (error) {
+                Proxmox.Utils.setErrorMask(me, gettext('Error') + ': ' + error);
+            }
         },
 
         initComponent: function () {
@@ -510,7 +549,7 @@ Ext.define(
                     },
                     {
                         header: gettext('VLAN Tag'),
-                        width: 80,
+                        width: 70,
                         dataIndex: 'tag',
                     },
                     {
@@ -520,16 +559,32 @@ Ext.define(
                     },
                     {
                         header: gettext('IP address'),
-                        width: 150,
+                        width: 300,
                         dataIndex: 'ip',
-                        renderer: function (value, metaData, rec) {
-                            if (rec.data.ip && rec.data.ip6) {
-                                return rec.data.ip + '<br>' + rec.data.ip6;
-                            } else if (rec.data.ip6) {
-                                return rec.data.ip6;
-                            } else {
-                                return rec.data.ip;
-                            }
+                        renderer: function (_value, _metaData, rec) {
+                            const formatIpValue = (value, prefix) => {
+                                if (Array.isArray(value) && value.length > 0) {
+                                    // multiple addresses (usually from the api)
+                                    return value.join('<br>') + '<br>';
+                                } else if (typeof value === 'string') {
+                                    if (value === 'dhcp') {
+                                        // ipv4 and ipv6 dhcp
+                                        return `${prefix}dhcp <br>`;
+                                    } else if (value === 'auto') {
+                                        // ipv6 slaac
+                                        return `${prefix}auto <br>`;
+                                    } else if (value.length > 0) {
+                                        // single address (usually from config)
+                                        return value + '<br>';
+                                    }
+                                }
+                                return '';
+                            };
+
+                            return (
+                                formatIpValue(rec.data.ip, 'ip: ') +
+                                formatIpValue(rec.data.ip6, 'ip6: ')
+                            );
                         },
                     },
                     {
