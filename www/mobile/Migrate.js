@@ -6,72 +6,72 @@ Ext.define('PVE.MigrateBase', {
     vmtype: undefined, // qemu or lxc
 
     config: {
-	items: [
-	    {
-		xtype: 'pveTitleBar',
-		pveReloadButton: false,
-	    },
-	    {
-		xtype: 'formpanel',
-		flex: 1,
-		padding: 10,
-		items: [
-		    {
-			xtype: 'fieldset',
-			items: [
-			    {
-				xtype: 'pveNodeSelector',
-				placeHolder: gettext('Target node'),
-				name: 'target',
-				required: true,
-			    },
-			    {
-				xtype: 'checkboxfield',
-				name: 'online',
-				checked: true,
-				label: gettext('Online'),
-			    },
-			],
-		    },
-		    {
-			xtype: 'button',
-			itemId: 'migrate',
-			ui: 'action',
-			text: gettext('Migrate'),
-		    },
-		],
-	    },
-	],
+        items: [
+            {
+                xtype: 'pveTitleBar',
+                pveReloadButton: false,
+            },
+            {
+                xtype: 'formpanel',
+                flex: 1,
+                padding: 10,
+                items: [
+                    {
+                        xtype: 'fieldset',
+                        items: [
+                            {
+                                xtype: 'pveNodeSelector',
+                                placeHolder: gettext('Target node'),
+                                name: 'target',
+                                required: true,
+                            },
+                            {
+                                xtype: 'checkboxfield',
+                                name: 'online',
+                                checked: true,
+                                label: gettext('Online'),
+                            },
+                        ],
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'migrate',
+                        ui: 'action',
+                        text: gettext('Migrate'),
+                    },
+                ],
+            },
+        ],
     },
 
-    initialize: function() {
-	var me = this;
+    initialize: function () {
+        var me = this;
 
-	var btn = me.down('#migrate');
+        var btn = me.down('#migrate');
 
-	btn.setHandler(function() {
-	    var form = this.up('formpanel');
-	    var values = form.getValues();
+        btn.setHandler(function () {
+            var form = this.up('formpanel');
+            var values = form.getValues();
 
-	    if (!values.target) {
-		Ext.Msg.alert('Error', 'Please select a target node');
-		return;
-	    }
+            if (!values.target) {
+                Ext.Msg.alert('Error', 'Please select a target node');
+                return;
+            }
 
-	    Proxmox.Utils.API2Request({
-		params: { target: values.target, online: values.online ? 1 : 0 },
-		url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid + "/migrate",
-		method: 'POST',
-		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
-		},
-		success: function(response, options) {
-		    var upid = response.result.data;
-		    var page = 'nodes/' + me.nodename + '/tasks/' + upid;
-		    PVE.Workspace.gotoPage(page);
-		},
-	    });
-	});
+            Proxmox.Utils.API2Request({
+                params: { target: values.target, online: values.online ? 1 : 0 },
+                url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid + '/migrate',
+                method: 'POST',
+                failure: function (response, opts) {
+                    Ext.Msg.alert('Error', response.htmlStatus);
+                },
+                success: function (response, options) {
+                    var upid = response.result.data;
+                    var page = 'nodes/' + me.nodename + '/tasks/' + upid;
+                    PVE.Workspace.gotoPage(page);
+                },
+            });
+        });
     },
 });
 
@@ -81,25 +81,25 @@ Ext.define('PVE.QemuMigrate', {
     vmtype: 'qemu',
 
     statics: {
-	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s/]+)\/qemu\/(\d+)\/migrate$/);
-	},
+        pathMatch: function (loc) {
+            return loc.match(/^nodes\/([^\s/]+)\/qemu\/(\d+)\/migrate$/);
+        },
     },
 
-    initialize: function() {
-	var me = this;
+    initialize: function () {
+        var me = this;
 
-	var match = me.self.pathMatch(me.getAppUrl());
-	if (!match) {
-	    throw "pathMatch failed";
-	}
+        var match = me.self.pathMatch(me.getAppUrl());
+        if (!match) {
+            throw 'pathMatch failed';
+        }
 
-	me.nodename = match[1];
-	me.vmid = match[2];
+        me.nodename = match[1];
+        me.vmid = match[2];
 
-	me.down('titlebar').setTitle(gettext('Migrate') + ': VM ' + me.vmid);
+        me.down('titlebar').setTitle(gettext('Migrate') + ': VM ' + me.vmid);
 
-	this.callParent();
+        this.callParent();
     },
 });
 
@@ -109,24 +109,24 @@ Ext.define('PVE.LXCMigrate', {
     vmtype: 'lxc',
 
     statics: {
-	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s/]+)\/lxc\/(\d+)\/migrate$/);
-	},
+        pathMatch: function (loc) {
+            return loc.match(/^nodes\/([^\s/]+)\/lxc\/(\d+)\/migrate$/);
+        },
     },
 
-    initialize: function() {
-	var me = this;
+    initialize: function () {
+        var me = this;
 
-	var match = me.self.pathMatch(me.getAppUrl());
-	if (!match) {
-	    throw "pathMatch failed";
-	}
+        var match = me.self.pathMatch(me.getAppUrl());
+        if (!match) {
+            throw 'pathMatch failed';
+        }
 
-	me.nodename = match[1];
-	me.vmid = match[2];
+        me.nodename = match[1];
+        me.vmid = match[2];
 
-	me.down('titlebar').setTitle(gettext('Migrate') + ': CT ' + me.vmid);
+        me.down('titlebar').setTitle(gettext('Migrate') + ': CT ' + me.vmid);
 
-	this.callParent();
+        this.callParent();
     },
 });

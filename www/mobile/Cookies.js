@@ -23,7 +23,7 @@ Ext.define('Ext.util.Cookies', {
      * using the HTTPS protocol. Defaults to false. Note that this will only work if the page calling this code uses the
      * HTTPS protocol, otherwise the cookie will be created with default options.
      */
-    set: function(name, value) {
+    set: function (name, value) {
         var argv = arguments,
             argc = arguments.length,
             expires = argc > 2 ? argv[2] : null,
@@ -31,12 +31,14 @@ Ext.define('Ext.util.Cookies', {
             domain = argc > 4 ? argv[4] : null,
             secure = argc > 5 ? argv[5] : false;
 
-        document.cookie = name + "=" +
+        document.cookie =
+            name +
+            '=' +
             escape(value) +
-            (expires === null ? "" : "; expires=" + expires.toUTCString()) +
-            (path === null ? "" : "; path=" + path) +
-            (domain === null ? "" : "; domain=" + domain) +
-            (secure === true ? "; secure" : "");
+            (expires === null ? '' : '; expires=' + expires.toUTCString()) +
+            (path === null ? '' : '; path=' + path) +
+            (domain === null ? '' : '; domain=' + domain) +
+            (secure === true ? '; secure' : '');
     },
 
     /**
@@ -49,10 +51,12 @@ Ext.define('Ext.util.Cookies', {
      * @return {Object} Returns the cookie value for the specified name;
      * null if the cookie name does not exist.
      */
-    get: function(name) {
+    get: function (name) {
         var parts = document.cookie.split('; '),
             len = parts.length,
-            item, i, ret;
+            item,
+            i,
+            ret;
 
         // In modern browsers, a cookie with an empty string will be stored:
         // MyName=
@@ -76,7 +80,7 @@ Ext.define('Ext.util.Cookies', {
      * @param {String} [path] The path for the cookie.
      * This must be included if you included a path while setting the cookie.
      */
-    clear: function(name, path) {
+    clear: function (name, path) {
         if (this.get(name)) {
             path = path || '/';
             document.cookie = name + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=' + path;

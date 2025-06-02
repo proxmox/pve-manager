@@ -3,47 +3,45 @@ Ext.define('PVE.ATitleBar', {
     alias: ['widget.pveTitleBar'],
 
     config: {
-	docked: 'top',
-	pveReloadButton: true,
-	pveBackButton: true,
-	pveStdMenu: true, // add 'Login' and 'Datacenter' to menu by default
+        docked: 'top',
+        pveReloadButton: true,
+        pveBackButton: true,
+        pveStdMenu: true, // add 'Login' and 'Datacenter' to menu by default
     },
 
-    initialize: function() {
-	var me = this;
+    initialize: function () {
+        var me = this;
 
-	me.callParent();
+        me.callParent();
 
-	var items = [];
+        var items = [];
 
-	if (me.getPveBackButton()) {
-	    items.push({
-		align: 'left',
-		iconCls: 'arrow_left',
-		handler: function() {
-		    PVE.Workspace.goBack();
-		},
-	    });
-	}
+        if (me.getPveBackButton()) {
+            items.push({
+                align: 'left',
+                iconCls: 'arrow_left',
+                handler: function () {
+                    PVE.Workspace.goBack();
+                },
+            });
+        }
 
-	if (me.getPveReloadButton()) {
-	    items.push({
-		align: 'right',
-		iconCls: 'refresh',
-		handler: function() {
-		    this.up('pvePage').reload();
-		},
-	    });
-	}
+        if (me.getPveReloadButton()) {
+            items.push({
+                align: 'right',
+                iconCls: 'refresh',
+                handler: function () {
+                    this.up('pvePage').reload();
+                },
+            });
+        }
 
-	items.push({
-	    xtype: 'pveMenuButton',
-	    align: 'right',
-	    pveStdMenu: me.getPveStdMenu(),
-	});
+        items.push({
+            xtype: 'pveMenuButton',
+            align: 'right',
+            pveStdMenu: me.getPveStdMenu(),
+        });
 
-	me.setItems(items);
+        me.setItems(items);
     },
-
-
 });

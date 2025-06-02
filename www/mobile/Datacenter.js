@@ -3,19 +3,19 @@ Ext.define('PVE.ClusterInfo', {
     alias: 'widget.pveClusterInfo',
 
     config: {
-	style: 'background-color: white;',
-	styleHtmlContent: true,
-	tpl: [
-	    '<table style="margin-bottom:0px;">',
-	    '<tr><td>Node:</td><td><b>{local_node}</large></b></tr>',
-	    '<tpl if="cluster_name">',
-	    '<tr><td>Cluster:</td><td>{cluster_name}</td></tr>',
-	    '<tr><td>Members:</td><td>{nodes}</td></tr>',
-	    '<tr><td>Quorate:</td><td>{quorate}</td></tr>',
-	    '</tpl>',
-	    '<tr><td>Version:</td><td>{version}</td></tr>',
-	    '</table>',
-	],
+        style: 'background-color: white;',
+        styleHtmlContent: true,
+        tpl: [
+            '<table style="margin-bottom:0px;">',
+            '<tr><td>Node:</td><td><b>{local_node}</large></b></tr>',
+            '<tpl if="cluster_name">',
+            '<tr><td>Cluster:</td><td>{cluster_name}</td></tr>',
+            '<tr><td>Members:</td><td>{nodes}</td></tr>',
+            '<tr><td>Quorate:</td><td>{quorate}</td></tr>',
+            '</tpl>',
+            '<tr><td>Version:</td><td>{version}</td></tr>',
+            '</table>',
+        ],
     },
 });
 
@@ -24,109 +24,112 @@ Ext.define('PVE.Datacenter', {
     alias: 'widget.pveDatacenter',
 
     statics: {
-	pathMatch: function(loc) {
-	    if (loc === '') {
-		return [''];
-	    }
-	},
+        pathMatch: function (loc) {
+            if (loc === '') {
+                return [''];
+            }
+        },
     },
 
     config: {
-	appUrl: '',
-	items: [
-	    {
-		xtype: 'pveTitleBar',
-		title: gettext('Datacenter'),
-		pveBackButton: false,
-	    },
-	    {
-		xtype: 'pveClusterInfo',
-	    },
+        appUrl: '',
+        items: [
+            {
+                xtype: 'pveTitleBar',
+                title: gettext('Datacenter'),
+                pveBackButton: false,
+            },
+            {
+                xtype: 'pveClusterInfo',
+            },
             {
                 xtype: 'component',
                 cls: 'dark',
-		padding: 5,
-		html: gettext('Nodes'),
+                padding: 5,
+                html: gettext('Nodes'),
             },
-	    {
-		xtype: 'list',
-		flex: 1,
-		disableSelection: true,
-		sorters: 'name',
-		listeners: {
-		    itemsingletap: function(list, index, target, record) {
-			PVE.Workspace.gotoPage('nodes/' + record.get('name'));
-		    },
-		},
-		itemTpl: '{name}' +
-		    '<br><small>Online: {[Proxmox.Utils.format_boolean(values.online)]}</small>' +
-		    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>',
-	    },
-	],
+            {
+                xtype: 'list',
+                flex: 1,
+                disableSelection: true,
+                sorters: 'name',
+                listeners: {
+                    itemsingletap: function (list, index, target, record) {
+                        PVE.Workspace.gotoPage('nodes/' + record.get('name'));
+                    },
+                },
+                itemTpl:
+                    '{name}' +
+                    '<br><small>Online: {[Proxmox.Utils.format_boolean(values.online)]}</small>' +
+                    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>',
+            },
+        ],
     },
 
-    reload: function() {
-	var me = this;
+    reload: function () {
+        var me = this;
 
-	var ci = me.down('pveClusterInfo');
+        var ci = me.down('pveClusterInfo');
 
-	me.setMasked(false);
+        me.setMasked(false);
 
-	me.summary = {};
+        me.summary = {};
 
-	Proxmox.Utils.API2Request({
-	    url: '/version',
-	    method: 'GET',
-	    success: function(response) {
-		var d = response.result.data;
-		me.summary.version = d.version;
-		ci.setData(me.summary);
-	    },
-	});
+        Proxmox.Utils.API2Request({
+            url: '/version',
+            method: 'GET',
+            success: function (response) {
+                var d = response.result.data;
+                me.summary.version = d.version;
+                ci.setData(me.summary);
+            },
+        });
 
-	var list = me.down('list');
+        var list = me.down('list');
 
-	Proxmox.Utils.API2Request({
-	    url: '/cluster/status',
-	    method: 'GET',
-	    success: function(response) {
-		var d = response.result.data;
-		list.setData(d.filter(function(el) { return el.type === "node"; }));
+        Proxmox.Utils.API2Request({
+            url: '/cluster/status',
+            method: 'GET',
+            success: function (response) {
+                var d = response.result.data;
+                list.setData(
+                    d.filter(function (el) {
+                        return el.type === 'node';
+                    }),
+                );
 
-		d.forEach(function(el) {
-		    if (el.type === "node") {
-			if (el.local) {
-			    me.summary.local_node = el.name;
-			}
-		    } else if (el.type === "cluster") {
-			me.summary.nodes = el.nodes;
-			me.summary.quorate = Proxmox.Utils.format_boolean(el.quorate);
-			me.summary.cluster_name = el.name;
-		    }
-		});
+                d.forEach(function (el) {
+                    if (el.type === 'node') {
+                        if (el.local) {
+                            me.summary.local_node = el.name;
+                        }
+                    } else if (el.type === 'cluster') {
+                        me.summary.nodes = el.nodes;
+                        me.summary.quorate = Proxmox.Utils.format_boolean(el.quorate);
+                        me.summary.cluster_name = el.name;
+                    }
+                });
 
-		ci.setData(me.summary);
-	    },
-	    failure: function(response) {
-		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
-	    },
-	});
+                ci.setData(me.summary);
+            },
+            failure: function (response) {
+                me.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
+            },
+        });
     },
 
-    initialize: function() {
-	var me = this;
+    initialize: function () {
+        var me = this;
 
-	me.down('pveMenuButton').setMenuItems([
-	    {
-		text: gettext('Tasks'),
-		handler: function() {
-		    PVE.Workspace.gotoPage('tasks');
-		},
-	    },
-	]);
+        me.down('pveMenuButton').setMenuItems([
+            {
+                text: gettext('Tasks'),
+                handler: function () {
+                    PVE.Workspace.gotoPage('tasks');
+                },
+            },
+        ]);
 
-	me.reload();
+        me.reload();
     },
-
 });
-
