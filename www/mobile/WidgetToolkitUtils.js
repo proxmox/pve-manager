@@ -183,7 +183,9 @@ Ext.define('Proxmox.Utils', {
 
             let res = [];
             let add = (t, unit) => {
-                if (t > 0) res.push(t + unit);
+                if (t > 0) {
+                    res.push(t + unit);
+                }
                 return t > 0;
             };
 

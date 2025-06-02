@@ -167,9 +167,13 @@ Ext.define('PVE.Workspace', {
             var kv = [];
             var done = { digest: 1 };
             var pushItem = function (item) {
-                if (done[item.key]) return;
+                if (done[item.key]) {
+                    return;
+                }
                 done[item.key] = 1;
-                if (item.value) kv.push(item);
+                if (item.value) {
+                    kv.push(item);
+                }
             };
 
             var keys = Ext.Array.sort(Ext.Object.getKeys(d));
