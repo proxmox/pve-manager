@@ -564,7 +564,7 @@ Ext.define('Proxmox.Utils', {
                 return;
             }
             Ext.Object.each(data, function (name, val) {
-                if (Object.prototype.hasOwnProperty.call(values, name)) {
+                if (Object.hasOwn(values, name)) {
                     let bucket = values[name];
                     if (!Ext.isArray(bucket)) {
                         bucket = values[name] = [bucket];
