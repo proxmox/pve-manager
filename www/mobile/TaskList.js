@@ -19,7 +19,7 @@ Ext.define('PVE.TaskListBase', {
                     },
                 },
                 itemTpl: [
-                    '<div style="vertical-align: middle;">' + '<span>{[this.desc(values)]}</span>',
+                    '<div style="vertical-align: middle;"><span>{[this.desc(values)]}</span>',
                     '<span style=" font-size:small; float: right;">' +
                         '{starttime:date("M d H:i:s")} - {endtime:date("H:i:s")}' +
                         '</span></div>',
