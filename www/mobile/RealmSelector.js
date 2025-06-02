@@ -30,7 +30,7 @@ Ext.define('PVE.form.RealmSelector', {
         realmstore.load({
             callback: function (r, o, success) {
                 if (success) {
-                    var def = me.getValue();
+                    let def = me.getValue();
                     if (!def || !realmstore.findRecord('realm', def)) {
                         def = 'pam';
                         Ext.each(r, function (record) {

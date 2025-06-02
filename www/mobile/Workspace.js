@@ -91,7 +91,7 @@ Ext.define('PVE.Workspace', {
                 if (dir === 'noanim') {
                     Ext.Viewport.setActiveItem(PVE.Workspace.appWindow);
                 } else {
-                    var anim = { type: 'slide', direction: dir || 'left' };
+                    let anim = { type: 'slide', direction: dir || 'left' };
                     Ext.Viewport.animateActiveItem(PVE.Workspace.appWindow, anim);
                 }
                 // remove old after anim (hack, because anim.after does not work in 2.3.1a)
@@ -128,7 +128,7 @@ Ext.define('PVE.Workspace', {
             var old = PVE.Workspace.appWindow;
 
             if (old.getAppUrl) {
-                var old_loc = old.getAppUrl();
+                let old_loc = old.getAppUrl();
                 if (old_loc !== loc) {
                     PVE.Workspace.history.add(Ext.create('Ext.app.Action', { url: loc }));
                 } else {
