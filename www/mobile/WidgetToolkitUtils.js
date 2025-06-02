@@ -365,7 +365,7 @@ Ext.define('Proxmox.Utils', {
                             msg.push(Ext.String.htmlEncode(`${key}: ${value}`));
                         }
                     }
-                } catch (e) {
+                } catch (_e) {
                     // fallback to string
                     msg.push(Ext.String.htmlEncode(txt));
                 }
@@ -480,7 +480,7 @@ Ext.define('Proxmox.Utils', {
                         response.result = {};
                         try {
                             response.result = Ext.decode(response.responseText);
-                        } catch (e) {
+                        } catch (_e) {
                             // ignore
                         }
                         let msg = gettext('Connection error') + ' - server offline?';
