@@ -796,6 +796,7 @@ __PACKAGE__->register_method({
 	    lxcfs
 	    novnc-pve
 	    proxmox-backup-client
+	    proxmox-backup-restore-image
 	    proxmox-mail-forward
 	    proxmox-mini-journalreader
 	    proxmox-widget-toolkit
