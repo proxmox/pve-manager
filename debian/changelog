@@ -1,3 +1,26 @@
+pve-manager (9.0.0~1) trixie; urgency=medium
+
+  * initial build for Debian 13 Trixie based Proxmox VE 9 release series.
+
+  * copy over 7 to 8 checker script for 8 to 9 upgrade and update kernel and
+    package versions for newer release.
+
+  * 8to9: make use of legacy hybrid CGroup hierarchy a failure
+
+  * 8to9: output notice if there is less than 10 GB
+
+  * ship systemd unit in /usr over aliased /lib
+
+  * aplinfo keyring: drop Buster and Bullseye keys
+
+  * aplinfo keyring: add key for our Trixied based releases
+
+  * aplinfo: switch download url over to PVE 9 index
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 17 Jun 2025 20:36:36 +0200
+
 pve-manager (8.4.1) bookworm; urgency=medium
 
   * ui: fix regression with checking if volume is QEMU backup, which could
