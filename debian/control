@@ -28,6 +28,7 @@ Build-Depends: debhelper-compat (= 13),
                qemu-server (>= 8.0~~),
                sq,
                unzip,
+Rules-Requires-Root: debhelper/upstream-make-install
 Standards-Version: 4.6.1
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
