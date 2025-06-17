@@ -3,6 +3,7 @@ DOCDIR=/usr/share/doc/pve-manager/
 
 TRUSTED_KEYS=				\
 	proxmox-release-bookworm.gpg	\
+	proxmox-release-trixie.gpg	\
 	release@turnkeylinux.com.pubkey
 
 all:
