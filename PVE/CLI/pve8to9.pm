@@ -849,7 +849,7 @@ sub check_node_and_guest_configurations {
 
     if (scalar($affected_cts_cgroup_keys->@*) > 0) {
         if ($forced_legacy_cgroup) {
-            log_pass(
+            log_notice(
                 "Found legacy 'lxc.cgroup' keys, but system explicitly configured for legacy hybrid cgroup hierarchy."
             );
         } else {
@@ -1060,8 +1060,8 @@ sub check_storage_content_dirs {
 
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
-        log_warn("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
-            . "     NOTE: support for the hybrid cgroup hierarchy will be removed in future Proxmox VE 9 (~ 2025)."
+        log_fail("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
+            . "     NOTE: support for the hybrid cgroup hierarchy is removed in Proxmox VE 9!"
         );
     }
 
@@ -1125,13 +1125,9 @@ sub check_containers_cgroup_compat {
 
     my $log_problem = sub {
         my ($ctid) = @_;
-        my $extra =
-            $forced_legacy_cgroup
-            ? ''
-            : " or set systemd.unified_cgroup_hierarchy=0 in the Proxmox VE hosts' kernel cmdline";
-        log_warn(
+        log_fail(
             "Found at least one CT ($ctid) which does not support running in a unified cgroup v2 layout\n"
-                . "    Consider upgrading the Containers distro${extra}! Skipping further CT compat checks."
+                . "    You must upgrade the Containers distros! Skipping further CT compat checks."
         );
     };
 
