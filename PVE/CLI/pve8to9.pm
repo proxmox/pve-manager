@@ -63,8 +63,10 @@ my $ceph_release2code = {
     '16' => 'Pacific',
     '17' => 'Quincy',
     '18' => 'Reef',
+    '19' => 'Squid',
+    '20' => 'Tentacle',
 };
-my $ceph_supported_release = 17; # the version we support for upgrading (i.e., available on both)
+my $ceph_supported_release = 19; # the version we support for upgrading (i.e., available on both)
 my $ceph_supported_code_name = $ceph_release2code->{"$ceph_supported_release"}
     or die "inconsistent source code, could not map expected ceph version to code name!";
 
