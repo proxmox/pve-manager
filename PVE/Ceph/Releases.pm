@@ -53,7 +53,6 @@ my sub get_ceph_release_def {
         },
         quincy => {
             release => '17.2',
-            'current-backend-default' => 1,
             'initial-upstream-release' => '2022-04-19',
             'estimated-end-of-upstream-support' => '2024-06-01',
             'available-for-pve-release' => {
@@ -71,10 +70,12 @@ my sub get_ceph_release_def {
         },
         squid => {
             release => '19.2',
+            'current-backend-default' => 1,
             'initial-upstream-release' => '2024-09-27',
             'estimated-end-of-upstream-support' => '2026-09-19',
             'available-for-pve-release' => {
                 8 => 1,
+                9 => 1,
             },
         },
     };
