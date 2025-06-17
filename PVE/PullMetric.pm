@@ -12,17 +12,18 @@ my $cache;
 my $get_cache = sub {
     if (!defined($cache)) {
 
-	my $uid = getpwnam('root');
-	my $gid = getgrnam('www-data');
+        my $uid = getpwnam('root');
+        my $gid = getgrnam('www-data');
 
-	$cache = Proxmox::RS::SharedCache->new({
-		path => "/run/pve/metrics",
-		owner => $uid,
-		group => $gid,
-		entry_mode =>  0640, # Entry permissions
-		keep_old => OLD_GENERATIONS,
-	    }
-	);
+        $cache = Proxmox::RS::SharedCache->new(
+            {
+                path => "/run/pve/metrics",
+                owner => $uid,
+                group => $gid,
+                entry_mode => 0640, # Entry permissions
+                keep_old => OLD_GENERATIONS,
+            },
+        );
     }
 
     return $cache;
@@ -55,24 +56,24 @@ my sub gauge {
     my ($id, $timestamp, $metric, $value) = @_;
 
     return {
-	metric => $metric,
-	id => $id,
-	value => $value + 0,
-	timestamp => $timestamp + 0,
-	type => 'gauge',
-    }
+        metric => $metric,
+        id => $id,
+        value => $value + 0,
+        timestamp => $timestamp + 0,
+        type => 'gauge',
+    };
 }
 
 my sub derive {
     my ($id, $timestamp, $metric, $value) = @_;
 
     return {
-	metric => $metric,
-	id => $id,
-	value => $value + 0,
-	timestamp => $timestamp + 0,
-	type => 'derive',
-    }
+        metric => $metric,
+        id => $id,
+        value => $value + 0,
+        timestamp => $timestamp + 0,
+        type => 'derive',
+    };
 }
 
 my $nodename = PVE::INotify::nodename();
@@ -91,8 +92,8 @@ my sub get_node_metrics {
 
     my ($netin, $netout) = (0, 0);
     for my $dev (grep { /^$PVE::Network::PHYSICAL_NIC_RE$/ } keys $data->{nics}->%*) {
-	$netin += $data->{nics}->{$dev}->{receive};
-	$netout += $data->{nics}->{$dev}->{transmit};
+        $netin += $data->{nics}->{$dev}->{receive};
+        $netout += $data->{nics}->{$dev}->{transmit};
     }
     push @$metrics, derive($id, $timestamp, "net_in", $netin);
     push @$metrics, derive($id, $timestamp, "net_out", $netout);
@@ -127,24 +128,24 @@ my sub get_qemu_metrics {
     my $timestamp = $stats->{timestamp};
 
     for my $vmid (keys $stats->{data}->%*) {
-	my $id = "qemu/$vmid";
-	my $guest_data = $stats->{data}->{$vmid};
+        my $id = "qemu/$vmid";
+        my $guest_data = $stats->{data}->{$vmid};
 
-	if ($guest_data->{status} eq 'running') {
-	    push @$metrics, gauge($id, $timestamp, "cpu_current", $guest_data->{cpu});
-	    push @$metrics, gauge($id, $timestamp, "mem_used", $guest_data->{mem});
-	    push @$metrics, derive($id, $timestamp, "disk_read", $guest_data->{diskread});
-	    push @$metrics, derive($id, $timestamp, "disk_write", $guest_data->{diskwrite});
-	    push @$metrics, derive($id, $timestamp, "net_in", $guest_data->{netin});
-	    push @$metrics, derive($id, $timestamp, "net_out", $guest_data->{netout});
-	}
+        if ($guest_data->{status} eq 'running') {
+            push @$metrics, gauge($id, $timestamp, "cpu_current", $guest_data->{cpu});
+            push @$metrics, gauge($id, $timestamp, "mem_used", $guest_data->{mem});
+            push @$metrics, derive($id, $timestamp, "disk_read", $guest_data->{diskread});
+            push @$metrics, derive($id, $timestamp, "disk_write", $guest_data->{diskwrite});
+            push @$metrics, derive($id, $timestamp, "net_in", $guest_data->{netin});
+            push @$metrics, derive($id, $timestamp, "net_out", $guest_data->{netout});
+        }
 
-	push @$metrics, gauge($id, $timestamp, "uptime", $guest_data->{uptime});
-	push @$metrics, gauge($id, $timestamp, "cpu_max", $guest_data->{cpus});
-	push @$metrics, gauge($id, $timestamp, "mem_total", $guest_data->{maxmem});
-	push @$metrics, gauge($id, $timestamp, "disk_total", $guest_data->{maxdisk});
-	# TODO: This one always seems to be 0?
-	# push @$metrics, num_metric("disk_used", $id, $guest_data->{disk}, $timestamp);
+        push @$metrics, gauge($id, $timestamp, "uptime", $guest_data->{uptime});
+        push @$metrics, gauge($id, $timestamp, "cpu_max", $guest_data->{cpus});
+        push @$metrics, gauge($id, $timestamp, "mem_total", $guest_data->{maxmem});
+        push @$metrics, gauge($id, $timestamp, "disk_total", $guest_data->{maxdisk});
+        # TODO: This one always seems to be 0?
+        # push @$metrics, num_metric("disk_used", $id, $guest_data->{disk}, $timestamp);
     }
 
     return $metrics;
@@ -158,23 +159,23 @@ my sub get_lxc_metrics {
     my $timestamp = $stats->{timestamp};
 
     for my $vmid (keys $stats->{data}->%*) {
-	my $id = "lxc/$vmid";
-	my $guest_data = $stats->{data}->{$vmid};
+        my $id = "lxc/$vmid";
+        my $guest_data = $stats->{data}->{$vmid};
 
-	if ($guest_data->{status} eq 'running') {
-	    push @$metrics, gauge($id, $timestamp, "cpu_current", $guest_data->{cpu});
-	    push @$metrics, gauge($id, $timestamp, "mem_used", $guest_data->{mem});
-	    push @$metrics, derive($id, $timestamp, "disk_read", $guest_data->{diskread});
-	    push @$metrics, derive($id, $timestamp, "disk_write", $guest_data->{diskwrite});
-	    push @$metrics, derive($id, $timestamp, "net_in", $guest_data->{netin});
-	    push @$metrics, derive($id, $timestamp, "net_out", $guest_data->{netout});
-	    push @$metrics, gauge($id, $timestamp, "disk_used", $guest_data->{disk});
-	}
+        if ($guest_data->{status} eq 'running') {
+            push @$metrics, gauge($id, $timestamp, "cpu_current", $guest_data->{cpu});
+            push @$metrics, gauge($id, $timestamp, "mem_used", $guest_data->{mem});
+            push @$metrics, derive($id, $timestamp, "disk_read", $guest_data->{diskread});
+            push @$metrics, derive($id, $timestamp, "disk_write", $guest_data->{diskwrite});
+            push @$metrics, derive($id, $timestamp, "net_in", $guest_data->{netin});
+            push @$metrics, derive($id, $timestamp, "net_out", $guest_data->{netout});
+            push @$metrics, gauge($id, $timestamp, "disk_used", $guest_data->{disk});
+        }
 
-	push @$metrics, gauge($id, $timestamp, "uptime", $guest_data->{uptime});
-	push @$metrics, gauge($id, $timestamp, "cpu_max", $guest_data->{cpus});
-	push @$metrics, gauge($id, $timestamp, "mem_total", $guest_data->{maxmem});
-	push @$metrics, gauge($id, $timestamp, "disk_total", $guest_data->{maxdisk});
+        push @$metrics, gauge($id, $timestamp, "uptime", $guest_data->{uptime});
+        push @$metrics, gauge($id, $timestamp, "cpu_max", $guest_data->{cpus});
+        push @$metrics, gauge($id, $timestamp, "mem_total", $guest_data->{maxmem});
+        push @$metrics, gauge($id, $timestamp, "disk_total", $guest_data->{maxdisk});
     }
 
     return $metrics;
@@ -188,11 +189,11 @@ my sub get_storage_metrics {
     my $timestamp = $stats->{timestamp};
 
     for my $sid (keys $stats->{data}->%*) {
-	my $id = "storage/$nodename/$sid";
-	my $data = $stats->{data}->{$sid};
+        my $id = "storage/$nodename/$sid";
+        my $data = $stats->{data}->{$sid};
 
-	push @$metrics, gauge($id, $timestamp, "disk_total", $data->{total});
-	push @$metrics, gauge($id, $timestamp, "disk_used", $data->{used});
+        push @$metrics, gauge($id, $timestamp, "disk_total", $data->{total});
+        push @$metrics, gauge($id, $timestamp, "disk_used", $data->{used});
     }
 
     return $metrics;
@@ -213,10 +214,10 @@ sub get_local_metrics {
     my $data = $get_cache->()->get_last($history);
 
     for my $stat_gen ($data->@*) {
-	push @$metrics, get_node_metrics($stat_gen->{node})->@*;
-	push @$metrics, get_qemu_metrics($stat_gen->{qemu})->@*;
-	push @$metrics, get_lxc_metrics($stat_gen->{lxc})->@*;
-	push @$metrics, get_storage_metrics($stat_gen->{storage})->@*;
+        push @$metrics, get_node_metrics($stat_gen->{node})->@*;
+        push @$metrics, get_qemu_metrics($stat_gen->{qemu})->@*;
+        push @$metrics, get_lxc_metrics($stat_gen->{lxc})->@*;
+        push @$metrics, get_storage_metrics($stat_gen->{storage})->@*;
     }
 
     return $metrics;

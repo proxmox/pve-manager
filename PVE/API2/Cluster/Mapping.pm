@@ -9,50 +9,49 @@ use PVE::API2::Cluster::Mapping::USB;
 
 use base qw(PVE::RESTHandler);
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     subclass => "PVE::API2::Cluster::Mapping::Dir",
     path => 'dir',
 });
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     subclass => "PVE::API2::Cluster::Mapping::PCI",
     path => 'pci',
 });
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     subclass => "PVE::API2::Cluster::Mapping::USB",
     path => 'usb',
 });
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     name => 'index',
     path => '',
     method => 'GET',
     description => "List resource types.",
     permissions => {
-	user => 'all',
+        user => 'all',
     },
     parameters => {
-	additionalProperties => 0,
-	properties => {},
+        additionalProperties => 0,
+        properties => {},
     },
     returns => {
-	type => 'array',
-	items => {
-	    type => "object",
-	},
-	links => [ { rel => 'child', href => "{name}" } ],
+        type => 'array',
+        items => {
+            type => "object",
+        },
+        links => [{ rel => 'child', href => "{name}" }],
     },
     code => sub {
-	my ($param) = @_;
+        my ($param) = @_;
 
-	my $result = [
-	    { name => 'dir' },
-	    { name => 'pci' },
-	    { name => 'usb' },
-	];
+        my $result = [
+            { name => 'dir' }, { name => 'pci' }, { name => 'usb' },
+        ];
 
-	return $result;
-    }});
+        return $result;
+    },
+});
 
 1;

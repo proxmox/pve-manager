@@ -28,27 +28,27 @@ sub init {
 
     my $accept_lock_fn = "/var/lock/pvedaemon.lck";
 
-    my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
-	die "unable to open lock file '${accept_lock_fn}' - $!\n";
+    my $lockfh = IO::File->new(">>${accept_lock_fn}")
+        || die "unable to open lock file '${accept_lock_fn}' - $!\n";
 
     my $socket = $self->create_reusable_socket(85, '127.0.0.1');
 
     $self->{server_config} = {
-	keep_alive => 100,
-	max_conn => 500,
-	max_requests => 1000,
-	lockfile => $accept_lock_fn,
-	socket => $socket,
-	lockfh => $lockfh,
-	debug => $self->{debug},
-	trusted_env => 1,
+        keep_alive => 100,
+        max_conn => 500,
+        max_requests => 1000,
+        lockfile => $accept_lock_fn,
+        socket => $socket,
+        lockfh => $lockfh,
+        debug => $self->{debug},
+        trusted_env => 1,
     };
 }
 
 sub run {
     my ($self) = @_;
 
-    my $server = PVE::HTTPServer->new(%{$self->{server_config}});
+    my $server = PVE::HTTPServer->new(%{ $self->{server_config} });
     $server->run();
 }
 
@@ -58,10 +58,10 @@ $daemon->register_stop_command();
 $daemon->register_status_command();
 
 our $cmddef = {
-    start => [ __PACKAGE__, 'start', []],
-    restart => [ __PACKAGE__, 'restart', []],
-    stop => [ __PACKAGE__, 'stop', []],
-    status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
+    start => [__PACKAGE__, 'start', []],
+    restart => [__PACKAGE__, 'restart', []],
+    stop => [__PACKAGE__, 'stop', []],
+    status => [__PACKAGE__, 'status', [], undef, sub { print shift . "\n"; }],
 };
 
 1;
