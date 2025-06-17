@@ -208,22 +208,21 @@ sub check_pve_packages {
             log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
         }
 
-        # FIXME: better differentiate between 6.2 from bullseye or bookworm
-        my $kinstalled = 'proxmox-kernel-6.2';
+        # FIXME: better differentiate between 6.14 from bookworm or trixie
+        my $kinstalled = 'proxmox-kernel-6.14';
         if (!$upgraded) {
-            # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
-            $kinstalled = 'pve-kernel-5.15';
+            $kinstalled = 'pve-kernel-6.8';
         }
 
         my $kernel_version_is_expected = sub {
             my ($version) = @_;
 
-            return $version =~ m/^(?:5\.(?:13|15)|6\.2)/ if !$upgraded;
+            return $version =~ m/^(?:6\.(?:2|5|8|11|14))/ if !$upgraded;
 
-            if ($version =~ m/^6\.(?:2\.(?:[2-9]\d+|1[6-8]|1\d\d+)|5)[^~]*$/) {
+            if ($version =~ m/^6\.(?:1[4-9]|1\d\d+)[^~]*$/) { # TODO: recheck, or even still needed?
                 return 1;
             } elsif ($version =~ m/^(\d+).(\d+)[^~]*-pve$/) {
-                return $1 >= 6 && $2 >= 2;
+                return $1 >= 6 && $2 >= 14;
             }
             return 0;
         };
@@ -249,7 +248,7 @@ sub check_pve_packages {
 
         if ($upgraded && $kernel_version_is_expected->($kernel_ver)) {
             my $outdated_kernel_meta_pkgs = [];
-            for my $kernel_meta_version ('5.4', '5.11', '5.13', '5.15') {
+            for my $kernel_meta_version ('6.2', '6.5', '6.8', '6.11') {
                 my $pkg = "pve-kernel-${kernel_meta_version}";
                 if ($get_pkg->($pkg)) {
                     push @$outdated_kernel_meta_pkgs, $pkg;
