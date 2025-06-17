@@ -21,7 +21,7 @@ update:
 	mv aplinfo.dat.tmp aplinfo.dat
 
 trustedkeys.gpg: $(TRUSTED_KEYS)
-	sq keyring join --binary -o $@.tmp *.pubkey proxmox-release-bookworm.gpg
+	sq keyring merge --output $@.tmp $(TRUSTED_KEYS)
 	mv $@.tmp $@
 
 .PHONY: clean
