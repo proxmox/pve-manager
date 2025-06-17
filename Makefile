@@ -15,6 +15,10 @@ SUBDIRS = aplinfo PVE bin www services configs network-hooks test templates
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done
 
+.PHONY: tidy
+tidy:
+	git ls-files ':*.p[ml]'| xargs -n4 -P0 proxmox-perltidy
+
 .PHONY: check
 check: bin test www
 	$(MAKE) -C bin check
