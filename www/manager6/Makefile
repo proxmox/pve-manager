@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-ESLINT ?= $(if $(shell command -v pve-eslint), pve-eslint, eslint)
+BIOME ?= proxmox-biome
 
 JSSRC= 							\
 	Parser.js					\
@@ -337,13 +337,13 @@ WIDGETKIT=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 all:
 
 .lint-incremental: $(JSSRC)
-	$(ESLINT) $?
+	$(BIOME) lint $?
 	touch "$@"
 
 .PHONY: lint
 check: lint
 lint: $(JSSRC)
-	$(ESLINT) --strict $(JSSRC)
+	$(BIOME) lint --error-on-warnings $(JSSRC)
 	touch ".lint-incremental"
 
 pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js $(JSSRC)
