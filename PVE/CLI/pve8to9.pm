@@ -1434,9 +1434,13 @@ sub check_misc {
 
     check_time_sync();
 
-    my $root_free = PVE::Tools::df('/', 10);
-    log_warn("Less than 5 GB free space on root file system.")
-        if defined($root_free) && $root_free->{avail} < 5 * 1000 * 1000 * 1000;
+    if (defined(my $root_free = PVE::Tools::df('/', 10))) {
+        if ($root_free->{avail} < 5 * 1000 * 1000 * 1000) {
+            log_warn("Less than 5 GB free space on root file system, upgrade may fail.");
+        } elsif ($root_free->{avail} < 10 * 1000 * 1000 * 1000) {
+            log_notice("Less than 10 GB free space on root file system.");
+        }
+    }
 
     log_info("Checking for running guests..");
     my $running_guests = 0;
