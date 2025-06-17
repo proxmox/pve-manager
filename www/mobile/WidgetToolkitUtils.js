@@ -887,10 +887,10 @@ Ext.define('Proxmox.Utils', {
         get_help_info: function (section) {
             let helpMap;
             if (typeof proxmoxOnlineHelpInfo !== 'undefined') {
-                helpMap = proxmoxOnlineHelpInfo; // eslint-disable-line no-undef
+                helpMap = proxmoxOnlineHelpInfo;
             } else if (typeof pveOnlineHelpInfo !== 'undefined') {
                 // be backward compatible with older pve-doc-generators
-                helpMap = pveOnlineHelpInfo; // eslint-disable-line no-undef
+                helpMap = pveOnlineHelpInfo;
             } else {
                 throw 'no global OnlineHelpInfo map declared';
             }
@@ -1413,7 +1413,6 @@ Ext.define('Proxmox.Utils', {
         me.IP4_match = new RegExp('^(?:' + IPV4_REGEXP + ')$');
         me.IP4_cidr_match = new RegExp('^(?:' + IPV4_REGEXP + ')/' + IPV4_CIDR_MASK + '$');
 
-        /* eslint-disable no-useless-concat,no-multi-spaces */
         let IPV6_REGEXP =
             '(?:' +
             '(?:(?:' +
@@ -1491,7 +1490,6 @@ Ext.define('Proxmox.Utils', {
             ')' +
             ')' +
             ')';
-        /* eslint-enable no-useless-concat,no-multi-spaces */
 
         me.IP6_match = new RegExp('^(?:' + IPV6_REGEXP + ')$');
         me.IP6_cidr_match = new RegExp('^(?:' + IPV6_REGEXP + ')/' + IPV6_CIDR_MASK + '$');

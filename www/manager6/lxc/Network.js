@@ -425,7 +425,7 @@ Ext.define(
                     },
                     autoShow: true,
                 });
-                return undefined; // make eslint happier
+                return undefined;
             };
 
             Ext.apply(me, {

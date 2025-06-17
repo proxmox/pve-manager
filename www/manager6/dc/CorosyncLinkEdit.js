@@ -227,7 +227,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 
     createNoDuplicatesValidator: function (queryString, errorMsg) {
         // linkSelector generator
-        let view = this; // eslint-disable-line consistent-this
+        let view = this;
         /** @this is the field itself, as the validator this is called from scopes it that way */
         return function (val) {
             let me = this;
