@@ -193,6 +193,7 @@ __PACKAGE__->register_method({
             die "Aborting installation as requested\n" if !$continue;
         }
 
+        # FIXME: change to deb822 sources format, use proxmox-apt via perlmod here?
         PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
         if ($available_ceph_releases->{$cephver}->{unsupported}) {
