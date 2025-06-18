@@ -1,3 +1,11 @@
+pve-manager (9.0.0~2) trixie; urgency=medium
+
+  * d/control: run all binary tragets under (fake)root to ensure dpkg-deb
+    knows about different file ownerships when assembling the archive, like
+    the one from /var/log/pveproxy.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Jun 2025 09:18:21 +0200
+
 pve-manager (9.0.0~1) trixie; urgency=medium
 
   * initial build for Debian 13 Trixie based Proxmox VE 9 release series.
