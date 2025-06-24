@@ -239,6 +239,9 @@ Ext.define('PVE.window.Backup', {
             checked: false,
             uncheckedValue: 0,
             fieldLabel: gettext('Protected'),
+            // Tiny amount of padding to stop the UI from shifting
+            // when the 'mailto' field is shown.
+            padding: '0 0 1 0',
         });
 
         me.formPanel = Ext.create('Proxmox.panel.InputPanel', {
