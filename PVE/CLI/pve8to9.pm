@@ -1416,6 +1416,42 @@ sub check_dkms_modules {
     }
 }
 
+sub check_legacy_notification_sections {
+    log_info("Check for legacy 'filter' or 'group' sections in /etc/pve/notifications.cfg...");
+
+    my $raw = eval { PVE::Tools::file_get_contents("/etc/pve/notifications.cfg") };
+    return if !defined($raw);
+
+    my $failed = 0;
+    my @lines = split(/\n/, $raw);
+
+    for my $line (@lines) {
+        # Any line in a section config is either a comment (starts with #), a
+        # section header (starts with the section type, without any leading
+        # space) or is a property indented by whitespace. This means we
+        # should be able to reliably detect the legacy sections by just
+        # checking the start of the line.
+
+        if ($line =~ /^filter/) {
+            $failed = 1;
+            log_fail("found legacy 'filter' section: $line");
+        }
+
+        if ($line =~ /^group/) {
+            $failed = 1;
+            log_fail("found legacy 'group' section: $line");
+        }
+    }
+
+    if ($failed) {
+        log_fail("Any modification to the notification configuration via the API or Web UI will"
+            . " automatically remove these sections. Alternatively, you can remove the offending"
+            . " sections from /etc/pve/notifications.cfg by hand.");
+    } else {
+        log_pass("No legacy 'filter' or 'group' sections found!");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1525,6 +1561,7 @@ sub check_misc {
     check_nvidia_vgpu_service();
     check_bootloader();
     check_dkms_modules();
+    check_legacy_notification_sections();
 }
 
 my sub colored_if {
