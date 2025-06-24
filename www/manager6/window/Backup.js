@@ -33,22 +33,22 @@ Ext.define('PVE.window.Backup', {
         let mailtoField = Ext.create('Ext.form.field.Text', {
             fieldLabel: gettext('Send email to'),
             name: 'mailto',
+            hidden: true,
             emptyText: Proxmox.Utils.noneText,
         });
 
         let notificationModeSelector = Ext.create({
             xtype: 'proxmoxKVComboBox',
             comboItems: [
-                ['auto', gettext('Auto')],
-                ['legacy-sendmail', gettext('Email (legacy)')],
-                ['notification-system', gettext('Notification system')],
+                ['notification-system', gettext('Use global settings')],
+                ['legacy-sendmail', gettext('Use sendmail (legacy)')],
             ],
-            fieldLabel: gettext('Notification mode'),
+            fieldLabel: gettext('Notification'),
             name: 'notification-mode',
-            value: 'auto',
+            value: 'notification-system',
             listeners: {
                 change: function (field, value) {
-                    mailtoField.setDisabled(value === 'notification-system');
+                    mailtoField.setHidden(value === 'notification-system');
                 },
             },
         });
@@ -169,11 +169,21 @@ Ext.define('PVE.window.Backup', {
                         success: function (response, opts) {
                             const data = response.result.data;
 
-                            if (!initialDefaults && data.mailto !== undefined) {
-                                mailtoField.setValue(data.mailto);
-                            }
-                            if (!initialDefaults && data['notification-mode'] !== undefined) {
-                                notificationModeSelector.setValue(data['notification-mode']);
+                            if (!initialDefaults) {
+                                let notificationMode = data['notification-mode'] ?? 'auto';
+                                let mailto = data.mailto;
+
+                                if (notificationMode === 'auto' && mailto !== undefined) {
+                                    notificationMode = 'legacy-sendmail';
+                                }
+                                if (notificationMode === 'auto' && mailto === undefined) {
+                                    notificationMode = 'notification-system';
+                                }
+
+                                notificationModeSelector.setValue(notificationMode);
+                                if (mailto !== undefined) {
+                                    mailtoField.setValue(mailto);
+                                }
                             }
                             if (!initialDefaults && data.mode !== undefined) {
                                 modeSelector.setValue(data.mode);
