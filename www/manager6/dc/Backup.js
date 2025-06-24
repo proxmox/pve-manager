@@ -207,25 +207,12 @@ Ext.define('PVE.dc.BackupEdit', {
     viewModel: {
         data: {
             selMode: 'include',
-            notificationMode: '__default__',
-            mailto: '',
-            mailNotification: 'always',
         },
 
         formulas: {
             poolMode: (get) => get('selMode') === 'pool',
             disableVMSelection: (get) =>
                 get('selMode') !== 'include' && get('selMode') !== 'exclude',
-            showMailtoFields: (get) =>
-                ['auto', 'legacy-sendmail', '__default__'].includes(get('notificationMode')),
-            enableMailnotificationField: (get) => {
-                let mode = get('notificationMode');
-                let mailto = get('mailto');
-
-                return (
-                    (['auto', '__default__'].includes(mode) && mailto) || mode === 'legacy-sendmail'
-                );
-            },
         },
     },
 
@@ -316,53 +303,6 @@ Ext.define('PVE.dc.BackupEdit', {
                             ],
                             column2: [
                                 {
-                                    xtype: 'proxmoxKVComboBox',
-                                    comboItems: [
-                                        [
-                                            '__default__',
-                                            Ext.String.format(
-                                                gettext('{0} (Auto)'),
-                                                Proxmox.Utils.defaultText,
-                                            ),
-                                        ],
-                                        ['auto', gettext('Auto')],
-                                        ['legacy-sendmail', gettext('Email (legacy)')],
-                                        ['notification-system', gettext('Notification system')],
-                                    ],
-                                    fieldLabel: gettext('Notification mode'),
-                                    name: 'notification-mode',
-                                    value: '__default__',
-                                    cbind: {
-                                        deleteEmpty: '{!isCreate}',
-                                    },
-                                    bind: {
-                                        value: '{notificationMode}',
-                                    },
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    fieldLabel: gettext('Send email to'),
-                                    name: 'mailto',
-                                    bind: {
-                                        hidden: '{!showMailtoFields}',
-                                        value: '{mailto}',
-                                    },
-                                },
-                                {
-                                    xtype: 'pveEmailNotificationSelector',
-                                    fieldLabel: gettext('Send email'),
-                                    name: 'mailnotification',
-                                    cbind: {
-                                        value: (get) => (get('isCreate') ? 'always' : ''),
-                                        deleteEmpty: '{!isCreate}',
-                                    },
-                                    bind: {
-                                        hidden: '{!showMailtoFields}',
-                                        disabled: '{!enableMailnotificationField}',
-                                        value: '{mailNotification}',
-                                    },
-                                },
-                                {
                                     xtype: 'pveBackupCompressionSelector',
                                     reference: 'compressionSelector',
                                     fieldLabel: gettext('Compression'),
@@ -423,6 +363,13 @@ Ext.define('PVE.dc.BackupEdit', {
                             },
                         },
                     ],
+                },
+                {
+                    xtype: 'pveBackupNotificationOptionsPanel',
+                    title: gettext('Notifications'),
+                    cbind: {
+                        isCreate: '{isCreate}',
+                    },
                 },
                 {
                     xtype: 'pveBackupJobPrunePanel',

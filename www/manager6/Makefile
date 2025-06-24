@@ -100,6 +100,7 @@ JSSRC= 							\
 	grid/ResourceGrid.js				\
 	panel/ConfigPanel.js				\
 	panel/BackupAdvancedOptions.js			\
+	panel/BackupNotificationOptions.js		\
 	panel/BackupJobPrune.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
