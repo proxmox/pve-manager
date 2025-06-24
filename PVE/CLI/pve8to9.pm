@@ -17,6 +17,7 @@ use PVE::Ceph::Tools;
 use PVE::Cluster;
 use PVE::Corosync;
 use PVE::INotify;
+use PVE::Jobs;
 use PVE::JSONSchema;
 use PVE::NodeConfig;
 use PVE::RPCEnvironment;
@@ -1452,6 +1453,39 @@ sub check_legacy_notification_sections {
     }
 }
 
+sub check_legacy_backup_job_options {
+    log_info(
+        "Check for legacy 'notification-policy' or 'notification-target' options in /etc/pve/jobs.cfg..."
+    );
+
+    my $job_cfg = PVE::Cluster::cfs_read_file('jobs.cfg');
+
+    my $failed = 0;
+
+    for my $jobid (sort keys $job_cfg->{ids}->%*) {
+        my $cfg = $job_cfg->{ids}->{$jobid};
+
+        if (defined($cfg->{'notification-policy'})) {
+            $failed = 1;
+            log_fail("found legacy 'notification-policy' option for job '$jobid'");
+        }
+
+        if (defined($cfg->{'notification-target'})) {
+            $failed = 1;
+            log_fail("found legacy 'notification-target' option for job '$jobid'");
+        }
+    }
+
+    if ($failed) {
+        log_fail(
+            "Changing the backup job configuration via the UI will automatically clear these options."
+                . "Alternatively, you can remove the offending options from /etc/pve/jobs.cfg by hand"
+        );
+    } else {
+        log_pass("No legacy 'notification-policy' or 'notification-target' options found!");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1562,6 +1596,7 @@ sub check_misc {
     check_bootloader();
     check_dkms_modules();
     check_legacy_notification_sections();
+    check_legacy_backup_job_options();
 }
 
 my sub colored_if {
