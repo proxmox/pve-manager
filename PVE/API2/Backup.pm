@@ -667,7 +667,6 @@ __PACKAGE__->register_method({
         my $vzconf = cfs_read_file('vzdump.cron');
         my $all_jobs = $vzconf->{jobs} || [];
         my $job;
-        my $rrd = PVE::Cluster::rrd_dump();
 
         for my $j (@$all_jobs) {
             if ($j->{id} eq $param->{id}) {
