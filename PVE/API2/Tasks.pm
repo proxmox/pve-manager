@@ -63,7 +63,7 @@ __PACKAGE__->register_method({
                 minimum => 0,
                 default => 50,
                 optional => 1,
-                description => "Only list this amount of tasks.",
+                description => "Only list this number of tasks.",
             },
             userfilter => {
                 type => 'string',
@@ -358,7 +358,7 @@ __PACKAGE__->register_method({
                 minimum => 0,
                 default => 50,
                 optional => 1,
-                description => "The amount of lines to read from the tasklog.",
+                description => "The number of lines to read from the tasklog.",
             },
             download => {
                 type => 'boolean',
