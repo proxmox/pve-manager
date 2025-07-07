@@ -132,7 +132,7 @@ my $get_systemd_unit_state = sub {
 
     eval {
         run_command(['systemctl', 'is-enabled', "$unit"], %extra);
-        return if !defined($state);
+        return if !defined($state) || $state eq 'not-found';
         run_command(['systemctl', 'is-active', "$unit"], %extra);
     };
 
