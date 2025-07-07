@@ -3,7 +3,7 @@ Ext.define('PVE.dc.RegisteredTagsEdit', {
     alias: 'widget.pveRegisteredTagEdit',
 
     subject: gettext('Registered Tags'),
-    onlineHelp: 'datacenter_configuration_file',
+    onlineHelp: 'gui_tags',
 
     url: '/api2/extjs/cluster/options',
 

@@ -3,7 +3,7 @@ Ext.define('PVE.dc.UserTagAccessEdit', {
     alias: 'widget.pveUserTagAccessEdit',
 
     subject: gettext('User Tag Access'),
-    onlineHelp: 'datacenter_configuration_file',
+    onlineHelp: 'gui_tags',
 
     url: '/api2/extjs/cluster/options',
 

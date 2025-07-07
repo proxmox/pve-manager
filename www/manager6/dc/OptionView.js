@@ -403,7 +403,7 @@ Ext.define('PVE.dc.OptionView', {
                 xtype: 'proxmoxWindowEdit',
                 width: 800,
                 subject: gettext('Tag Color Override'),
-                onlineHelp: 'datacenter_configuration_file',
+                onlineHelp: 'gui_tags',
                 fieldDefaults: {
                     labelWidth: 100,
                 },
