@@ -81,6 +81,10 @@ pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
 
+.PHONY: tidy
+tidy:
+	echo $(SCRIPTS) $(HELPERS) | xargs -n4 -P0 proxmox-perltidy
+
 .PHONY: check
 check: $(addsuffix .service-api-verified, $(SERVICES)) $(addsuffix .api-verified, $(CLITOOLS))
 	rm -f *.service-api-verified *.api-verified
