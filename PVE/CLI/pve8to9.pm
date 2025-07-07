@@ -1062,8 +1062,7 @@ sub check_storage_content_dirs {
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
         log_fail("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
-            . "     NOTE: support for the hybrid cgroup hierarchy is removed in Proxmox VE 9!"
-        );
+            . "     NOTE: support for the hybrid cgroup hierarchy is removed in Proxmox VE 9!");
     }
 
     my $supports_cgroupv2 = sub {
