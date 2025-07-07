@@ -13,127 +13,127 @@ use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     name => 'index',
     path => '',
     method => 'GET',
     description => 'Index for cluster-wide bulk-action API endpoints.',
     permissions => { user => 'all' },
     parameters => {
-	additionalProperties => 0,
-	properties => {},
+        additionalProperties => 0,
+        properties => {},
     },
     returns => {
-	type => 'array',
-	items => {
-	    type => 'object',
-	    properties => {},
-	},
-	links => [ { rel => 'child', href => '{name}' } ],
+        type => 'array',
+        items => {
+            type => 'object',
+            properties => {},
+        },
+        links => [{ rel => 'child', href => '{name}' }],
     },
     code => sub {
-	my $result = [
-	    { name => 'migrate' },
-	    { name => 'start' },
-	    { name => 'stop' },
-	];
+        my $result = [
+            { name => 'migrate' }, { name => 'start' }, { name => 'stop' },
+        ];
 
-	return $result;
-    }
+        return $result;
+    },
 });
 
 my $guest_format = {
-    vmid => {
-	defau
-    },
+    vmid => {defau},
 };
 
-__PACKAGE__->register_method ({
+__PACKAGE__->register_method({
     name => 'migrate',
     path => 'migrate',
     method => 'POST',
-    description => 'Returns a list of all entities that can be used as notification targets' .
-	' (endpoints and groups).',
+    description => 'Returns a list of all entities that can be used as notification targets'
+        . ' (endpoints and groups).',
     permissions => {
-	description => "The 'VM.Migrate' permission is required on '/' or on '/vms/<ID>' for each "
-	    ."ID passed via the 'vms' parameter.",
-	user => 'all',
+        description =>
+            "The 'VM.Migrate' permission is required on '/' or on '/vms/<ID>' for each "
+            . "ID passed via the 'vms' parameter.",
+        user => 'all',
     },
     parameters => {
-	additionalProperties => 0,
-	properties => {
-	    'guests' => {
-		type => 'array',
-		description => '',
-		items => {
-		    type => 'string',
-		    format => $guest_format,
-		}
-	    },
-	},
+        additionalProperties => 0,
+        properties => {
+            'guests' => {
+                type => 'array',
+                description => '',
+                items => {
+                    type => 'string',
+                    format => $guest_format,
+                },
+            },
+        },
     },
     returns => {
-	type => 'string',
-	items => {
-	    type => 'object',
-	    properties => {
-		name => {
-		    description => 'Name of the endpoint/group.',
-		    type => 'string',
-		    format => 'pve-configid',
-		},
-		'type' => {
-		    description => 'Type of the endpoint or group.',
-		    type  => 'string',
-		    enum => [qw(sendmail gotify group)],
-		},
-		'comment' => {
-		    description => 'Comment',
-		    type        => 'string',
-		    optional    => 1,
-		},
-	    },
-	},
-	links => [ { rel => 'child', href => '{name}' } ],
+        type => 'string',
+        items => {
+            type => 'object',
+            properties => {
+                name => {
+                    description => 'Name of the endpoint/group.',
+                    type => 'string',
+                    format => 'pve-configid',
+                },
+                'type' => {
+                    description => 'Type of the endpoint or group.',
+                    type => 'string',
+                    enum => [qw(sendmail gotify group)],
+                },
+                'comment' => {
+                    description => 'Comment',
+                    type => 'string',
+                    optional => 1,
+                },
+            },
+        },
+        links => [{ rel => 'child', href => '{name}' }],
     },
     code => sub {
-	my $config = PVE::Notify::read_config();
-	my $rpcenv = PVE::RPCEnvironment::get();
+        my $config = PVE::Notify::read_config();
+        my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $targets = eval {
-	    my $result = [];
+        my $targets = eval {
+            my $result = [];
 
-	    for my $target (@{$config->get_sendmail_endpoints()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'sendmail',
-		};
-	    }
+            for my $target (@{ $config->get_sendmail_endpoints() }) {
+                push @$result,
+                    {
+                        name => $target->{name},
+                        comment => $target->{comment},
+                        type => 'sendmail',
+                    };
+            }
 
-	    for my $target (@{$config->get_gotify_endpoints()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'gotify',
-		};
-	    }
+            for my $target (@{ $config->get_gotify_endpoints() }) {
+                push @$result,
+                    {
+                        name => $target->{name},
+                        comment => $target->{comment},
+                        type => 'gotify',
+                    };
+            }
 
-	    for my $target (@{$config->get_groups()}) {
-		push @$result, {
-		    name => $target->{name},
-		    comment => $target->{comment},
-		    type => 'group',
-		};
-	    }
+            for my $target (@{ $config->get_groups() }) {
+                push @$result,
+                    {
+                        name => $target->{name},
+                        comment => $target->{comment},
+                        type => 'group',
+                    };
+            }
 
-	    $result
-	};
+            $result;
+        };
 
-	raise_api_error($@) if $@;
+        raise_api_error($@) if $@;
 
-	return filter_entities_by_privs($rpcenv, $targets);
-    }
+        return filter_entities_by_privs($rpcenv, $targets);
+    },
 });
 
 1;
