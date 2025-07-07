@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.TPMDiskEdit', {
         me.items = [
             {
                 xtype: 'pveTPMDiskInputPanel',
-                //onlineHelp: 'qm_tpm', FIXME: add once available
+                onlineHelp: 'qm_tpm',
                 confid: me.confid,
                 nodename: nodename,
                 isCreate: true,
