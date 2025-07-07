@@ -54,7 +54,7 @@ my $older_suites = {
     jessie => 1,
 };
 
-my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (8, 4, 1);
+my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (8, 4, 0);
 
 my $ceph_release2code = {
     '12' => 'Luminous',
