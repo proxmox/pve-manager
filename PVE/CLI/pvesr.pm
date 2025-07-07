@@ -373,7 +373,8 @@ my $print_job_list = sub {
 
         printf(
             $format,
-            $job->{id}, $tid,
+            $job->{id},
+            $tid,
             defined($job->{schedule}) ? $job->{schedule} : '*/15',
             defined($job->{rate}) ? $job->{rate} : '-',
             $job->{disable} ? 'no' : 'yes',
@@ -419,8 +420,14 @@ my $print_job_status = sub {
         my $enabled = $job->{disable} ? 'No' : 'Yes';
 
         printf($format,
-            $job->{id}, $enabled, $tid, $timestr, $nextstr, $job->{duration} // '-',
-            $job->{fail_count}, $state);
+            $job->{id},
+            $enabled,
+            $tid,
+            $timestr,
+            $nextstr,
+            $job->{duration} // '-',
+            $job->{fail_count},
+            $state);
     }
 };
 

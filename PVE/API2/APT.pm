@@ -852,7 +852,10 @@ __PACKAGE__->register_method({
             my $res;
             if (my $current_ver = $p->{CurrentVer}) {
                 $res = $assemble_pkginfo->(
-                    $pkgname, $info, $current_ver, $candidate_ver || $current_ver,
+                    $pkgname,
+                    $info,
+                    $current_ver,
+                    $candidate_ver || $current_ver,
                 );
             } elsif ($candidate_ver) {
                 $res = $assemble_pkginfo->($pkgname, $info, $candidate_ver, $candidate_ver);
