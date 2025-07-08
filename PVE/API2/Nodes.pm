@@ -2231,7 +2231,11 @@ __PACKAGE__->register_method({
                     my $timeout = int($d->{down} // $param->{timeout} // 180);
                     my $upid = eval {
                         $create_stop_worker->(
-                            $nodename, $d->{type}, $vmid, $timeout, $param->{'force-stop'} // 1,
+                            $nodename,
+                            $d->{type},
+                            $vmid,
+                            $timeout,
+                            $param->{'force-stop'} // 1,
                         );
                     };
                     warn $@ if $@;
