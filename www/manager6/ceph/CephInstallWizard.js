@@ -48,11 +48,7 @@ Ext.define('PVE.ceph.CephVersionSelector', {
                 type: 'json',
             },
         },
-        data: [
-            { release: 'quincy', version: '17.2' },
-            { release: 'reef', version: '18.2' },
-            { release: 'squid', version: '19.2' },
-        ],
+        data: [{ release: 'squid', version: '19.2' }],
     },
 });
 
