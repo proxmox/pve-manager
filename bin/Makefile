@@ -30,6 +30,9 @@ HELPERS =			\
 	pve-startall-delay	\
 	pve-init-ceph-crash
 
+MIGRATIONS =			\
+	pve-lvm-disable-autoactivation
+
 SERVICE_MANS = $(addsuffix .8, $(SERVICES))
 
 CLI_MANS = 				\
@@ -83,7 +86,7 @@ pvereport.1.pod: pvereport
 
 .PHONY: tidy
 tidy:
-	echo $(SCRIPTS) $(HELPERS) | xargs -n4 -P0 proxmox-perltidy
+	echo $(SCRIPTS) $(HELPERS) $(MIGRATIONS) | xargs -n4 -P0 proxmox-perltidy
 
 .PHONY: check
 check: $(addsuffix .service-api-verified, $(SERVICES)) $(addsuffix .api-verified, $(CLITOOLS))
@@ -95,6 +98,8 @@ install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLE
 	install -m 0755 $(SCRIPTS) $(BINDIR)
 	install -d $(USRSHARE)/helpers
 	install -m 0755 $(HELPERS) $(USRSHARE)/helpers
+	install -d $(USRSHARE)/migrations
+	install -m 0755 $(MIGRATIONS) $(USRSHARE)/migrations
 	install -d $(MAN1DIR)
 	install -m 0644 $(CLI_MANS) $(MAN1DIR)
 	install -d $(MAN8DIR)
