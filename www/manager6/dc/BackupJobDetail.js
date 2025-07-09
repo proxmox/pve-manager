@@ -165,6 +165,7 @@ Ext.define('PVE.dc.BackupInfo', {
     viewModel: {
         data: {
             retentionType: 'none',
+            hideRecipients: true,
         },
         formulas: {
             hasRetention: (get) => get('retentionType') !== 'none',
@@ -206,28 +207,37 @@ Ext.define('PVE.dc.BackupInfo', {
     column2: [
         {
             xtype: 'displayfield',
-            name: 'notification-policy',
+            name: 'notification-mode',
             fieldLabel: gettext('Notification'),
             renderer: function (value) {
+                value = value ?? 'auto';
                 let record = this.up('pveBackupInfo')?.record;
+                let mailto = record?.mailto;
+                let mailnotification = record?.mailnotification ?? 'always';
 
-                // Fall back to old value, in case this option is not migrated yet.
-                let policy = value || record?.mailnotification || 'always';
-
-                let when = gettext('Always');
-                if (policy === 'failure') {
-                    when = gettext('On failure only');
-                } else if (policy === 'never') {
-                    when = gettext('Never');
+                if ((value === 'auto' && mailto === undefined) || (value === 'notification-system')) {
+                    return gettext('Use global notification settings');
+                } else if (mailnotification === 'always') {
+                    return gettext('Always send email');
+                } else {
+                    return gettext('Send email on failure');
+                }
+            },
+        },
+        {
+            xtype: 'displayfield',
+            name: 'mailto',
+            fieldLabel: gettext('Recipients'),
+            hidden: true,
+            bind: {
+                hidden: '{hideRecipients}',
+            },
+            renderer: function (value) {
+                if (!value) {
+                    return gettext('No recipients configured');
                 }
 
-                // Notification-target takes precedence
-                let target =
-                    record?.['notification-target'] ||
-                    record?.mailto ||
-                    gettext('No target configured');
-
-                return `${when} (${target})`;
+                return value;
             },
         },
         {
@@ -381,6 +391,12 @@ Ext.define('PVE.dc.BackupInfo', {
         } else {
             vm.set('retentionType', 'none');
         }
+
+        let notificationMode = values['notification-mode'] ?? 'auto';
+        let mailto = values.mailto;
+
+        let hideRecipients = (notificationMode === 'auto' && mailto === undefined) || (notificationMode === 'notification-system');
+        vm.set('hideRecipients', hideRecipients);
 
         // selection Mode depends on the presence/absence of several keys
         let selModeField = me.query('[isFormField][name=selMode]')[0];
