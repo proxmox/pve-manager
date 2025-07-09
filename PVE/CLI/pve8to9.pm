@@ -1533,7 +1533,7 @@ sub check_lvm_autoactivation {
 
     log_info("Check for LVM autoactivation settings on LVM and LVM-thin storages...");
 
-    my $needs_fix = 0;
+    my ($needs_fix, $shared_affected) = (0, 0);
 
     for my $storeid (sort keys %$storage_info) {
         my $scfg = PVE::Storage::storage_config($cfg, $storeid);
@@ -1552,18 +1552,31 @@ sub check_lvm_autoactivation {
         my $autoactivated_guest_lvs =
             query_autoactivated_lvm_guest_volumes($cfg, $storeid, $vgname);
         if (scalar(@$autoactivated_guest_lvs) > 0) {
-            log_warn("storage '$storeid' has guest volumes with autoactivation enabled");
+            log_notice("storage '$storeid' has guest volumes with auto-activation enabled");
             $needs_fix = 1;
+            $shared_affected = 1 if $info->{shared};
         } else {
-            log_pass("all guest volumes on storage '$storeid' have autoactivation disabled");
+            log_pass("all guest volumes on storage '$storeid' have auto-activation disabled");
         }
     }
-    log_warn(
-        "Starting with PVE 9, autoactivation will be disabled for new LVM/LVM-thin guest volumes. "
-            . "Please run the following command to disable autoactivation for existing LVM/LVM-thin "
-            . "guest volumes:" . "\n\n"
-            . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation" . "\n")
-        if $needs_fix;
+    if ($needs_fix) {
+        # only warn if shared storages are affected, for local ones this is mostly cosmetic.
+        my $_log = $shared_affected ? \log_warn : \log_notice;
+        my $extra =
+            $shared_affected
+            ? "Some affected volumes are on shared LVM storages, which has known issues (Bugzilla"
+            . " #4997). Disabling auto-activation for those is strongly recommended!"
+            : "All volumes with auto-activations reside on local storage, where this normally does"
+            . " not causes any issues.";
+        $_log->(
+            "Starting with PVE 9, auto-activation will be disabled for new LVM/LVM-thin guest"
+                . " volumes. This system has some volumes that still have auto-activation enabled. "
+                . "$extra\nYou can run the following command to disable auto-activation for existing"
+                . "LVM/LVM-thin "
+                . "guest volumes:" . "\n\n"
+                . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation"
+                . "\n");
+    }
 
     return undef;
 }
