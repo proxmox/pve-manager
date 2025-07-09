@@ -1,3 +1,20 @@
+pve-manager (8.4.2) bookworm; urgency=medium
+
+  * fix #6311: ui: prevent the login consent text from showing twice for OIDC
+    authentication realms.
+
+  * pve system report: fix assembling relevant SDN configuration files.
+
+  * update shipped aplliance info index
+
+  * pveversion: track the proxmox-backup-restore-image package.
+
+  * add initial `pve8to9` upgrade check list tool to continue preparation for
+    next major release and to put it through the Proxmox internal early
+    release QA.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Jul 2025 18:17:37 +0200
+
 pve-manager (8.4.1) bookworm; urgency=medium
 
   * ui: fix regression with checking if volume is QEMU backup, which could
