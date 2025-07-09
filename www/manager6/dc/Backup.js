@@ -37,14 +37,6 @@ Ext.define('PVE.dc.BackupEdit', {
                 delete values.node;
             }
 
-            // Get rid of new-old parameters for notification settings.
-            // These should only be set for those selected few who ran
-            // pve-manager from pvetest.
-            if (!isCreate) {
-                Proxmox.Utils.assemble_field_data(values, { delete: 'notification-policy' });
-                Proxmox.Utils.assemble_field_data(values, { delete: 'notification-target' });
-            }
-
             let selMode = values.selMode;
             delete values.selMode;
 
@@ -157,14 +149,6 @@ Ext.define('PVE.dc.BackupEdit', {
         prepareValues: function (data) {
             let me = this;
             let viewModel = me.getViewModel();
-
-            // Migrate 'new'-old notification-policy back to old-old mailnotification.
-            // Only should affect users who used pve-manager from pvetest. This was a remnant of
-            // notifications before the  overhaul.
-            let policy = data['notification-policy'];
-            if (policy === 'always' || policy === 'failure') {
-                data.mailnotification = policy;
-            }
 
             if (data.exclude) {
                 data.vmid = data.exclude;
