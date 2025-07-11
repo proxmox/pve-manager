@@ -1713,6 +1713,38 @@ sub check_lvm_autoactivation {
     return undef;
 }
 
+sub check_glusterfs_storage_usage {
+    my $cfg = PVE::Storage::config();
+    my $storage_info = PVE::Storage::storage_info($cfg);
+
+    log_info("Check for usage of GlusterFS storages...");
+
+    my $has_glusterfs_storage = 0;
+
+    for my $storeid (sort keys $storage_info->%*) {
+        my $scfg = PVE::Storage::storage_config($cfg, $storeid);
+
+        next if $scfg->{type} ne 'glusterfs';
+
+        $has_glusterfs_storage = 1;
+        log_fail("found 'glusterfs' storage '$storeid'");
+    }
+
+    if ($has_glusterfs_storage) {
+        log_fail("Starting with PVE 9, GlusterFS will not be supported anymore."
+            . " GlusterFS storages will therefore cease to work."
+            . "\nThis is due to the GlusterFS project not being properly maintained anymore."
+            . "\n\nThis means that you will have to move all volumes on GlusterFS storages to"
+            . " different storages and then remove any GlusterFS storage that you have configured."
+            . "\n\nAlternatively, you can mount your GlusterFS instances manually "
+            . " via the 'glusterfs' commandline and use them as directory storage.");
+    } else {
+        log_pass("No GlusterFS storage found.");
+    }
+
+    return undef;
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1825,6 +1857,7 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
+    check_glusterfs_storage_usage();
 }
 
 my sub colored_if {
