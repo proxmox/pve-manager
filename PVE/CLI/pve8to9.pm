@@ -1561,7 +1561,7 @@ sub check_lvm_autoactivation {
     }
     if ($needs_fix) {
         # only warn if shared storages are affected, for local ones this is mostly cosmetic.
-        my $_log = $shared_affected ? \log_warn : \log_notice;
+        my $_log = $shared_affected ? \&log_warn : \&log_notice;
         my $extra =
             $shared_affected
             ? "Some affected volumes are on shared LVM storages, which has known issues (Bugzilla"
