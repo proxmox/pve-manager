@@ -7,6 +7,8 @@ use Getopt::Long;
 use Term::ANSIColor;
 
 use PVE::CLI::pve8to9;
+
+use PVE::RPCEnvironment;
 use PVE::Tools qw(run_command);
 
 my $is_tty = (-t STDOUT);
@@ -41,6 +43,8 @@ sub main {
         print "USAGE $0 [ --assume-yes | -y ]\n";
         exit(-1);
     }
+
+    PVE::RPCEnvironment->setup_default_cli_env();
 
     my $cfg = PVE::Storage::config();
     my $storage_info = PVE::Storage::storage_info($cfg);
