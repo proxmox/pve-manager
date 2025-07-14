@@ -601,7 +601,10 @@ sub update_sdn_status {
 
 my $broadcast_version_info_done = 0;
 my sub broadcast_version_info : prototype() {
-    if (!$broadcast_version_info_done) {
+    if (
+        !$broadcast_version_info_done
+        || !scalar(keys PVE::Cluster::get_node_kv('version-info', $nodename)->%*)
+    ) {
         PVE::Cluster::broadcast_node_kv(
             'version-info', encode_json(PVE::pvecfg::version_info()),
         );
