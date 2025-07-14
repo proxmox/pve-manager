@@ -215,7 +215,7 @@ Ext.define('PVE.dc.BackupInfo', {
                 let mailto = record?.mailto;
                 let mailnotification = record?.mailnotification ?? 'always';
 
-                if ((value === 'auto' && mailto === undefined) || (value === 'notification-system')) {
+                if ((value === 'auto' && mailto === undefined) || value === 'notification-system') {
                     return gettext('Use global notification settings');
                 } else if (mailnotification === 'always') {
                     return gettext('Always send email');
@@ -395,7 +395,9 @@ Ext.define('PVE.dc.BackupInfo', {
         let notificationMode = values['notification-mode'] ?? 'auto';
         let mailto = values.mailto;
 
-        let hideRecipients = (notificationMode === 'auto' && mailto === undefined) || (notificationMode === 'notification-system');
+        let hideRecipients =
+            (notificationMode === 'auto' && mailto === undefined) ||
+            notificationMode === 'notification-system';
         vm.set('hideRecipients', hideRecipients);
 
         // selection Mode depends on the presence/absence of several keys
