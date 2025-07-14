@@ -240,7 +240,6 @@ EOF
         };
 
         if ($repo eq "manual") {
-            # TODO: get used repo metadata and print it as additional info
             my $apt_cache = AptPkg::Cache->new() || die "unable to initialize AptPkg::Cache\n";
             my @ceph_versions = $apt_cache->{'ceph-common:amd64'}->{'VersionList'}->@*;
             my $latest_available = $ceph_versions[0]->{'VerStr'};
@@ -250,6 +249,12 @@ EOF
             die
                 "Selected Ceph version '${selected_version}' does not match the available version in the repository '${latest_available}' \n"
                 if ($latest_available !~ "^$selected_version");
+
+            my $pkg_infos = $ceph_versions[0]->{'FileList'}->[0]->{'File'};
+            print "\nUsing the following manual repository:\n"
+                . "Site:\t\t $pkg_infos->{'Site'}\n"
+                . "Component:\t $pkg_infos->{'Component'}\n\n";
+
         }
 
         my @apt_install =
