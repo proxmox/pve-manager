@@ -177,6 +177,10 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                         : gettext(
                               'The no-subscription repository is not the best choice for production setups.',
                           );
+                } else if (repo === 'manual') {
+                    return gettext(
+                        'The manual repository option expects that the repository is already configured. For example, in combination with the Promox Offline Mirror.',
+                    );
                 } else {
                     return gettext(
                         'The test repository should only be used for test setups or after consulting the official Proxmox support!',
@@ -347,6 +351,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                                 ['enterprise', gettext('Enterprise (recommended)')],
                                 ['no-subscription', gettext('No-Subscription')],
                                 ['test', gettext('Test')],
+                                ['manual', gettext('Manual')],
                             ],
                             labelWidth: 150,
                             submitValue: false,
