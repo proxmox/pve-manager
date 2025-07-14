@@ -130,7 +130,8 @@ Ext.define('PVE.storage.Browser', {
                 });
             }
             if (contents.includes('import')) {
-                let isImportable = (format) => ['ova', 'ovf', 'vmx'].indexOf(format) !== -1;
+                let isImportable = (format) =>
+                    ['ova', 'ovf', 'vmx', 'raw', 'qcow2', 'vmdk'].indexOf(format) !== -1;
                 let createGuestImportWindow = (selection) => {
                     if (!selection) {
                         return;
@@ -138,12 +139,20 @@ Ext.define('PVE.storage.Browser', {
 
                     let volumeName = selection.data.volid.replace(/^.*?:/, '');
 
-                    Ext.create('PVE.window.GuestImport', {
-                        storage: storeid,
-                        volumeName,
-                        nodename,
-                        autoShow: true,
-                    });
+                    if (['raw', 'vmdk', 'qcow2'].indexOf(selection.data.format) !== -1) {
+                        Ext.create('PVE.qemu.HDImportEdit', {
+                            selection: selection.data.volid,
+                            nodename,
+                            autoShow: true,
+                        });
+                    } else {
+                        Ext.create('PVE.window.GuestImport', {
+                            storage: storeid,
+                            volumeName,
+                            nodename,
+                            autoShow: true,
+                        });
+                    }
                 };
                 me.items.push({
                     xtype: 'pveStorageContentView',

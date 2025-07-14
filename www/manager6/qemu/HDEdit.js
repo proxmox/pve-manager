@@ -9,6 +9,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
     unused: false, // ADD usused disk imaged
 
     importDisk: false, // use import options
+    importSelection: undefined, // preselect a disk to import
 
     vmconfig: {}, // used to select usused disks
 
@@ -241,31 +242,44 @@ Ext.define('PVE.qemu.HDInputPanel', {
                     autoSelect: me.insideWizard,
                 });
             } else {
-                column1.push({
-                    xtype: 'pveStorageSelector',
-                    reference: 'import-source',
-                    fieldLabel: gettext('Import Storage'),
-                    name: 'import-source-storage',
-                    storageContent: 'import',
-                    nodename: me.nodename,
-                    autoSelect: me.insideWizard,
-                    disabled: false,
-                    listeners: {
-                        change: function (_selector, storage) {
-                            me.lookup('import-source-file').setStorage(storage);
-                            me.lookup('import-source-file').setDisabled(!storage);
+                if (me.importSelection) {
+                    column1.push({
+                        xtype: 'displayfield',
+                        fieldLabel: gettext('Selected Image'),
+                        value: me.importSelection,
+                    });
+                    column1.push({
+                        xtype: 'hiddenfield',
+                        name: 'import-from',
+                        value: me.importSelection,
+                    });
+                } else {
+                    column1.push({
+                        xtype: 'pveStorageSelector',
+                        reference: 'import-source',
+                        fieldLabel: gettext('Import Storage'),
+                        name: 'import-source-storage',
+                        storageContent: 'import',
+                        nodename: me.nodename,
+                        autoSelect: me.insideWizard,
+                        disabled: false,
+                        listeners: {
+                            change: function (_selector, storage) {
+                                me.lookup('import-source-file').setStorage(storage);
+                                me.lookup('import-source-file').setDisabled(!storage);
+                            },
                         },
-                    },
-                });
-                column1.push({
-                    xtype: 'pveFileSelector',
-                    reference: 'import-source-file',
-                    fieldLabel: gettext('Select Image'),
-                    storageContent: 'import',
-                    name: 'import-from',
-                    filter: (rec) => ['qcow2', 'vmdk', 'raw'].indexOf(rec?.data?.format) !== -1,
-                    nodename: me.nodename,
-                });
+                    });
+                    column1.push({
+                        xtype: 'pveFileSelector',
+                        reference: 'import-source-file',
+                        fieldLabel: gettext('Select Image'),
+                        storageContent: 'import',
+                        name: 'import-from',
+                        filter: (rec) => ['qcow2', 'vmdk', 'raw'].indexOf(rec?.data?.format) !== -1,
+                        nodename: me.nodename,
+                    });
+                }
                 column1.push({
                     xtype: 'pveDiskStorageSelector',
                     reference: 'import-target',
@@ -556,4 +570,122 @@ Ext.define('PVE.qemu.HDEdit', {
             },
         });
     },
+});
+
+Ext.define('PVE.qemu.HDImportEdit', {
+    extend: 'Proxmox.window.Edit',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    isAdd: true,
+    isCreate: true,
+
+    backgroundDelay: 5,
+
+    width: 600,
+    bodyPadding: 0,
+
+    title: gettext('Import Hard Disk'),
+
+    url: 'dummy', // will be set on vmid change
+
+    cbindData: function () {
+        let me = this;
+
+        if (!me.nodename) {
+            throw 'no nodename given';
+        }
+
+        if (!me.selection) {
+            throw 'no image preselected';
+        }
+
+        return {
+            nodename: me.nodename,
+            selection: me.selection,
+        };
+    },
+
+    controller: {
+        xclass: 'Ext.app.ViewController',
+
+        onVmidChange: function (_selector, value) {
+            let me = this;
+            let view = me.getView();
+            let ipanel = me.lookup('ipanel');
+            ipanel.setDisabled(true);
+            ipanel.setVisible(!!value);
+            let validation = me.lookup('validationProxy');
+            validation.setValue(false);
+            view.url = `/api2/extjs/nodes/${view.nodename}/qemu/${value}/config`;
+            Proxmox.Utils.setErrorMask(ipanel, true);
+
+            Proxmox.Utils.API2Request({
+                url: view.url,
+                method: 'GET',
+                success: function (response, opts) {
+                    ipanel.setVMConfig(response.result.data);
+
+                    validation.setValue(true);
+
+                    ipanel.setDisabled(false);
+                    Proxmox.Utils.setErrorMask(ipanel, false);
+                },
+                failure: function (response, _opts) {
+                    Proxmox.Utils.setErrorMask(ipanel, response.htmlStatus);
+                },
+            });
+        },
+    },
+
+    items: [
+        {
+            xtype: 'vmComboSelector',
+            padding: 10,
+            allowBlank: false,
+            fieldLabel: gettext('Target Guest'),
+            submitValue: false,
+            cbind: {}, // for nested cbinds
+            store: {
+                model: 'PVEResources',
+                autoLoad: true,
+                sorters: 'vmid',
+                cbind: {}, // for nested cbinds
+                filters: [
+                    {
+                        property: 'type',
+                        value: 'qemu',
+                    },
+                    {
+                        property: 'node',
+                        cbind: {
+                            value: '{nodename}',
+                        },
+                    },
+                ],
+            },
+            listeners: {
+                change: 'onVmidChange',
+            },
+        },
+        {
+            // used to prevent submitting while vm config is being loaded or that returns an error
+            xtype: 'textfield',
+            reference: 'validationProxy',
+            submitValue: false,
+            hidden: true,
+            validator: (val) => !!val,
+        },
+        {
+            xtype: 'pveQemuHDInputPanel',
+            reference: 'ipanel',
+            hidden: true,
+            disabled: true,
+            isCreate: true,
+            importDisk: true,
+            cbind: {
+                importSelection: '{selection}',
+                nodename: '{nodename}',
+            },
+        },
+    ],
 });
