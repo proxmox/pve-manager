@@ -728,6 +728,12 @@ Ext.define('PVE.qemu.HardwareView', {
                                 handler: editorFactory('HDEdit'),
                             },
                             {
+                                text: gettext('Import Hard Disk'),
+                                iconCls: 'fa fa-fw fa-cloud-download',
+                                disabled: !caps.vms['VM.Config.Disk'],
+                                handler: editorFactory('HDEdit', { importDisk: true }),
+                            },
+                            {
                                 text: gettext('CD/DVD Drive'),
                                 iconCls: 'pve-itype-icon-cdrom',
                                 disabled: !caps.vms['VM.Config.CDROM'],

@@ -8,6 +8,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     unused: false, // ADD usused disk imaged
 
+    importDisk: false, // use import options
+
     vmconfig: {}, // used to select usused disks
 
     viewModel: {
@@ -78,7 +80,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
             if (values.hdimage) {
                 me.drive.file = values.hdimage;
             } else {
-                me.drive.file = values.hdstorage + ':' + values.disksize;
+                let disksize = values['import-from'] ? 0 : values.disksize;
+                me.drive.file = `${values.hdstorage}:${disksize}`;
+                PVE.Utils.propertyStringSet(me.drive, values['import-from'], 'import-from');
             }
             me.drive.format = values.diskformat;
         }
@@ -168,6 +172,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
         var me = this;
         me.down('#hdstorage').setNodename(nodename);
         me.down('#hdimage').setStorage(undefined, nodename);
+
+        me.lookup('new-disk')?.setNodename(nodename);
+        me.lookup('import-source')?.setNodename(nodename);
+        me.lookup('import-source-file')?.setNodename(nodename);
+        me.lookup('import-target')?.setNodename(nodename);
     },
 
     hasAdvanced: true,
@@ -222,13 +231,52 @@ Ext.define('PVE.qemu.HDInputPanel', {
             });
             column1.push(me.unusedDisks);
         } else if (me.isCreate) {
-            column1.push({
-                xtype: 'pveDiskStorageSelector',
-                storageContent: 'images',
-                name: 'disk',
-                nodename: me.nodename,
-                autoSelect: me.insideWizard,
-            });
+            if (!me.importDisk) {
+                column1.push({
+                    reference: 'new-disk',
+                    xtype: 'pveDiskStorageSelector',
+                    storageContent: 'images',
+                    name: 'disk',
+                    nodename: me.nodename,
+                    autoSelect: me.insideWizard,
+                });
+            } else {
+                column1.push({
+                    xtype: 'pveStorageSelector',
+                    reference: 'import-source',
+                    fieldLabel: gettext('Import Storage'),
+                    name: 'import-source-storage',
+                    storageContent: 'import',
+                    nodename: me.nodename,
+                    autoSelect: me.insideWizard,
+                    disabled: false,
+                    listeners: {
+                        change: function (_selector, storage) {
+                            me.lookup('import-source-file').setStorage(storage);
+                            me.lookup('import-source-file').setDisabled(!storage);
+                        },
+                    },
+                });
+                column1.push({
+                    xtype: 'pveFileSelector',
+                    reference: 'import-source-file',
+                    fieldLabel: gettext('Select Image'),
+                    storageContent: 'import',
+                    name: 'import-from',
+                    filter: (rec) => ['qcow2', 'vmdk', 'raw'].indexOf(rec?.data?.format) !== -1,
+                    nodename: me.nodename,
+                });
+                column1.push({
+                    xtype: 'pveDiskStorageSelector',
+                    reference: 'import-target',
+                    storageLabel: gettext('Target Storage'),
+                    hideSize: true,
+                    storageContent: 'images',
+                    name: 'disk',
+                    nodename: me.nodename,
+                    autoSelect: me.insideWizard,
+                });
+            }
         } else {
             column1.push({
                 xtype: 'textfield',
@@ -455,6 +503,8 @@ Ext.define('PVE.qemu.HDEdit', {
     width: 600,
     bodyPadding: 0,
 
+    importDisk: false,
+
     initComponent: function () {
         var me = this;
 
@@ -472,6 +522,7 @@ Ext.define('PVE.qemu.HDEdit', {
             nodename: nodename,
             unused: unused,
             isCreate: me.isCreate,
+            importDisk: me.importDisk,
         });
 
         if (unused) {
