@@ -1,12 +1,16 @@
 Ext.define('PVE.panel.MultiDiskPanel', {
     extend: 'Ext.panel.Panel',
 
+    mixins: ['Proxmox.Mixin.CBind'],
+
     setNodename: function (nodename) {
         this.items.each((panel) => panel.setNodename(nodename));
     },
 
     border: false,
     bodyBorder: false,
+
+    importDisk: false, // allow import panel
 
     layout: 'card',
 
@@ -16,25 +20,35 @@ Ext.define('PVE.panel.MultiDiskPanel', {
         vmconfig: {},
 
         onAdd: function () {
+            this.addDiskChecked(false);
+        },
+
+        onImport: function () {
+            this.addDiskChecked(true);
+        },
+
+        addDiskChecked: function (importDisk) {
             let me = this;
             me.lookup('addButton').setDisabled(true);
-            me.addDisk();
+            me.lookup('addImportButton').setDisabled(true);
+            me.addDisk(importDisk);
             let count = me.lookup('grid').getStore().getCount() + 1; // +1 is from ide2
             me.lookup('addButton').setDisabled(count >= me.maxCount);
+            me.lookup('addImportButton').setDisabled(count >= me.maxCount);
         },
 
         getNextFreeDisk: function (vmconfig) {
             throw 'implement in subclass';
         },
 
-        addPanel: function (itemId, vmconfig, nextFreeDisk) {
+        addPanel: function (itemId, vmconfig, nextFreeDisk, importDisk) {
             throw 'implement in subclass';
         },
 
         // define in subclass
         diskSorter: undefined,
 
-        addDisk: function () {
+        addDisk: function (importDisk) {
             let me = this;
             let grid = me.lookup('grid');
             let store = grid.getStore();
@@ -53,7 +67,7 @@ Ext.define('PVE.panel.MultiDiskPanel', {
                 itemId,
             })[0];
 
-            let panel = me.addPanel(itemId, vmconfig, nextFreeDisk);
+            let panel = me.addPanel(itemId, vmconfig, nextFreeDisk, importDisk);
             panel.updateVMConfig(vmconfig);
 
             // we need to setup a validitychange handler, so that we can show
@@ -175,6 +189,7 @@ Ext.define('PVE.panel.MultiDiskPanel', {
             store.remove(record);
             me.getView().remove(record.get('itemId'));
             me.lookup('addButton').setDisabled(false);
+            me.lookup('addImportButton').setDisabled(false);
             me.updateVMConfig();
             me.checkValidity();
         },
@@ -214,6 +229,7 @@ Ext.define('PVE.panel.MultiDiskPanel', {
             dock: 'left',
             border: false,
             width: 130,
+            cbind: {}, // for nested cbinds
             items: [
                 {
                     xtype: 'grid',
@@ -260,6 +276,18 @@ Ext.define('PVE.panel.MultiDiskPanel', {
                     text: gettext('Add'),
                     iconCls: 'fa fa-plus-circle',
                     handler: 'onAdd',
+                },
+                {
+                    xtype: 'button',
+                    reference: 'addImportButton',
+                    text: gettext('Import'),
+                    iconCls: 'fa fa-cloud-download',
+                    handler: 'onImport',
+                    margin: '5 0 0 0',
+                    cbind: {
+                        disabled: '{!importDisk}',
+                        hidden: '{!importDisk}',
+                    },
                 },
                 {
                     // dummy field to control wizard validation

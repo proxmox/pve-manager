@@ -4,6 +4,8 @@ Ext.define('PVE.qemu.MultiHDPanel', {
 
     onlineHelp: 'qm_hard_disk',
 
+    importDisk: true,
+
     controller: {
         xclass: 'Ext.app.ViewController',
 
@@ -19,7 +21,7 @@ Ext.define('PVE.qemu.MultiHDPanel', {
             return PVE.Utils.nextFreeDisk(clist, vmconfig);
         },
 
-        addPanel: function (itemId, vmconfig, nextFreeDisk) {
+        addPanel: function (itemId, vmconfig, nextFreeDisk, importDisk) {
             let me = this;
             return me.getView().add({
                 vmconfig,
@@ -33,6 +35,7 @@ Ext.define('PVE.qemu.MultiHDPanel', {
                 itemId,
                 isCreate: true,
                 insideWizard: true,
+                importDisk,
             });
         },
 
