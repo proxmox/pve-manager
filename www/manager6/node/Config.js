@@ -190,6 +190,7 @@ Ext.define('PVE.node.Config', {
                     iconCls: 'fa fa-exchange',
                     itemId: 'network',
                     showApplyBtn: true,
+                    showAltNames: true,
                     groups: ['services'],
                     nodename: nodename,
                     editOptions: {

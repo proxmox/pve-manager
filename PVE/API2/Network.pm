@@ -12,6 +12,7 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
+use PVE::Network;
 use IO::File;
 
 use base qw(PVE::RESTHandler);
@@ -232,6 +233,32 @@ sub json_config_properties {
     return $prop;
 }
 
+sub extract_altnames {
+    my ($iface, $altnames) = @_;
+
+    $altnames = PVE::Network::altname_mapping() if !defined($altnames);
+
+    my $iface_altnames = [];
+    my $original_iface;
+
+    # when we get an altname, first extract the legacy iface name
+    if (my $legacy_iface = $altnames->{$iface}) {
+        push $iface_altnames->@*, $legacy_iface;
+        $original_iface = $iface;
+        $iface = $legacy_iface;
+    }
+
+    for my $altname (keys $altnames->%*) {
+        next if defined($original_iface) && $original_iface eq $altname;
+        if ($altnames->{$altname} eq $iface) {
+            push $iface_altnames->@*, $altname;
+        }
+    }
+
+    return [sort $iface_altnames->@*] if scalar($iface_altnames->@*) > 0;
+    return undef;
+}
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -391,6 +418,8 @@ __PACKAGE__->register_method({
 
         my $ifaces = $config->{ifaces};
 
+        my $altnames = PVE::Network::altname_mapping();
+
         delete $ifaces->{lo}; # do not list the loopback device
 
         if (my $tfilter = $param->{type}) {
@@ -449,6 +478,9 @@ __PACKAGE__->register_method({
             my $type = $ifaces->{$k}->{type};
             delete $ifaces->{$k}
                 if ($type eq 'bridge' || $type eq 'OVSBridge') && !$can_access_vnet->($k);
+
+            my $iface_altnames = extract_altnames($k, $altnames);
+            $ifaces->{$k}->{altnames} = $iface_altnames if defined($iface_altnames);
         }
 
         return PVE::RESTHandler::hash_to_array($ifaces, 'iface');
@@ -814,10 +846,15 @@ __PACKAGE__->register_method({
         my $config = PVE::INotify::read_file('interfaces');
         my $ifaces = $config->{ifaces};
 
-        raise_param_exc({ iface => "interface does not exist" })
-            if !$ifaces->{ $param->{iface} };
+        my $iface = $param->{iface};
 
-        return $ifaces->{ $param->{iface} };
+        raise_param_exc({ iface => "interface does not exist" })
+            if !$ifaces->{$iface};
+
+        my $altnames = extract_altnames($iface);
+        $ifaces->{$iface}->{altnames} = $altnames if defined($altnames);
+
+        return $ifaces->{$iface};
     },
 });
 
