@@ -97,23 +97,7 @@ sub extract_vm_stats {
 
     my $d;
 
-    if ($d = $rrd->{"pve2-vm/$vmid"}) {
-
-        $entry->{uptime} = ($d->[0] || 0) + 0;
-        $entry->{name} = $d->[1];
-        $entry->{status} = $entry->{uptime} ? 'running' : 'stopped';
-        $entry->{maxcpu} = ($d->[3] || 0) + 0;
-        $entry->{cpu} = ($d->[4] || 0) + 0;
-        $entry->{maxmem} = ($d->[5] || 0) + 0;
-        $entry->{mem} = ($d->[6] || 0) + 0;
-        $entry->{maxdisk} = ($d->[7] || 0) + 0;
-        $entry->{disk} = ($d->[8] || 0) + 0;
-        $entry->{netin} = ($d->[9] || 0) + 0;
-        $entry->{netout} = ($d->[10] || 0) + 0;
-        $entry->{diskread} = ($d->[11] || 0) + 0;
-        $entry->{diskwrite} = ($d->[12] || 0) + 0;
-
-    } elsif ($d = $rrd->{"pve2.3-vm/$vmid"}) {
+    if ($d = $rrd->{"pve2.3-vm/$vmid"}) {
 
         $entry->{uptime} = ($d->[0] || 0) + 0;
         $entry->{name} = $d->[1];
