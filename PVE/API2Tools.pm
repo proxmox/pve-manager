@@ -41,6 +41,24 @@ sub get_hwaddress {
     return $hwaddress;
 }
 
+# each rrd key for a resource will only exist once. The key format might be different though. Therefore return on first hit
+sub get_rrd_key {
+    my ($rrd, $type, $id) = @_;
+
+    # check for old formats: pve2-{type}/{id}. For VMs and CTs the version number is different than for nodes and storages
+    if ($type ne "vm" && exists $rrd->{"pve2-${type}/${id}"}) {
+        return "pve2-${type}/${id}";
+    } elsif ($type eq "vm" && exists $rrd->{"pve2.3-${type}/${id}"}) {
+        return "pve2.3-${type}/${id}";
+    }
+
+    # if no old key has been found, we expect on in the newer format: pve-{type}-{version}/{id}
+    # We accept all new versions, as the expectation is that they are only allowed to add new colums as non-breaking change
+    for my $k (keys %$rrd) {
+        return $k if $k =~ m/^pve-\Q${type}\E-\d\d?.\d\/\Q${id}\E$/;
+    }
+}
+
 sub extract_node_stats {
     my ($node, $members, $rrd, $exclude_stats) = @_;
 
@@ -51,8 +69,8 @@ sub extract_node_stats {
         status => 'unknown',
     };
 
-    if (my $d = $rrd->{"pve2-node/$node"}) {
-
+    my $key = get_rrd_key($rrd, "node", $node);
+    if (my $d = $rrd->{$key}) {
         if (
             !$members || # no cluster
             ($members->{$node} && $members->{$node}->{online})
@@ -96,8 +114,9 @@ sub extract_vm_stats {
     };
 
     my $d;
+    my $key = get_rrd_key($rrd, "vm", $vmid);
 
-    if ($d = $rrd->{"pve2.3-vm/$vmid"}) {
+    if (my $d = $rrd->{$key}) {
 
         $entry->{uptime} = ($d->[0] || 0) + 0;
         $entry->{name} = $d->[1];
@@ -135,7 +154,8 @@ sub extract_storage_stats {
         content => $content,
     };
 
-    if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {
+    my $key = get_rrd_key($rrd, "storage", "${node}/${storeid}");
+    if (my $d = $rrd->{$key}) {
         $entry->{maxdisk} = ($d->[1] || 0) + 0;
         $entry->{disk} = ($d->[2] || 0) + 0;
         $entry->{status} = 'available';
