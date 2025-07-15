@@ -408,6 +408,7 @@ Ext.define('PVE.window.GuestImport', {
                             }
                             data.file += ':0'; // for our special api format
                             if (id === 'efidisk0') {
+                                data.efitype = '4m';
                                 delete data['import-from'];
                             }
                             config[id] = PVE.Parser.printQemuDrive(data);
