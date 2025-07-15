@@ -1,3 +1,14 @@
+pve-manager (8.4.3) bookworm; urgency=medium
+
+  * pve8to9: fix error from bad log code ref.
+
+  * migrations: LVM autoactivation: setup CLI environment.
+
+  * ui: guest importer: use modern 4MB EFI-type for imported VMs that use EFI
+    as firmware.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Jul 2025 01:31:04 +0200
+
 pve-manager (8.4.2) bookworm; urgency=medium
 
   * fix #6311: ui: prevent the login consent text from showing twice for OIDC
