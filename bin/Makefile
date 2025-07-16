@@ -29,9 +29,9 @@ SCRIPTS =  			\
 
 HELPERS =			\
 	pve-startall-delay	\
-	pve-init-ceph-crash \
-	pvefirewallcommit   \
-	pvesdncommit
+	pve-init-ceph-crash	\
+	pve-firewall-commit	\
+	pve-sdn-commit
 
 MIGRATIONS =			\
 	pve-lvm-disable-autoactivation		\

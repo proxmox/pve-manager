@@ -5,7 +5,7 @@ Wants=pve-cluster.service network.target
 After=frr.service network.target pve-cluster.service
 
 [Service]
-ExecStart=/usr/share/pve-manager/helpers/pvesdncommit
+ExecStart=/usr/share/pve-manager/helpers/pve-sdn-commit
 Type=oneshot
 RemainAfterExit=yes
 

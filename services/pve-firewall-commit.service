@@ -5,7 +5,7 @@ Wants=pve-cluster.service
 After=pve-cluster.service
 
 [Service]
-ExecStart=/usr/share/pve-manager/helpers/pvefirewallcommit
+ExecStart=/usr/share/pve-manager/helpers/pve-firewall-commit
 Type=oneshot
 RemainAfterExit=yes
 
