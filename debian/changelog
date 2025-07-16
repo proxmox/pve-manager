@@ -1,3 +1,38 @@
+pve-manager (9.0.0~3) trixie; urgency=medium
+
+  * pve8to9: sync checks from stable branch.
+
+  * ui: enable online helplinks for VM audio edit panel and TPM panel.
+
+  * ui: enable online helplinks for tag config view.
+
+  * api: node services: track lxcfs, proxmox-firewall, pve-lxc-syscalld,
+    qmeventd units.
+
+  * ui: ceph: drop releases that are not available on PVE 9.
+
+  * pveceph: switch repo sources to modern deb822 format.
+
+  * ui: remove handling of obsolete notification-policy/target settings.
+
+  * ui: backup job details: show notification-mode instead of legacy keys.
+
+  * ui: guest importer: use modern 4MB EFI-type for imported VMs that use EFI
+    as firmware.
+
+  * ui: qemu disk edit: allow importing a disk from the import storage.
+
+  * ui: vm create wizard: allow importing disks directly from an import
+    storage.
+
+  * ui: import storage content: allow importing disks to existing VM disk
+    images from an import storage.
+
+  * fix #5894: pvestatd: always re-broadcast of node version-info if we cannot
+    find any information for our node.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Jul 2025 02:48:30 +0200
+
 pve-manager (9.0.0~2) trixie; urgency=medium
 
   * d/control: run all binary tragets under (fake)root to ensure dpkg-deb
