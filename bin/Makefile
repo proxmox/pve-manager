@@ -14,6 +14,7 @@ CLITOOLS = \
 	pvesh \
 	pve7to8 \
 	pve8to9 \
+	proxmox-network-interface-pinning \
 
 
 SCRIPTS =  			\
@@ -69,6 +70,22 @@ pve7to8.1:
 	printf "Any failure must be addressed before the upgrade, and any warning must be addressed, \
 	 or at least carefully evaluated, if a false-positive is suspected\n" >> $@.tmp
 	printf ".SH SYNOPSIS\npve7to8 [--full]\n" >> $@.tmp
+	mv $@.tmp $@
+
+proxmox-network-interface-pinning.1:
+	printf "proxmox-network-interface-pinning" > $@.tmp
+	mv $@.tmp $@
+
+proxmox-network-interface-pinning.api-verified:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->verify_api();"
+	touch 'proxmox-network-interface-pinning.service-api-verified'
+
+proxmox-network-interface-pinning.zsh-completion:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->generate_zsh_completions();" >$@.tmp
+	mv $@.tmp $@
+
+proxmox-network-interface-pinning.bash-completion:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->generate_bash_completions();" >$@.tmp
 	mv $@.tmp $@
 
 pve8to9.1:
