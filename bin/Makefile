@@ -31,7 +31,8 @@ HELPERS =			\
 	pve-init-ceph-crash
 
 MIGRATIONS =			\
-	pve-lvm-disable-autoactivation
+	pve-lvm-disable-autoactivation		\
+	pve-rbd-storage-configure-keyring
 
 SERVICE_MANS = $(addsuffix .8, $(SERVICES))
 

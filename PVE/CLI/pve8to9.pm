@@ -270,6 +270,107 @@ sub check_pve_packages {
     }
 }
 
+sub check_rbd_storage_keyring {
+    my ($cfg, $dry_run) = @_;
+
+    my $pve_managed = [];
+    my $already_good = [];
+    my $update = [];
+
+    log_info("Checking whether all external RBD storages have the 'keyring' option configured");
+
+    for my $storeid (sort keys $cfg->{ids}->%*) {
+        eval {
+            my $scfg = PVE::Storage::storage_config($cfg, $storeid);
+
+            return if $scfg->{type} ne 'rbd';
+
+            if (!defined($scfg->{monhost})) {
+                push $pve_managed->@*, $storeid;
+                return;
+            }
+
+            my $ceph_storage_keyring = "/etc/pve/priv/ceph/${storeid}.keyring";
+            my $ceph_storage_config = "/etc/pve/priv/ceph/${storeid}.conf";
+
+            my $ceph_config = {};
+
+            if (-e $ceph_storage_config) {
+                my $content = PVE::Tools::file_get_contents($ceph_storage_config);
+                $ceph_config =
+                    PVE::CephConfig::parse_ceph_config($ceph_storage_config, $content);
+
+                if (my $keyring_path = $ceph_config->{global}->{keyring}) {
+                    if ($keyring_path eq $ceph_storage_keyring) {
+                        push $already_good->@*, $storeid;
+                    } else {
+                        log_warn(
+                            "storage $storeid: keyring option configured ($keyring_path), but"
+                                . " different from the expected value ($ceph_storage_keyring),"
+                                . " check manually!");
+                    }
+
+                    return;
+                }
+            }
+
+            if (!-e $ceph_storage_keyring) {
+                log_info("skipping storage $storeid: keyring file $ceph_storage_keyring does"
+                    . " not exist");
+                return;
+            }
+
+            if ($dry_run) {
+                push $update->@*, $storeid;
+                return;
+            }
+
+            $ceph_config->{global}->{keyring} = $ceph_storage_keyring;
+
+            my $contents =
+                PVE::CephConfig::write_ceph_config($ceph_storage_config, $ceph_config);
+            PVE::Tools::file_set_contents($ceph_storage_config, $contents, 0600);
+
+            push $update->@*, $storeid;
+        };
+        my $err = $@;
+        if ($err) {
+            log_fail("could not ensure that 'keyring' option is set for storage '$storeid': $err");
+        }
+    }
+
+    if (scalar($pve_managed->@*)) {
+        my $storeid_txt = join(',', $pve_managed->@*);
+        log_info("The following RBD storages are PVE-managed, so nothing to do: $storeid_txt");
+    }
+
+    if (scalar($already_good->@*)) {
+        my $storeid_txt = join(',', $already_good->@*);
+        log_pass(
+            "The following externally managed RBD storages already have the 'keyring' option"
+                . " configured correctly: $storeid_txt");
+    }
+
+    if (scalar($update->@*)) {
+        my $storeid_txt = join(',', $update->@*);
+        if ($dry_run) {
+            log_notice(
+                "Starting with PVE 9, externally managed RBD storages require that the 'keyring'"
+                    . " option is configured in the storage's Ceph configuration.\nYou can run the"
+                    . " following command to automatically set the option:\n\n"
+                    . "\t/usr/share/pve-manager/migrations/pve-rbd-storage-configure-keyring\n");
+            log_fail(
+                "The Ceph configuration of the following externally managed RBD storages needs to"
+                    . " be updated: $storeid_txt");
+
+        } else {
+            log_pass(
+                "The Ceph configuration of the following externally managed RBD storages has"
+                    . " been updated: $storeid_txt");
+        }
+    }
+}
+
 sub check_storage_health {
     print_header("CHECKING CONFIGURED STORAGES");
     my $cfg = PVE::Storage::config();
@@ -296,6 +397,8 @@ sub check_storage_health {
     log_fail("failed to check storage content directories - $@") if $@;
 
     check_glusterfs_storage_usage();
+
+    check_rbd_storage_keyring($cfg, 1);
 }
 
 sub check_cluster_corosync {
