@@ -52,45 +52,39 @@ Ext.define('PVE.panel.StorageBase', {
             },
         );
 
+        const addAdvancedWidget = widget => {
+            me.advancedColumn1 = me.advancedColumn1 || [];
+            me.advancedColumn2 = me.advancedColumn2 || [];
+            if (me.advancedColumn2.length < me.advancedColumn1.length) {
+                me.advancedColumn2.unshift(widget);
+            } else {
+                me.advancedColumn1.unshift(widget);
+            }
+        };
+
         const qemuImgStorageTypes = ['dir', 'btrfs', 'nfs', 'cifs'];
 
         if (qemuImgStorageTypes.includes(me.type)) {
-            const preallocSelector = {
+            addAdvancedWidget({
                 xtype: 'pvePreallocationSelector',
                 name: 'preallocation',
                 fieldLabel: gettext('Preallocation'),
                 allowBlank: false,
                 deleteEmpty: !me.isCreate,
                 value: '__default__',
-            };
-
-            me.advancedColumn1 = me.advancedColumn1 || [];
-            me.advancedColumn2 = me.advancedColumn2 || [];
-            if (me.advancedColumn2.length < me.advancedColumn1.length) {
-                me.advancedColumn2.unshift(preallocSelector);
-            } else {
-                me.advancedColumn1.unshift(preallocSelector);
-            }
+            });
         }
 
         const externalStorageManagedSnapshotSupport = ['dir', 'nfs', 'cifs', 'lvm'];
 
         if (externalStorageManagedSnapshotSupport.includes(me.type)) {
-            const storageManagedSnapshots = {
+            addAdvancedWidget({
                 xtype: 'proxmoxcheckbox',
                 name: 'external-snapshots',
                 boxLabel: gettext('Storage-Managed Snapshots'), // TODO: better name?!
                 deleteEmpty: !me.isCreate,
                 defaultValue: false,
-            };
-
-            me.advancedColumn1 = me.advancedColumn1 || [];
-            me.advancedColumn2 = me.advancedColumn2 || [];
-            if (me.advancedColumn2.length < me.advancedColumn1.length) {
-                me.advancedColumn2.unshift(storageManagedSnapshots);
-            } else {
-                me.advancedColumn1.unshift(storageManagedSnapshots);
-            }
+            });
         }
 
         me.callParent();
