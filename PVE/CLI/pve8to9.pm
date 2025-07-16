@@ -26,6 +26,7 @@ use PVE::Storage::Plugin;
 use PVE::Tools qw(run_command split_list file_get_contents trim);
 use PVE::QemuConfig;
 use PVE::QemuServer;
+use PVE::QemuServer::Machine;
 use PVE::VZDump::Common;
 use PVE::LXC;
 use PVE::LXC::Config;
@@ -797,6 +798,135 @@ sub check_custom_pool_roles {
     }
 }
 
+my sub check_qemu_machine_versions {
+    log_info("Checking VM configurations for outdated machine versions");
+
+    # QEMU 11.2 is expected to be the last release in Proxmox VE 9, so machine version 6.0 is the
+    # smallest that is supported until the end of the Proxmox VE 9 release cycle.
+    my @baseline = (6, 0);
+
+    my $old_configured = [];
+    my $old_hibernated = [];
+    my $old_online_snapshot = {};
+    my $old_offline_snapshot = {};
+
+    my $vms = PVE::QemuServer::config_list();
+    for my $vmid (sort { $a <=> $b } keys $vms->%*) {
+        my $conf = PVE::QemuConfig->load_config($vmid);
+
+        # first, actually configured machine version
+        my $machine_type = PVE::QemuServer::Machine::get_vm_machine($conf, undef, $conf->{arch});
+        if (
+            PVE::QemuServer::Machine::extract_version($machine_type) # no version means latest
+            && !PVE::QemuServer::Machine::is_machine_version_at_least($machine_type, @baseline)
+        ) {
+            push $old_configured->@*, $vmid;
+        }
+
+        # second, if hibernated, running machine version
+        if ($conf->{vmstate}) {
+            my $machine_type = PVE::QemuServer::Machine::get_vm_machine(
+                $conf,
+                $conf->{runningmachine},
+                $conf->{arch},
+            );
+            if (
+                PVE::QemuServer::Machine::extract_version($machine_type) # no version means latest
+                && !PVE::QemuServer::Machine::is_machine_version_at_least(
+                    $machine_type, @baseline,
+                )
+            ) {
+                push $old_hibernated->@*, $vmid;
+            }
+        }
+
+        # third, snapshots using old machine versions
+        if (defined($conf->{snapshots})) {
+            for my $snap (keys $conf->{snapshots}->%*) {
+                my $snap_conf = $conf->{snapshots}->{$snap};
+
+                my $machine_type = PVE::QemuServer::Machine::get_vm_machine(
+                    $snap_conf,
+                    $snap_conf->{runningmachine},
+                    $snap_conf->{arch},
+                );
+                if ( # no version means latest
+                    PVE::QemuServer::Machine::extract_version($machine_type)
+                    && !PVE::QemuServer::Machine::is_machine_version_at_least(
+                        $machine_type, @baseline,
+                    )
+                ) {
+                    if ($snap_conf->{vmstate}) {
+                        push $old_online_snapshot->{$vmid}->@*, $snap;
+                    } else {
+                        push $old_offline_snapshot->{$vmid}->@*, $snap;
+                    }
+                }
+            }
+        }
+    }
+
+    if (
+        !scalar($old_configured->@*)
+        && !scalar($old_hibernated->@*)
+        && !scalar(keys $old_offline_snapshot->%*)
+        && !scalar(keys $old_online_snapshot->%*)
+    ) {
+        log_pass("All VM machine versions are recent enough");
+        return;
+    }
+
+    my $basline_txt = join('.', @baseline);
+    my $next_pve_major = ($min_pve_major + 1);
+
+    log_notice(
+        "QEMU machine versions older than $basline_txt are expected to be dropped during the"
+            . " Proxmox VE $next_pve_major release life cycle. For more information, see"
+            . " https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_machine_type"
+            . " and https://pve.proxmox.com/wiki/QEMU_Machine_Version_Upgrade");
+
+    if (scalar($old_configured->@*)) {
+        my $vmid_list_txt = join(',', $old_configured->@*);
+        log_warn(
+            "VMs with the following IDs have an old machine version configured. The machine version"
+                . " might need to be updated to be able to start the VM in Proxmox VE"
+                . " $next_pve_major: $vmid_list_txt");
+    }
+
+    if (scalar($old_hibernated->@*)) {
+        my $vmid_list_txt = join(',', $old_hibernated->@*);
+        log_warn(
+            "VMs with the following IDs are hibernated with an old machine version and it might not"
+                . " be possible to resume them in Proxmox VE $next_pve_major: $vmid_list_txt");
+    }
+
+    if (scalar(keys $old_online_snapshot->%*)) {
+        my $vmid_txts = [];
+        for my $vmid (sort keys $old_online_snapshot->%*) {
+            my $snapshot_list_txt = join(',', $old_online_snapshot->{$vmid}->@*);
+            push $vmid_txts->@*, "$vmid: $snapshot_list_txt";
+        }
+        my $vmid_list_txt = join("; ", $vmid_txts->@*);
+        log_warn(
+            "VMs with the following IDs have live snapshots with an old machine version and it"
+                . " might not be possible to rollback to these snapshots in Proxmox VE"
+                . " $next_pve_major: $vmid_list_txt");
+    }
+
+    if (scalar(keys $old_offline_snapshot->%*)) {
+        my $vmid_txts = [];
+        for my $vmid (sort keys $old_offline_snapshot->%*) {
+            my $snapshot_list_txt = join(',', $old_offline_snapshot->{$vmid}->@*);
+            push $vmid_txts->@*, "$vmid: $snapshot_list_txt";
+        }
+        my $vmid_list_txt = join("; ", $vmid_txts->@*);
+        log_warn(
+            "VMs with the following IDs have snapshots with an old machine version configured."
+                . " The machine version might need to be updated after rollback to be able to start"
+                . " the VM in Proxmox VE $next_pve_major: $vmid_list_txt");
+    }
+}
+
 my sub check_max_length {
     my ($raw, $max_length, $warning) = @_;
     log_warn($warning) if defined($raw) && length($raw) > $max_length;
@@ -864,6 +994,8 @@ sub check_node_and_guest_configurations {
     } else {
         log_pass("No legacy 'lxc.cgroup' keys found.");
     }
+
+    check_qemu_machine_versions();
 }
 
 sub check_storage_content {
