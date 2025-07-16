@@ -320,7 +320,8 @@ __PACKAGE__->register_method({
     name => 'generate',
     path => 'generate',
     method => 'POST',
-    description => 'Generates the names of NICs via systemd.link files.',
+    description => 'Generate systemd.link files to pin the names of one or more network'
+        . ' interfaces and update all network-related configuration files.',
     parameters => {
         additionalProperties => 0,
         properties => {
