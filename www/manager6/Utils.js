@@ -799,12 +799,6 @@ Ext.define('PVE.Utils', {
                 faIcon: 'building',
                 backups: true,
             },
-            glusterfs: {
-                name: 'GlusterFS',
-                ipanel: 'GlusterFsInputPanel',
-                faIcon: 'building',
-                backups: true,
-            },
             iscsi: {
                 name: 'iSCSI',
                 ipanel: 'IScsiInputPanel',

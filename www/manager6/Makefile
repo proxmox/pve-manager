@@ -315,7 +315,6 @@ JSSRC= 							\
 	storage/CIFSEdit.js				\
 	storage/CephFSEdit.js				\
 	storage/DirEdit.js				\
-	storage/GlusterFsEdit.js			\
 	storage/ImageView.js				\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\

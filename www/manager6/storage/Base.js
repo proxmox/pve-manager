@@ -52,7 +52,7 @@ Ext.define('PVE.panel.StorageBase', {
             },
         );
 
-        const qemuImgStorageTypes = ['dir', 'btrfs', 'nfs', 'cifs', 'glusterfs'];
+        const qemuImgStorageTypes = ['dir', 'btrfs', 'nfs', 'cifs'];
 
         if (qemuImgStorageTypes.includes(me.type)) {
             const preallocSelector = {
