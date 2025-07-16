@@ -308,6 +308,7 @@ JSSRC= 							\
 	sdn/zones/SimpleEdit.js				\
 	sdn/zones/VlanEdit.js				\
 	sdn/zones/VxlanEdit.js				\
+	sdn/fabrics/Common.js				\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\
