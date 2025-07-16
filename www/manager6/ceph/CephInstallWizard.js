@@ -516,6 +516,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                     value: '',
                     fieldLabel: 'Public Network IP/CIDR',
                     autoSelect: false,
+                    type: 'include_sdn',
                     bind: {
                         allowBlank: '{configuration}',
                     },
@@ -529,6 +530,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                     fieldLabel: 'Cluster Network IP/CIDR',
                     allowBlank: true,
                     autoSelect: false,
+                    type: 'include_sdn',
                     emptyText: gettext('Same as Public Network'),
                     cbind: {
                         nodename: '{nodename}',

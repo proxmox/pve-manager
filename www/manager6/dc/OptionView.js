@@ -124,6 +124,7 @@ Ext.define('PVE.dc.OptionView', {
                     editable: true,
                     notFoundIsValid: true,
                     vtype: 'IP64CIDRAddress',
+                    type: 'include_sdn',
                 },
             ],
         });
