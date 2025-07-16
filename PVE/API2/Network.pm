@@ -43,6 +43,7 @@ my $network_type_enum = [
     'eth',
     'alias',
     'vlan',
+    'fabric',
     'OVSBridge',
     'OVSBond',
     'OVSPort',
@@ -245,7 +246,7 @@ __PACKAGE__->register_method({
             type => {
                 description => "Only list specific interface types.",
                 type => 'string',
-                enum => [@$network_type_enum, 'any_bridge', 'any_local_bridge'],
+                enum => [@$network_type_enum, 'any_bridge', 'any_local_bridge', 'include_sdn'],
                 optional => 1,
             },
         },
@@ -394,21 +395,45 @@ __PACKAGE__->register_method({
 
         if (my $tfilter = $param->{type}) {
             my $vnets;
+            my $fabrics;
 
-            if ($have_sdn && $tfilter eq 'any_bridge') {
+            if ($have_sdn && $tfilter =~ /^(any_bridge|include_sdn|vnet)$/) {
                 $vnets = PVE::Network::SDN::get_local_vnets(); # returns already access-filtered
             }
 
-            for my $k (sort keys $ifaces->%*) {
-                my $type = $ifaces->{$k}->{type};
-                my $is_bridge = $type eq 'bridge' || $type eq 'OVSBridge';
-                my $bridge_match = $is_bridge && $tfilter =~ /^any(_local)?_bridge$/;
-                my $match = $tfilter eq $type || $bridge_match;
-                delete $ifaces->{$k} if !$match;
+            if ($have_sdn && $tfilter =~ /^(include_sdn|fabric)$/) {
+                my $local_node = PVE::INotify::nodename();
+
+                $fabrics =
+                    PVE::Network::SDN::Fabrics::config(1)->get_interfaces_for_node($local_node);
+            }
+
+            if ($tfilter ne 'include_sdn') {
+                for my $k (sort keys $ifaces->%*) {
+                    my $type = $ifaces->{$k}->{type};
+                    my $is_bridge = $type eq 'bridge' || $type eq 'OVSBridge';
+                    my $bridge_match = $is_bridge && $tfilter =~ /^any(_local)?_bridge$/;
+                    my $match = $tfilter eq $type || $bridge_match;
+                    delete $ifaces->{$k} if !$match;
+                }
             }
 
             if (defined($vnets)) {
                 $ifaces->{$_} = $vnets->{$_} for keys $vnets->%*;
+            }
+
+            if (defined($fabrics)) {
+                for my $fabric_id (keys %$fabrics) {
+                    next
+                        if !$rpcenv->check_any(
+                            $authuser,
+                            "/sdn/fabrics/$fabric_id",
+                            ['SDN.Audit', 'SDN.Use', 'SDN.Allocate'],
+                            1,
+                        );
+
+                    $ifaces->{$fabric_id} = $fabrics->{$fabric_id};
+                }
             }
         }
 
