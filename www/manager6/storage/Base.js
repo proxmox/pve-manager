@@ -73,6 +73,26 @@ Ext.define('PVE.panel.StorageBase', {
             }
         }
 
+        const externalStorageManagedSnapshotSupport = ['dir', 'nfs', 'cifs', 'lvm'];
+
+        if (externalStorageManagedSnapshotSupport.includes(me.type)) {
+            const storageManagedSnapshots = {
+                xtype: 'proxmoxcheckbox',
+                name: 'external-snapshots',
+                boxLabel: gettext('Storage-Managed Snapshots'), // TODO: better name?!
+                deleteEmpty: !me.isCreate,
+                defaultValue: false,
+            };
+
+            me.advancedColumn1 = me.advancedColumn1 || [];
+            me.advancedColumn2 = me.advancedColumn2 || [];
+            if (me.advancedColumn2.length < me.advancedColumn1.length) {
+                me.advancedColumn2.unshift(storageManagedSnapshots);
+            } else {
+                me.advancedColumn1.unshift(storageManagedSnapshots);
+            }
+        }
+
         me.callParent();
     },
 });
