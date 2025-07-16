@@ -155,16 +155,6 @@ case "$1" in
         pveam update || true
     fi
 
-    # Always try to clean old entry, even when proxmox-mail-forward entry is already present.
-    # This ensures it will still be cleaned after an upgrade following a downgrade.
-    if test -f /root/.forward; then
-        sed -i '\!|/usr/bin/pvemailforward!d' /root/.forward
-    fi
-
-    if ! test -f /root/.forward || ! grep -q '|/usr/bin/proxmox-mail-forward' /root/.forward; then
-        echo '|/usr/bin/proxmox-mail-forward' >>/root/.forward
-    fi
-
     systemctl --system daemon-reload >/dev/null || true
 
     # same as dh_systemd_enable (code copied)
