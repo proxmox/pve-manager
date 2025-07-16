@@ -829,6 +829,11 @@ __PACKAGE__->register_method({
         additionalProperties => 0,
         properties => {
             node => get_standard_option('pve-node'),
+            skip_frr => {
+                type => 'boolean',
+                description => 'Whether FRR config generation should get skipped or not.',
+                optional => 1,
+            },
         },
     },
     returns => { type => 'string' },
@@ -843,6 +848,8 @@ __PACKAGE__->register_method({
         my $current_config_file = "/etc/network/interfaces";
         my $new_config_file = "/etc/network/interfaces.new";
 
+        my $skip_frr = extract_param($param, 'skip_frr');
+
         assert_ifupdown2_installed();
 
         my $worker = sub {
@@ -850,7 +857,7 @@ __PACKAGE__->register_method({
             rename($new_config_file, $current_config_file) if -e $new_config_file;
 
             if ($have_sdn) {
-                PVE::Network::SDN::generate_zone_config();
+                PVE::Network::SDN::generate_etc_network_config();
                 PVE::Network::SDN::generate_dhcp_config();
             }
 
@@ -862,8 +869,8 @@ __PACKAGE__->register_method({
             };
             PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
-            if ($have_sdn) {
-                PVE::Network::SDN::generate_controller_config(1);
+            if ($have_sdn && !$skip_frr) {
+                PVE::Network::SDN::generate_frr_config(1);
             }
         };
         return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
@@ -922,3 +929,5 @@ __PACKAGE__->register_method({
         return undef;
     },
 });
+
+1;
