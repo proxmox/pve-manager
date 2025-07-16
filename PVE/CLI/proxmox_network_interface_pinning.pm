@@ -145,10 +145,10 @@ my sub parse_link_file {
             $section = $1;
             $data->{$section} = {};
         } elsif ($line =~ m/^([a-zA-Z]+)=(.+)$/) {
-            die "key-value pair before section" if !$section;
+            die "key-value pair before section at line: $line\n" if !$section;
             $data->{$section}->{$1} = $2;
         } else {
-            die "unrecognized line";
+            die "unrecognized line: $line\n";
         }
     }
 
@@ -381,18 +381,18 @@ __PACKAGE__->register_method({
                 );
 
             for my $old_name (sort keys $mapping->%*) {
-                print "Renaming link '$old_name' to '$mapping->{$old_name}'\n";
+                print "Name for link '$old_name' will change to '$mapping->{$old_name}'\n";
             }
 
             generate_link_files($ip_links, $mapping);
-            print "Succesfully generated .link files\n";
+            print "Successfully generated .link files in '/usr/local/lib/systemd/network/'\n";
 
             update_host_fw_config($mapping);
             update_etc_network_interfaces($mapping, $existing_pins);
             update_sdn_controllers($mapping);
 
-            print "Successfully updated Proxmox VE configuration files\n";
-            print "Please reboot to apply the changes to your configuration\n";
+            print "Successfully updated Proxmox VE configuration files.\n";
+            print "\nPlease reboot to apply the changes to your configuration\n\n";
         };
 
         PVE::Tools::lock_file($PVEETH_LOCK, 10, $code);
