@@ -85,6 +85,14 @@ Ext.define('PVE.panel.StorageBase', {
                 deleteEmpty: !me.isCreate,
                 defaultValue: false,
             });
+
+            me.advancedColumnB = me.advancedColumnB || [];
+            me.advancedColumnB.unshift({
+                xtype: 'displayfield',
+                name: 'external-snapshot-hint',
+                userCls: 'pmx-hint',
+                value: gettext('Storage-Managed Snapshots are a technology preview.'),
+            });
         }
 
         me.callParent();
