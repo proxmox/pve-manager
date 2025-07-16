@@ -311,6 +311,7 @@ JSSRC= 							\
 	sdn/fabrics/Common.js				\
 	sdn/fabrics/InterfacePanel.js				\
 	sdn/fabrics/openfabric/InterfacePanel.js				\
+	sdn/fabrics/ospf/InterfacePanel.js	\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\
