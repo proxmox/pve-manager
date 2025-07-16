@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use PVE::Network::SDN;
+
+PVE::Network::SDN::commit_config();
+
+PVE::Network::SDN::generate_zone_config();
+PVE::Network::SDN::generate_dhcp_config();
+PVE::Network::SDN::generate_controller_config(1);
+
+exit 0;
