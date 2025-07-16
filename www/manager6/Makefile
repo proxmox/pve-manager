@@ -314,6 +314,7 @@ JSSRC= 							\
 	sdn/fabrics/openfabric/InterfacePanel.js				\
 	sdn/fabrics/openfabric/NodeEdit.js				\
 	sdn/fabrics/ospf/InterfacePanel.js	\
+	sdn/fabrics/ospf/NodeEdit.js	\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\
