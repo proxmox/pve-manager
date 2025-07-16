@@ -336,6 +336,10 @@ WIDGETKIT=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 
 all:
 
+.PHONY: tidy
+tidy: $(JSSRC)
+	proxmox-biome format --fix $?
+
 .lint-incremental: $(JSSRC)
 	$(BIOME) lint $?
 	touch "$@"
