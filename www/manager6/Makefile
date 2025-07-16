@@ -310,6 +310,7 @@ JSSRC= 							\
 	sdn/zones/VxlanEdit.js				\
 	sdn/fabrics/Common.js				\
 	sdn/fabrics/InterfacePanel.js				\
+	sdn/fabrics/openfabric/InterfacePanel.js				\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\
