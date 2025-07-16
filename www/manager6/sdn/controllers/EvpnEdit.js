@@ -25,10 +25,40 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
                 allowBlank: false,
             },
             {
-                xtype: 'textfield',
+                xtype: 'proxmoxNetworkSelector',
+                name: 'fabric',
+                type: 'fabric',
+                valueField: 'iface',
+                displayField: 'iface',
+                fieldLabel: 'SDN Fabric',
+                allowBlank: true,
+                skipEmptyText: true,
+                autoSelect: false,
+                emptyText: gettext('used as underlay network'),
+                nodename: 'localhost',
+                listConfig: {
+                    width: 600,
+                    columns: [
+                        {
+                            header: gettext('Fabric'),
+                            width: 90,
+                            dataIndex: 'iface',
+                        },
+                        {
+                            header: gettext('CIDR'),
+                            dataIndex: 'cidr',
+                            hideable: false,
+                            flex: 1,
+                        },
+                    ],
+                },
+            },
+            {
+                xtype: 'proxmoxtextfield',
                 name: 'peers',
                 fieldLabel: gettext('Peers'),
-                allowBlank: false,
+                allowBlank: true,
+                deleteEmpty: true,
             },
         ];
 

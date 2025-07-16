@@ -8,8 +8,25 @@ Ext.define('PVE.panel.SDNControllerBase', {
 
         if (me.isCreate) {
             values.type = me.type;
+            delete values.delete;
         } else {
             delete values.controller;
+
+            for (const [key, value] of Object.entries(values)) {
+                if (value === null || value === undefined || value === '') {
+                    delete values[key];
+
+                    if (values.delete) {
+                        if (Array.isArray(values.delete)) {
+                            values.delete.push(key);
+                        } else {
+                            values.delete = [values.delete, key];
+                        }
+                    } else {
+                        values.delete = [key];
+                    }
+                }
+            }
         }
 
         return values;
