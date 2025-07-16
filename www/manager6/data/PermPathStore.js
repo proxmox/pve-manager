@@ -15,6 +15,7 @@ Ext.define('PVE.data.PermPathStore', {
         { value: '/mapping/usb' },
         { value: '/nodes' },
         { value: '/pool' },
+        { value: '/sdn/fabrics' },
         { value: '/sdn/zones' },
         { value: '/storage' },
         { value: '/vms' },
