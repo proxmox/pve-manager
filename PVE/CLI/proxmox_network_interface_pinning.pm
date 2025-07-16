@@ -325,10 +325,12 @@ __PACKAGE__->register_method({
     parameters => {
         additionalProperties => 0,
         properties => {
-            nic => {
-                description => 'Only pin a specific NIC.',
+            # TODO: support a target name or prefix once pve-common supports generic physical ifaces
+            interface => {
+                description => 'Only pin a specific interface.',
                 type => 'string',
                 format => 'pve-iface',
+                default => '<all>', # just for the docs.
                 optional => 1,
             },
         },
@@ -352,20 +354,19 @@ __PACKAGE__->register_method({
         }
 
         my $code = sub {
-            my $prefix = 'nic';
+            my $prefix = 'nic'; # TODO: make flexible once pve-common supports that.
 
             my $ip_links = get_ip_links();
             my $pinned = get_pinned();
             my $existing_pins = resolve_pinned($ip_links, $pinned);
 
-            if ($params->{nic}) {
-                die "Could not find link with name $params->{nic}"
-                    if !$ip_links->{ $params->{nic} };
+            if ($iface) {
+                die "Could not find link with name '$iface'\n" if !$ip_links->{$iface};
 
-                die "There already exists a pin for NIC $params->{nic}"
-                    if $existing_pins->{ $params->{nic} };
+                die "There already exists a pin for NIC '$iface' - aborting.\n"
+                    if $existing_pins->{$iface};
 
-                $ip_links = { $params->{nic} => $ip_links->{ $params->{nic} } };
+                $ip_links = { $iface => $ip_links->{$iface} };
             } else {
                 for my $iface_name (keys $existing_pins->%*) {
                     delete $ip_links->{$iface_name};
