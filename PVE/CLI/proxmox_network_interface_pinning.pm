@@ -1,7 +1,6 @@
 package PVE::CLI::proxmox_network_interface_pinning;
 
-use strict;
-use warnings;
+use v5.36;
 
 use File::Copy;
 use POSIX qw(:errno_h);
@@ -338,6 +337,18 @@ __PACKAGE__->register_method({
     },
     code => sub {
         my ($params) = @_;
+
+        my $iface = $params->{interface}; # undef means all.
+
+        if (-t STDOUT) {
+            my $target = defined($iface) ? "the interface '$iface'" : 'all interfaces';
+            say "This will generate name pinning configuration for $target - continue (y/N)? ";
+
+            my $answer = <STDIN>;
+            my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
+
+            die "Aborting pinning as requested\n" if !$continue;
+        }
 
         my $code = sub {
             my $prefix = 'nic';
