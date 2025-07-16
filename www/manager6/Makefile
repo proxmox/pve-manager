@@ -308,6 +308,7 @@ JSSRC= 							\
 	sdn/zones/SimpleEdit.js				\
 	sdn/zones/VlanEdit.js				\
 	sdn/zones/VxlanEdit.js				\
+	sdn/FabricsView.js				\
 	sdn/fabrics/Common.js				\
 	sdn/fabrics/InterfacePanel.js				\
 	sdn/fabrics/NodeEdit.js				\

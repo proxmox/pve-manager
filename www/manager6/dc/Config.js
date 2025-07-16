@@ -236,6 +236,14 @@ Ext.define('PVE.dc.Config', {
                         iconCls: 'fa fa-shield',
                         itemId: 'sdnfirewall',
                     },
+                    {
+                        xtype: 'pveSDNFabricView',
+                        groups: ['sdn'],
+                        title: gettext('Fabrics'),
+                        hidden: true,
+                        iconCls: 'fa fa-road',
+                        itemId: 'sdnfabrics',
+                    },
                 );
             }
 
