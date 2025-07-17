@@ -4,11 +4,26 @@ use strict;
 use warnings;
 
 use PVE::Network::SDN;
+use PVE::Tools;
 
+my $previous_config_has_frr = PVE::Network::SDN::running_config_has_frr();
 PVE::Network::SDN::commit_config();
 
-PVE::Network::SDN::generate_zone_config();
+my $new_config_has_frr = PVE::Network::SDN::running_config_has_frr();
+my $skip_frr = !($previous_config_has_frr || $new_config_has_frr);
+
+PVE::Network::SDN::generate_etc_network_config();
 PVE::Network::SDN::generate_dhcp_config();
-PVE::Network::SDN::generate_controller_config(1);
+
+my $err = sub {
+    my $line = shift;
+    if ($line =~ /(warning|error): (\S+):/) {
+        print "$2 : $line \n";
+    }
+};
+
+PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
+
+PVE::Network::SDN::generate_frr_config(1) if !$skip_frr;
 
 exit 0;
