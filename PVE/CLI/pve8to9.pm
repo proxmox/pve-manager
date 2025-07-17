@@ -762,41 +762,21 @@ sub check_custom_pool_roles {
             for my $priv (split_list($privlist)) {
                 $roles->{$role}->{$priv} = 1;
             }
-        } elsif ($et eq 'acl') {
-            my ($propagate, $pathtxt, $uglist, $rolelist) = @data;
-            for my $role (split_list($rolelist)) {
-                if ($role eq 'PVESysAdmin' || $role eq 'PVEAdmin') {
-                    log_warn(
-                        "found ACL entry on '$pathtxt' for '$uglist' with role '$role' - this role"
-                            . " will no longer have 'Permissions.Modify' after the upgrade!");
-                }
-            }
         }
     }
 
-    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
-    my ($custom_roles, $pve_namespace_clashes) = (0, 0);
+    log_info("Checking custom role IDs");
+    my ($custom_roles, $need_handling) = (0, 0);
     for my $role (sort keys %{$roles}) {
         next if PVE::AccessControl::role_is_special($role);
         $custom_roles++;
-
-        if ($role =~ /^PVE/i) {
-            log_warn("custom role '$role' clashes with 'PVE' namespace for built-in roles");
-            $pve_namespace_clashes++;
-        }
     }
-    if ($pve_namespace_clashes > 0) {
-        log_fail(
-            "$pve_namespace_clashes custom role(s) will clash with 'PVE' namespace for built-in roles enforced in Proxmox VE 8"
-        );
+    if ($need_handling > 0) {
+        log_fail("$need_handling custom role(s) need handling");
     } elsif ($custom_roles > 0) {
-        log_pass(
-            "none of the $custom_roles custom roles will clash with newly enforced 'PVE' namespace"
-        );
+        log_pass("none of the $custom_roles custom roles need handling");
     } else {
-        log_pass(
-            "no custom roles defined, so no clash with 'PVE' role ID namespace enforced in Proxmox VE 8"
-        );
+        log_pass("no custom roles defined");
     }
 }
 
