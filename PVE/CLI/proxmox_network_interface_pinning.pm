@@ -328,7 +328,8 @@ sub resolve_pinned {
             next;
         }
 
-        $resolved->{ $mac_lookup{$mac} } = $pinned->{$mac};
+        $resolved->{ $mac_lookup{$mac} } = $pinned->{$mac}
+            if $mac_lookup{$mac} ne $pinned->{$mac};
     }
 
     return $resolved;
