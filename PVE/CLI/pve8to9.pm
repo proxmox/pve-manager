@@ -770,9 +770,21 @@ sub check_custom_pool_roles {
     for my $role (sort keys %{$roles}) {
         next if PVE::AccessControl::role_is_special($role);
         $custom_roles++;
+
+        $need_handling++ if $roles->{$role}->{'VM.Monitor'};
     }
     if ($need_handling > 0) {
-        log_fail("$need_handling custom role(s) need handling");
+        log_notice(
+            "Proxmox VE 9 replaced the ambiguously named 'VM.Monitor' privilege with 'Sys.Audit'"
+                . " for QEMU HMP monitor access and new dedicated 'VM.GuestAgent.*' privileges"
+                . " for access to a VM's guest agent. The guest agent sub-privileges are 'Audit'"
+                . " for all informational commands, 'FileRead' and 'FileWrite' for file-read and"
+                . " file-write, 'FileSystemMgmt' for filesystem freeze, thaw and trim, and"
+                . " 'Unrestricted' for everything, including command execution. Operations that"
+                . " affect the VM runstate require 'VM.PowerMgmt' or 'VM.GuestAgent.Unrestricted'");
+        log_fail(
+            "$need_handling custom role(s) use the to-be-dropped 'VM.Monitor' privilege and need"
+                . " to be adapted after the upgrade");
     } elsif ($custom_roles > 0) {
         log_pass("none of the $custom_roles custom roles need handling");
     } else {
