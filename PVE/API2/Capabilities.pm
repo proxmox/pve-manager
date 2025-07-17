@@ -26,6 +26,7 @@ __PACKAGE__->register_method({
     path => '',
     method => 'GET',
     permissions => { user => 'all' },
+    proxyto => 'node',
     description => "Node capabilities index.",
     parameters => {
         additionalProperties => 0,
@@ -57,6 +58,7 @@ __PACKAGE__->register_method({
     path => 'qemu',
     method => 'GET',
     permissions => { user => 'all' },
+    proxyto => 'node',
     description => "QEMU capabilities index.",
     parameters => {
         additionalProperties => 0,
