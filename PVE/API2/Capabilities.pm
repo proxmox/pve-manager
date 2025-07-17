@@ -6,6 +6,7 @@ use warnings;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
 
+use PVE::API2::Qemu::CPU;
 use PVE::API2::Qemu::Machine;
 
 use base qw(PVE::RESTHandler);
