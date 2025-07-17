@@ -1,3 +1,19 @@
+pve-manager (8.4.4) bookworm; urgency=medium
+
+  * 8to9 upgrade checks:
+    - add check for to-be-dropped QEMU machine versions.
+    - check for usage of deprecated native GlusterFS storages.
+    - remove outdated checks for user roles.
+    - check for to-be-dropped VM.Monitor privilege in custom roles.
+    - add dedicated section for virtual guest checks.
+
+  * metrics: handle existence of new pve-{type}-9.0 data to avoid friction on
+    update.
+
+  * metrics: drop old virtual guest RRD schema.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Jul 2025 22:52:50 +0200
+
 pve-manager (8.4.3) bookworm; urgency=medium
 
   * pve8to9: fix error from bad log code ref.
