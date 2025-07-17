@@ -14,6 +14,7 @@ Ext.define('PVE.sdn.Fabric.Ospf.Fabric.Edit', {
             fieldLabel: gettext('Area'),
             labelWidth: 120,
             name: 'area',
+            emptyText: '0',
             allowBlank: false,
         },
     ],

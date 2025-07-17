@@ -24,6 +24,7 @@ Ext.define('PVE.sdn.Fabric.OpenFabric.InterfacePanel', {
             widget: {
                 xtype: 'proxmoxintegerfield',
                 isFormField: false,
+                emptyText: '10',
                 bind: {
                     disabled: '{record.isDisabled}',
                 },

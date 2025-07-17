@@ -47,6 +47,7 @@ Ext.define('PVE.sdn.Fabric.OpenFabric.Fabric.Edit', {
             labelWidth: 120,
             name: 'hello_interval',
             allowBlank: true,
+            emptyText: '3',
             skipEmptyText: true,
             cbind: {
                 deleteEmpty: '{!isCreate}',
@@ -58,6 +59,7 @@ Ext.define('PVE.sdn.Fabric.OpenFabric.Fabric.Edit', {
             labelWidth: 120,
             name: 'csnp_interval',
             allowBlank: true,
+            emptyText: '10',
             skipEmptyText: true,
             cbind: {
                 deleteEmpty: '{!isCreate}',
