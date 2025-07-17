@@ -942,55 +942,6 @@ sub check_node_and_guest_configurations {
     } else {
         log_pass("All node config descriptions fit in the new limit of 64 KiB");
     }
-
-    my $affected_guests_long_desc = [];
-    my $affected_cts_cgroup_keys = [];
-
-    my $cts = PVE::LXC::config_list();
-    for my $vmid (sort { $a <=> $b } keys %$cts) {
-        my $conf = PVE::LXC::Config->load_config($vmid);
-
-        my $desc = $conf->{description};
-        push @$affected_guests_long_desc, "CT $vmid" if defined($desc) && length($desc) > 8 * 1024;
-
-        my $lxc_raw_conf = $conf->{lxc};
-        push @$affected_cts_cgroup_keys, "CT $vmid"
-            if (grep (@$_[0] =~ /^lxc\.cgroup\./, @$lxc_raw_conf));
-    }
-    my $vms = PVE::QemuServer::config_list();
-    for my $vmid (sort { $a <=> $b } keys %$vms) {
-        my $desc = PVE::QemuConfig->load_config($vmid)->{description};
-        push @$affected_guests_long_desc, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
-    }
-    if (scalar($affected_guests_long_desc->@*) > 0) {
-        log_warn(
-            "Guest config description of the following virtual-guests too long for new limit of 64 KiB:\n"
-                . "    "
-                . join(", ", $affected_guests_long_desc->@*));
-    } else {
-        log_pass("All guest config descriptions fit in the new limit of 8 KiB");
-    }
-
-    log_info("Checking container configs for deprecated lxc.cgroup entries");
-
-    if (scalar($affected_cts_cgroup_keys->@*) > 0) {
-        if ($forced_legacy_cgroup) {
-            log_notice(
-                "Found legacy 'lxc.cgroup' keys, but system explicitly configured for legacy hybrid cgroup hierarchy."
-            );
-        } else {
-            log_warn(
-                "The following CTs have 'lxc.cgroup' keys configured, which will be ignored in the new default unified cgroupv2:\n"
-                    . "    "
-                    . join(", ", $affected_cts_cgroup_keys->@*) . "\n"
-                    . "    Often it can be enough to change to the new 'lxc.cgroup2' prefix after the upgrade to Proxmox VE 7.x"
-            );
-        }
-    } else {
-        log_pass("No legacy 'lxc.cgroup' keys found.");
-    }
-
-    check_qemu_machine_versions();
 }
 
 sub check_storage_content {
@@ -1762,6 +1713,82 @@ sub check_bridge_mtu {
     }
 }
 
+sub check_virtual_guests {
+    print_header("VIRTUAL GUEST CHECKS");
+
+    log_info("Checking for running guests..");
+    my $running_guests = 0;
+
+    my $vms = eval { PVE::API2::Qemu->vmlist({ node => $nodename }) };
+    log_warn("Failed to retrieve information about this node's VMs - $@") if $@;
+    $running_guests += grep { $_->{status} eq 'running' } @$vms if defined($vms);
+
+    my $cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
+    log_warn("Failed to retrieve information about this node's CTs - $@") if $@;
+    $running_guests += grep { $_->{status} eq 'running' } @$cts if defined($cts);
+
+    if ($running_guests > 0) {
+        log_warn(
+            "$running_guests running guest(s) detected - consider migrating or stopping them.");
+    } else {
+        log_pass("no running guest detected.");
+    }
+
+    check_lxcfs_fuse_version();
+
+    check_bridge_mtu();
+
+    my $affected_guests_long_desc = [];
+    my $affected_cts_cgroup_keys = [];
+
+    my $cts = PVE::LXC::config_list();
+    for my $vmid (sort { $a <=> $b } keys %$cts) {
+        my $conf = PVE::LXC::Config->load_config($vmid);
+
+        my $desc = $conf->{description};
+        push @$affected_guests_long_desc, "CT $vmid" if defined($desc) && length($desc) > 8 * 1024;
+
+        my $lxc_raw_conf = $conf->{lxc};
+        push @$affected_cts_cgroup_keys, "CT $vmid"
+            if (grep (@$_[0] =~ /^lxc\.cgroup\./, @$lxc_raw_conf));
+    }
+    my $vms = PVE::QemuServer::config_list();
+    for my $vmid (sort { $a <=> $b } keys %$vms) {
+        my $desc = PVE::QemuConfig->load_config($vmid)->{description};
+        push @$affected_guests_long_desc, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
+    }
+    if (scalar($affected_guests_long_desc->@*) > 0) {
+        log_warn(
+            "Guest config description of the following virtual-guests too long for new limit of 64 KiB:\n"
+                . "    "
+                . join(", ", $affected_guests_long_desc->@*));
+    } else {
+        log_pass("All guest config descriptions fit in the new limit of 8 KiB");
+    }
+
+    log_info("Checking container configs for deprecated lxc.cgroup entries");
+
+    if (scalar($affected_cts_cgroup_keys->@*) > 0) {
+        if ($forced_legacy_cgroup) {
+            log_notice(
+                "Found legacy 'lxc.cgroup' keys, but system explicitly configured for legacy hybrid cgroup hierarchy."
+            );
+        } else {
+            log_warn(
+                "The following CTs have 'lxc.cgroup' keys configured, which will be ignored in the new default unified cgroupv2:\n"
+                    . "    "
+                    . join(", ", $affected_cts_cgroup_keys->@*) . "\n"
+                    . "    Often it can be enough to change to the new 'lxc.cgroup2' prefix after the upgrade to Proxmox VE 7.x"
+            );
+        }
+    } else {
+        log_pass("No legacy 'lxc.cgroup' keys found.");
+    }
+
+    check_qemu_machine_versions();
+}
+
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1786,24 +1813,6 @@ sub check_misc {
         } elsif ($root_free->{avail} < 10 * 1000 * 1000 * 1000) {
             log_notice("Less than 10 GB free space on root file system.");
         }
-    }
-
-    log_info("Checking for running guests..");
-    my $running_guests = 0;
-
-    my $vms = eval { PVE::API2::Qemu->vmlist({ node => $nodename }) };
-    log_warn("Failed to retrieve information about this node's VMs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$vms if defined($vms);
-
-    my $cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
-    log_warn("Failed to retrieve information about this node's CTs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$cts if defined($cts);
-
-    if ($running_guests > 0) {
-        log_warn(
-            "$running_guests running guest(s) detected - consider migrating or stopping them.");
-    } else {
-        log_pass("no running guest detected.");
     }
 
     log_info("Checking if the local node's hostname '$nodename' is resolvable..");
@@ -1865,7 +1874,6 @@ sub check_misc {
     check_backup_retention_settings();
     check_cifs_credential_location();
     check_custom_pool_roles();
-    check_lxcfs_fuse_version();
     check_node_and_guest_configurations();
     check_apt_repos();
     check_nvidia_vgpu_service();
@@ -1874,7 +1882,6 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
-    check_bridge_mtu();
 }
 
 my sub colored_if {
@@ -1911,6 +1918,7 @@ __PACKAGE__->register_method({
         check_cluster_corosync();
         check_ceph();
         check_storage_health();
+        check_virtual_guests();
         check_misc();
 
         if ($param->{full}) {
