@@ -11,6 +11,7 @@ use PVE::INotify;
 use PVE::Network;
 use PVE::Network::SDN;
 use PVE::Network::SDN::Controllers;
+use PVE::Network::SDN::Fabrics;
 use PVE::RPCEnvironment;
 use PVE::SectionConfig;
 use PVE::Tools;
@@ -22,6 +23,22 @@ my $PVEETH_LOCK = "/run/lock/proxmox-network-interface-pinning.lck";
 
 sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
+}
+
+my sub update_sdn_fabrics {
+    my ($mapping) = @_;
+
+    print "Updating /etc/pve/sdn/fabrics.cfg\n";
+
+    my $code = sub {
+        my $local_node = PVE::INotify::nodename();
+
+        my $config = PVE::Network::SDN::Fabrics::config();
+        $config->map_interfaces($local_node, $mapping);
+        PVE::Network::SDN::Fabrics::write_config($config);
+    };
+
+    PVE::Network::SDN::lock_sdn_config($code);
 }
 
 my sub update_sdn_controllers {
@@ -390,6 +407,7 @@ __PACKAGE__->register_method({
             update_host_fw_config($mapping);
             update_etc_network_interfaces($mapping, $existing_pins);
             update_sdn_controllers($mapping);
+            update_sdn_fabrics($mapping);
 
             print "Successfully updated Proxmox VE configuration files.\n";
             print "\nPlease reboot to apply the changes to your configuration\n\n";
