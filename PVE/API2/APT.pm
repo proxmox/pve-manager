@@ -795,7 +795,6 @@ __PACKAGE__->register_method({
         my @pkgs = qw(
             ceph-fuse
             corosync
-            glusterfs-client
             libjs-extjs
             libknet1
             libproxmox-acme-perl
