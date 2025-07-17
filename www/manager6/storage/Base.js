@@ -83,7 +83,8 @@ Ext.define('PVE.panel.StorageBase', {
                 name: 'external-snapshots',
                 boxLabel: gettext('Storage-Managed Snapshots'), // TODO: better name?!
                 deleteEmpty: !me.isCreate,
-                defaultValue: false,
+                disabled: !me.isCreate && me.type !== 'lvm',
+                checked: false,
             });
 
             me.advancedColumnB = me.advancedColumnB || [];
