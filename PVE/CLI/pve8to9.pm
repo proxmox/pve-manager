@@ -1717,7 +1717,7 @@ sub check_glusterfs_storage_usage {
     my $cfg = PVE::Storage::config();
     my $storage_info = PVE::Storage::storage_info($cfg);
 
-    log_info("Check for usage of GlusterFS storages...");
+    log_info("Check for usage of native GlusterFS storage plugin...");
 
     my $has_glusterfs_storage = 0;
 
@@ -1731,13 +1731,13 @@ sub check_glusterfs_storage_usage {
     }
 
     if ($has_glusterfs_storage) {
-        log_fail("Starting with PVE 9, GlusterFS will not be supported anymore."
-            . " GlusterFS storages will therefore cease to work."
-            . "\nThis is due to the GlusterFS project not being properly maintained anymore."
-            . "\n\nThis means that you will have to move all volumes on GlusterFS storages to"
-            . " different storages and then remove any GlusterFS storage that you have configured."
-            . "\n\nAlternatively, you can mount your GlusterFS instances manually "
-            . " via the 'glusterfs' commandline and use them as directory storage.");
+        log_fail("Starting with Proxmox VE 9, native GlusterFS support will end. GlusterFS storage"
+            . " will therefore cease to work.\n"
+            . "This is because the GlusterFS project is no longer properly maintained.\n\n"
+            . "You will therefore have to move all GlusterFS volumes to different storage and then"
+            . " remove any configured GlusterFS storage before starting the upgrade.\n\n"
+            . "Alternatively, you can manually mount your GlusterFS instances via the 'glusterfs'"
+            . " command-line tool and use them as directory storage.");
     } else {
         log_pass("No GlusterFS storage found.");
     }
