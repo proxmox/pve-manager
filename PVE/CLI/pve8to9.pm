@@ -19,6 +19,7 @@ use PVE::Corosync;
 use PVE::INotify;
 use PVE::Jobs;
 use PVE::JSONSchema;
+use PVE::Network;
 use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::Storage;
@@ -1739,6 +1740,28 @@ sub check_glusterfs_storage_usage {
     return undef;
 }
 
+sub check_bridge_mtu {
+    log_info("Checking for VirtIO devices that would change their MTU...");
+
+    my $vms = PVE::QemuServer::config_list();
+
+    for my $vmid (sort { $a <=> $b } keys %$vms) {
+        my $config = PVE::QemuConfig->load_config($vmid);
+
+        for my $opt (sort keys $config->%*) {
+            next if $opt !~ m/^net\d+$/;
+            my $net = PVE::QemuServer::parse_net($config->{$opt});
+
+            next if $net->{model} ne 'virtio' || defined($net->{mtu});
+
+            my $bridge_mtu = PVE::Network::read_bridge_mtu($net->{bridge});
+
+            log_notice("network interface $opt of vm $vmid will have its mtu forced to $bridge_mtu")
+                if $bridge_mtu != 1500;
+        }
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1851,6 +1874,7 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
+    check_bridge_mtu();
 }
 
 my sub colored_if {
