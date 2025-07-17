@@ -112,6 +112,7 @@ my sub update_etc_network_interfaces {
     };
 
     PVE::Tools::lock_file("/etc/network/.pve-interfaces.lock", 10, $code);
+    die $@ if $@;
 }
 
 my sub update_host_fw_config {
