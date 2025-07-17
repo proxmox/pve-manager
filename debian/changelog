@@ -1,3 +1,36 @@
+pve-manager (9.0.0~4) trixie; urgency=medium
+
+  * ui: backup job edit: move notification related settings to separate tab.
+
+  * ui: one-shot backup: remove 'auto' notification mode for clarity.
+
+  * ui: oneshot backup: stop shifting UI when selecting 'legacy-sendmail'.
+
+  * pvescheduler: move PID file from aliased /var/run legacy path into the
+    underlying /run directory.
+
+  * cli: add proxmox-network-interface-pinning tool.
+
+  * services: add pve-sdn-commit and pve-firewall-commit for applying pending
+    changes on boot.
+
+  * ui: drop support for adding native GlusterFS storage, like it was done
+    already for QEMU and the pve-storage library.
+
+  * ui: base storage: add checkbox for storage-managed (external) snapshots
+    for supported storage types.
+
+  * api: use new SDN config generation functions.
+
+  * ui: add SDN fabrics management.
+
+  * api/ui: show/return alternative interface names for node network
+    interfaces.
+
+  * ui: login: display error messages and status on failure.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Jul 2025 02:33:52 +0200
+
 pve-manager (9.0.0~3) trixie; urgency=medium
 
   * pve8to9: sync checks from stable branch.
