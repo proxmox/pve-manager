@@ -81,7 +81,7 @@ Ext.define('PVE.panel.StorageBase', {
             addAdvancedWidget({
                 xtype: 'proxmoxcheckbox',
                 name: 'external-snapshots',
-                boxLabel: gettext('Storage-Managed Snapshots'), // TODO: better name?!
+                boxLabel: gettext('Allow Snapshots as Volume-Chain'),
                 deleteEmpty: !me.isCreate,
                 disabled: !me.isCreate && me.type !== 'lvm',
                 checked: false,
