@@ -777,7 +777,7 @@ sub check_custom_pool_roles {
         log_notice(
             "Proxmox VE 9 replaced the ambiguously named 'VM.Monitor' privilege with 'Sys.Audit'"
                 . " for QEMU HMP monitor access and new dedicated 'VM.GuestAgent.*' privileges"
-                . " for access to a VM's guest agent. The guest agent sub-privileges are 'Audit'"
+                . " for access to a VM's guest agent.\n\tThe guest agent sub-privileges are 'Audit'"
                 . " for all informational commands, 'FileRead' and 'FileWrite' for file-read and"
                 . " file-write, 'FileSystemMgmt' for filesystem freeze, thaw and trim, and"
                 . " 'Unrestricted' for everything, including command execution. Operations that"
