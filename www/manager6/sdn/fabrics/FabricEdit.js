@@ -2,6 +2,8 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    width: 400,
+
     fabricId: undefined,
     baseUrl: '/cluster/sdn/fabrics/fabric',
 
