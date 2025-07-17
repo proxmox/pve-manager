@@ -1,3 +1,27 @@
+pve-manager (9.0.0~5) trixie; urgency=medium
+
+  * pve8to9: sync upgrade checks from stable branch.
+
+  * api: apt versions: drop glusterfs-client from package list.
+
+  * ui: storage edit: only LVM supports changing ext. snapshots for existing
+    storages.
+
+   * ui: storage base: rename label to "Allow Snapshots as Volume-Chain".
+
+   * ui: qemu: network: adjust MTU emptyText to match new default behavior.
+
+   * fabric: increase width of fabric edit/add window and add empty text
+     attributes to some input fields.
+
+   * pve-sdn-commit: fix reloading logic.
+
+   * proxmox-network-interface-pinning: add fabrics support.
+
+   * api: capabilities: proxy index endpoints to respective nodes.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Jul 2025 23:35:02 +0200
+
 pve-manager (9.0.0~4) trixie; urgency=medium
 
   * ui: backup job edit: move notification related settings to separate tab.
