@@ -52,7 +52,7 @@ Ext.define('PVE.panel.StorageBase', {
             },
         );
 
-        const addAdvancedWidget = widget => {
+        const addAdvancedWidget = (widget) => {
             me.advancedColumn1 = me.advancedColumn1 || [];
             me.advancedColumn2 = me.advancedColumn2 || [];
             if (me.advancedColumn2.length < me.advancedColumn1.length) {
