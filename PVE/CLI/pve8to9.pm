@@ -293,6 +293,8 @@ sub check_storage_health {
     check_storage_content();
     eval { check_storage_content_dirs() };
     log_fail("failed to check storage content directories - $@") if $@;
+
+    check_glusterfs_storage_usage();
 }
 
 sub check_cluster_corosync {
@@ -1857,7 +1859,6 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
-    check_glusterfs_storage_usage();
 }
 
 my sub colored_if {
