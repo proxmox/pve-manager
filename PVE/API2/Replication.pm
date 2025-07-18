@@ -402,7 +402,8 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1,
     permissions => {
-        check => ['perm', '/storage', ['Datastore.Allocate']],
+        description => "Requires the VM.Replicate permission on /vms/<vmid>.",
+        user => 'all',
     },
     parameters => {
         additionalProperties => 0,
@@ -417,7 +418,12 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
+        my $rpcenv = PVE::RPCEnvironment::get();
+        my $authuser = $rpcenv->get_user();
+
         my $jobid = $param->{id};
+        my ($vmid) = PVE::ReplicationConfig::parse_replication_job_id($jobid);
+        $rpcenv->check($authuser, "/vms/$vmid", ['VM.Replicate']);
 
         my $cfg = PVE::ReplicationConfig->new();
         my $jobcfg = $cfg->{ids}->{$jobid};
