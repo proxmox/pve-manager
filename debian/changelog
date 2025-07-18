@@ -1,3 +1,9 @@
+pve-manager (8.4.5) bookworm; urgency=medium
+
+  * 8to9 upgrade checks: fix duplicate variable name in same scope.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jul 2025 15:32:03 +0200
+
 pve-manager (8.4.4) bookworm; urgency=medium
 
   * 8to9 upgrade checks:
