@@ -1,3 +1,23 @@
+pve-manager (9.0.0~6) trixie; urgency=medium
+
+  * ui: dc/options: allow one to edit cluster wide replication settings.
+
+  * ui: disk storage selector: fix check for disabling format selector.
+
+  * 8to9 upgrade checks: fix duplicate variable name in same scope.
+
+  * fabrics: add max-length to fabric name to improve error message.
+
+  * ui: adapt to dropped VM.Monitor privilege.
+
+  * network-interface-pinning: avoid comparing undefined string.
+
+  * sdn-commit, firewall-commit: wait for cluster quorum.
+
+  * sdn-commit: only reload ifupdown if sdn configuration changed.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jul 2025 14:39:57 +0200
+
 pve-manager (9.0.0~5) trixie; urgency=medium
 
   * pve8to9: sync upgrade checks from stable branch.
