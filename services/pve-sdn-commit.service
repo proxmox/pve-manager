@@ -2,7 +2,7 @@
 Description=Commit Proxmox VE SDN changes
 DefaultDependencies=no
 Wants=pve-cluster.service network.target
-After=frr.service network.target pve-cluster.service
+After=frr.service network.target corosync.service
 
 [Service]
 ExecStart=/usr/share/pve-manager/helpers/pve-sdn-commit
