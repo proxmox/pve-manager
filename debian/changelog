@@ -1,3 +1,16 @@
+pve-manager (9.0.0~9) trixie; urgency=medium
+
+  * guest metrics: drop support for ancient RRD schema from before Proxmox VE
+    2.3 from 2013.
+
+  * guest metrics: support and prefer new pve-{type}-9.0 RRD files.
+
+  * network-interface-pinning: fix subsequent invocations.
+
+  * network-interface-pinning: early exit if nothing to do.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jul 2025 20:48:14 +0200
+
 pve-manager (9.0.0~8) trixie; urgency=medium
 
   * ui: add beta text with link to bug tracker
