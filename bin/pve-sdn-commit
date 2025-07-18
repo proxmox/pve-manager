@@ -9,6 +9,16 @@ PVE::Network::SDN::commit_config();
 
 PVE::Network::SDN::generate_zone_config();
 PVE::Network::SDN::generate_dhcp_config();
+
+my $err = sub {
+    my $line = shift;
+    if ($line =~ /(warning|error): (\S+):/) {
+        print "$2 : $line \n";
+    }
+};
+
+PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
+
 PVE::Network::SDN::generate_controller_config(1);
 
 exit 0;
