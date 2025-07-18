@@ -53,7 +53,7 @@ my sub update_sdn_controllers {
 
         for my $controller (values $controllers->{ids}->%*) {
             next
-                if $local_node ne $controller->{node}
+                if ($controller->{node} && $local_node ne $controller->{node})
                 || $controller->{type} ne 'isis';
 
             $controller->{'isis-ifaces'} = $mapping->list($controller->{'isis-ifaces'});
