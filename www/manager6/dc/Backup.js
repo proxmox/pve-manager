@@ -224,145 +224,135 @@ Ext.define('PVE.dc.BackupEdit', {
             bodyPadding: 10,
             items: [
                 {
-                    xtype: 'container',
                     title: gettext('General'),
-                    region: 'center',
-                    layout: {
-                        type: 'vbox',
-                        align: 'stretch',
-                    },
-                    items: [
+                    xtype: 'inputpanel',
+                    onlineHelp: 'chapter_vzdump',
+                    column1: [
                         {
-                            xtype: 'inputpanel',
-                            onlineHelp: 'chapter_vzdump',
-                            column1: [
-                                {
-                                    xtype: 'pveNodeSelector',
-                                    name: 'node',
-                                    fieldLabel: gettext('Node'),
-                                    allowBlank: true,
-                                    editable: true,
-                                    autoSelect: false,
-                                    emptyText: '-- ' + gettext('All') + ' --',
-                                    listeners: {
-                                        change: 'nodeChange',
-                                    },
-                                },
-                                {
-                                    xtype: 'pveStorageSelector',
-                                    reference: 'storageSelector',
-                                    fieldLabel: gettext('Storage'),
-                                    clusterView: true,
-                                    storageContent: 'backup',
-                                    allowBlank: false,
-                                    name: 'storage',
-                                    listeners: {
-                                        change: 'storageChange',
-                                    },
-                                },
-                                {
-                                    xtype: 'pveCalendarEvent',
-                                    fieldLabel: gettext('Schedule'),
-                                    allowBlank: false,
-                                    name: 'schedule',
-                                },
-                                {
-                                    xtype: 'proxmoxKVComboBox',
-                                    reference: 'modeSelector',
-                                    comboItems: [
-                                        ['include', gettext('Include selected VMs')],
-                                        ['all', gettext('All')],
-                                        ['exclude', gettext('Exclude selected VMs')],
-                                        ['pool', gettext('Pool based')],
-                                    ],
-                                    fieldLabel: gettext('Selection mode'),
-                                    name: 'selMode',
-                                    value: '',
-                                    bind: {
-                                        value: '{selMode}',
-                                    },
-                                    listeners: {
-                                        change: 'modeChange',
-                                    },
-                                },
-                                {
-                                    xtype: 'pvePoolSelector',
-                                    reference: 'poolSelector',
-                                    fieldLabel: gettext('Pool to backup'),
-                                    hidden: true,
-                                    allowBlank: false,
-                                    name: 'pool',
-                                    listeners: {
-                                        change: 'selectPoolMembers',
-                                    },
-                                    bind: {
-                                        hidden: '{!poolMode}',
-                                        disabled: '{!poolMode}',
-                                    },
-                                },
+                            xtype: 'pveNodeSelector',
+                            name: 'node',
+                            fieldLabel: gettext('Node'),
+                            allowBlank: true,
+                            editable: true,
+                            autoSelect: false,
+                            emptyText: '-- ' + gettext('All') + ' --',
+                            listeners: {
+                                change: 'nodeChange',
+                            },
+                        },
+                        {
+                            xtype: 'pveStorageSelector',
+                            reference: 'storageSelector',
+                            fieldLabel: gettext('Storage'),
+                            clusterView: true,
+                            storageContent: 'backup',
+                            allowBlank: false,
+                            name: 'storage',
+                            listeners: {
+                                change: 'storageChange',
+                            },
+                        },
+                        {
+                            xtype: 'pveCalendarEvent',
+                            fieldLabel: gettext('Schedule'),
+                            allowBlank: false,
+                            name: 'schedule',
+                        },
+                        {
+                            xtype: 'proxmoxKVComboBox',
+                            reference: 'modeSelector',
+                            comboItems: [
+                                ['include', gettext('Include selected VMs')],
+                                ['all', gettext('All')],
+                                ['exclude', gettext('Exclude selected VMs')],
+                                ['pool', gettext('Pool based')],
                             ],
-                            column2: [
-                                {
-                                    xtype: 'pveBackupCompressionSelector',
-                                    reference: 'compressionSelector',
-                                    fieldLabel: gettext('Compression'),
-                                    name: 'compress',
-                                    cbind: {
-                                        deleteEmpty: '{!isCreate}',
-                                    },
-                                    value: 'zstd',
-                                    listeners: {
-                                        change: 'compressionChange',
-                                        disable: 'compressionDisable',
-                                        enable: 'compressionEnable',
-                                    },
-                                },
-                                {
-                                    xtype: 'pveBackupModeSelector',
-                                    fieldLabel: gettext('Mode'),
-                                    value: 'snapshot',
-                                    name: 'mode',
-                                },
-                                {
-                                    xtype: 'proxmoxcheckbox',
-                                    fieldLabel: gettext('Enable'),
-                                    name: 'enabled',
-                                    uncheckedValue: 0,
-                                    defaultValue: 1,
-                                    checked: true,
-                                },
-                            ],
-                            columnB: [
-                                {
-                                    xtype: 'proxmoxtextfield',
-                                    name: 'comment',
-                                    fieldLabel: gettext('Job Comment'),
-                                    cbind: {
-                                        deleteEmpty: '{!isCreate}',
-                                    },
-                                    autoEl: {
-                                        tag: 'div',
-                                        'data-qtip': gettext('Description of the job'),
-                                    },
-                                },
-                                {
-                                    xtype: 'vmselector',
-                                    reference: 'vmgrid',
-                                    height: 300,
-                                    name: 'vmid',
-                                    disabled: true,
-                                    allowBlank: false,
-                                    columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
-                                    bind: {
-                                        disabled: '{disableVMSelection}',
-                                    },
-                                },
-                            ],
-                            onGetValues: function (values) {
-                                return this.up('window').getController().onGetValues(values);
+                            fieldLabel: gettext('Selection mode'),
+                            name: 'selMode',
+                            value: '',
+                            bind: {
+                                value: '{selMode}',
+                            },
+                            listeners: {
+                                change: 'modeChange',
+                            },
+                        },
+                        {
+                            xtype: 'pvePoolSelector',
+                            reference: 'poolSelector',
+                            fieldLabel: gettext('Pool to backup'),
+                            hidden: true,
+                            allowBlank: false,
+                            name: 'pool',
+                            listeners: {
+                                change: 'selectPoolMembers',
+                            },
+                            bind: {
+                                hidden: '{!poolMode}',
+                                disabled: '{!poolMode}',
                             },
                         },
                     ],
+                    column2: [
+                        {
+                            xtype: 'pveBackupCompressionSelector',
+                            reference: 'compressionSelector',
+                            fieldLabel: gettext('Compression'),
+                            name: 'compress',
+                            cbind: {
+                                deleteEmpty: '{!isCreate}',
+                            },
+                            value: 'zstd',
+                            listeners: {
+                                change: 'compressionChange',
+                                disable: 'compressionDisable',
+                                enable: 'compressionEnable',
+                            },
+                        },
+                        {
+                            xtype: 'pveBackupModeSelector',
+                            fieldLabel: gettext('Mode'),
+                            value: 'snapshot',
+                            name: 'mode',
+                        },
+                        {
+                            xtype: 'proxmoxcheckbox',
+                            fieldLabel: gettext('Enable'),
+                            name: 'enabled',
+                            uncheckedValue: 0,
+                            defaultValue: 1,
+                            checked: true,
+                        },
+                    ],
+                    columnB: [
+                        {
+                            xtype: 'proxmoxtextfield',
+                            name: 'comment',
+                            fieldLabel: gettext('Job Comment'),
+                            cbind: {
+                                deleteEmpty: '{!isCreate}',
+                            },
+                            autoEl: {
+                                tag: 'div',
+                                'data-qtip': gettext('Description of the job'),
+                            },
+                        },
+                        {
+                            xtype: 'vmselector',
+                            reference: 'vmgrid',
+                            height: 300,
+                            name: 'vmid',
+                            disabled: true,
+                            allowBlank: false,
+                            columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
+                            bind: {
+                                disabled: '{disableVMSelection}',
+                            },
+                        },
+                    ],
+                    onGetValues: function (values) {
+                        return this.up('window').getController().onGetValues(values);
+                    },
                 },
                 {
                     xtype: 'pveBackupNotificationOptionsPanel',
@@ -385,6 +375,7 @@ Ext.define('PVE.dc.BackupEdit', {
                 },
                 {
                     xtype: 'inputpanel',
+                    onlineHelp: 'chapter_vzdump',
                     title: gettext('Note Template'),
                     region: 'center',
                     layout: {
@@ -431,6 +422,7 @@ Ext.define('PVE.dc.BackupEdit', {
                 },
                 {
                     xtype: 'pveBackupAdvancedOptionsPanel',
+                    onlineHelp: 'chapter_vzdump',
                     reference: 'backupAdvanced',
                     title: gettext('Advanced'),
                     cbind: {
