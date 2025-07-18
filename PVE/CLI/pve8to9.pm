@@ -1719,13 +1719,13 @@ sub check_virtual_guests {
     log_info("Checking for running guests..");
     my $running_guests = 0;
 
-    my $vms = eval { PVE::API2::Qemu->vmlist({ node => $nodename }) };
+    my $local_vms = eval { PVE::API2::Qemu->vmlist({ node => $nodename }) };
     log_warn("Failed to retrieve information about this node's VMs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$vms if defined($vms);
+    $running_guests += grep { $_->{status} eq 'running' } @$local_vms if defined($local_vms);
 
-    my $cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
+    my $local_cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
     log_warn("Failed to retrieve information about this node's CTs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$cts if defined($cts);
+    $running_guests += grep { $_->{status} eq 'running' } @$local_cts if defined($local_cts);
 
     if ($running_guests > 0) {
         log_warn(
