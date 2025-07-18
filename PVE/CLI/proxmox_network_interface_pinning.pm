@@ -398,6 +398,11 @@ __PACKAGE__->register_method({
                     $prefix,
                 );
 
+            if (!$mapping->%*) {
+                print "Nothing to do, aborting.\n";
+                exit 0;
+            }
+
             for my $old_name (sort keys $mapping->%*) {
                 print "Name for link '$old_name' will change to '$mapping->{$old_name}'\n";
             }
