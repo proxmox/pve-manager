@@ -3,21 +3,19 @@ package PVE::API2::Replication;
 use warnings;
 use strict;
 
-use PVE::JSONSchema qw(get_standard_option);
-use PVE::RPCEnvironment;
 use PVE::Format qw(render_timestamp);
-use PVE::ProcFSTools;
-
-use PVE::ReplicationConfig;
-use PVE::ReplicationState;
-use PVE::Replication;
-use PVE::QemuConfig;
-use PVE::QemuServer;
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::LXC::Config;
 use PVE::LXC;
 use PVE::Notify;
-
+use PVE::ProcFSTools;
+use PVE::QemuConfig;
+use PVE::QemuServer;
+use PVE::ReplicationConfig;
+use PVE::ReplicationState;
+use PVE::Replication;
 use PVE::RESTHandler;
+use PVE::RPCEnvironment;
 
 use base qw(PVE::RESTHandler);
 
