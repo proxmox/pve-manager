@@ -18,6 +18,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
             xtype: 'proxmoxtextfield',
             fieldLabel: gettext('Name'),
             labelWidth: 120,
+            maxLength: 8,
             name: 'id',
             cbind: {
                 disabled: '{!isCreate}',
