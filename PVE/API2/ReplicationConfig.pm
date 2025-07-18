@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use PVE::Cluster;
-use PVE::Exception qw(raise_perm_exc raise_param_exc);
+use PVE::Exception qw(raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::ReplicationConfig;
 use PVE::RESTHandler;
@@ -90,7 +90,7 @@ __PACKAGE__->register_method({
 
         my $vmid = $data->{guest};
 
-        raise_perm_exc() if !$rpcenv->check($authuser, "/vms/$vmid", ['VM.Audit']);
+        $rpcenv->check($authuser, "/vms/$vmid", ['VM.Audit']);
 
         $data->{id} = $param->{id};
 
