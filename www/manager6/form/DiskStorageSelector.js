@@ -73,7 +73,10 @@ Ext.define('PVE.form.DiskStorageSelector', {
 
         var select = !!rec.data.select_existing && !me.hideSelection;
 
-        formatsel.setDisabled(me.hideFormat || Ext.Object.getSize(validFormats) <= 1);
+        let numberOfValidFormats = Ext.Object.getValues(validFormats).filter(
+            (valid) => !!valid,
+        ).length;
+        formatsel.setDisabled(me.hideFormat || numberOfValidFormats <= 1);
         formatsel.setValue(selectFormat);
 
         hdfilesel.setDisabled(!select);
