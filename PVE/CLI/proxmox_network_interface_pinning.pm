@@ -62,7 +62,7 @@ my sub update_etc_network_interfaces {
         for my $iface_name (keys $old_ifaces->%*) {
             my $iface = $old_ifaces->{$iface_name};
 
-            if ($existing_pins->{$iface_name}) {
+            if ($existing_pins->{$iface_name} && $existing_pins->{$iface_name} ne $iface_name) {
                 # reading the interfaces file adds active interfaces to the
                 # configuration - we do not want to include already pinned
                 # interfaces in the new configuration when writing the new
@@ -311,8 +311,7 @@ sub resolve_pinned {
             next;
         }
 
-        $resolved->{ $mac_lookup{$mac} } = $pinned->{$mac}
-            if $mac_lookup{$mac} ne $pinned->{$mac};
+        $resolved->{ $mac_lookup{$mac} } = $pinned->{$mac};
     }
 
     return $resolved;
