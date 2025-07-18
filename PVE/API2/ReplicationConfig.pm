@@ -3,14 +3,13 @@ package PVE::API2::ReplicationConfig;
 use warnings;
 use strict;
 
-use PVE::Tools qw(extract_param);
+use PVE::Cluster;
 use PVE::Exception qw(raise_perm_exc raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
-use PVE::RPCEnvironment;
 use PVE::ReplicationConfig;
-use PVE::Cluster;
-
 use PVE::RESTHandler;
+use PVE::RPCEnvironment;
+use PVE::Tools qw(extract_param);
 
 use base qw(PVE::RESTHandler);
 
