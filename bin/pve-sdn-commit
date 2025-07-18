@@ -7,12 +7,55 @@ use Time::HiRes qw(usleep);
 
 use PVE::Cluster;
 use PVE::Network::SDN;
+use PVE::Network::SDN::Zones;
+use PVE::Network::SDN::Vnets;
+use PVE::Network::SDN::Subnets;
+use PVE::Network::SDN::Controllers;
+use PVE::Tools;
 
 for (my $i = 0; !PVE::Cluster::check_cfs_quorum(1); $i++) {
     print "waiting for pmxcfs mount to appear and get quorate...\n"
         if $i % 50 == 0;
 
     usleep(100 * 1000);
+}
+
+sub has_pending_changes {
+    my ($pending_config) = @_;
+
+    for my $entity (values $pending_config->{ids}->%*) {
+        return 1 if $entity->{state};
+    }
+
+    return 0;
+}
+
+sub sdn_changed {
+    my $running_config = PVE::Network::SDN::running_config();
+
+    my $configs = {
+        zones => PVE::Network::SDN::Zones::config(),
+        vnets => PVE::Network::SDN::Vnets::config(),
+        subnets => PVE::Network::SDN::Subnets::config(),
+        controllers => PVE::Network::SDN::Controllers::config(),
+    };
+
+    for my $type (keys $configs->%*) {
+        my $pending_config = PVE::Network::SDN::pending_config(
+            $running_config,
+            $configs->{$type},
+            $type,
+        );
+
+        return 1 if has_pending_changes($pending_config);
+    }
+
+    return 0;
+}
+
+if (!sdn_changed()) {
+    print "No changes to SDN configuration detected, skipping reload\n";
+    exit 0;
 }
 
 PVE::Network::SDN::commit_config();
