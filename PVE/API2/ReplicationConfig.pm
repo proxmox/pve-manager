@@ -9,7 +9,11 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::ReplicationConfig;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::SectionConfig;
+use PVE::Storage;
 use PVE::Tools qw(extract_param);
+
+use PVE::API2::Replication;
 
 use base qw(PVE::RESTHandler);
 
