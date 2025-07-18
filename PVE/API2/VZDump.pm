@@ -27,7 +27,7 @@ my sub assert_param_permission_vzdump {
 
     PVE::API2::Backup::assert_param_permission_common($rpcenv, $user, $param);
 
-    if (defined($param->{maxfiles}) || defined($param->{'prune-backups'})) {
+    if (defined($param->{'prune-backups'})) {
         if (my $storeid = PVE::VZDump::get_storage_param($param)) {
             $rpcenv->check($user, "/storage/$storeid", ['Datastore.Allocate']);
         }
@@ -40,12 +40,12 @@ __PACKAGE__->register_method({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-        description => "The user needs 'VM.Backup' permissions on any VM, and "
-            . "'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing "
-            . "is used). The 'tmpdir', 'dumpdir', 'script' and 'job-id' parameters are restricted "
-            . "to the 'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require "
-            . "'Datastore.Allocate' on the backup storage. The 'bwlimit', 'performance' and "
-            . "'ionice' parameters require 'Sys.Modify' on '/'.",
+        description => "The user needs 'VM.Backup' permissions on any VM, and"
+            . " 'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing"
+            . " is used). The 'tmpdir', 'dumpdir', 'script' and 'job-id' parameters are restricted"
+            . " to the 'root\@pam' user. The 'prune-backups' setting requires 'Datastore.Allocate'"
+            . " on the backup storage. The 'bwlimit', 'performance' and 'ionice' parameters require"
+            . " 'Sys.Modify' on '/'.",
         user => 'all',
     },
     protected => 1,

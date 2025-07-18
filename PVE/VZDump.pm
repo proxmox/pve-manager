@@ -177,28 +177,16 @@ my sub merge_performance {
     return $res;
 }
 
-my $parse_prune_backups_maxfiles = sub {
+my $parse_prune_backups = sub {
     my ($param, $kind) = @_;
 
-    my $maxfiles = delete $param->{maxfiles};
     my $prune_backups = $param->{'prune-backups'};
-
-    debugmsg(
-        'warn',
-        "both 'maxfiles' and 'prune-backups' defined as ${kind} - ignoring 'maxfiles'",
-    ) if defined($maxfiles) && defined($prune_backups);
 
     if (defined($prune_backups)) {
         return $prune_backups if ref($prune_backups) eq 'HASH'; # already parsed
         $param->{'prune-backups'} = PVE::JSONSchema::parse_property_string(
             'prune-backups', $prune_backups,
         );
-    } elsif (defined($maxfiles)) {
-        if ($maxfiles) {
-            $param->{'prune-backups'} = { 'keep-last' => $maxfiles };
-        } else {
-            $param->{'prune-backups'} = { 'keep-all' => 1 };
-        }
     }
 
     return $param->{'prune-backups'};
@@ -335,7 +323,7 @@ sub read_vzdump_defaults {
             defined($default) ? ($_ => $default) : ()
         } keys $fleecing_fmt->%*
     };
-    $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
+    $parse_prune_backups->($defaults, "defaults in VZDump schema");
 
     my $raw;
     eval { $raw = PVE::Tools::file_get_contents($fn); };
@@ -360,7 +348,7 @@ sub read_vzdump_defaults {
         my @mailto = split_list($res->{mailto});
         $res->{mailto} = [@mailto];
     }
-    $parse_prune_backups_maxfiles->($res, "options in '$fn'");
+    $parse_prune_backups->($res, "options in '$fn'");
     parse_fleecing($res);
     parse_performance($res);
 
@@ -1548,10 +1536,7 @@ sub verify_vzdump_parameters {
     raise_param_exc({ pool => "option conflicts with option 'vmid'" })
         if $param->{pool} && $param->{vmid};
 
-    raise_param_exc({ 'prune-backups' => "option conflicts with option 'maxfiles'" })
-        if defined($param->{'prune-backups'}) && defined($param->{maxfiles});
-
-    $parse_prune_backups_maxfiles->($param, 'CLI parameters');
+    $parse_prune_backups->($param, 'CLI parameters');
     parse_fleecing($param);
     parse_performance($param);
 

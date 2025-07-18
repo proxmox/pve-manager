@@ -106,78 +106,6 @@ my @tests = (
     },
     # TODO make parse error critical?
     {
-        description => 'maxfiles vzdump 1',
-        vzdump_param => {
-            maxfiles => 0,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-all' => 1,
-            },
-            remove => 0,
-        },
-    },
-    {
-        description => 'maxfiles vzdump 2',
-        vzdump_param => {
-            maxfiles => 7,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-last' => 7,
-            },
-            remove => 1,
-        },
-    },
-    {
-        description => 'maxfiles storage 1',
-        storage_param => {
-            maxfiles => 0,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-all' => 1,
-            },
-            remove => 0,
-        },
-    },
-    {
-        description => 'maxfiles storage 2',
-        storage_param => {
-            maxfiles => 7,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-last' => 7,
-            },
-            remove => 1,
-        },
-    },
-    {
-        description => 'maxfiles CLI 1',
-        cli_param => {
-            maxfiles => 0,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-all' => 1,
-            },
-            remove => 0,
-        },
-    },
-    {
-        description => 'maxfiles CLI 2',
-        cli_param => {
-            maxfiles => 7,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-last' => 7,
-            },
-            remove => 1,
-        },
-    },
-    {
         description => 'prune-backups vzdump 1',
         vzdump_param => {
             'prune-backups' => 'keep-last=1,keep-hourly=2,keep-daily=3,'
@@ -211,19 +139,6 @@ my @tests = (
         description => 'prune-backups vzdump 3',
         vzdump_param => {
             'prune-backups' => 'keep-hourly=0,keep-monthly=0,keep-yearly=0',
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-all' => 1,
-            },
-            remove => 0,
-        },
-    },
-    {
-        description => 'both vzdump 1',
-        vzdump_param => {
-            'prune-backups' => 'keep-all=1',
-            maxfiles => 7,
         },
         expected => {
             'prune-backups' => {
@@ -276,21 +191,6 @@ my @tests = (
         },
     },
     {
-        description => 'both storage 1',
-        storage_param => {
-            'prune-backups' => 'keep-hourly=1,keep-monthly=2,keep-yearly=3',
-            maxfiles => 0,
-        },
-        expected => {
-            'prune-backups' => {
-                'keep-hourly' => 1,
-                'keep-monthly' => 2,
-                'keep-yearly' => 3,
-            },
-            remove => 1,
-        },
-    },
-    {
         description => 'prune-backups CLI 1',
         cli_param => {
             'prune-backups' => 'keep-last=1,keep-hourly=2,keep-daily=3,'
@@ -330,18 +230,9 @@ my @tests = (
             . "foo: property is not defined in schema and the schema does not allow additional properties\n",
     },
     {
-        description => 'both CLI 1',
-        cli_param => {
-            'prune-backups' => 'keep-hourly=1,keep-monthly=2,keep-yearly=3',
-            maxfiles => 4,
-        },
-        expected => "400 Parameter verification failed.\n"
-            . "prune-backups: option conflicts with option 'maxfiles'\n",
-    },
-    {
         description => 'mixed 1',
         vzdump_param => {
-            maxfiles => 7,
+            'prune-backups' => 'keep-last=7',
         },
         storage_param => {
             'prune-backups' => 'keep-hourly=24',
@@ -357,7 +248,7 @@ my @tests = (
     {
         description => 'mixed 2',
         vzdump_param => {
-            maxfiles => 7,
+            'prune-backups' => 'keep-last=7',
         },
         storage_param => {
             'prune-backups' => 'keephourly=24',
@@ -372,7 +263,7 @@ my @tests = (
     {
         description => 'mixed 3',
         vzdump_param => {
-            maxfiles => 7,
+            'prune-backups' => 'keep-last=7',
         },
         cli_param => {
             'prune-backups' => 'keep-all=1',
@@ -387,7 +278,7 @@ my @tests = (
     {
         description => 'mixed 4',
         vzdump_param => {
-            maxfiles => 7,
+            'prune-backups' => 'keep-last=7',
         },
         storage_param => {
             'prune-backups' => 'keep-all=0,keep-last=10',
@@ -405,7 +296,7 @@ my @tests = (
     {
         description => 'mixed 5',
         vzdump_param => {
-            maxfiles => 7,
+            'prune-backups' => 'keep-last=7',
         },
         storage_param => {
             'prune-backups' => 'keep-all=0,keep-last=10',
@@ -650,7 +541,6 @@ foreach my $test (@tests) {
         my $vzdump = PVE::VZDump->new('fake cmdline', $test->{cli_param}, undef);
 
         my $opts = $vzdump->{opts} or die "did not get options\n";
-        die "maxfiles is defined" if defined($opts->{maxfiles});
 
         my $res = {};
         foreach my $opt (@{$tested_options}) {
