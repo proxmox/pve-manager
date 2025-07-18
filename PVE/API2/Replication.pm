@@ -3,7 +3,10 @@ package PVE::API2::Replication;
 use warnings;
 use strict;
 
+use PVE::Cluster;
+use PVE::Exception qw(raise_perm_exc);
 use PVE::Format qw(render_timestamp);
+use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::LXC::Config;
 use PVE::LXC;
@@ -16,6 +19,7 @@ use PVE::ReplicationState;
 use PVE::Replication;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::Tools;
 
 use base qw(PVE::RESTHandler);
 
