@@ -1,3 +1,9 @@
+pve-manager (9.0.0~7) trixie; urgency=medium
+
+  * d/postinst: setup pve-test repo for updates during the beta phase.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jul 2025 15:24:25 +0200
+
 pve-manager (9.0.0~6) trixie; urgency=medium
 
   * ui: dc/options: allow one to edit cluster wide replication settings.
