@@ -766,8 +766,8 @@ sub check_backup_retention_settings {
 
     my $pass = 1;
 
-    my $maxfiles_msg = "parameter 'maxfiles' is deprecated with PVE 7.x and will be removed in a "
-        . "future version, use 'prune-backups' instead.";
+    my $maxfiles_msg = "parameter 'maxfiles' was deprecated with PVE 7.x and is getting dropped"
+        . " with PVE 9.";
 
     eval {
         my $confdesc = PVE::VZDump::Common::get_confdesc();
@@ -782,12 +782,12 @@ sub check_backup_retention_settings {
 
         if (defined($param->{maxfiles})) {
             $pass = 0;
-            log_warn("$fn - $maxfiles_msg");
+            log_fail("$fn - $maxfiles_msg");
         }
     };
     if (my $err = $@) {
         $pass = 0;
-        log_warn("unable to parse node's VZDump configuration - $err");
+        log_fail("unable to parse node's VZDump configuration - $err");
     }
 
     my $storage_cfg = PVE::Storage::config();
@@ -797,7 +797,7 @@ sub check_backup_retention_settings {
 
         if (defined($scfg->{maxfiles})) {
             $pass = 0;
-            log_warn("storage '$storeid' - $maxfiles_msg");
+            log_fail("storage '$storeid' - $maxfiles_msg");
         }
     }
 
@@ -807,12 +807,12 @@ sub check_backup_retention_settings {
         # only warn once, there might be many jobs...
         if (scalar(grep { defined($_->{maxfiles}) } $vzdump_cron->{jobs}->@*)) {
             $pass = 0;
-            log_warn("/etc/pve/vzdump.cron - $maxfiles_msg");
+            log_fail("/etc/pve/vzdump.cron - $maxfiles_msg");
         }
     };
     if (my $err = $@) {
         $pass = 0;
-        log_warn("unable to parse node's VZDump configuration - $err");
+        log_fail("unable to parse node's VZDump configuration - $err");
     }
 
     log_pass("no backup retention problems found.") if $pass;
