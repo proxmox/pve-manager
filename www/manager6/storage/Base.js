@@ -188,11 +188,6 @@ Ext.define('PVE.storage.BaseEdit', {
                         let retention = PVE.Parser.parsePropertyString(values['prune-backups']);
                         delete values['prune-backups'];
                         Object.assign(values, retention);
-                    } else if (values.maxfiles !== undefined) {
-                        if (values.maxfiles > 0) {
-                            values['keep-last'] = values.maxfiles;
-                        }
-                        delete values.maxfiles;
                     }
 
                     me.query('inputpanel').forEach((panel) => {

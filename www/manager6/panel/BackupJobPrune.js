@@ -35,10 +35,7 @@ Ext.define('PVE.panel.BackupJobPrune', {
             options['prune-backups'] = retention;
         }
 
-        if (!this.isCreate) {
-            // always delete old 'maxfiles' on edit, we map it to keep-last on window load
-            options.delete.push('maxfiles');
-        } else {
+        if (this.isCreate) {
             delete options.delete;
         }
 

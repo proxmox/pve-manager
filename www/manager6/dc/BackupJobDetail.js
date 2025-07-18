@@ -371,12 +371,10 @@ Ext.define('PVE.dc.BackupInfo', {
             }
         });
 
-        if (values['prune-backups'] || values.maxfiles !== undefined) {
+        if (values['prune-backups']) {
             let keepValues;
             if (values['prune-backups']) {
                 keepValues = values['prune-backups'];
-            } else if (values.maxfiles > 0) {
-                keepValues = { 'keep-last': values.maxfiles };
             } else {
                 keepValues = { 'keep-all': 1 };
             }

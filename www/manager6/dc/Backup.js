@@ -167,13 +167,6 @@ Ext.define('PVE.dc.BackupEdit', {
             if (data['prune-backups']) {
                 Object.assign(data, data['prune-backups']);
                 delete data['prune-backups'];
-            } else if (data.maxfiles !== undefined) {
-                if (data.maxfiles > 0) {
-                    data['keep-last'] = data.maxfiles;
-                } else {
-                    data['keep-all'] = 1;
-                }
-                delete data.maxfiles;
             }
 
             if (data['notes-template']) {
