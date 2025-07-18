@@ -3,8 +3,18 @@
 use strict;
 use warnings;
 
+use Time::HiRes qw(usleep);
+
+use PVE::Cluster;
 use PVE::Network::SDN;
 use PVE::Tools;
+
+for (my $i = 0; !PVE::Cluster::check_cfs_quorum(1); $i++) {
+    print "waiting for pmxcfs mount to appear and get quorate...\n"
+        if $i % 50 == 0;
+
+    usleep(100 * 1000);
+}
 
 my $previous_config_has_frr = PVE::Network::SDN::running_config_has_frr();
 PVE::Network::SDN::commit_config();

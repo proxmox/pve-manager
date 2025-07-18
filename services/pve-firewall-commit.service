@@ -2,7 +2,7 @@
 Description=Commit Proxmox VE Firewall changes
 DefaultDependencies=no
 Wants=pve-cluster.service
-After=pve-cluster.service
+After=corosync.service
 
 [Service]
 ExecStart=/usr/share/pve-manager/helpers/pve-firewall-commit
