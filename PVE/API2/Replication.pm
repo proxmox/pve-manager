@@ -236,7 +236,7 @@ __PACKAGE__->register_method({
             my $data = $extract_job_status->($jobs->{$id}, $id);
             my $guest = $data->{guest};
             next if defined($param->{guest}) && $guest != $param->{guest};
-            next if !$rpcenv->check($authuser, "/vms/$guest", ['VM.Audit']);
+            next if !$rpcenv->check($authuser, "/vms/$guest", ['VM.Audit'], 1);
             push @$res, $data;
         }
 
@@ -311,7 +311,7 @@ __PACKAGE__->register_method({
         my $data = $extract_job_status->($jobcfg, $jobid);
         my $guest = $data->{guest};
 
-        raise_perm_exc() if !$rpcenv->check($authuser, "/vms/$guest", ['VM.Audit']);
+        $rpcenv->check($authuser, "/vms/$guest", ['VM.Audit']);
 
         return $data;
     },
@@ -381,8 +381,8 @@ __PACKAGE__->register_method({
         my $vmid = $data->{guest};
         raise_perm_exc()
             if (!(
-                $rpcenv->check($authuser, "/vms/$vmid", ['VM.Audit'])
-                || $rpcenv->check($authuser, "/nodes/$node", ['Sys.Audit'])
+                $rpcenv->check($authuser, "/vms/$vmid", ['VM.Audit'], 1)
+                || $rpcenv->check($authuser, "/nodes/$node", ['Sys.Audit'], 1)
             ));
 
         my ($count, $lines) =
