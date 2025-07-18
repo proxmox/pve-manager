@@ -345,7 +345,7 @@ Ext.define('PVE.qemu.Config', {
             },
         );
 
-        if (caps.vms['VM.Monitor'] && !template) {
+        if (caps.nodes['Sys.Audit'] && !template) {
             me.items.push({
                 title: gettext('Monitor'),
                 iconCls: 'fa fa-eye',
