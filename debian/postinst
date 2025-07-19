@@ -13,6 +13,11 @@ set_lvm_conf() {
     local FORCE="$1"
     LVM_CONF_MARKER="# added by pve-manager to avoid scanning"
 
+    if [ ! -e /etc/lvm/lvm.conf ]; then
+        echo "No /etc/lvm/lvm.conf found - skipping checking the global_filter."
+        return
+    fi
+
     # keep user changes afterwards provided marker is still there..
     if grep -qLF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf && test -z "$FORCE"; then
         return 0 # only do these changes once
@@ -192,12 +197,12 @@ case "$1" in
     fi
 
     if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '8.1.4~'; then
-        if test -e /etc/lvm/lvm.conf ; then
-            set_lvm_conf 1
-        fi
+        # TODO: remove with PVE 10
+        # pass FORCE as we want to ensure the filter for RBDs gets added to our existing one.
+        set_lvm_conf 1
+    else
+        set_lvm_conf
     fi
-
-    set_lvm_conf
 
     if test -n "$2" && dpkg --compare-versions "$2" 'lt' '8.1.11'; then
         update_ceph_conf
