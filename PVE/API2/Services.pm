@@ -51,14 +51,14 @@ my $essential_services = {
 # manage subinstances, of which the  default is called "-".
 # This is where we look for the daemon status
 my $unit_extra_names = {
-    postfix => 'postfix@-',
 };
 
 my $get_full_service_state = sub {
     my ($service) = @_;
-    $service = $unit_extra_names->{$service} if $unit_extra_names->{$service};
-    my $res;
 
+    $service = $unit_extra_names->{$service} if $unit_extra_names->{$service};
+
+    my $res;
     my $parser = sub {
         my $line = shift;
         if ($line =~ m/^([^=\s]+)=(.*)$/) {
