@@ -1,3 +1,14 @@
+pve-manager (9.0.0~10) trixie; urgency=medium
+
+  * d/postinst: only set-up pve-test repos for beta on fresh
+    installation as upgrades must have a valid repo already anyway, otherwise
+    they could not upgrade in the first place.
+
+  * 8to9 upgrade checks: fix calling the method for parsing network defices
+    from a VM config, it got moved in Proxmox VE 9 into a dedicated module.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 19 Jul 2025 20:56:45 +0200
+
 pve-manager (9.0.0~9) trixie; urgency=medium
 
   * guest metrics: drop support for ancient RRD schema from before Proxmox VE
