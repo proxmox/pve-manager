@@ -9,6 +9,7 @@ set -e
 # installed and configured.
 
 set_lvm_conf() {
+    # shellcheck disable=SC3043
     local FORCE="$1"
     LVM_CONF_MARKER="# added by pve-manager to avoid scanning"
 
