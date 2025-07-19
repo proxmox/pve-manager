@@ -47,16 +47,21 @@ set_lvm_conf() {
         echo "Backing up lvm.conf before setting pve-manager specific settings.."
         cp -vb /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
     fi
+    NEW_MARKER="$LVM_CONF_MARKER ZFS zvols and Ceph rbds"
     if test -n "$SET_FILTER"; then
         echo "Setting 'global_filter' in /etc/lvm/lvm.conf to prevent zvols and rbds from being scanned:"
         echo "$OLD_VALUE => $NEW_VALUE"
         if test -n "$OLD_VALUE"; then
-            sed -i -e "s/$LVM_CONF_MARKER ZFS zvols/$LVM_CONF_MARKER ZFS zvols and Ceph rbds/" /etc/lvm/lvm.conf
-            sed -i -e "s!^\([[:space:]]*\)\(global_filter[[:space:]]*=.*\)\$!\1# \2\n\1$NEW_VALUE!" /etc/lvm/lvm.conf
+            if grep -qLF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf; then
+                sed -i -e "s/$LVM_CONF_MARKER ZFS zvols/$NEW_MARKER/" /etc/lvm/lvm.conf
+                sed -i -e 's!^\([[:space:]]*\)\(global_filter[[:space:]]*=.*\)$!\1# \2\n\1'"$NEW_VALUE"'!' /etc/lvm/lvm.conf
+            else
+                sed -i -e 's!^\([[:space:]]*\)\(global_filter[[:space:]]*=.*\)$!\1# \2\n\1'"$NEW_MARKER"'\n\1'"$NEW_VALUE"'!' /etc/lvm/lvm.conf
+            fi
         else
             cat >> /etc/lvm/lvm.conf <<EOF
 devices {
-     $LVM_CONF_MARKER ZFS zvols and Ceph rbds
+     $NEW_MARKER
      $NEW_VALUE
 }
 EOF
