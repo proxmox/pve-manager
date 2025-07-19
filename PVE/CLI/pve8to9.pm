@@ -28,6 +28,7 @@ use PVE::Tools qw(run_command split_list file_get_contents trim);
 use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::QemuServer::Machine;
+use PVE::QemuServer::Network;
 use PVE::VZDump::Common;
 use PVE::LXC;
 use PVE::LXC::Config;
@@ -1701,7 +1702,7 @@ sub check_bridge_mtu {
 
         for my $opt (sort keys $config->%*) {
             next if $opt !~ m/^net\d+$/;
-            my $net = PVE::QemuServer::parse_net($config->{$opt});
+            my $net = PVE::QemuServer::Network::parse_net($config->{$opt});
 
             next if $net->{model} ne 'virtio' || defined($net->{mtu});
 
