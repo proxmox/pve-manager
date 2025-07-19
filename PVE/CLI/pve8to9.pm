@@ -876,23 +876,23 @@ my sub check_qemu_machine_versions {
 
     log_notice(
         "QEMU machine versions older than $basline_txt are expected to be dropped during the"
-            . " Proxmox VE $next_pve_major release life cycle. For more information, see"
-            . " https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_machine_type"
-            . " and https://pve.proxmox.com/wiki/QEMU_Machine_Version_Upgrade");
+            . " Proxmox VE $next_pve_major release life cycle. For more information, see:\n"
+            . "\thttps://pve.proxmox.com/pve-docs/chapter-qm.html#qm_machine_type\n"
+            . "\tand https://pve.proxmox.com/wiki/QEMU_Machine_Version_Upgrade");
 
     if (scalar($old_configured->@*)) {
         my $vmid_list_txt = join(',', $old_configured->@*);
         log_warn(
             "VMs with the following IDs have an old machine version configured. The machine version"
                 . " might need to be updated to be able to start the VM in Proxmox VE"
-                . " $next_pve_major: $vmid_list_txt");
+                . " $next_pve_major:\n\t$vmid_list_txt");
     }
 
     if (scalar($old_hibernated->@*)) {
         my $vmid_list_txt = join(',', $old_hibernated->@*);
         log_warn(
             "VMs with the following IDs are hibernated with an old machine version and it might not"
-                . " be possible to resume them in Proxmox VE $next_pve_major: $vmid_list_txt");
+                . " be possible to resume them in Proxmox VE $next_pve_major:\n\t$vmid_list_txt");
     }
 
     if (scalar(keys $old_online_snapshot->%*)) {
@@ -905,7 +905,7 @@ my sub check_qemu_machine_versions {
         log_warn(
             "VMs with the following IDs have live snapshots with an old machine version and it"
                 . " might not be possible to rollback to these snapshots in Proxmox VE"
-                . " $next_pve_major: $vmid_list_txt");
+                . " $next_pve_major:\n\t$vmid_list_txt");
     }
 
     if (scalar(keys $old_offline_snapshot->%*)) {
@@ -918,7 +918,7 @@ my sub check_qemu_machine_versions {
         log_warn(
             "VMs with the following IDs have snapshots with an old machine version configured."
                 . " The machine version might need to be updated after rollback to be able to start"
-                . " the VM in Proxmox VE $next_pve_major: $vmid_list_txt");
+                . " the VM in Proxmox VE $next_pve_major:\n\t$vmid_list_txt");
     }
 }
 
