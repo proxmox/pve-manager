@@ -83,6 +83,8 @@ Ext.define('PVE.panel.StorageBase', {
                 name: 'snapshot-as-volume-chain',
                 boxLabel: gettext('Allow Snapshots as Volume-Chain'),
                 deleteEmpty: !me.isCreate,
+                // can only allow to enable this on creation for storages that previously already
+                // supported qcow2 to avoid ambiguity with existing volumes.
                 disabled: !me.isCreate && me.type !== 'lvm',
                 checked: false,
             });
