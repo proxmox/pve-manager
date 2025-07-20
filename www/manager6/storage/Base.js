@@ -94,7 +94,7 @@ Ext.define('PVE.panel.StorageBase', {
                 xtype: 'displayfield',
                 name: 'external-snapshot-hint',
                 userCls: 'pmx-hint',
-                value: gettext('Storage-Managed Snapshots are a technology preview.'),
+                value: gettext('Snapshots as Volume-Chain are a technology preview.'),
             });
         }
 
