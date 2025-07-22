@@ -20,7 +20,9 @@ update:
 	mv aplinfo.dat.tmp aplinfo.dat
 
 trustedkeys.gpg: $(TRUSTED_KEYS)
-	sq keyring merge --output $@.tmp $(TRUSTED_KEYS)
+	sq keyring merge --output $(basename $@).asc.tmp $(TRUSTED_KEYS)
+	sq packet dearmor $(basename $@).asc.tmp --output $@.tmp
+	rm $(basename $@).asc.tmp
 	mv $@.tmp $@
 
 .PHONY: clean
