@@ -1,3 +1,21 @@
+pve-manager (9.0.0~11) trixie; urgency=medium
+
+  * 8to9 upgrade checks: machine version: place VMIDs in dedicated line.
+
+  * fix #6537: api: system services: system unit for postfix is again a normal
+    service in Trixie.
+
+  * ui: base storage: fix outdated wording in tech-preview hint.
+
+  * fix #6539: apl: use sqv instead of gpgv to verify signatures.
+
+  * network-interface-pinning: do not generate link files for virtual
+    functions (VFs).
+
+  * network-interface-pinning: fix pinning for bond members.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 22 Jul 2025 23:33:37 +0200
+
 pve-manager (9.0.0~10) trixie; urgency=medium
 
   * d/postinst: only set-up pve-test repos for beta on fresh
