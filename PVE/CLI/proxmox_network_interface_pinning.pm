@@ -287,12 +287,19 @@ sub get_ip_link_mac {
     return $ip_link->{link_info}->{info_slave_data}->{perm_hwaddr} // $ip_link->{address};
 }
 
+sub iface_is_vf {
+    my ($iface_name) = @_;
+
+    return -l "/sys/class/net/$iface_name/device/physfn";
+}
+
 sub get_ip_links {
     my $ip_links = PVE::Network::ip_link_details();
 
     for my $iface_name (keys $ip_links->%*) {
         delete $ip_links->{$iface_name}
-            if !PVE::Network::ip_link_is_physical($ip_links->{$iface_name});
+            if !PVE::Network::ip_link_is_physical($ip_links->{$iface_name})
+            || iface_is_vf($iface_name);
     }
 
     return $ip_links;
