@@ -171,7 +171,7 @@ sub download_aplinfo {
 
         # verify signature
         my $trustedkeyring = "/usr/share/doc/pve-manager/trustedkeys.gpg";
-        my $cmd = "/usr/bin/gpgv -q --keyring $trustedkeyring $sigfn $tmp";
+        my $cmd = "/usr/bin/sqv --keyring $trustedkeyring $sigfn $tmp";
 
         my $logfunc = sub { logmsg($logfd, "signature verification: $_[0]"); };
         eval { run_command($cmd, outfunc => $logfunc, errfunc => $logfunc); };
