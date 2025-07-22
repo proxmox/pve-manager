@@ -6,9 +6,11 @@ use warnings;
 use PVE::Status::Plugin;
 use PVE::Status::Graphite;
 use PVE::Status::InfluxDB;
+use PVE::Status::OpenTelemetry;
 
 PVE::Status::Graphite->register();
 PVE::Status::InfluxDB->register();
+PVE::Status::OpenTelemetry->register();
 PVE::Status::Plugin->init();
 
 sub foreach_plug($&) {
