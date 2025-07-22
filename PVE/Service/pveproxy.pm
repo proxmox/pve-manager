@@ -55,6 +55,7 @@ my $basedirs = {
     manager => '/usr/share/pve-manager',
     novnc => '/usr/share/novnc-pve',
     sencha_touch => '/usr/share/javascript/sencha-touch',
+    yew_mobile => '/usr/share/javascript/pve-yew-mobile-gui',
     widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
     xtermjs => '/usr/share/pve-xtermjs',
 };
@@ -87,6 +88,7 @@ sub init {
     add_dirs($dirs, '/pve2/js/' => "$basedirs->{manager}/js/");
     add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
     add_dirs($dirs, '/pve2/sencha-touch/', "$basedirs->{sencha_touch}/");
+    add_dirs($dirs, '/pve2/yew-mobile/', "$basedirs->{yew_mobile}/");
     add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
     add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
@@ -275,7 +277,7 @@ sub get_index {
     } elsif ($xtermjs) {
         $dir = $basedirs->{xtermjs};
     } elsif ($mobile) {
-        $dir = "$basedirs->{manager}/touch";
+        $dir = "$basedirs->{yew_mobile}";
     }
 
     my $page = '';
