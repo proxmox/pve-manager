@@ -50,8 +50,7 @@ my $essential_services = {
 # since postfix package 3.1.0-3.1 the postfix unit is only here to
 # manage subinstances, of which the  default is called "-".
 # This is where we look for the daemon status
-my $unit_extra_names = {
-};
+my $unit_extra_names = {};
 
 my $get_full_service_state = sub {
     my ($service) = @_;

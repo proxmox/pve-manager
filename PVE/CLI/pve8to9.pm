@@ -1789,7 +1789,6 @@ sub check_virtual_guests {
     check_qemu_machine_versions();
 }
 
-
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
