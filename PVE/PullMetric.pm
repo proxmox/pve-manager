@@ -91,9 +91,18 @@ my sub get_node_metrics {
     push @$metrics, gauge($id, $timestamp, "uptime", $data->{uptime});
 
     my ($netin, $netout) = (0, 0);
-    for my $dev (grep { /^$PVE::Network::PHYSICAL_NIC_RE$/ } keys $data->{nics}->%*) {
-        $netin += $data->{nics}->{$dev}->{receive};
-        $netout += $data->{nics}->{$dev}->{transmit};
+
+    for my $dev (keys $data->{nics}->%*) {
+        my $nic_data = $data->{nics}->{$dev};
+
+        if ($nic_data->{type}) {
+            next if $nic_data->{type} ne 'physical';
+        } else {
+            next if $dev !~ /^$PVE::Network::PHYSICAL_NIC_RE$/;
+        }
+
+        $netin += $nic_data->{receive};
+        $netout += $nic_data->{transmit};
     }
     push @$metrics, derive($id, $timestamp, "net_in", $netin);
     push @$metrics, derive($id, $timestamp, "net_out", $netout);
