@@ -342,7 +342,6 @@ __PACKAGE__->register_method({
     parameters => {
         additionalProperties => 0,
         properties => {
-            # TODO: support a target name or prefix once pve-common supports generic physical ifaces
             interface => {
                 description => 'Only pin a specific interface.',
                 type => 'string',
@@ -350,10 +349,17 @@ __PACKAGE__->register_method({
                 default => '<all>', # just for the docs.
                 optional => 1,
             },
+            prefix => {
+                description => 'Only pin a specific interface.',
+                type => 'string',
+                enum => ['nic', 'if'],
+                default => 'nic', # just for the docs.
+                optional => 1,
+            },
             'target-name' => {
                 description => 'Pin the interface to a specific name',
                 type => 'string',
-                pattern => 'nic\d+',
+                pattern => '(?:nic|if)\d+',
                 optional => 1,
             },
         },
@@ -381,7 +387,7 @@ __PACKAGE__->register_method({
         }
 
         my $code = sub {
-            my $prefix = 'nic'; # TODO: make flexible once pve-common supports that.
+            my $prefix = $params->{prefix} // 'nic';
 
             my $ip_links = get_ip_links();
             my $pinned = get_pinned();
