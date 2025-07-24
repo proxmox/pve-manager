@@ -232,6 +232,11 @@ package PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping {
     use PVE::CLI::proxmox_network_interface_pinning;
     use PVE::Tools;
 
+    sub new {
+        my ($class, $mapping) = @_;
+        bless $mapping, $class;
+    }
+
     sub generate {
         my ($class, $ip_links, $pinned, $prefix) = @_;
 
@@ -345,6 +350,12 @@ __PACKAGE__->register_method({
                 default => '<all>', # just for the docs.
                 optional => 1,
             },
+            'target-name' => {
+                description => 'Pin the interface to a specific name',
+                type => 'string',
+                pattern => 'nic\d+',
+                optional => 1,
+            },
         },
     },
     returns => {
@@ -354,6 +365,10 @@ __PACKAGE__->register_method({
         my ($params) = @_;
 
         my $iface = $params->{interface}; # undef means all.
+        my $target_name = $params->{'target-name'};
+
+        die "target-name can only be set, if interface is set as well!\n"
+            if $params->{'target-name'} && !$params->{interface};
 
         if (-t STDOUT) {
             my $target = defined($iface) ? "the interface '$iface'" : 'all interfaces';
@@ -385,12 +400,23 @@ __PACKAGE__->register_method({
                 }
             }
 
-            my $mapping =
-                PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping->generate(
-                    $ip_links,
-                    $pinned,
-                    $prefix,
-                );
+            my $mapping;
+
+            if ($target_name) {
+                die "target-name already exists as link or pin!\n"
+                    if $ip_links->{$target_name} || grep { $target_name eq $_ } values $pinned->%*;
+
+                $mapping = PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping->new({
+                    $iface => $target_name,
+                });
+            } else {
+                $mapping =
+                    PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping->generate(
+                        $ip_links,
+                        $pinned,
+                        $prefix,
+                    );
+            }
 
             if (!$mapping->%*) {
                 print "Nothing to do, aborting.\n";
