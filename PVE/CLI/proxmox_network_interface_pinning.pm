@@ -240,7 +240,11 @@ package PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping {
 
         my %existing_names = map { $_ => 1 } values $pinned->%*;
 
-        for my $ifname (sort keys $ip_links->%*) {
+        my @sorted_links = sort {
+            $ip_links->{$a}->{ifindex} <=> $ip_links->{$b}->{ifindex};
+        } keys $ip_links->%*;
+
+        for my $ifname (@sorted_links) {
             my $ip_link = $ip_links->{$ifname};
             my $generated_name;
 
