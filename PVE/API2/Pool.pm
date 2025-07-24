@@ -189,10 +189,13 @@ __PACKAGE__->register_method({
                 my $pool = $param->{poolid};
 
                 die "pool '$pool' already exists\n" if $usercfg->{pools}->{$pool};
-                if ($pool =~ m!^(.*)/[^/]+$!) {
-                    my $parent = $1;
+                if ($pool =~ m!^(.*)/([^/]+)$!) {
+                    my ($parent, $leaf) = ($1, $2);
                     die "parent '$parent' of pool '$pool' does not exist\n"
                         if !defined($usercfg->{pools}->{$parent});
+                    die "pool name must start with a letter\n" if $leaf !~ m!^[A-Za-z]!;
+                } else {
+                    die "pool name must start with a letter\n" if $pool !~ m!^[A-Za-z]!;
                 }
 
                 $usercfg->{pools}->{$pool} = {
