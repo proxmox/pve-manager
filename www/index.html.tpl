@@ -24,7 +24,10 @@
     [% IF langfile %]
     <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js?ver=[% version %]'></script>
     [%- ELSE %]
-    <script type='text/javascript'>function gettext(buf) { return buf; }</script>
+    <script type='text/javascript'>
+        function gettext(message) { return message; }
+        function ngettext(singular, plural, count) { return count === 1 ? singular : plural; }
+    </script>
     [% END %]
     [%- IF debug %]
     <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js?ver=7.0.0"></script>
