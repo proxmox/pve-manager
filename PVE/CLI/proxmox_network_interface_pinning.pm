@@ -397,8 +397,28 @@ __PACKAGE__->register_method({
                 exit 0;
             }
 
-            for my $old_name (sort keys $mapping->%*) {
-                print "Name for link '$old_name' will change to '$mapping->{$old_name}'\n";
+            my $altnames = PVE::Network::altname_mapping($ip_links);
+
+            my @sorted_links = sort {
+                my $a_name = $altnames->{$a} // $a;
+                my $b_name = $altnames->{$b} // $b;
+
+                $ip_links->{$a_name}->{ifindex} <=> $ip_links->{$b_name}->{ifindex};
+            } grep {
+                $ip_links->{$_}
+            } keys $mapping->%*;
+
+            for my $old_name (@sorted_links) {
+                my $altname_string = '';
+
+                if (my $interface_altnames = $ip_links->{$old_name}->{altnames}) {
+                    $altname_string = join(', ', $interface_altnames->@*);
+                }
+
+                print "Name for link '$old_name' ";
+                print "($altname_string) " if $altname_string;
+                print "will change to '$mapping->{$old_name}'\n";
+
             }
 
             generate_link_files($ip_links, $mapping);
