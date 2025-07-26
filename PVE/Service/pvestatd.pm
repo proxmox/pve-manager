@@ -82,6 +82,16 @@ my $cached_kvm_version = '';
 my $next_flag_update_time;
 my $failed_flag_update_delay_sec = 120;
 
+# Checks if RRD files exist in the specified location.
+my $rrd_dir_exists = sub {
+    my ($location) = @_;
+    if (-d "/var/lib/rrdcached/db/${location}") {
+        return 1;
+    } else {
+        return 0;
+    }
+};
+
 sub update_supported_cpuflags {
     my $kvm_version = PVE::QemuServer::kvm_user_version();
 
@@ -202,32 +212,66 @@ sub update_node_status {
 
     my $meminfo = PVE::ProcFSTools::read_meminfo();
 
+    my $pressures = PVE::ProcFSTools::read_pressure();
+
     my $dinfo = df('/', 1); # output is bytes
     # everything not free is considered to be used
     my $dused = $dinfo->{blocks} - $dinfo->{bfree};
 
     $ctime = time(); # df can need a long time, so requery time.
 
-    my $data = $generate_rrd_string->(
-        [
-            $uptime,
-            $sublevel,
-            $ctime,
-            $avg1,
-            $maxcpu,
-            $stat->{cpu},
-            $stat->{wait},
-            $meminfo->{memtotal},
-            $meminfo->{memused},
-            $meminfo->{swaptotal},
-            $meminfo->{swapused},
-            $dinfo->{blocks},
-            $dused,
-            $netin,
-            $netout,
-        ],
-    );
-    PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
+    my $data;
+    # TODO: drop old pve2- schema with PVE 10
+    if ($rrd_dir_exists->("pve-node-9.0")) {
+        $data = $generate_rrd_string->(
+            [
+                $uptime,
+                $sublevel,
+                $ctime,
+                $avg1,
+                $maxcpu,
+                $stat->{cpu},
+                $stat->{wait},
+                $meminfo->{memtotal},
+                $meminfo->{memused},
+                $meminfo->{swaptotal},
+                $meminfo->{swapused},
+                $dinfo->{blocks},
+                $dused,
+                $netin,
+                $netout,
+                $meminfo->{memavailable},
+                $meminfo->{arcsize},
+                $pressures->{cpu}->{some}->{avg10},
+                $pressures->{io}->{some}->{avg10},
+                $pressures->{io}->{full}->{avg10},
+                $pressures->{memory}->{some}->{avg10},
+                $pressures->{memory}->{full}->{avg10},
+            ],
+        );
+        PVE::Cluster::broadcast_rrd("pve-node-9.0/$nodename", $data);
+    } else {
+        $data = $generate_rrd_string->(
+            [
+                $uptime,
+                $sublevel,
+                $ctime,
+                $avg1,
+                $maxcpu,
+                $stat->{cpu},
+                $stat->{wait},
+                $meminfo->{memtotal},
+                $meminfo->{memused},
+                $meminfo->{swaptotal},
+                $meminfo->{swapused},
+                $dinfo->{blocks},
+                $dused,
+                $netin,
+                $netout,
+            ],
+        );
+        PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
+    }
 
     my $node_metric = {
         uptime => $uptime,
@@ -295,44 +339,101 @@ sub update_qemu_status {
         my $data;
         my $status = $d->{qmpstatus} || $d->{status} || 'stopped';
         my $template = $d->{template} ? $d->{template} : "0";
-        if ($d->{pid}) { # running
-            $data = $generate_rrd_string->([
-                $d->{uptime},
-                $d->{name},
-                $status,
-                $template,
-                $ctime,
-                $d->{cpus},
-                $d->{cpu},
-                $d->{maxmem},
-                $d->{mem},
-                $d->{maxdisk},
-                $d->{disk},
-                $d->{netin},
-                $d->{netout},
-                $d->{diskread},
-                $d->{diskwrite},
-            ]);
+
+        # TODO: drop old pve2.3- schema with PVE 10
+        if ($rrd_dir_exists->("pve-vm-9.0")) {
+            if ($d->{pid}) { # running
+                $data = $generate_rrd_string->([
+                    $d->{uptime},
+                    $d->{name},
+                    $status,
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    $d->{cpu},
+                    $d->{maxmem},
+                    $d->{mem},
+                    $d->{maxdisk},
+                    $d->{disk},
+                    $d->{netin},
+                    $d->{netout},
+                    $d->{diskread},
+                    $d->{diskwrite},
+                    $d->{memhost},
+                    $d->{pressurecpusome},
+                    $d->{pressurecpufull},
+                    $d->{pressureiosome},
+                    $d->{pressureiofull},
+                    $d->{pressurememorysome},
+                    $d->{pressurememoryfull},
+                ]);
+            } else {
+                $data = $generate_rrd_string->([
+                    0,
+                    $d->{name},
+                    $status,
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    undef,
+                    $d->{maxmem},
+                    undef,
+                    $d->{maxdisk},
+                    $d->{disk},
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                ]);
+            }
+            PVE::Cluster::broadcast_rrd("pve-vm-9.0/$vmid", $data);
         } else {
-            $data = $generate_rrd_string->([
-                0,
-                $d->{name},
-                $status,
-                $template,
-                $ctime,
-                $d->{cpus},
-                undef,
-                $d->{maxmem},
-                undef,
-                $d->{maxdisk},
-                $d->{disk},
-                undef,
-                undef,
-                undef,
-                undef,
-            ]);
+            if ($d->{pid}) { # running
+                $data = $generate_rrd_string->([
+                    $d->{uptime},
+                    $d->{name},
+                    $status,
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    $d->{cpu},
+                    $d->{maxmem},
+                    $d->{mem},
+                    $d->{maxdisk},
+                    $d->{disk},
+                    $d->{netin},
+                    $d->{netout},
+                    $d->{diskread},
+                    $d->{diskwrite},
+                ]);
+            } else {
+                $data = $generate_rrd_string->([
+                    0,
+                    $d->{name},
+                    $status,
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    undef,
+                    $d->{maxmem},
+                    undef,
+                    $d->{maxdisk},
+                    $d->{disk},
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                ]);
+            }
+            PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
         }
-        PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
         PVE::ExtMetric::update_all($transactions, 'qemu', $vmid, $d, $ctime, $nodename);
     }
@@ -528,44 +629,100 @@ sub update_lxc_status {
         my $d = $vmstatus->{$vmid};
         my $template = $d->{template} ? $d->{template} : "0";
         my $data;
-        if ($d->{status} eq 'running') { # running
-            $data = $generate_rrd_string->([
-                $d->{uptime},
-                $d->{name},
-                $d->{status},
-                $template,
-                $ctime,
-                $d->{cpus},
-                $d->{cpu},
-                $d->{maxmem},
-                $d->{mem},
-                $d->{maxdisk},
-                $d->{disk},
-                $d->{netin},
-                $d->{netout},
-                $d->{diskread},
-                $d->{diskwrite},
-            ]);
+        # TODO: drop old pve2.3-vm schema with PVE 10
+        if ($rrd_dir_exists->("pve-vm-9.0")) {
+            if ($d->{pid}) { # running
+                $data = $generate_rrd_string->([
+                    $d->{uptime},
+                    $d->{name},
+                    $d->{status},
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    $d->{cpu},
+                    $d->{maxmem},
+                    $d->{mem},
+                    $d->{maxdisk},
+                    $d->{disk},
+                    $d->{netin},
+                    $d->{netout},
+                    $d->{diskread},
+                    $d->{diskwrite},
+                    undef,
+                    $d->{pressurecpusome},
+                    $d->{pressurecpufull},
+                    $d->{pressureiosome},
+                    $d->{pressureiofull},
+                    $d->{pressurememorysome},
+                    $d->{pressurememoryfull},
+                ]);
+            } else {
+                $data = $generate_rrd_string->([
+                    0,
+                    $d->{name},
+                    $d->{status},
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    undef,
+                    $d->{maxmem},
+                    undef,
+                    $d->{maxdisk},
+                    $d->{disk},
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                ]);
+            }
+            PVE::Cluster::broadcast_rrd("pve-vm-9.0/$vmid", $data);
         } else {
-            $data = $generate_rrd_string->([
-                0,
-                $d->{name},
-                $d->{status},
-                $template,
-                $ctime,
-                $d->{cpus},
-                undef,
-                $d->{maxmem},
-                undef,
-                $d->{maxdisk},
-                $d->{disk},
-                undef,
-                undef,
-                undef,
-                undef,
-            ]);
+            if ($d->{status} eq 'running') { # running
+                $data = $generate_rrd_string->([
+                    $d->{uptime},
+                    $d->{name},
+                    $d->{status},
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    $d->{cpu},
+                    $d->{maxmem},
+                    $d->{mem},
+                    $d->{maxdisk},
+                    $d->{disk},
+                    $d->{netin},
+                    $d->{netout},
+                    $d->{diskread},
+                    $d->{diskwrite},
+                ]);
+            } else {
+                $data = $generate_rrd_string->([
+                    0,
+                    $d->{name},
+                    $d->{status},
+                    $template,
+                    $ctime,
+                    $d->{cpus},
+                    undef,
+                    $d->{maxmem},
+                    undef,
+                    $d->{maxdisk},
+                    $d->{disk},
+                    undef,
+                    undef,
+                    undef,
+                    undef,
+                ]);
+            }
+            PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
         }
-        PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
         PVE::ExtMetric::update_all($transactions, 'lxc', $vmid, $d, $ctime, $nodename);
     }
@@ -590,6 +747,7 @@ sub update_storage_status {
         my $data = $generate_rrd_string->([$ctime, $d->{total}, $d->{used}]);
 
         my $key = "pve2-storage/${nodename}/$storeid";
+        $key = "pve-storage-9.0/${nodename}/$storeid" if $rrd_dir_exists->("pve-storage-9.0");
         PVE::Cluster::broadcast_rrd($key, $data);
 
         PVE::ExtMetric::update_all($transactions, 'storage', $nodename, $storeid, $d, $ctime);
