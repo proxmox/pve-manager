@@ -301,6 +301,13 @@ __PACKAGE__->register_method({
                     renderer => 'bytes',
                     minimum => 0,
                 },
+                memhost => {
+                    description => "Used memory in bytes from the point of view of the host (for types 'qemu').",
+                    type => 'integer',
+                    optional => 1,
+                    renderer => 'bytes',
+                    minimum => 0,
+                },
                 maxmem => {
                     description => "Number of available memory in bytes"
                         . " (for types 'node', 'qemu' and 'lxc').",
