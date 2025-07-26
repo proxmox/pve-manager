@@ -1160,6 +1160,9 @@ Ext.define('PVE.Utils', {
                 return -1;
             }
 
+            if (data.type === 'qemu' && Ext.isNumeric(data.memhost)) {
+                return data.memhost / maxmem;
+            }
             return data.mem / maxmem;
         },
 
@@ -1203,6 +1206,9 @@ Ext.define('PVE.Utils', {
             if (record.data.mem > 1) {
                 // we got no percentage but bytes
                 let mem = record.data.mem;
+                if (record.data.type === 'qemu' && Ext.isNumeric(record.data.memhost)) {
+                    mem = record.data.memhost;
+                }
                 if (!record.data.uptime || maxmem === 0 || !Ext.isNumeric(mem)) {
                     return '';
                 }

@@ -167,6 +167,14 @@ Ext.define('PVE.data.ResourceStore', {
                 hidden: true,
                 width: 100,
             },
+            memhost: {
+                header: gettext('Host Memory usage'),
+                type: 'integer',
+                renderer: PVE.Utils.render_mem_usage,
+                sortable: true,
+                hidden: true,
+                width: 100,
+            },
             memuse: {
                 header: gettext('Memory usage') + ' %',
                 type: 'number',
