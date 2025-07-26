@@ -227,6 +227,11 @@ case "$1" in
             migrate_apt_auth_conf
         fi
     fi
+
+    if test -n "$2" && dpkg --compare-versions "$2" 'lt' '9.0.0~12'; then
+        echo "migradting RRD to new PVE format version - this can take some time!"
+        proxmox-rrd-migration-tool --migrate || echo "migration failed, see output above for errors and try to migrate existing data manually by running 'proxmox-rrd-migration-tool --migrate'"
+    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
