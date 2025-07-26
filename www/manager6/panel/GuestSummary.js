@@ -30,6 +30,27 @@ Ext.define('PVE.guest.Summary', {
         var template = !!me.pveSelNode.data.template;
         var rstore = me.statusStore;
 
+        let memoryFields = [
+            {
+                type: 'area',
+                yField: ['mem', 'memfree-capped'],
+                title: [gettext('Used'), gettext('Free')],
+            },
+        ];
+        if (type === 'qemu') {
+            memoryFields.push({
+                type: 'line',
+                fill: false,
+                yField: 'memhost',
+                title: gettext('Host memory usage'),
+                hidden: true,
+                style: {
+                    lineWidth: 2.5,
+                    opacity: 1,
+                },
+            });
+        }
+
         var items = [
             {
                 xtype: template ? 'pveTemplateStatusView' : 'pveGuestStatusView',
@@ -82,8 +103,8 @@ Ext.define('PVE.guest.Summary', {
                     xtype: 'proxmoxRRDChart',
                     title: gettext('Memory usage'),
                     pveSelNode: me.pveSelNode,
-                    fields: ['maxmem', 'mem'],
-                    fieldTitles: [gettext('Total'), gettext('RAM usage')],
+                    fields: memoryFields,
+                    colors: ['#115fa6', '#94ae0a', '#c4c0c0'],
                     unit: 'bytes',
                     powerOfTwo: true,
                     store: rrdstore,
