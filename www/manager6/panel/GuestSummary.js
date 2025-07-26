@@ -30,6 +30,9 @@ Ext.define('PVE.guest.Summary', {
         var template = !!me.pveSelNode.data.template;
         var rstore = me.statusStore;
 
+        let hideMemhostStateKey = 'pve-vm-hide-memhost';
+        let sp = Ext.state.Manager.getProvider();
+
         let memoryFields = [
             {
                 type: 'area',
@@ -43,7 +46,7 @@ Ext.define('PVE.guest.Summary', {
                 fill: false,
                 yField: 'memhost',
                 title: gettext('Host memory usage'),
-                hidden: true,
+                hidden: sp.get(hideMemhostStateKey, true),
                 style: {
                     lineWidth: 2.5,
                     opacity: 1,
@@ -108,6 +111,12 @@ Ext.define('PVE.guest.Summary', {
                     unit: 'bytes',
                     powerOfTwo: true,
                     store: rrdstore,
+                    onLegendChange: function (_legend, record, _, seriesIndex) {
+                        if (seriesIndex === 2) {
+                            // third data series is clicked -> hostmem
+                            sp.set(hideMemhostStateKey, record.data.disabled);
+                        }
+                    },
                 },
                 {
                     xtype: 'proxmoxRRDChart',
@@ -185,7 +194,6 @@ Ext.define('PVE.guest.Summary', {
             rrdstore.startUpdate();
             me.on('destroy', rrdstore.stopUpdate);
         }
-        let sp = Ext.state.Manager.getProvider();
         me.mon(sp, 'statechange', function (provider, key, value) {
             if (key !== 'summarycolumns') {
                 return;
