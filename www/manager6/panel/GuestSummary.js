@@ -135,6 +135,18 @@ Ext.define('PVE.guest.Summary', {
                 {
                     xtype: 'proxmoxRRDChart',
                     title: gettext('CPU pressure'),
+                    tools: [
+                        {
+                            glyph: 'xf05a@FontAwesome', // fa-info-circle
+                            tooltip: gettext(
+                                'Shows if some or all (Full) processes belonging to the guest had to wait for CPU resources.',
+                            ),
+                            disabled: false,
+                            style: {
+                                paddingRight: '5px',
+                            },
+                        },
+                    ],
                     pveSelNode: me.pveSelNode,
                     fieldTitles: ['Some', 'Full'],
                     fields: ['pressurecpusome', 'pressurecpufull'],
@@ -145,6 +157,18 @@ Ext.define('PVE.guest.Summary', {
                 {
                     xtype: 'proxmoxRRDChart',
                     title: gettext('IO pressure'),
+                    tools: [
+                        {
+                            glyph: 'xf05a@FontAwesome', // fa-info-circle
+                            tooltip: gettext(
+                                'Shows if some or all (Full) processes belonging to the guest had to wait for IO (disk & network) resources.',
+                            ),
+                            disabled: false,
+                            style: {
+                                paddingRight: '5px',
+                            },
+                        },
+                    ],
                     pveSelNode: me.pveSelNode,
                     fieldTitles: ['Some', 'Full'],
                     fields: ['pressureiosome', 'pressureiofull'],
@@ -155,6 +179,18 @@ Ext.define('PVE.guest.Summary', {
                 {
                     xtype: 'proxmoxRRDChart',
                     title: gettext('Memory pressure'),
+                    tools: [
+                        {
+                            glyph: 'xf05a@FontAwesome', // fa-info-circle
+                            tooltip: gettext(
+                                'Shows if some or all (Full) processes belonging to the guest had to wait for memory resources.',
+                            ),
+                            disabled: false,
+                            style: {
+                                paddingRight: '5px',
+                            },
+                        },
+                    ],
                     pveSelNode: me.pveSelNode,
                     fieldTitles: ['Some', 'Full'],
                     fields: ['pressurememorysome', 'pressurememoryfull'],
