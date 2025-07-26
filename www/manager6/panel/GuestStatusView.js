@@ -94,7 +94,7 @@ Ext.define('PVE.panel.GuestStatusView', {
         },
         {
             xtype: 'box',
-            height: 15,
+            height: 10,
         },
         {
             itemId: 'cpu',
@@ -113,6 +113,20 @@ Ext.define('PVE.panel.GuestStatusView', {
             title: gettext('Memory usage'),
             valueField: 'mem',
             maxField: 'maxmem',
+        },
+        {
+            itemId: 'memory-host',
+            iconCls: 'fa fa-fw pmx-itype-icon-memory pmx-icon',
+            title: gettext('Host memory usage'),
+            valueField: 'memhost',
+            printBar: false,
+            renderer: function (used, max) {
+                return Proxmox.Utils.render_size(used);
+            },
+            cbind: {
+                hidden: '{isLxc}',
+                disabled: '{isLxc}',
+            },
         },
         {
             itemId: 'swap',
@@ -144,7 +158,7 @@ Ext.define('PVE.panel.GuestStatusView', {
         },
         {
             xtype: 'box',
-            height: 15,
+            height: 10,
         },
         {
             itemId: 'ips',
