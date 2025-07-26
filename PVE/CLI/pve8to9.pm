@@ -1870,6 +1870,67 @@ sub check_bridge_mtu {
     }
 }
 
+sub check_rrd_migration {
+    if (-e "/var/lib/rrdcached/db/pve-node-9.0") {
+        log_info("Check post RRD migration situation...");
+
+        my $count = 0;
+        my $count_occurences = sub {
+            $count++;
+        };
+        eval {
+            run_command(
+                ['find /var/lib/rrdcached/db -type f ! -name "*.foo"'],
+                outfunc => $count_occurences,
+                noerr => 1,
+            );
+        };
+
+        if ($count) {
+            log_warn("Found '$count' RRD files that have not yet been migrated to the new schema."
+                . " Please run the following command manually:\n"
+                . "proxmox-rrd-migration-tool --migrate\n");
+        }
+
+    } else {
+        log_info("Check space requirements for RRD migration...");
+        # multiplier values taken from KiB sizes of old and new RRD files
+        my $rrd_dirs = {
+            nodes => {
+                path => "/var/lib/rrdcached/db/pve2-node",
+                multiplier => 18.1,
+            },
+            guests => {
+                path => "/var/lib/rrdcached/db/pve2-vm",
+                multiplier => 20.2,
+            },
+            storage => {
+                path => "/var/lib/rrdcached/db/pve2-storage",
+                multiplier => 11.14,
+            },
+        };
+
+        my $size_buffer = 1024 * 1024 * 1024; # at least one GiB of free space should be calculated in
+        my $total_size_estimate = 0;
+        for my $type (keys %$rrd_dirs) {
+            my $size = PVE::Tools::du($rrd_dirs->{$type}->{path});
+            $total_size_estimate =
+                $total_size_estimate + ($size * $rrd_dirs->{$type}->{multiplier});
+        }
+        my $root_free = PVE::Tools::df('/', 10);
+
+        if (($total_size_estimate + $size_buffer) >= $root_free->{avail}) {
+            my $estimate_gib = sprintf("%.2f", $total_size_estimate / 1024 / 1024 / 1024);
+            my $free_gib = sprintf("%.2f", $root_free->{avail} / 1024 / 1024 / 1024);
+
+            log_fail("Not enough free space to migrate existing RRD files to the new format!\n"
+                . "Migrating the current RRD files is expected to consume about ${estimate_gib} GiB plus 1 GiB of safety."
+                . " But there is currently only ${free_gib} GiB space on the root file system available.\n"
+            );
+        }
+    }
+}
+
 sub check_virtual_guests {
     print_header("VIRTUAL GUEST CHECKS");
 
@@ -2038,6 +2099,7 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
+    check_rrd_migration();
 }
 
 my sub colored_if {
