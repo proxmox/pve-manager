@@ -123,6 +123,7 @@ Ext.define('PVE.guest.Summary', {
                     title: gettext('Network traffic'),
                     pveSelNode: me.pveSelNode,
                     fields: ['netin', 'netout'],
+                    fieldTitles: [gettext('Incoming'), gettext('Outgoing')],
                     store: rrdstore,
                 },
                 {
@@ -130,6 +131,7 @@ Ext.define('PVE.guest.Summary', {
                     title: gettext('Disk IO'),
                     pveSelNode: me.pveSelNode,
                     fields: ['diskread', 'diskwrite'],
+                    fieldTitles: [gettext('Reads'), gettext('Writes')],
                     store: rrdstore,
                 },
                 {

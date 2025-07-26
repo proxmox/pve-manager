@@ -204,6 +204,7 @@ Ext.define('PVE.node.Summary', {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('Network traffic'),
                             fields: ['netin', 'netout'],
+                            fieldTitles: [gettext('Incoming'), gettext('Outgoing')],
                             store: rrdstore,
                         },
                         {
