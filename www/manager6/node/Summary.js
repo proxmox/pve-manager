@@ -196,6 +196,33 @@ Ext.define('PVE.node.Summary', {
                             fields: ['netin', 'netout'],
                             store: rrdstore,
                         },
+                        {
+                            xtype: 'proxmoxRRDChart',
+                            title: gettext('CPU pressure'),
+                            fieldTitles: ['Some'],
+                            fields: ['pressurecpusome'],
+                            colors: ['#FFD13E', '#A61120'],
+                            store: rrdstore,
+                            unit: 'percent',
+                        },
+                        {
+                            xtype: 'proxmoxRRDChart',
+                            title: gettext('IO pressure'),
+                            fieldTitles: ['Some', 'Full'],
+                            fields: ['pressureiosome', 'pressureiofull'],
+                            colors: ['#FFD13E', '#A61120'],
+                            store: rrdstore,
+                            unit: 'percent',
+                        },
+                        {
+                            xtype: 'proxmoxRRDChart',
+                            title: gettext('Memory pressure'),
+                            fieldTitles: ['Some', 'Full'],
+                            fields: ['pressurememorysome', 'pressurememoryfull'],
+                            colors: ['#FFD13E', '#A61120'],
+                            store: rrdstore,
+                            unit: 'percent',
+                        },
                     ],
                     listeners: {
                         resize: function (panel) {

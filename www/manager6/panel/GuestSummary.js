@@ -102,6 +102,36 @@ Ext.define('PVE.guest.Summary', {
                     fields: ['diskread', 'diskwrite'],
                     store: rrdstore,
                 },
+                {
+                    xtype: 'proxmoxRRDChart',
+                    title: gettext('CPU pressure'),
+                    pveSelNode: me.pveSelNode,
+                    fieldTitles: ['Some', 'Full'],
+                    fields: ['pressurecpusome', 'pressurecpufull'],
+                    colors: ['#FFD13E', '#A61120'],
+                    store: rrdstore,
+                    unit: 'percent',
+                },
+                {
+                    xtype: 'proxmoxRRDChart',
+                    title: gettext('IO pressure'),
+                    pveSelNode: me.pveSelNode,
+                    fieldTitles: ['Some', 'Full'],
+                    fields: ['pressureiosome', 'pressureiofull'],
+                    colors: ['#FFD13E', '#A61120'],
+                    store: rrdstore,
+                    unit: 'percent',
+                },
+                {
+                    xtype: 'proxmoxRRDChart',
+                    title: gettext('Memory pressure'),
+                    pveSelNode: me.pveSelNode,
+                    fieldTitles: ['Some', 'Full'],
+                    fields: ['pressurememorysome', 'pressurememoryfull'],
+                    colors: ['#FFD13E', '#A61120'],
+                    store: rrdstore,
+                    unit: 'percent',
+                },
             );
         }
 
