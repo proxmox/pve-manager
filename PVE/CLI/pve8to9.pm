@@ -1650,8 +1650,7 @@ sub check_lvm_autoactivation {
             "Starting with PVE 9, autoactivation will be disabled for new LVM/LVM-thin guest"
                 . " volumes. This system has some volumes that still have autoactivation enabled. "
                 . "$extra\nYou can run the following command to disable autoactivation for existing"
-                . "LVM/LVM-thin "
-                . "guest volumes:" . "\n\n"
+                . " LVM/LVM-thin guest volumes:\n\n"
                 . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation"
                 . "\n");
     }
