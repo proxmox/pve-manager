@@ -1,3 +1,30 @@
+pve-manager (9.0.0~12) trixie; urgency=medium
+
+  * 8to9 upgrade checks: sync over version from PVE 8.4 stable branch.
+
+  * external metric server: add support for OpenTelemetry.
+
+  * network-interface-pinning:
+    - use ifindex as order for pinning.
+    - improve printing mapping.
+    - add 'target-name' parameter.
+    - allow arbitrary target name and prefixes.
+
+  * fix #6534: ui: keep displaying help button in backup edit dialog.
+
+  * replace sencha touch mobile web UI by default with new Yew based one
+    written in rust. The new pve-yew-mobile-gui package can still be removed
+    to get the old package back, but it's planned to drop the outdated sencha
+    touch based mobile UI completely soon.
+
+  * pvestatd: pull metric: use ip link to detect physical interfaces, but
+    cache the data and update it only every 15 minutes to avoid frequent
+    polling, physical interfaces are not likely to change frequently.
+
+  * fix #5392: pveproxy, pvedaemon: make maximum number of worker configurable.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Jul 2025 21:17:14 +0200
+
 pve-manager (9.0.0~11) trixie; urgency=medium
 
   * 8to9 upgrade checks: machine version: place VMIDs in dedicated line.
