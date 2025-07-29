@@ -370,14 +370,14 @@ __PACKAGE__->register_method({
                 description =>
                     'Use a specific prefix for automatically choosing the pinned name.',
                 type => 'string',
-                enum => ['nic', 'if'],
+                pattern => '^[a-zA-Z][a-zA-Z0-9-_]{0,7}$',
                 default => 'nic', # just for the docs.
                 optional => 1,
             },
             'target-name' => {
                 description => 'Pin the interface to a specific name.',
                 type => 'string',
-                pattern => '(?:nic|if)\d+',
+                format => 'pve-iface',
                 optional => 1,
                 requires => 'interface',
             },
