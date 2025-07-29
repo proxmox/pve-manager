@@ -279,16 +279,19 @@ sub check_rbd_storage_keyring {
 
     log_info("Checking whether all external RBD storages have the 'keyring' option configured");
 
+    my ($any_rbd_storage, $any_external_rbd_storage) = (0, 0);
     for my $storeid (sort keys $cfg->{ids}->%*) {
         eval {
             my $scfg = PVE::Storage::storage_config($cfg, $storeid);
 
             return if $scfg->{type} ne 'rbd'; # return from eval
+            $any_rbd_storage = 1;
 
             if (!defined($scfg->{monhost})) {
                 push $pve_managed->@*, $storeid;
                 return; # return from eval
             }
+            $any_external_rbd_storage = 1;
 
             my $ceph_storage_keyring = "/etc/pve/priv/ceph/${storeid}.keyring";
             my $ceph_storage_config = "/etc/pve/priv/ceph/${storeid}.conf";
@@ -339,9 +342,19 @@ sub check_rbd_storage_keyring {
         }
     }
 
+    if (!$any_rbd_storage) {
+        log_skip("No RBD storage configured.");
+        return;
+    }
+
     if (scalar($pve_managed->@*)) {
         my $storeid_txt = join(', ', $pve_managed->@*);
-        log_info("The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt");
+        # pass test if there is no external
+        if ($any_external_rbd_storage) {
+            log_info("The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt");
+        } else {
+            log_skip("Only PVE-managed RBD storages are configured, so nothing to do");
+        }
     }
 
     if (scalar($already_good->@*)) {
