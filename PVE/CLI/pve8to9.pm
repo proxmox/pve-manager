@@ -283,11 +283,11 @@ sub check_rbd_storage_keyring {
         eval {
             my $scfg = PVE::Storage::storage_config($cfg, $storeid);
 
-            return if $scfg->{type} ne 'rbd';
+            return if $scfg->{type} ne 'rbd'; # return from eval
 
             if (!defined($scfg->{monhost})) {
                 push $pve_managed->@*, $storeid;
-                return;
+                return; # return from eval
             }
 
             my $ceph_storage_keyring = "/etc/pve/priv/ceph/${storeid}.keyring";
@@ -310,19 +310,19 @@ sub check_rbd_storage_keyring {
                                 . " check manually!");
                     }
 
-                    return;
+                    return; # return from eval
                 }
             }
 
             if (!-e $ceph_storage_keyring) {
                 log_info("skipping storage $storeid: keyring file $ceph_storage_keyring does"
                     . " not exist");
-                return;
+                return; # return from eval
             }
 
             if ($dry_run) {
                 push $update->@*, $storeid;
-                return;
+                return; # return from eval
             }
 
             $ceph_config->{global}->{keyring} = $ceph_storage_keyring;
