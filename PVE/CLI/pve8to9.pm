@@ -318,7 +318,7 @@ sub check_rbd_storage_keyring {
             }
 
             if (!-e $ceph_storage_keyring) {
-                log_info("skipping storage $storeid: keyring file $ceph_storage_keyring does"
+                log_notice("skipping storage $storeid: keyring file $ceph_storage_keyring does"
                     . " not exist");
                 return; # return from eval
             }
