@@ -29,7 +29,7 @@ use base qw(PVE::Daemon);
 my $cmdline = [$0, @ARGV];
 
 my %daemon_options = (
-    max_workers => 3,
+    max_workers => 3, # may be overridden in init
     restart_on_error => 5,
     stop_wait_time => 15,
     leave_children_open_on_reload => 1,
@@ -65,6 +65,7 @@ sub init {
 
     # we use same ALLOW/DENY/POLICY as pveproxy
     my $proxyconf = PVE::APIServer::Utils::read_proxy_config($self->{name});
+    $self->{max_workers} = $proxyconf->{MAX_WORKERS} if $proxyconf->{MAX_WORKERS};
 
     my $accept_lock_fn = "/var/lock/pveproxy.lck";
 
