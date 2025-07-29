@@ -277,7 +277,9 @@ sub get_index {
     } elsif ($xtermjs) {
         $dir = $basedirs->{xtermjs};
     } elsif ($mobile) {
-        $dir = "$basedirs->{yew_mobile}";
+        $dir = "$basedirs->{manager}/touch";
+        # prefer new Yew based mobile UI if it's installed
+        $dir = "$basedirs->{yew_mobile}" if -d $basedirs->{yew_mobile};
     }
 
     my $page = '';
