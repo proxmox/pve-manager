@@ -341,19 +341,19 @@ sub check_rbd_storage_keyring {
     }
 
     if (scalar($pve_managed->@*)) {
-        my $storeid_txt = join(',', $pve_managed->@*);
-        log_info("The following RBD storages are PVE-managed, so nothing to do: $storeid_txt");
+        my $storeid_txt = join(', ', $pve_managed->@*);
+        log_info("The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt");
     }
 
     if (scalar($already_good->@*)) {
-        my $storeid_txt = join(',', $already_good->@*);
+        my $storeid_txt = join(', ', $already_good->@*);
         log_pass(
             "The following externally managed RBD storages already have the 'keyring' option"
-                . " configured correctly: $storeid_txt");
+                . " configured correctly:\n\t$storeid_txt");
     }
 
     if (scalar($update->@*)) {
-        my $storeid_txt = join(',', $update->@*);
+        my $storeid_txt = join(', ', $update->@*);
         if ($dry_run) {
             log_notice(
                 "Starting with PVE 9, externally managed RBD storages require that the 'keyring'"
@@ -362,12 +362,12 @@ sub check_rbd_storage_keyring {
                     . "\t/usr/share/pve-manager/migrations/pve-rbd-storage-configure-keyring\n");
             log_fail(
                 "The Ceph configuration of the following externally managed RBD storages needs to"
-                    . " be updated: $storeid_txt");
+                    . " be updated:\n\t$storeid_txt");
 
         } else {
             log_pass(
                 "The Ceph configuration of the following externally managed RBD storages has"
-                    . " been updated: $storeid_txt");
+                    . " been updated:\n\t$storeid_txt");
         }
     }
 }
