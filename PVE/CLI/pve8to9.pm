@@ -1311,6 +1311,9 @@ sub check_apt_repos {
     my ($found_suite, $found_suite_where);
     my ($mismatches, $strange_suites);
 
+    my ($found_pve_test_repo, $found_legacy_spelled_pve_test_repo) = (0, 0);
+    my $found_pve_test_repo_suite;
+
     my $check_list_file = sub {
         my ($file) = @_;
 
@@ -1330,13 +1333,22 @@ sub check_apt_repos {
 
             next if $line !~ m/^deb[[:space:]]/; # is case sensitive
 
-            my $suite;
-            if ($line =~ m|deb\s+\w+://\S+\s+(\S*)|i) {
-                $suite = $1;
+            my ($url, $suite, $component);
+            if ($line =~ m|deb\s+(\w+://\S+)\s+(?:(\S+)(?:\s+(\S+))?)?|i) {
+                ($url, $suite, $component) = ($1, $2, $3);
             } else {
                 next;
             }
             my $where = "in ${file}:${number}";
+
+            if (defined($component)) {
+                if ($component =~ /pve-?test/) {
+                    $found_pve_test_repo = 1;
+                    # just safe one, mismatched suite check will handle multiple different ones already
+                    $found_pve_test_repo_suite = $suite;
+                    $found_legacy_spelled_pve_test_repo = 1 if $component eq 'pvetest';
+                }
+            }
 
             $suite =~ s/-(?:(?:proposed-)?updates|backports|debug|security)(?:-debug)?$//;
             if ($suite ne $old_suite && $suite ne $new_suite && !$older_suites->{$suite}) {
@@ -1391,6 +1403,27 @@ sub check_apt_repos {
         log_notice("found no suite mismatches, but found at least one strange suite");
     } else {
         log_pass("found no suite mismatch");
+    }
+
+    if ($found_pve_test_repo) {
+        log_info(
+            "Found test repo for Proxmox VE, checking compatibility with updated 'pve-test' spelling."
+        );
+        if ($found_legacy_spelled_pve_test_repo) {
+            my $_log = $found_pve_test_repo_suite eq $new_suite ? \&log_fail : \&log_warn;
+            $_log->(
+                "Found legacy spelling 'pvetest' of the pve-test repo. Change the repo to use"
+                ." 'pve-test' when updating the repos to the '$new_suite' suite for Proxmox VE 9!"
+            );
+        } elsif ($found_pve_test_repo_suite eq $new_suite) {
+            log_pass("Found modern spelling 'pve-test' of the pve-test repo for new suite '$new_suite'.");
+        } elsif ($found_pve_test_repo_suite eq $old_suite) {
+            log_fail("Found modern spelling 'pve-test' but old suite '$old_suite', did you forgot to update the suite?");
+        } else {
+            # TODO: remove the whole check with PVE 10, one cannot really update to latest 9.4 with
+            # an old test repo anyway
+            log_fail("Found modern spelling 'pve-test' but unexpected suite '$found_pve_test_repo_suite'");
+        }
     }
 }
 
