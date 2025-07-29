@@ -352,7 +352,9 @@ sub check_rbd_storage_keyring {
         my $storeid_txt = join(', ', $pve_managed->@*);
         # pass test if there is no external
         if ($any_external_rbd_storage) {
-            log_info("The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt");
+            log_info(
+                "The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt"
+            );
         } else {
             log_skip("Only PVE-managed RBD storages are configured, so nothing to do");
         }
@@ -766,8 +768,8 @@ sub check_backup_retention_settings {
 
     my $pass = 1;
 
-    my $maxfiles_msg = "parameter 'maxfiles' was deprecated with PVE 7.x and is getting dropped"
-        . " with PVE 9.";
+    my $maxfiles_msg =
+        "parameter 'maxfiles' was deprecated with PVE 7.x and is getting dropped with PVE 9.";
 
     eval {
         my $confdesc = PVE::VZDump::Common::get_confdesc();
@@ -1530,16 +1532,22 @@ sub check_apt_repos {
             my $_log = $found_pve_test_repo_suite eq $new_suite ? \&log_fail : \&log_warn;
             $_log->(
                 "Found legacy spelling 'pvetest' of the pve-test repo. Change the repo to use"
-                ." 'pve-test' when updating the repos to the '$new_suite' suite for Proxmox VE 9!"
+                    . " 'pve-test' when updating the repos to the '$new_suite' suite for Proxmox VE 9!"
             );
         } elsif ($found_pve_test_repo_suite eq $new_suite) {
-            log_pass("Found modern spelling 'pve-test' of the pve-test repo for new suite '$new_suite'.");
+            log_pass(
+                "Found modern spelling 'pve-test' of the pve-test repo for new suite '$new_suite'."
+            );
         } elsif ($found_pve_test_repo_suite eq $old_suite) {
-            log_fail("Found modern spelling 'pve-test' but old suite '$old_suite', did you forgot to update the suite?");
+            log_fail(
+                "Found modern spelling 'pve-test' but old suite '$old_suite', did you forgot to update the suite?"
+            );
         } else {
             # TODO: remove the whole check with PVE 10, one cannot really update to latest 9.4 with
             # an old test repo anyway
-            log_fail("Found modern spelling 'pve-test' but unexpected suite '$found_pve_test_repo_suite'");
+            log_fail(
+                "Found modern spelling 'pve-test' but unexpected suite '$found_pve_test_repo_suite'"
+            );
         }
     }
 }

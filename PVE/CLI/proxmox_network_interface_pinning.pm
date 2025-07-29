@@ -367,7 +367,8 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             prefix => {
-                description => 'Use a specific prefix for automatically choosing the pinned name.',
+                description =>
+                    'Use a specific prefix for automatically choosing the pinned name.',
                 type => 'string',
                 enum => ['nic', 'if'],
                 default => 'nic', # just for the docs.
