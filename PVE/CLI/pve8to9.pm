@@ -1312,7 +1312,7 @@ sub check_apt_repos {
     my ($found_suite, $found_suite_where);
     my ($mismatches, $strange_suites);
 
-    my $check_file = sub {
+    my $check_list_file = sub {
         my ($file) = @_;
 
         $file = "${dir}/${file}" if $in_dir;
@@ -1361,11 +1361,11 @@ sub check_apt_repos {
         }
     };
 
-    $check_file->("/etc/apt/sources.list");
+    $check_list_file->("/etc/apt/sources.list");
 
     $in_dir = 1;
 
-    PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_file);
+    PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_list_file);
 
     if ($strange_suites) {
         my @strange_list = map { "found suite $_->{suite} at $_->{where}" } $strange_suites->@*;
