@@ -361,6 +361,7 @@ __PACKAGE__->register_method({
                 type => 'string',
                 pattern => '(?:nic|if)\d+',
                 optional => 1,
+                requires => 'interface',
             },
         },
     },
@@ -372,9 +373,6 @@ __PACKAGE__->register_method({
 
         my $iface = $params->{interface}; # undef means all.
         my $target_name = $params->{'target-name'};
-
-        die "target-name can only be set, if interface is set as well!\n"
-            if $params->{'target-name'} && !$params->{interface};
 
         if (-t STDOUT) {
             my $target = defined($iface) ? "the interface '$iface'" : 'all interfaces';
