@@ -1,3 +1,17 @@
+pve-manager (8.4.6) bookworm; urgency=medium
+
+  * 8to9 upgrade checks (pve8to9):
+    - machine version: place VMIDs in dedicated line.
+    - lvm: use consistent spelling for autoactivation.
+    - test pvetest -> pve-test transition.
+    - add check to ensure that 'keyring' option for external RBD storages is
+      set Additionally provide a migration-script to help automate this
+      required config migration.
+    - increase severity of having 'maxfiles' setting configured from warning
+      to failure.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Jul 2025 17:45:36 +0200
+
 pve-manager (8.4.5) bookworm; urgency=medium
 
   * 8to9 upgrade checks: fix duplicate variable name in same scope.
