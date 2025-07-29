@@ -367,14 +367,14 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             prefix => {
-                description => 'Only pin a specific interface.',
+                description => 'Use a specific prefix for automatically choosing the pinned name.',
                 type => 'string',
                 enum => ['nic', 'if'],
                 default => 'nic', # just for the docs.
                 optional => 1,
             },
             'target-name' => {
-                description => 'Pin the interface to a specific name',
+                description => 'Pin the interface to a specific name.',
                 type => 'string',
                 pattern => '(?:nic|if)\d+',
                 optional => 1,
