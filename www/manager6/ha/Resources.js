@@ -137,6 +137,12 @@ Ext.define('PVE.ha.ResourcesView', {
                     dataIndex: 'max_relocate',
                 },
                 {
+                    header: gettext('Failback'),
+                    width: 100,
+                    sortable: true,
+                    dataIndex: 'failback',
+                },
+                {
                     header: gettext('Description'),
                     flex: 1,
                     renderer: Ext.String.htmlEncode,

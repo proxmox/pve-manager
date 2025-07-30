@@ -79,6 +79,10 @@ Ext.define(
                 'sid',
                 'state',
                 'comment',
+                {
+                    name: 'failback',
+                    type: 'boolean',
+                },
                 'max_restart',
                 'max_relocate',
                 'type',
