@@ -12,6 +12,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::Exception qw(raise_param_exc);
 use PVE::API2::HA::Resources;
 use PVE::API2::HA::Groups;
+use PVE::API2::HA::Rules;
 use PVE::API2::HA::Status;
 
 use base qw(PVE::RESTHandler);
@@ -24,6 +25,11 @@ __PACKAGE__->register_method({
 __PACKAGE__->register_method({
     subclass => "PVE::API2::HA::Groups",
     path => 'groups',
+});
+
+__PACKAGE__->register_method({
+    subclass => "PVE::API2::HA::Rules",
+    path => 'rules',
 });
 
 __PACKAGE__->register_method({
@@ -57,7 +63,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $res = [
-            { id => 'status' }, { id => 'resources' }, { id => 'groups' },
+            { id => 'status' }, { id => 'resources' }, { id => 'groups' }, { id => 'rules' },
         ];
 
         return $res;
