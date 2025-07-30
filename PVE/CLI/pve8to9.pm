@@ -1889,7 +1889,7 @@ sub check_rrd_migration {
         if ($count) {
             log_warn("Found '$count' RRD files that have not yet been migrated to the new schema."
                 . " Please run the following command manually:\n"
-                . "proxmox-rrd-migration-tool --migrate\n");
+                . "/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
         }
 
     } else {
