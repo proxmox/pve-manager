@@ -1899,7 +1899,7 @@ sub check_rrd_migration {
         };
         eval {
             run_command(
-                ['find /var/lib/rrdcached/db -type f ! -name "*.foo"'],
+                ['find', '/var/lib/rrdcached/db', '-type', 'f', '!', '-name', '*.old'],
                 outfunc => $count_occurences,
                 noerr => 1,
             );
