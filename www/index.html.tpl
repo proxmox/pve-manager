@@ -22,7 +22,7 @@
     [%- END -%]
 
     [% IF langfile %]
-    <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js?ver=[% version %]'></script>
+    <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js?v=[% i18n_js_mtime %]'></script>
     [%- ELSE %]
     <script type='text/javascript'>
         function gettext(message) { return message; }

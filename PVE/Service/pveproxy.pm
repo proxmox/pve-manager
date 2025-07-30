@@ -194,9 +194,16 @@ sub is_phone {
     return 0;
 }
 
-# NOTE: Requests to those pages are not authenticated
-# so we must be very careful here
+my sub get_path_mtime {
+    my ($path) = @_;
 
+    my @stat_res = stat($path) or $!{ENOENT} or die "failed to stat '$path' - $!\n";
+    my $mtime = $stat_res[9];
+
+    return $mtime;
+}
+
+# NOTE: Requests to those pages are not authenticated so we must be very careful here
 sub get_index {
     my ($nodename, $server, $r, $args) = @_;
 
@@ -251,6 +258,11 @@ sub get_index {
     my $wtversionraw = PVE::Tools::file_read_firstline("$basedirs->{widgettoolkit}/proxmoxlib.js");
     my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
 
+    # while we could use the actual pkg version (e.g., shipped as pkg-version file in each
+    # respective package's /usr/share/<pkg> folder, this way it should also work when using make
+    # install to directly install to local root filesystem.
+    my $i18n_js_mtime = get_path_mtime('/usr/share/pve-i18n');
+
     my $debug = $server->{debug};
     if (exists $args->{debug}) {
         $debug = !defined($args->{debug}) || $args->{debug};
@@ -268,6 +280,7 @@ sub get_index {
         wtversion => $wtversion,
         theme => $theme,
         consenttext => $consent_text,
+        i18n_js_mtime => $i18n_js_mtime,
     };
 
     # by default, load the normal index
