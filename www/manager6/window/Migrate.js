@@ -416,6 +416,50 @@ Ext.define('PVE.window.Migrate', {
                 }
             }
 
+            let blockingHAResources = disallowed['blocking-ha-resources'] ?? [];
+            if (blockingHAResources.length) {
+                migration.possible = false;
+
+                for (const { sid, cause } of blockingHAResources) {
+                    let reasonText;
+                    if (cause === 'resource-affinity') {
+                        reasonText = Ext.String.format(
+                            gettext(
+                                'HA resource {0} with negative affinity to VM on selected target node',
+                            ),
+                            sid,
+                        );
+                    } else {
+                        reasonText = Ext.String.format(
+                            gettext('blocking HA resource {0} on selected target node'),
+                            sid,
+                        );
+                    }
+
+                    migration.preconditions.push({
+                        severity: 'error',
+                        text: Ext.String.format(
+                            gettext('Cannot migrate VM, because {0}.'),
+                            reasonText,
+                        ),
+                    });
+                }
+            }
+
+            let comigratedHAResources = migrateStats['comigrated-ha-resources'];
+            if (comigratedHAResources !== undefined) {
+                for (const sid of comigratedHAResources) {
+                    const text = Ext.String.format(
+                        gettext(
+                            'HA resource {0} with positive affinity to VM is also migrated to selected target node.',
+                        ),
+                        sid,
+                    );
+
+                    migration.preconditions.push({ text, severity: 'warning' });
+                }
+            }
+
             vm.set('migration', migration);
         },
         checkLxcPreconditions: async function (resetMigrationPossible) {
