@@ -14,7 +14,9 @@ CLITOOLS = \
 	pvesh \
 	pve7to8 \
 	pve8to9 \
-	proxmox-network-interface-pinning \
+
+LIBEXECCLITOOLS = \
+	pve-network-interface-pinning \
 
 
 SCRIPTS =  			\
@@ -41,6 +43,7 @@ SERVICE_MANS = $(addsuffix .8, $(SERVICES))
 
 CLI_MANS = 				\
 	$(addsuffix .1, $(CLITOOLS))	\
+	$(addsuffix .1, $(LIBEXECCLITOOLS))	\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1			\
@@ -49,10 +52,12 @@ CLI_MANS = 				\
 BASH_COMPLETIONS = 						\
 	$(addsuffix .service-bash-completion, $(SERVICES)) 	\
 	$(addsuffix .bash-completion, $(CLITOOLS)) 		\
+	$(addsuffix .bash-completion, $(LIBEXECCLITOOLS)) 		\
 
 ZSH_COMPLETIONS =						\
 	$(addsuffix .service-zsh-completion, $(SERVICES)) 	\
 	$(addsuffix .zsh-completion, $(CLITOOLS))		\
+	$(addsuffix .zsh-completion, $(LIBEXECCLITOOLS))		\
 
 all: $(SERVICE_MANS) $(CLI_MANS)
 
@@ -74,20 +79,20 @@ pve7to8.1:
 	printf ".SH SYNOPSIS\npve7to8 [--full]\n" >> $@.tmp
 	mv $@.tmp $@
 
-proxmox-network-interface-pinning.1:
-	printf "proxmox-network-interface-pinning" > $@.tmp
+pve-network-interface-pinning.1:
+	printf "pve-network-interface-pinning" > $@.tmp
 	mv $@.tmp $@
 
-proxmox-network-interface-pinning.api-verified:
-	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->verify_api();"
-	touch 'proxmox-network-interface-pinning.service-api-verified'
+pve-network-interface-pinning.api-verified:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::pve_network_interface_pinning; PVE::CLI::pve_network_interface_pinning->verify_api();"
+	touch 'pve-network-interface-pinning.service-api-verified'
 
-proxmox-network-interface-pinning.zsh-completion:
-	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->generate_zsh_completions();" >$@.tmp
+pve-network-interface-pinning.zsh-completion:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::pve_network_interface_pinning; PVE::CLI::pve_network_interface_pinning->generate_zsh_completions();" >$@.tmp
 	mv $@.tmp $@
 
-proxmox-network-interface-pinning.bash-completion:
-	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::proxmox_network_interface_pinning; PVE::CLI::proxmox_network_interface_pinning->generate_bash_completions();" >$@.tmp
+pve-network-interface-pinning.bash-completion:
+	perl ${PERL_DOC_INC} -T -e "use PVE::CLI::pve_network_interface_pinning; PVE::CLI::pve_network_interface_pinning->generate_bash_completions();" >$@.tmp
 	mv $@.tmp $@
 
 pve8to9.1:
@@ -106,16 +111,18 @@ pvereport.1.pod: pvereport
 
 .PHONY: tidy
 tidy:
-	echo $(SCRIPTS) $(HELPERS) $(MIGRATIONS) | xargs -n4 -P0 proxmox-perltidy
+	echo $(SCRIPTS) $(HELPERS) $(MIGRATIONS) $(LIBEXECCLITOOLS) | xargs -n4 -P0 proxmox-perltidy
 
 .PHONY: check
-check: $(addsuffix .service-api-verified, $(SERVICES)) $(addsuffix .api-verified, $(CLITOOLS))
+check: $(addsuffix .service-api-verified, $(SERVICES)) $(addsuffix .api-verified, $(CLITOOLS)) $(addsuffix .api-verified, $(LIBEXECCLITOOLS))
 	rm -f *.service-api-verified *.api-verified
 
 .PHONY: install
-install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLETIONS)
+install: $(SCRIPTS) $(LIBEXECCLITOOLS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLETIONS)
 	install -d $(BINDIR)
 	install -m 0755 $(SCRIPTS) $(BINDIR)
+	install -d $(LIBEXECDIR)
+	install -m 0755 $(LIBEXECCLITOOLS) $(LIBEXECDIR)
 	install -d $(USRSHARE)/helpers
 	install -m 0755 $(HELPERS) $(USRSHARE)/helpers
 	install -d $(USRSHARE)/migrations
@@ -125,8 +132,10 @@ install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLE
 	install -d $(MAN8DIR)
 	install -m 0644 $(SERVICE_MANS) $(MAN8DIR)
 	for i in $(CLITOOLS); do install -m 0644 -D $$i.bash-completion $(BASHCOMPLDIR)/$$i; done
+	for i in $(LIBEXECCLITOOLS); do install -m 0644 -D $$i.bash-completion $(BASHCOMPLDIR)/$$i; done
 	for i in $(SERVICES); do install -m 0644 -D $$i.service-bash-completion $(BASHCOMPLDIR)/$$i; done
 	for i in $(CLITOOLS); do install -m 0644 -D $$i.zsh-completion $(ZSHCOMPLDIR)/_$$i; done
+	for i in $(LIBEXECCLITOOLS); do install -m 0644 -D $$i.zsh-completion $(ZSHCOMPLDIR)/_$$i; done
 	for i in $(SERVICES); do install -m 0644 -D $$i.service-zsh-completion $(ZSHCOMPLDIR)/_$$i; done
 
 .PHONY: clean

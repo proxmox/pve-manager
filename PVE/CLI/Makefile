@@ -10,7 +10,7 @@ SOURCES = \
 	pvesh.pm \
 	pve7to8.pm \
 	pve8to9.pm \
-	proxmox_network_interface_pinning.pm \
+	pve_network_interface_pinning.pm \
 
 all:
 
