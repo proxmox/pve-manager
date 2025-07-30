@@ -1,22 +1,10 @@
-Ext.define('PVE.ha.GroupInputPanel', {
-    extend: 'Proxmox.panel.InputPanel',
-    onlineHelp: 'ha_manager_groups',
-
-    groupId: undefined,
-
-    onGetValues: function (values) {
-        var me = this;
-
-        if (me.isCreate) {
-            values.type = 'group';
-        }
-
-        return values;
-    },
+Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
+    extend: 'PVE.ha.RuleInputPanel',
 
     initComponent: function () {
-        var me = this;
+        let me = this;
 
+        /* TODO Node selector should be factored out in its own component */
         let update_nodefield, update_node_selection;
 
         let sm = Ext.create('Ext.selection.CheckboxModel', {
@@ -134,84 +122,25 @@ Ext.define('PVE.ha.GroupInputPanel', {
             nodefield.resumeEvent('change');
         };
 
-        me.column1 = [
+        me.column2 = [
             {
-                xtype: me.isCreate ? 'textfield' : 'displayfield',
-                name: 'group',
-                value: me.groupId || '',
-                fieldLabel: 'ID',
-                vtype: 'StorageId',
-                allowBlank: false,
+                xtype: 'proxmoxcheckbox',
+                name: 'strict',
+                fieldLabel: gettext('Strict'),
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Enable if the HA Resources must be restricted to the nodes.',
+                    ),
+                },
+                uncheckedValue: 0,
+                defaultValue: 0,
             },
             nodefield,
         ];
 
-        me.column2 = [
-            {
-                xtype: 'proxmoxcheckbox',
-                name: 'restricted',
-                uncheckedValue: 0,
-                fieldLabel: 'restricted',
-            },
-            {
-                xtype: 'proxmoxcheckbox',
-                name: 'nofailback',
-                uncheckedValue: 0,
-                fieldLabel: 'nofailback',
-            },
-        ];
-
-        me.columnB = [
-            {
-                xtype: 'textfield',
-                name: 'comment',
-                fieldLabel: gettext('Comment'),
-            },
-            nodegrid,
-        ];
+        me.columnB = [nodegrid];
 
         me.callParent();
-    },
-});
-
-Ext.define('PVE.ha.GroupEdit', {
-    extend: 'Proxmox.window.Edit',
-
-    groupId: undefined,
-
-    initComponent: function () {
-        var me = this;
-
-        me.isCreate = !me.groupId;
-
-        if (me.isCreate) {
-            me.url = '/api2/extjs/cluster/ha/groups';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/cluster/ha/groups/' + me.groupId;
-            me.method = 'PUT';
-        }
-
-        var ipanel = Ext.create('PVE.ha.GroupInputPanel', {
-            isCreate: me.isCreate,
-            groupId: me.groupId,
-        });
-
-        Ext.apply(me, {
-            subject: gettext('HA Group'),
-            items: [ipanel],
-        });
-
-        me.callParent();
-
-        if (!me.isCreate) {
-            me.load({
-                success: function (response, options) {
-                    var values = response.result.data;
-
-                    ipanel.setValues(values);
-                },
-            });
-        }
     },
 });

@@ -143,13 +143,15 @@ JSSRC= 							\
 	window/DirMapEdit.js                            \
 	window/GuestImport.js				\
 	ha/Fencing.js					\
-	ha/GroupEdit.js					\
-	ha/GroupSelector.js				\
-	ha/Groups.js					\
 	ha/ResourceEdit.js				\
 	ha/Resources.js					\
+	ha/RuleEdit.js					\
+	ha/RuleErrorsModal.js				\
+	ha/Rules.js					\
 	ha/Status.js					\
 	ha/StatusView.js				\
+	ha/rules/NodeAffinityRuleEdit.js		\
+	ha/rules/NodeAffinityRules.js			\
 	dc/ACLView.js					\
 	dc/ACMEClusterView.js				\
 	dc/AuthEditBase.js				\

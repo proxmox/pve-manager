@@ -170,11 +170,11 @@ Ext.define('PVE.dc.Config', {
                     itemId: 'ha',
                 },
                 {
-                    title: gettext('Groups'),
+                    title: gettext('Rules'),
                     groups: ['ha'],
-                    xtype: 'pveHAGroupsView',
-                    iconCls: 'fa fa-object-group',
-                    itemId: 'ha-groups',
+                    xtype: 'pveHARulesView',
+                    iconCls: 'fa fa-gears',
+                    itemId: 'ha-rules',
                 },
                 {
                     title: gettext('Fencing'),

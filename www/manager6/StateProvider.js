@@ -54,7 +54,7 @@ Ext.define('PVE.StateProvider', {
         system: 50,
         monitor: 49,
         'ha-fencing': 48,
-        'ha-groups': 47,
+        'ha-rules': 47,
         'ha-resources': 46,
         'ceph-log': 45,
         'ceph-crushmap': 44,
