@@ -167,6 +167,17 @@ Ext.define(
                 flex: 1,
                 border: 0,
             },
+            {
+                xtype: 'splitter',
+                collapsible: false,
+                performCollapse: false,
+            },
+            {
+                title: gettext('HA Resource Affinity Rules'),
+                xtype: 'pveHAResourceAffinityRulesView',
+                flex: 1,
+                border: 0,
+            },
         ],
     },
     function () {
@@ -180,6 +191,7 @@ Ext.define(
                 'errors',
                 'disable',
                 'comment',
+                'affinity',
                 'resources',
                 {
                     name: 'strict',

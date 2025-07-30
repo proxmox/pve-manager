@@ -152,6 +152,8 @@ JSSRC= 							\
 	ha/StatusView.js				\
 	ha/rules/NodeAffinityRuleEdit.js		\
 	ha/rules/NodeAffinityRules.js			\
+	ha/rules/ResourceAffinityRuleEdit.js		\
+	ha/rules/ResourceAffinityRules.js		\
 	dc/ACLView.js					\
 	dc/ACMEClusterView.js				\
 	dc/AuthEditBase.js				\
