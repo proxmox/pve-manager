@@ -1,3 +1,11 @@
+pve-manager (9.0.0~14) trixie; urgency=medium
+
+  * http server: drop legacy yew mobile paths and fix yew mtime path.
+
+  * ui: lxc create wizard: always submit unprivileged field.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jul 2025 01:11:57 +0200
+
 pve-manager (9.0.0~13) trixie; urgency=medium
 
   * debian: add tpmfiles.d config to create /run/pve directory.
