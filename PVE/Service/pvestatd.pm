@@ -180,7 +180,7 @@ sub update_node_status {
     for my $dev (keys %$netdev) {
         my $ip_link = $cached_ip_links->{$dev};
 
-        if (PVE::Network::ip_link_is_physical($ip_link)) {
+        if ($ip_link && PVE::Network::ip_link_is_physical($ip_link)) {
             $netdev->{$dev}->{type} = 'physical';
         } else {
             $netdev->{$dev}->{type} = 'virtual';
