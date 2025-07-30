@@ -78,7 +78,6 @@ Ext.define(
                 'status',
                 'sid',
                 'state',
-                'group',
                 'comment',
                 'max_restart',
                 'max_relocate',

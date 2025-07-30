@@ -11,7 +11,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
         }
         delete values.vmid;
 
-        PVE.Utils.delete_if_default(values, 'group', '', me.isCreate);
+        PVE.Utils.delete_if_default(values, 'failback', '1', me.isCreate);
         PVE.Utils.delete_if_default(values, 'max_restart', '1', me.isCreate);
         PVE.Utils.delete_if_default(values, 'max_relocate', '1', me.isCreate);
 
@@ -110,9 +110,17 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
         me.column2 = [
             {
-                xtype: 'pveHAGroupSelector',
-                name: 'group',
-                fieldLabel: gettext('Group'),
+                xtype: 'proxmoxcheckbox',
+                name: 'failback',
+                fieldLabel: gettext('Failback'),
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Enable if HA resource should automatically adjust to HA rules.',
+                    ),
+                },
+                uncheckedValue: 0,
+                value: 1,
             },
             {
                 xtype: 'proxmoxKVComboBox',

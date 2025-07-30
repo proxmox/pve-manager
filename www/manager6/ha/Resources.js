@@ -137,23 +137,6 @@ Ext.define('PVE.ha.ResourcesView', {
                     dataIndex: 'max_relocate',
                 },
                 {
-                    header: gettext('Group'),
-                    width: 200,
-                    sortable: true,
-                    renderer: function (value, metaData, { data }) {
-                        if (data.errors && data.errors.group) {
-                            metaData.tdCls = 'proxmox-invalid-row';
-                            let html = Ext.htmlEncode(
-                                `<p>${Ext.htmlEncode(data.errors.group)}</p>`,
-                            );
-                            metaData.tdAttr =
-                                'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + html + '"';
-                        }
-                        return value;
-                    },
-                    dataIndex: 'group',
-                },
-                {
                     header: gettext('Description'),
                     flex: 1,
                     renderer: Ext.String.htmlEncode,
