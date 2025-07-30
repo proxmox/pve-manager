@@ -229,7 +229,7 @@ case "$1" in
     fi
 
     if test -n "$2" && dpkg --compare-versions "$2" 'lt' '9.0.0~12'; then
-        echo "migradting RRD to new PVE format version - this can take some time!"
+        echo "Migrating RRD to new PVE format version - this can take some time!"
         /usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate || echo "migration failed, see output above for errors and try to migrate existing data manually by running '/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate'"
     fi
     ;;
