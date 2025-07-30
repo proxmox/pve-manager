@@ -29,9 +29,10 @@ Ext.define('PVE.window.Migrate', {
                 allowedNodes: undefined,
                 overwriteLocalResourceCheck: false,
                 hasLocalResources: false,
+                withConntrackState: true,
+                bothHaveDbusVmstate: false,
             },
         },
-
         formulas: {
             setMigrationMode: function (get) {
                 if (get('running')) {
@@ -62,6 +63,10 @@ Ext.define('PVE.window.Migrate', {
                     return false;
                 }
             },
+            conntrackStateCheckboxHidden: (get) =>
+                !get('running') ||
+                get('vmtype') !== 'qemu' ||
+                !get('migration.bothHaveDbusVmstate'),
         },
     },
 
@@ -139,6 +144,10 @@ Ext.define('PVE.window.Migrate', {
 
             if (vm.get('migration.overwriteLocalResourceCheck')) {
                 params.force = 1;
+            }
+
+            if (vm.get('migration.bothHaveDbusVmstate') && vm.get('migration.withConntrackState')) {
+                params['with-conntrack-state'] = 1;
             }
 
             Proxmox.Utils.API2Request({
@@ -227,11 +236,28 @@ Ext.define('PVE.window.Migrate', {
                     method: 'GET',
                 });
                 migrateStats = result.data;
-                me.fetchingNodeMigrateInfo = false;
             } catch (error) {
                 Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                me.fetchingNodeMigrateInfo = false;
                 return;
             }
+
+            const target = me.lookup('pveNodeSelector').value;
+            let targetCapabilities = {};
+
+            try {
+                const { result } = await Proxmox.Async.api2({
+                    url: `/nodes/${target}/capabilities/qemu/migration`,
+                    method: 'GET',
+                });
+                targetCapabilities = result.data;
+            } catch (err) {
+                // Only emit a warning in the case the target node does not (yet) support the
+                // `capabilites/qemu/migration` endpoint and simply treat all features as unsupported.
+                console.warn(`failed to query /capabilites/qemu/migration on '${target}': ${err}`);
+            }
+
+            me.fetchingNodeMigrateInfo = false;
 
             if (migrateStats.running) {
                 vm.set('running', true);
@@ -242,7 +268,6 @@ Ext.define('PVE.window.Migrate', {
                 migration.possible = true;
             }
             migration.preconditions = [];
-            let target = me.lookup('pveNodeSelector').value;
             let disallowed = migrateStats.not_allowed_nodes?.[target] ?? {};
 
             if (migrateStats.allowed_nodes && !vm.get('running')) {
@@ -361,6 +386,36 @@ Ext.define('PVE.window.Migrate', {
                 });
             }
 
+            migration.bothHaveDbusVmstate =
+                migrateStats['has-dbus-vmstate'] && targetCapabilities['has-dbus-vmstate'];
+            if (vm.get('running')) {
+                if (migration.withConntrackState && !migrateStats['has-dbus-vmstate']) {
+                    migration.preconditions.push({
+                        text: gettext(
+                            'Cannot migrate conntrack state, source node is lacking support. Active network connections might get dropped.',
+                        ),
+                        severity: 'warning',
+                    });
+                }
+                if (migration.withConntrackState && !targetCapabilities['has-dbus-vmstate']) {
+                    migration.preconditions.push({
+                        text: gettext(
+                            'Cannot migrate conntrack state, target node is lacking support. Active network connections might get dropped.',
+                        ),
+                        severity: 'warning',
+                    });
+                }
+
+                if (migration.bothHaveDbusVmstate && !migration.withConntrackState) {
+                    migration.preconditions.push({
+                        text: gettext(
+                            'Conntrack state migration disabled. Active network connections might get dropped.',
+                        ),
+                        severity: 'warning',
+                    });
+                }
+            }
+
             vm.set('migration', migration);
         },
         checkLxcPreconditions: function (resetMigrationPossible) {
@@ -448,6 +503,27 @@ Ext.define('PVE.window.Migrate', {
                             bind: {
                                 hidden: '{setLocalResourceCheckboxHidden}',
                                 value: '{migration.overwriteLocalResourceCheck}',
+                            },
+                            listeners: {
+                                change: {
+                                    fn: 'checkMigratePreconditions',
+                                    extraArg: true,
+                                },
+                            },
+                        },
+                        {
+                            xtype: 'proxmoxcheckbox',
+                            name: 'withConntrackState',
+                            fieldLabel: gettext('Conntrack state'),
+                            autoEl: {
+                                tag: 'div',
+                                'data-qtip': gettext(
+                                    'Enables live migration of conntrack entries for this VM.',
+                                ),
+                            },
+                            bind: {
+                                hidden: '{conntrackStateCheckboxHidden}',
+                                value: '{migration.withConntrackState}',
                             },
                             listeners: {
                                 change: {
