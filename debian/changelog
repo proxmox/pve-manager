@@ -1,3 +1,24 @@
+pve-manager (9.0.0~13) trixie; urgency=medium
+
+  * debian: add tpmfiles.d config to create /run/pve directory.
+
+  * pvestatd: prevent warnings for non-existing network devices.
+
+  * close #2809: replication: use new VM.Replicate privilege.
+
+  * backup: drop 'maxfiles' parameter, it was replaced by the more flexible
+    keep-X prune settings in PVE 7.0 already.
+
+  * api: expose new qemu migration capabilities endpoint.
+
+  * ui: migrate window: add checkbox for migrating VM conntrack state.
+
+  * http server: fix caching of i18n translation files, use mtime.
+
+  * http server: rework location for yew-mobile UI and provide mtimes.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jul 2025 00:27:24 +0200
+
 pve-manager (9.0.0~12) trixie; urgency=medium
 
   * 8to9 upgrade checks: sync over version from PVE 8.4 stable branch.
