@@ -204,7 +204,7 @@ Ext.define('PVE.window.Migrate', {
             if (vm.get('vmtype') === 'qemu') {
                 await me.checkQemuPreconditions(resetMigrationPossible);
             } else {
-                me.checkLxcPreconditions(resetMigrationPossible);
+                await me.checkLxcPreconditions(resetMigrationPossible);
             }
 
             // Only allow nodes where the local storage is available in case of offline migration
@@ -418,11 +418,92 @@ Ext.define('PVE.window.Migrate', {
 
             vm.set('migration', migration);
         },
-        checkLxcPreconditions: function (resetMigrationPossible) {
-            let vm = this.getViewModel();
+        checkLxcPreconditions: async function (resetMigrationPossible) {
+            let me = this;
+            let vm = me.getViewModel();
+            let migrateStats;
+
             if (vm.get('running')) {
                 vm.set('migration.mode', 'restart');
             }
+
+            try {
+                if (
+                    me.fetchingNodeMigrateInfo &&
+                    me.fetchingNodeMigrateInfo === vm.get('nodename')
+                ) {
+                    return;
+                }
+                me.fetchingNodeMigrateInfo = vm.get('nodename');
+                let { result } = await Proxmox.Async.api2({
+                    url: `/nodes/${vm.get('nodename')}/${vm.get('vmtype')}/${vm.get('vmid')}/migrate`,
+                    method: 'GET',
+                });
+                migrateStats = result.data;
+                me.fetchingNodeMigrateInfo = false;
+            } catch (error) {
+                Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                return;
+            }
+
+            if (migrateStats.running) {
+                vm.set('running', true);
+            }
+
+            // Get migration object from viewmodel to prevent to many bind callbacks
+            let migration = vm.get('migration');
+            if (resetMigrationPossible) {
+                migration.possible = true;
+            }
+            migration.preconditions = [];
+            let targetNode = me.lookup('pveNodeSelector').value;
+            let disallowed = migrateStats['not-allowed-nodes']?.[targetNode] ?? {};
+
+            let blockingHAResources = disallowed['blocking-ha-resources'] ?? [];
+            if (blockingHAResources.length) {
+                migration.possible = false;
+
+                for (const { sid, cause } of blockingHAResources) {
+                    let reasonText;
+                    if (cause === 'resource-affinity') {
+                        reasonText = Ext.String.format(
+                            gettext(
+                                'HA resource {0} with negative affinity to container on selected target node',
+                            ),
+                            sid,
+                        );
+                    } else {
+                        reasonText = Ext.String.format(
+                            gettext('blocking HA resource {0} on selected target node'),
+                            sid,
+                        );
+                    }
+
+                    migration.preconditions.push({
+                        severity: 'error',
+                        text: Ext.String.format(
+                            gettext('Cannot migrate container, because {0}.'),
+                            reasonText,
+                        ),
+                    });
+                }
+            }
+
+            let comigratedHAResources = migrateStats['comigrated-ha-resources'];
+            if (comigratedHAResources !== undefined) {
+                for (const sid of comigratedHAResources) {
+                    const text = Ext.String.format(
+                        gettext(
+                            'HA resource {0} with positive affinity to container is also migrated to selected target node.',
+                        ),
+                        sid,
+                    );
+
+                    migration.preconditions.push({ text, severity: 'warning' });
+                }
+            }
+
+            vm.set('migration', migration);
         },
     },
 
