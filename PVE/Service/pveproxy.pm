@@ -267,7 +267,7 @@ sub get_index {
     # install to directly install to local root filesystem.
     my $i18n_js_mtime = get_path_mtime('/usr/share/pve-i18n');
     my $i18n_yew_mtime = get_path_mtime('/usr/share/pve-yew-mobile-i18n');
-    my $ui_yew_mtime = get_path_mtime('/usr/share/javascript/pve-yew-mobile-gui');
+    my $ui_yew_mtime = get_path_mtime('/usr/share/pve-yew-mobile-gui');
 
     my $debug = $server->{debug};
     if (exists $args->{debug}) {
