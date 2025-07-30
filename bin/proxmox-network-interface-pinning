@@ -1,8 +1,0 @@
-#!/usr/bin/perl
-
-use strict;
-use warnings;
-
-use PVE::CLI::proxmox_network_interface_pinning;
-
-PVE::CLI::proxmox_network_interface_pinning->run_cli_handler();

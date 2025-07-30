@@ -1,4 +1,4 @@
-package PVE::CLI::proxmox_network_interface_pinning;
+package PVE::CLI::pve_network_interface_pinning;
 
 use v5.36;
 
@@ -245,8 +245,8 @@ my sub generate_link_files {
     }
 }
 
-package PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping {
-    use PVE::CLI::proxmox_network_interface_pinning;
+package PVE::CLI::pve_network_interface_pinning::InterfaceMapping {
+    use PVE::CLI::pve_network_interface_pinning;
     use PVE::Tools;
 
     sub new {
@@ -428,12 +428,12 @@ __PACKAGE__->register_method({
                 die "target-name already exists as link or pin!\n"
                     if $ip_links->{$target_name} || grep { $target_name eq $_ } values $pinned->%*;
 
-                $mapping = PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping->new({
+                $mapping = PVE::CLI::pve_network_interface_pinning::InterfaceMapping->new({
                     $iface => $target_name,
                 });
             } else {
                 $mapping =
-                    PVE::CLI::proxmox_network_interface_pinning::InterfaceMapping->generate(
+                    PVE::CLI::pve_network_interface_pinning::InterfaceMapping->generate(
                         $ip_links,
                         $pinned,
                         $prefix,
