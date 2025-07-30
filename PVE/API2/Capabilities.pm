@@ -8,6 +8,7 @@ use PVE::RESTHandler;
 
 use PVE::API2::Qemu::CPU;
 use PVE::API2::Qemu::Machine;
+use PVE::API2::NodeCapabilities::Qemu::Migration;
 
 use base qw(PVE::RESTHandler);
 
@@ -19,6 +20,11 @@ __PACKAGE__->register_method({
 __PACKAGE__->register_method({
     subclass => "PVE::API2::Qemu::Machine",
     path => 'qemu/machines',
+});
+
+__PACKAGE__->register_method({
+    subclass => 'PVE::API2::NodeCapabilities::Qemu::Migration',
+    path => 'qemu/migration',
 });
 
 __PACKAGE__->register_method({
@@ -78,7 +84,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $result = [
-            { name => 'cpu' }, { name => 'machines' },
+            { name => 'cpu' }, { name => 'machines' }, { name => 'migration' },
         ];
 
         return $result;
