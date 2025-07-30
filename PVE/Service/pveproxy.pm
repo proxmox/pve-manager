@@ -55,7 +55,11 @@ my $basedirs = {
     manager => '/usr/share/pve-manager',
     novnc => '/usr/share/novnc-pve',
     sencha_touch => '/usr/share/javascript/sencha-touch',
-    yew_mobile => '/usr/share/javascript/pve-yew-mobile-gui',
+    # TODO: remove legacy variant once frontend uses new paths
+    yew_mobile => -d '/usr/share/pve-yew-mobile-gui'
+      ? '/usr/share/pve-yew-mobile-gui'
+      : '/usr/share/javascript/pve-yew-mobile-gui',
+    i18n_yew => '/usr/share/pve-yew-mobile-i18n',
     widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
     xtermjs => '/usr/share/pve-xtermjs',
 };
@@ -88,13 +92,17 @@ sub init {
     add_dirs($dirs, '/pve2/images/' => "$basedirs->{manager}/images/");
     add_dirs($dirs, '/pve2/js/' => "$basedirs->{manager}/js/");
     add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
+    # TODO: remove fully during PVE 9, replaced by yew based mobile UI.
     add_dirs($dirs, '/pve2/sencha-touch/', "$basedirs->{sencha_touch}/");
+    # TODO: remove below once pve-yew-mobile-gui got adapted
     add_dirs($dirs, '/pve2/yew-mobile/', "$basedirs->{yew_mobile}/");
     add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
     add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
     add_dirs($dirs, '/pwt/themes/' => "$basedirs->{widgettoolkit}/themes/");
     add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
+    add_dirs($dirs, '/yew-mobile/', "$basedirs->{yew_mobile}/");
+    add_dirs($dirs, '/yew-mobile/i18n/', "$basedirs->{i18n_yew}/");
 
     $self->{server_config} = {
         title => 'Proxmox VE API',
@@ -262,6 +270,8 @@ sub get_index {
     # respective package's /usr/share/<pkg> folder, this way it should also work when using make
     # install to directly install to local root filesystem.
     my $i18n_js_mtime = get_path_mtime('/usr/share/pve-i18n');
+    my $i18n_yew_mtime = get_path_mtime('/usr/share/pve-yew-mobile-i18n');
+    my $ui_yew_mtime = get_path_mtime('/usr/share/javascript/pve-yew-mobile-gui');
 
     my $debug = $server->{debug};
     if (exists $args->{debug}) {
@@ -281,6 +291,9 @@ sub get_index {
         theme => $theme,
         consenttext => $consent_text,
         i18n_js_mtime => $i18n_js_mtime,
+        i18n_yew_mobile_mtime => $i18n_yew_mtime,
+        yew_mobile_mtime => $ui_yew_mtime,
+        yew_mobile_base_path => '/yew-mobile',
     };
 
     # by default, load the normal index
