@@ -1,3 +1,13 @@
+pve-manager (9.0.0~16) trixie; urgency=medium
+
+  * ui: replace HA Groups CRUD with new HA Affinity Rules CRUD.
+
+  * api: route new ha affinity rules endpoints.
+
+  * ui: ha: support new per-resources failback flag.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jul 2025 09:10:41 +0200
+
 pve-manager (9.0.0~15) trixie; urgency=medium
 
   * pvestatd: collect and distribute new pve-{type}-9.0 metrics, with new
