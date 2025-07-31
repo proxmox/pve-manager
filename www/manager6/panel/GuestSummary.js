@@ -142,6 +142,7 @@ Ext.define('PVE.guest.Summary', {
                     fields: ['pressurecpusome', 'pressurecpufull'],
                     colors: ['#FFD13E', '#A61120'],
                     store: rrdstore,
+                    unit: 'percent',
                 },
                 {
                     xtype: 'proxmoxRRDChart',
@@ -151,6 +152,7 @@ Ext.define('PVE.guest.Summary', {
                     fields: ['pressureiosome', 'pressureiofull'],
                     colors: ['#FFD13E', '#A61120'],
                     store: rrdstore,
+                    unit: 'percent',
                 },
                 {
                     xtype: 'proxmoxRRDChart',
@@ -160,6 +162,7 @@ Ext.define('PVE.guest.Summary', {
                     fields: ['pressurememorysome', 'pressurememoryfull'],
                     colors: ['#FFD13E', '#A61120'],
                     store: rrdstore,
+                    unit: 'percent',
                 },
             );
         }

@@ -204,6 +204,7 @@ Ext.define('PVE.node.Summary', {
                             fields: ['pressurecpusome'],
                             colors: ['#FFD13E', '#A61120'],
                             store: rrdstore,
+                            unit: 'percent',
                         },
                         {
                             xtype: 'proxmoxRRDChart',
@@ -212,6 +213,7 @@ Ext.define('PVE.node.Summary', {
                             fields: ['pressureiosome', 'pressureiofull'],
                             colors: ['#FFD13E', '#A61120'],
                             store: rrdstore,
+                            unit: 'percent',
                         },
                         {
                             xtype: 'proxmoxRRDChart',
@@ -220,6 +222,7 @@ Ext.define('PVE.node.Summary', {
                             fields: ['pressurememorysome', 'pressurememoryfull'],
                             colors: ['#FFD13E', '#A61120'],
                             store: rrdstore,
+                            unit: 'percent',
                         },
                     ],
                     listeners: {
