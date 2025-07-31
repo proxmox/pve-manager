@@ -1,3 +1,27 @@
+pve-manager (9.0.0~15) trixie; urgency=medium
+
+  * pvestatd: collect and distribute new pve-{type}-9.0 metrics, with new
+    columns (pressure stall information, ZFS ARC, ...) and higher
+    time granularity.
+
+  * ui: node summary: use stacked memory graph with zfs arc.
+
+  * ui: add pressure stall information graphs to node and guest summary views.
+
+  * fix #6068: ui: qemu RRD metrics: improve calculation of actual on-host
+    memory usage by using the sum of the proportional set sizes for all
+    processes inside a VMs resource cgroup slice.
+
+  * post-installation: run promox-rrd-migration-tool to automatically migrate
+    existing data from previous format to new one.
+
+  * 8 to 9 upgrade: add checks for RRD metrics migration and increased on-disk
+    space usage needs.
+
+  * ui: RRD graphs: use title-case for titles.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jul 2025 06:01:44 +0200
+
 pve-manager (9.0.0~14) trixie; urgency=medium
 
   * http server: drop legacy yew mobile paths and fix yew mtime path.
