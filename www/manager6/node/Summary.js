@@ -161,7 +161,7 @@ Ext.define('PVE.node.Summary', {
                         nodeStatus,
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('CPU usage'),
+                            title: gettext('CPU Usage'),
                             tools: [
                                 {
                                     glyph: 'xf05a@FontAwesome', // fa-info-circle
@@ -179,7 +179,7 @@ Ext.define('PVE.node.Summary', {
                         },
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('Server load'),
+                            title: gettext('Server Load'),
                             fields: ['loadavg'],
                             fieldTitles: [gettext('Load average')],
                             store: rrdstore,
@@ -202,14 +202,14 @@ Ext.define('PVE.node.Summary', {
                         },
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('Network traffic'),
+                            title: gettext('Network Traffic'),
                             fields: ['netin', 'netout'],
                             fieldTitles: [gettext('Incoming'), gettext('Outgoing')],
                             store: rrdstore,
                         },
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('CPU pressure'),
+                            title: gettext('CPU Pressure Stall'),
                             tools: [
                                 {
                                     glyph: 'xf05a@FontAwesome', // fa-info-circle
@@ -228,7 +228,7 @@ Ext.define('PVE.node.Summary', {
                         },
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('IO pressure'),
+                            title: gettext('IO Pressure Stall'),
                             tools: [
                                 {
                                     glyph: 'xf05a@FontAwesome', // fa-info-circle
@@ -247,7 +247,7 @@ Ext.define('PVE.node.Summary', {
                         },
                         {
                             xtype: 'proxmoxRRDChart',
-                            title: gettext('Memory pressure'),
+                            title: gettext('Memory Pressure Stall'),
                             tools: [
                                 {
                                     glyph: 'xf05a@FontAwesome', // fa-info-circle

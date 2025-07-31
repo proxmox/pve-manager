@@ -95,7 +95,7 @@ Ext.define('PVE.guest.Summary', {
             items.push(
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('CPU usage'),
+                    title: gettext('CPU Usage'),
                     pveSelNode: me.pveSelNode,
                     fields: ['cpu'],
                     fieldTitles: [gettext('CPU usage')],
@@ -104,7 +104,7 @@ Ext.define('PVE.guest.Summary', {
                 },
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('Memory usage'),
+                    title: gettext('Memory Usage'),
                     pveSelNode: me.pveSelNode,
                     fields: memoryFields,
                     colors: ['#115fa6', '#94ae0a', '#c4c0c0'],
@@ -120,7 +120,7 @@ Ext.define('PVE.guest.Summary', {
                 },
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('Network traffic'),
+                    title: gettext('Network Traffic'),
                     pveSelNode: me.pveSelNode,
                     fields: ['netin', 'netout'],
                     fieldTitles: [gettext('Incoming'), gettext('Outgoing')],
@@ -136,7 +136,7 @@ Ext.define('PVE.guest.Summary', {
                 },
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('CPU pressure'),
+                    title: gettext('CPU Pressure Stall'),
                     tools: [
                         {
                             glyph: 'xf05a@FontAwesome', // fa-info-circle
@@ -158,7 +158,7 @@ Ext.define('PVE.guest.Summary', {
                 },
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('IO pressure'),
+                    title: gettext('IO Pressure Stall'),
                     tools: [
                         {
                             glyph: 'xf05a@FontAwesome', // fa-info-circle
@@ -180,7 +180,7 @@ Ext.define('PVE.guest.Summary', {
                 },
                 {
                     xtype: 'proxmoxRRDChart',
-                    title: gettext('Memory pressure'),
+                    title: gettext('Memory Pressure Stall'),
                     tools: [
                         {
                             glyph: 'xf05a@FontAwesome', // fa-info-circle
