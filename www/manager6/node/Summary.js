@@ -181,7 +181,7 @@ Ext.define('PVE.node.Summary', {
                                 {
                                     type: 'area',
                                     yField: ['memused-sub-arcsize', 'arcsize', 'memfree-capped'],
-                                    title: [gettext('Used'), gettext('ZFS'), gettext('Free')],
+                                    title: [gettext('Used'), gettext('ZFS ARC'), gettext('Free')],
                                 },
                             ],
                             colors: ['#115fa6', '#7c7474', '#94ae0a'],
