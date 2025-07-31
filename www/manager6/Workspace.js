@@ -309,6 +309,17 @@ Ext.define('PVE.StdWorkspace', {
                 caps = value;
                 createVM.setDisabled(!caps.vms['VM.Allocate']);
                 createCT.setDisabled(!caps.vms['VM.Allocate']);
+            } else if (key === '_stripBeta') {
+                let betaLink = me.query('#betalink')?.[0];
+                if (betaLink) {
+                    betaLink.setHidden(true);
+                }
+
+                const indexOfTilde = PVE.VersionInfo?.version.indexOf('~') ?? '';
+                if (indexOfTilde !== -1) {
+                    PVE.VersionInfo.version = PVE.VersionInfo.version.substring(0, indexOfTilde);
+                    me.updateVersionInfo();
+                }
             }
         });
 
@@ -345,6 +356,7 @@ Ext.define('PVE.StdWorkspace', {
                         },
                         {
                             padding: 5,
+                            id: 'betalink',
                             html: '<a href="https://bugzilla.proxmox.com" target="_blank">BETA</a>',
                         },
                         {
