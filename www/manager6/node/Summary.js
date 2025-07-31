@@ -162,16 +162,6 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('CPU Usage'),
-                            tools: [
-                                {
-                                    glyph: 'xf05a@FontAwesome', // fa-info-circle
-                                    tooltip: gettext("IO Delay is a measure of how much time processes had to wait for IO to be finished."),
-                                    disabled: false,
-                                    style: {
-                                        paddingRight: '5px',
-                                    },
-                                },
-                            ],
                             fields: ['cpu', 'iowait'],
                             fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
                             unit: 'percent',
@@ -210,16 +200,6 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('CPU Pressure Stall'),
-                            tools: [
-                                {
-                                    glyph: 'xf05a@FontAwesome', // fa-info-circle
-                                    tooltip: gettext("Shows if some processes on the host had to wait for CPU resources."),
-                                    disabled: false,
-                                    style: {
-                                        paddingRight: '5px',
-                                    },
-                                },
-                            ],
                             fieldTitles: ['Some'],
                             fields: ['pressurecpusome'],
                             colors: ['#FFD13E', '#A61120'],
@@ -228,16 +208,6 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('IO Pressure Stall'),
-                            tools: [
-                                {
-                                    glyph: 'xf05a@FontAwesome', // fa-info-circle
-                                    tooltip: gettext("Shows if some or all (Full) processes on the host had to wait for IO (disk & network) resources."),
-                                    disabled: false,
-                                    style: {
-                                        paddingRight: '5px',
-                                    },
-                                },
-                            ],
                             fieldTitles: ['Some', 'Full'],
                             fields: ['pressureiosome', 'pressureiofull'],
                             colors: ['#FFD13E', '#A61120'],
@@ -246,16 +216,6 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('Memory Pressure Stall'),
-                            tools: [
-                                {
-                                    glyph: 'xf05a@FontAwesome', // fa-info-circle
-                                    tooltip: gettext("Shows if some or all (Full) processes on the host had to wait for memory resources."),
-                                    disabled: false,
-                                    style: {
-                                        paddingRight: '5px',
-                                    },
-                                },
-                            ],
                             fieldTitles: ['Some', 'Full'],
                             fields: ['pressurememorysome', 'pressurememoryfull'],
                             colors: ['#FFD13E', '#A61120'],
