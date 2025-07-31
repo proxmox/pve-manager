@@ -435,7 +435,7 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
             border: false,
             padding: '5 2',
             userCls: 'pmx-hint',
-            html: // `<b style="color:red;font-weight:600;">${gettext('Warning')}</b>: ` +
+            html: // `<b style="color:red;font-weight:600;">${ngettext('Warning', 'Warnings', 1)}</b>: ` +
                 `<span class="fa fa-exclamation-triangle" style="color:red;font-size:14px;"></span> ` +
                 gettext(
                     'Deleting or replacing the encryption key will break restoring backups created with it!',

@@ -587,7 +587,7 @@ Ext.define('PVE.node.CephOsdTree', {
                     success: function ({ result: { data } }) {
                         if (!data.safe) {
                             Ext.Msg.show({
-                                title: gettext('Warning'),
+                                title: ngettext('Warning', 'Warnings', 1),
                                 message: data.status,
                                 icon: Ext.Msg.WARNING,
                                 buttons: Ext.Msg.OKCANCEL,
