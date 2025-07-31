@@ -25,7 +25,7 @@ Ext.define('pve-rrd-node', {
         'rootused',
         'swaptotal',
         'swapused',
-        'memfree',
+        'memavailable',
         'arcsize',
         'pressurecpusome',
         'pressureiosome',
