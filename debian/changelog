@@ -1,3 +1,15 @@
+pve-manager (9.0.0~17) trixie; urgency=medium
+
+  * make Yew based mobile UI package a required dependency and completely drop
+    legacy sencha-touch based mobile UI.
+
+  * ui: ha affinity rules: add CRUD ui for resource-to-resource rules.
+
+  * ui: VM & CT migration: display precondition messages for HA resource
+    affinity blockers.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jul 2025 11:46:10 +0200
+
 pve-manager (9.0.0~16) trixie; urgency=medium
 
   * ui: replace HA Groups CRUD with new HA Affinity Rules CRUD.
