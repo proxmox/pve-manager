@@ -367,8 +367,9 @@ pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js $(JSSRC)
 	cat OnlineHelpInfo.js $(JSSRC) >$@.tmp
 	mv $@.tmp $@
 
+OnlineHelpInfo.js: ARGS ?= $(if $(ALLOW_MISSING),--allow-missing,)
 OnlineHelpInfo.js: $(JSSRC) $(WIDGETKIT)
-	/usr/bin/asciidoc-pve scan-extjs $^ >$@.tmp
+	/usr/bin/asciidoc-pve scan-extjs $(ARGS) $^ >$@.tmp
 	mv $@.tmp $@
 
 .PHONY: install
