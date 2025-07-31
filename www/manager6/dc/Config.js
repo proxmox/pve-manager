@@ -170,7 +170,7 @@ Ext.define('PVE.dc.Config', {
                     itemId: 'ha',
                 },
                 {
-                    title: gettext('Rules'),
+                    title: gettext('Affinity Rules'),
                     groups: ['ha'],
                     xtype: 'pveHARulesView',
                     iconCls: 'fa fa-gears',
