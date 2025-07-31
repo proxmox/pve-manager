@@ -54,8 +54,6 @@ my $basedirs = {
     i18n => '/usr/share/pve-i18n',
     manager => '/usr/share/pve-manager',
     novnc => '/usr/share/novnc-pve',
-    sencha_touch => '/usr/share/javascript/sencha-touch',
-    # TODO: remove legacy variant once frontend uses new paths
     yew_mobile => '/usr/share/pve-yew-mobile-gui',
     i18n_yew => '/usr/share/pve-yew-mobile-i18n',
     widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
@@ -90,9 +88,6 @@ sub init {
     add_dirs($dirs, '/pve2/images/' => "$basedirs->{manager}/images/");
     add_dirs($dirs, '/pve2/js/' => "$basedirs->{manager}/js/");
     add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
-    # TODO: remove fully during PVE 9, replaced by yew based mobile UI.
-    add_dirs($dirs, '/pve2/sencha-touch/', "$basedirs->{sencha_touch}/");
-    add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
     add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
     add_dirs($dirs, '/pwt/themes/' => "$basedirs->{widgettoolkit}/themes/");
