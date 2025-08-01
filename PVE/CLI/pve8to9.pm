@@ -1893,11 +1893,13 @@ sub check_bridge_mtu {
 
 sub check_rrd_migration {
     if (-e "/var/lib/rrdcached/db/pve-node-9.0") {
-        log_info("Check post RRD migration situation...");
+        log_info("Check post RRD metrics data format migration situation...");
 
-        my $count = 0;
-        my $count_occurences = sub {
-            $count++;
+        my $old_files = [];
+        my $record_old = sub {
+            my $file = shift;
+            $file =~ s!^/var/lib/rrdcached/db/!!;
+            push @$old_files, $file;
         };
         eval {
             run_command(
@@ -1912,15 +1914,21 @@ sub check_rrd_migration {
                     '-name',
                     '*.old',
                 ],
-                outfunc => $count_occurences,
+                outfunc => $record_old,
                 noerr => 1,
             );
         };
 
-        if ($count) {
-            log_warn("Found '$count' RRD files that have not yet been migrated to the new schema."
-                . " Please run the following command manually:\n"
-                . "/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
+        if (my $count = scalar($old_files->@*)) {
+            my $cutoff = 29; # avoid spamming the check output to much for bigger setups
+            if (!$full_checks && $count > $cutoff + 1) {
+                splice @$old_files, $cutoff + 1;
+                push @$old_files, '... omitted printing ' . ($count - $cutoff) . ' additional files';
+            }
+            log_warn("Found '$count' RRD files that have not yet been migrated to the new schema.\n"
+                . join("\n\t ", $old_files->@*)
+                . "\n\tPlease run the following command manually:\n"
+                . "\t/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
         }
 
     } else {
