@@ -75,6 +75,7 @@ Ext.define('PVE.sdn.DhcpTree', {
                             vnets[element.vnet].children.push(subnet);
                         }
 
+                        element.name = element.vmid; // for sorting
                         element.type = 'mapping';
                         element.iconCls = 'x-tree-icon-none';
                         subnets[element.subnet].children.push(element);
