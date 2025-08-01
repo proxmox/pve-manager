@@ -1,3 +1,14 @@
+pve-manager (8.4.7) bookworm; urgency=medium
+
+  * 8to9 upgrade checks (pve8to9):
+    - fix punctuation in message for legacy notification settings.
+    - rework boot-loader suggestions for trixie and the systemd-boot package
+      split and altered behavior.
+    - add checkfs for RRD metrics data migrtion to updated format for PVE 9.
+    - check for left-over legacy ipam db or mac cache files.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 01 Aug 2025 18:30:49 +0200
+
 pve-manager (8.4.6) bookworm; urgency=medium
 
   * 8to9 upgrade checks (pve8to9):
