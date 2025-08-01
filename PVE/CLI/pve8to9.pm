@@ -1704,9 +1704,9 @@ sub check_legacy_backup_job_options {
 
     if ($failed) {
         log_fail(
-            "Changing the backup job configuration via the UI will automatically clear these options."
-                . "Alternatively, you can remove the offending options from /etc/pve/jobs.cfg by hand"
-        );
+            "Changing the backup job configuration via the UI will automatically clear these"
+                . " options. Alternatively, you can remove the offending options from "
+                . " /etc/pve/jobs.cfg by hand.");
     } else {
         log_pass("No legacy 'notification-policy' or 'notification-target' options found!");
     }
