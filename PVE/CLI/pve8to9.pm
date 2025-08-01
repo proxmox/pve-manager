@@ -1929,6 +1929,8 @@ sub check_rrd_migration {
                 . join("\n\t ", $old_files->@*)
                 . "\n\tPlease run the following command manually:\n"
                 . "\t/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
+        } else {
+            log_pass("No old RRD metric files found, normally this means all have been migrated.");
         }
 
     } else {
