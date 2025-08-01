@@ -2047,6 +2047,48 @@ sub check_virtual_guests {
     check_qemu_machine_versions();
 }
 
+my $LEGACY_IPAM_DB = "/etc/pve/priv/ipam.db";
+my $NEW_IPAM_DB = "/etc/pve/sdn/pve-ipam-state.json";
+
+my $LEGACY_MAC_DB = "/etc/pve/priv/macs.db";
+my $NEW_MAC_DB = "/etc/pve/sdn/mac-cache.json";
+
+sub check_legacy_ipam_files {
+    log_info("Checking for IPAM DB files that have not yet been migrated.");
+
+    if (-e $LEGACY_IPAM_DB) {
+        if (-e $NEW_IPAM_DB) {
+            log_notice(
+                "Found leftover legacy IPAM DB file in $LEGACY_IPAM_DB.\n"
+                . "This file can be deleted AFTER upgrading ALL nodes to PVE 9."
+            );
+        } else {
+            log_fail(
+                "Found IPAM DB file in $LEGACY_IPAM_DB that has not been migrated!\n"
+                . "File needs to be migrated to $NEW_IPAM_DB before upgrading. Update pve-network to the newest version."
+            );
+        }
+    } else {
+        log_pass("No legacy IPAM DB found.");
+    }
+
+    if (-e $LEGACY_MAC_DB) {
+        if (-e $NEW_MAC_DB) {
+            log_notice(
+                "Found leftover legacy MAC DB file in $LEGACY_MAC_DB.\n"
+                . "This file can be deleted AFTER upgrading ALL nodes to PVE 9."
+            );
+        } else {
+            log_fail(
+                "Found MAC DB file in $LEGACY_MAC_DB that has not been migrated!\n"
+                . "File needs to be migrated to $NEW_MAC_DB before upgrading. Update pve-network to the newest version."
+            );
+        }
+    } else {
+        log_pass("No legacy MAC DB found.");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -2141,6 +2183,7 @@ sub check_misc {
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
     check_rrd_migration();
+    check_legacy_ipam_files();
 }
 
 my sub colored_if {
