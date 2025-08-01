@@ -1899,7 +1899,17 @@ sub check_rrd_migration {
         };
         eval {
             run_command(
-                ['find', '/var/lib/rrdcached/db', '-type', 'f', '!', '-name', '*.old'],
+                [
+                    'find',
+                    '/var/lib/rrdcached/db',
+                    '-path',
+                    '*pve2-*',
+                    '-type',
+                    'f',
+                    '!',
+                    '-name',
+                    '*.old',
+                ],
                 outfunc => $count_occurences,
                 noerr => 1,
             );
