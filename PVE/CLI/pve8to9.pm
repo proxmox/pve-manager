@@ -44,6 +44,8 @@ my $nodename = PVE::INotify::nodename();
 
 my $upgraded = 0; # set in check_pve_packages
 
+my $full_checks = !!0; # set by CLI --full parameter
+
 sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
@@ -2136,6 +2138,8 @@ __PACKAGE__->register_method({
     returns => { type => 'null' },
     code => sub {
         my ($param) = @_;
+
+        $full_checks = !!$param->{full};
 
         my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
         if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/) {
