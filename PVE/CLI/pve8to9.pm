@@ -351,7 +351,9 @@ sub check_rbd_storage_keyring {
         my $storeid_txt = join(', ', $pve_managed->@*);
         # pass test if there is no external
         if ($any_external_rbd_storage) {
-            log_info("The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt");
+            log_info(
+                "The following RBD storages are PVE-managed, nothing to do for them:\n\t$storeid_txt"
+            );
         } else {
             log_skip("Only PVE-managed RBD storages are configured, so nothing to do");
         }
@@ -765,8 +767,8 @@ sub check_backup_retention_settings {
 
     my $pass = 1;
 
-    my $maxfiles_msg = "parameter 'maxfiles' was deprecated with PVE 7.x and is getting dropped"
-        . " with PVE 9.";
+    my $maxfiles_msg =
+        "parameter 'maxfiles' was deprecated with PVE 7.x and is getting dropped" . " with PVE 9.";
 
     eval {
         my $confdesc = PVE::VZDump::Common::get_confdesc();
@@ -1529,16 +1531,22 @@ sub check_apt_repos {
             my $_log = $found_pve_test_repo_suite eq $new_suite ? \&log_fail : \&log_warn;
             $_log->(
                 "Found legacy spelling 'pvetest' of the pve-test repo. Change the repo to use"
-                ." 'pve-test' when updating the repos to the '$new_suite' suite for Proxmox VE 9!"
+                    . " 'pve-test' when updating the repos to the '$new_suite' suite for Proxmox VE 9!"
             );
         } elsif ($found_pve_test_repo_suite eq $new_suite) {
-            log_pass("Found modern spelling 'pve-test' of the pve-test repo for new suite '$new_suite'.");
+            log_pass(
+                "Found modern spelling 'pve-test' of the pve-test repo for new suite '$new_suite'."
+            );
         } elsif ($found_pve_test_repo_suite eq $old_suite) {
-            log_fail("Found modern spelling 'pve-test' but old suite '$old_suite', did you forgot to update the suite?");
+            log_fail(
+                "Found modern spelling 'pve-test' but old suite '$old_suite', did you forgot to update the suite?"
+            );
         } else {
             # TODO: remove the whole check with PVE 10, one cannot really update to latest 9.4 with
             # an old test repo anyway
-            log_fail("Found modern spelling 'pve-test' but unexpected suite '$found_pve_test_repo_suite'");
+            log_fail(
+                "Found modern spelling 'pve-test' but unexpected suite '$found_pve_test_repo_suite'"
+            );
         }
     }
 }
@@ -1593,7 +1601,9 @@ sub check_bootloader {
 
     if (!-d '/sys/firmware/efi') {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            log_info("systemd-boot package installed on legacy-boot system is not necessary, consider remoing it");
+            log_info(
+                "systemd-boot package installed on legacy-boot system is not necessary, consider remoing it"
+            );
             return;
         }
         log_skip("System booted in legacy-mode - no need for additional packages");
@@ -1607,8 +1617,8 @@ sub check_bootloader {
         }
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
             log_warn("systemd-boot meta-package installed this will cause issues on upgrades of"
-                ." boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
-                ." and remove 'systemd-boot'");
+                . " boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
+                . " and remove 'systemd-boot'");
             return;
         }
     } else {
@@ -1617,9 +1627,10 @@ sub check_bootloader {
                 run_command(['bootctl', 'is-installed', '--quiet', '--graceful'], noerr => 1);
             };
             if ($exit_code != 0) {
-                log_warn("systemd-boot meta-package installed but the system does not seem to use it"
-                    ." for booting. This can cause problems on upgrades of other boot-related packages"
-                    ." Consider removing 'systemd-boot'");
+                log_warn(
+                    "systemd-boot meta-package installed but the system does not seem to use it"
+                        . " for booting. This can cause problems on upgrades of other boot-related packages"
+                        . " Consider removing 'systemd-boot'");
             } else {
                 log_info("systemd-boot used as bootloader and fitting meta-package installed.");
                 return;
@@ -1627,7 +1638,8 @@ sub check_bootloader {
         }
         if (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
             log_warn("System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
-                . " new grub versions will not be installed to /boot/efi! Install grub-efi-amd64.");
+                . " new grub versions will not be installed to /boot/efi! Install grub-efi-amd64."
+            );
             return;
         } else {
             log_pass("bootloader packages installed correctly");
@@ -1951,7 +1963,6 @@ sub check_virtual_guests {
 
     check_qemu_machine_versions();
 }
-
 
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
