@@ -2046,7 +2046,9 @@ sub check_legacy_ipam_files {
         } else {
             log_fail(
                 "Found IPAM DB file in $LEGACY_IPAM_DB that has not been migrated!\n"
-                . "File needs to be migrated to $NEW_IPAM_DB before upgrading. Update pve-network to the newest version."
+                . "\tFile needs to be migrated to $NEW_IPAM_DB before upgrading. Updating"
+                ." pve-network to the newest version should take care of that!\n"
+                ."\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
         }
     } else {
@@ -2062,7 +2064,9 @@ sub check_legacy_ipam_files {
         } else {
             log_fail(
                 "Found MAC DB file in $LEGACY_MAC_DB that has not been migrated!\n"
-                . "File needs to be migrated to $NEW_MAC_DB before upgrading. Update pve-network to the newest version."
+                . "\tFile needs to be migrated to $NEW_MAC_DB before upgrading. Updating"
+                ." pve-network to the newest version should take care of that!\n"
+                ."\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
         }
     } else {
