@@ -133,8 +133,9 @@ sub extract_vm_stats {
         $entry->{netout} = ($d->[12] || 0) + 0;
         $entry->{diskread} = ($d->[13] || 0) + 0;
         $entry->{diskwrite} = ($d->[14] || 0) + 0;
+
         if ($key =~ /^pve-vm-/) {
-            $entry->{memhost} = ($d->[15] || 0) +0;
+            $entry->{memhost} = ($d->[15] || 0) + 0;
         }
     }
 
