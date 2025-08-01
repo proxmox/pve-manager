@@ -1,3 +1,18 @@
+pve-manager (9.0.0~18) trixie; urgency=medium
+
+  * sync over 8 to 9 upgrade checks from stable-8 branch.
+
+  * ui: RRD graphs: display PSI as percent again
+
+  * ui: guest migrate: fix logging unexpected errors to developer
+    console.
+
+  * ui: guest migrate: adapt HA migration checks to altered property name
+
+  * ui: sdn: allow sorting the IPAM and DHCP view by guest ID.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 01 Aug 2025 18:41:47 +0200
+
 pve-manager (9.0.0~17) trixie; urgency=medium
 
   * make Yew based mobile UI package a required dependency and completely drop
