@@ -254,7 +254,7 @@ Ext.define('PVE.window.Migrate', {
             } catch (err) {
                 // Only emit a warning in the case the target node does not (yet) support the
                 // `capabilites/qemu/migration` endpoint and simply treat all features as unsupported.
-                console.warn(`failed to query /capabilites/qemu/migration on '${target}': ${err}`);
+                console.warn(`failed to query /capabilites/qemu/migration on '${target}':`, err);
             }
 
             me.fetchingNodeMigrateInfo = false;
