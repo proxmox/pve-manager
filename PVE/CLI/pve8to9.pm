@@ -1592,30 +1592,46 @@ sub check_bootloader {
     log_info("Checking bootloader configuration...");
 
     if (!-d '/sys/firmware/efi') {
+        if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
+            log_info("systemd-boot package installed on legacy-boot system is not necessary, consider remoing it");
+            return;
+        }
         log_skip("System booted in legacy-mode - no need for additional packages");
         return;
     }
 
     if (-f "/etc/kernel/proxmox-boot-uuids") {
         if (!$upgraded) {
-            log_skip("not yet upgraded, no need to check the presence of systemd-boot");
+            log_skip("not yet upgraded, systemd-boot still needed for bootctl");
             return;
         }
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            log_pass("bootloader packages installed correctly");
+            log_warn("systemd-boot meta-package installed this will cause issues on upgrades of"
+                ." boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
+                ." and remove 'systemd-boot'");
             return;
         }
-        log_warn("proxmox-boot-tool is used for bootloader configuration in uefi mode"
-            . " but the separate systemd-boot package is not installed,"
-            . " initializing new ESPs will not work until the package is installed");
-        return;
-    } elsif (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
-        log_warn("System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
-            . " new grub versions will not be installed to /boot/efi!"
-            . " Install grub-efi-amd64.");
-        return;
     } else {
-        log_pass("bootloader packages installed correctly");
+        if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
+            my $exit_code = eval {
+                run_command(['bootctl', 'is-installed', '--quiet', '--graceful'], noerr => 1);
+            };
+            if ($exit_code != 0) {
+                log_warn("systemd-boot meta-package installed but the system does not seem to use it"
+                    ." for booting. This can cause problems on upgrades of other boot-related packages"
+                    ." Consider removing 'systemd-boot'");
+            } else {
+                log_info("systemd-boot used as bootloader and fitting meta-package installed.");
+                return;
+            }
+        }
+        if (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
+            log_warn("System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
+                . " new grub versions will not be installed to /boot/efi! Install grub-efi-amd64.");
+            return;
+        } else {
+            log_pass("bootloader packages installed correctly");
+        }
     }
 }
 
