@@ -2060,7 +2060,7 @@ sub check_legacy_ipam_files {
         if (-e $NEW_IPAM_DB) {
             log_notice(
                 "Found leftover legacy IPAM DB file in $LEGACY_IPAM_DB.\n"
-                . "This file can be deleted AFTER upgrading ALL nodes to PVE 9."
+                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+."
             );
         } else {
             log_fail(
@@ -2076,7 +2076,7 @@ sub check_legacy_ipam_files {
         if (-e $NEW_MAC_DB) {
             log_notice(
                 "Found leftover legacy MAC DB file in $LEGACY_MAC_DB.\n"
-                . "This file can be deleted AFTER upgrading ALL nodes to PVE 9."
+                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+"
             );
         } else {
             log_fail(
