@@ -19,6 +19,7 @@ all: $(SUBDIRS)
 tidy:
 	git ls-files ':*.p[ml]'| xargs -n4 -P0 proxmox-perltidy
 	$(MAKE) -C bin tidy
+	$(MAKE) -C www tidy
 
 .PHONY: check
 check: bin test www

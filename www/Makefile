@@ -14,6 +14,10 @@ install:
 check:
 	$(MAKE) -C manager6 $@
 
+.PHONY: tidy
+tidy:
+	$(MAKE) -C manager6 $@
+
 .PHONY: clean
 clean:
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
