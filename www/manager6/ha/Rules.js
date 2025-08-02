@@ -106,6 +106,13 @@ Ext.define('PVE.ha.RulesBaseView', {
             ],
             columns: [
                 {
+                    header: gettext('ID'),
+                    dataIndex: 'rule',
+                    width: 160,
+                    hidden: true,
+                    sortable: true,
+                },
+                {
                     header: gettext('Enabled'),
                     width: 80,
                     dataIndex: 'disable',
