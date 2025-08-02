@@ -77,6 +77,8 @@ Ext.define('PVE.ha.RulesBaseView', {
             createRuleEditWindow(rule);
         };
 
+        let childColumns = me.columns || [];
+
         Ext.apply(me, {
             selModel: sm,
             viewConfig: {
@@ -102,55 +104,54 @@ Ext.define('PVE.ha.RulesBaseView', {
                     callback: reloadStore,
                 },
             ],
+            columns: [
+                {
+                    header: gettext('Enabled'),
+                    width: 80,
+                    dataIndex: 'disable',
+                    align: 'center',
+                    renderer: (value) => Proxmox.Utils.renderEnabledIcon(!value),
+                    sortable: true,
+                },
+                {
+                    header: gettext('State'),
+                    xtype: 'actioncolumn',
+                    width: 65,
+                    align: 'center',
+                    dataIndex: 'errors',
+                    items: [
+                        {
+                            handler: (table, rowIndex, colIndex, item, event, { data }) => {
+                                if (Object.keys(data.errors ?? {}.length)) {
+                                    Ext.create('PVE.ha.RuleErrorsModal', {
+                                        autoShow: true,
+                                        errors: data.errors,
+                                    });
+                                }
+                            },
+                            getTip: (value) =>
+                                Object.keys(value ?? {}).length
+                                    ? gettext('HA Rule has conflicts and/or errors.')
+                                    : gettext('HA Rule is OK.'),
+                            getClass: (value) =>
+                                Object.keys(value ?? {}).length
+                                    ? 'fa fa-exclamation-triangle'
+                                    : 'fa fa-check',
+                        },
+                    ],
+                },
+                ...childColumns,
+                {
+                    header: gettext('Comment'),
+                    flex: 1,
+                    renderer: Ext.String.htmlEncode,
+                    dataIndex: 'comment',
+                },
+            ],
             listeners: {
                 activate: reloadStore,
                 itemdblclick: runEditor,
             },
-        });
-
-        me.columns.unshift(
-            {
-                header: gettext('Enabled'),
-                width: 80,
-                dataIndex: 'disable',
-                align: 'center',
-                renderer: (value) Proxmox.Utils.renderEnabledIcon(!value),
-                sortable: true,
-            },
-            {
-                header: gettext('State'),
-                xtype: 'actioncolumn',
-                width: 65,
-                align: 'center',
-                dataIndex: 'errors',
-                items: [
-                    {
-                        handler: (table, rowIndex, colIndex, item, event, { data }) => {
-                            if (Object.keys(data.errors ?? {}.length)) {
-                                Ext.create('PVE.ha.RuleErrorsModal', {
-                                    autoShow: true,
-                                    errors: data.errors,
-                                });
-                            }
-                        },
-                        getTip: (value) =>
-                            Object.keys(value ?? {}).length
-                                ? gettext('HA Rule has conflicts and/or errors.')
-                                : gettext('HA Rule is OK.'),
-                        getClass: (value) =>
-                            Object.keys(value ?? {}).length
-                                ? 'fa fa-exclamation-triangle'
-                                : 'fa fa-check',
-                    },
-                ],
-            },
-        );
-
-        me.columns.push({
-            header: gettext('Comment'),
-            flex: 1,
-            renderer: Ext.String.htmlEncode,
-            dataIndex: 'comment',
         });
 
         me.callParent();
