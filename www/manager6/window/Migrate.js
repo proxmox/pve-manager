@@ -533,9 +533,9 @@ Ext.define('PVE.window.Migrate', {
                 }
             }
 
-            let comigratedHAResources = migrateStats['comigrated-ha-resources'];
-            if (comigratedHAResources !== undefined) {
-                for (const sid of comigratedHAResources) {
+            let dependentHAResources = migrateStats['dependent-ha-resources'];
+            if (dependentHAResources !== undefined) {
+                for (const sid of dependentHAResources) {
                     const text = Ext.String.format(
                         gettext(
                             'HA resource {0} with positive affinity to container is also migrated to selected target node.',
