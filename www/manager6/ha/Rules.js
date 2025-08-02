@@ -21,14 +21,19 @@ Ext.define('pve-ha-rules', {
     },
     idProperty: 'rule',
 });
+Ext.define('pve-ha-rules-memory', {
+    extend: 'pve-ha-rules',
+    proxy: {
+        type: 'memory',
+    },
+});
 
 Ext.define('PVE.ha.RulesBaseView', {
     extend: 'Ext.grid.GridPanel',
     mixins: ['Proxmox.Mixin.CBind'],
 
     store: {
-        model: 'pve-ha-rules',
-        autoLoad: true,
+        model: 'pve-ha-rules-memory',
         cbind: {}, // empty cbind to ensure mixin iterates into filter array.
         filters: [
             {
@@ -47,7 +52,7 @@ Ext.define('PVE.ha.RulesBaseView', {
             throw 'no rule type given';
         }
 
-        let reloadStore = () => me.store.load();
+        let reloadStore = () => me.up('pveHARulesView').store.load();
 
         let sm = Ext.create('Ext.selection.RowModel', {});
 
@@ -174,6 +179,28 @@ Ext.define('PVE.ha.RulesView', {
     layout: {
         type: 'vbox',
         align: 'stretch',
+    },
+
+    controller: {
+        xclass: 'Ext.app.ViewController',
+
+        init: function (view) {
+            view.store = new Ext.data.Store({
+                model: 'pve-ha-rules',
+                storeId: 'pve-ha-rules',
+                autoLoad: true,
+            });
+            view.store.on('load', this.onStoreLoad, this);
+        },
+
+        onStoreLoad: function (store, records, success) {
+            let me = this;
+            let view = me.getView();
+
+            for (const grid of view.query('grid[ruleType]')) {
+                grid.getStore().setRecords(records);
+            }
+        },
     },
 
     items: [
