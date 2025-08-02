@@ -1,3 +1,19 @@
+pve-manager (9.0.0~19) trixie; urgency=medium
+
+  * ui: ha affinity rules: use single data store and mirror it to child grids,
+    this avoids loading the data twice which then also ensures that they both
+    show the same consistent view of the ruleset.
+
+  * ui: ha affinity rules: various small UX polishing:
+    - give resource rule some more vertical space.
+    - add ID column but hide by default for now.
+    - give resource rules some more vertical space.
+
+  * ui: guest migrate: adapt HA migration checks to new property name also for
+    Containers.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 02 Aug 2025 19:42:57 +0200
+
 pve-manager (9.0.0~18) trixie; urgency=medium
 
   * sync over 8 to 9 upgrade checks from stable-8 branch.
