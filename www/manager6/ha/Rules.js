@@ -77,19 +77,6 @@ Ext.define('PVE.ha.RulesBaseView', {
             createRuleEditWindow(rule);
         };
 
-        let editButton = Ext.create('Proxmox.button.Button', {
-            text: gettext('Edit'),
-            disabled: true,
-            selModel: sm,
-            handler: runEditor,
-        });
-
-        let removeButton = Ext.create('Proxmox.button.StdRemoveButton', {
-            selModel: sm,
-            baseurl: '/cluster/ha/rules/',
-            callback: reloadStore,
-        });
-
         Ext.apply(me, {
             selModel: sm,
             viewConfig: {
@@ -101,8 +88,19 @@ Ext.define('PVE.ha.RulesBaseView', {
                     text: gettext('Add'),
                     handler: () => createRuleEditWindow(),
                 },
-                editButton,
-                removeButton,
+                {
+                    xtype: 'button',
+                    text: gettext('Edit'),
+                    disabled: true,
+                    selModel: sm,
+                    handler: runEditor,
+                },
+                {
+                    xtype: 'proxmoxStdRemoveButton',
+                    selModel: sm,
+                    baseurl: '/cluster/ha/rules/',
+                    callback: reloadStore,
+                },
             ],
             listeners: {
                 activate: reloadStore,
