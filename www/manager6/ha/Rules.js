@@ -114,9 +114,7 @@ Ext.define('PVE.ha.RulesBaseView', {
                 width: 80,
                 dataIndex: 'disable',
                 align: 'center',
-                renderer: function (value) {
-                    return Proxmox.Utils.renderEnabledIcon(!value);
-                },
+                renderer: (value) Proxmox.Utils.renderEnabledIcon(!value),
                 sortable: true,
             },
             {
@@ -128,34 +126,21 @@ Ext.define('PVE.ha.RulesBaseView', {
                 items: [
                     {
                         handler: (table, rowIndex, colIndex, item, event, { data }) => {
-                            let errors = Object.keys(data.errors ?? {});
-                            if (!errors.length) {
-                                return;
-                            }
-
-                            Ext.create('PVE.ha.RuleErrorsModal', {
-                                autoShow: true,
-                                errors: data.errors ?? {},
-                            });
-                        },
-                        getTip: (value) => {
-                            let errors = Object.keys(value ?? {});
-                            if (errors.length) {
-                                return gettext('HA Rule has conflicts and/or errors.');
-                            } else {
-                                return gettext('HA Rule is OK.');
+                            if (Object.keys(data.errors ?? {}.length)) {
+                                Ext.create('PVE.ha.RuleErrorsModal', {
+                                    autoShow: true,
+                                    errors: data.errors,
+                                });
                             }
                         },
-                        getClass: (value) => {
-                            let iconName = 'check';
-
-                            let errors = Object.keys(value ?? {});
-                            if (errors.length) {
-                                iconName = 'exclamation-triangle';
-                            }
-
-                            return `fa fa-${iconName}`;
-                        },
+                        getTip: (value) =>
+                            Object.keys(value ?? {}).length
+                                ? gettext('HA Rule has conflicts and/or errors.')
+                                : gettext('HA Rule is OK.'),
+                        getClass: (value) =>
+                            Object.keys(value ?? {}).length
+                                ? 'fa fa-exclamation-triangle'
+                                : 'fa fa-check',
                     },
                 ],
             },
