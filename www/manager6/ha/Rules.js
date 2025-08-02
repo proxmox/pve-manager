@@ -1,3 +1,27 @@
+Ext.define('pve-ha-rules', {
+    extend: 'Ext.data.Model',
+    fields: [
+        'rule',
+        'type',
+        'nodes',
+        'digest',
+        'errors',
+        'disable',
+        'comment',
+        'affinity',
+        'resources',
+        {
+            name: 'strict',
+            type: 'boolean',
+        },
+    ],
+    proxy: {
+        type: 'proxmox',
+        url: '/api2/json/cluster/ha/rules',
+    },
+    idProperty: 'rule',
+});
+
 Ext.define('PVE.ha.RulesBaseView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -147,62 +171,34 @@ Ext.define('PVE.ha.RulesBaseView', {
     },
 });
 
-Ext.define(
-    'PVE.ha.RulesView',
-    {
-        extend: 'Ext.panel.Panel',
-        alias: 'widget.pveHARulesView',
+Ext.define('PVE.ha.RulesView', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveHARulesView',
 
-        onlineHelp: 'ha_manager_rules',
+    onlineHelp: 'ha_manager_rules',
 
-        layout: {
-            type: 'vbox',
-            align: 'stretch',
+    layout: {
+        type: 'vbox',
+        align: 'stretch',
+    },
+
+    items: [
+        {
+            title: gettext('HA Node Affinity Rules'),
+            xtype: 'pveHANodeAffinityRulesView',
+            flex: 1,
+            border: 0,
         },
-
-        items: [
-            {
-                title: gettext('HA Node Affinity Rules'),
-                xtype: 'pveHANodeAffinityRulesView',
-                flex: 1,
-                border: 0,
-            },
-            {
-                xtype: 'splitter',
-                collapsible: false,
-                performCollapse: false,
-            },
-            {
-                title: gettext('HA Resource Affinity Rules'),
-                xtype: 'pveHAResourceAffinityRulesView',
-                flex: 1,
-                border: 0,
-            },
-        ],
-    },
-    function () {
-        Ext.define('pve-ha-rules', {
-            extend: 'Ext.data.Model',
-            fields: [
-                'rule',
-                'type',
-                'nodes',
-                'digest',
-                'errors',
-                'disable',
-                'comment',
-                'affinity',
-                'resources',
-                {
-                    name: 'strict',
-                    type: 'boolean',
-                },
-            ],
-            proxy: {
-                type: 'proxmox',
-                url: '/api2/json/cluster/ha/rules',
-            },
-            idProperty: 'rule',
-        });
-    },
-);
+        {
+            xtype: 'splitter',
+            collapsible: false,
+            performCollapse: false,
+        },
+        {
+            title: gettext('HA Resource Affinity Rules'),
+            xtype: 'pveHAResourceAffinityRulesView',
+            flex: 1,
+            border: 0,
+        },
+    ],
+});
