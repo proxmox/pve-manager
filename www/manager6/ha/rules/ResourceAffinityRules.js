@@ -18,7 +18,7 @@ Ext.define('PVE.ha.ResourceAffinityRulesView', {
         },
         {
             header: gettext('HA Resources'),
-            flex: 1,
+            flex: 5,
             dataIndex: 'resources',
         },
     ],

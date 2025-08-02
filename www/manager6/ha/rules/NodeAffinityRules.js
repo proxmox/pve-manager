@@ -18,12 +18,12 @@ Ext.define('PVE.ha.NodeAffinityRulesView', {
         },
         {
             header: gettext('HA Resources'),
-            flex: 1,
+            flex: 3,
             dataIndex: 'resources',
         },
         {
             header: gettext('Nodes'),
-            flex: 1,
+            flex: 2,
             dataIndex: 'nodes',
         },
     ],
