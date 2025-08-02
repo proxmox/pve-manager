@@ -173,7 +173,7 @@ Ext.define('PVE.ha.RulesView', {
         {
             title: gettext('HA Node Affinity Rules'),
             xtype: 'pveHANodeAffinityRulesView',
-            flex: 1,
+            flex: 2,
             border: 0,
         },
         {
@@ -184,7 +184,7 @@ Ext.define('PVE.ha.RulesView', {
         {
             title: gettext('HA Resource Affinity Rules'),
             xtype: 'pveHAResourceAffinityRulesView',
-            flex: 1,
+            flex: 3,
             border: 0,
         },
     ],
