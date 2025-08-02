@@ -24,6 +24,21 @@ Ext.define('pve-ha-rules', {
 
 Ext.define('PVE.ha.RulesBaseView', {
     extend: 'Ext.grid.GridPanel',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    store: {
+        model: 'pve-ha-rules',
+        autoLoad: true,
+        cbind: {}, // empty cbind to ensure mixin iterates into filter array.
+        filters: [
+            {
+                property: 'type',
+                cbind: {
+                    value: '{ruleType}',
+                },
+            },
+        ],
+    },
 
     initComponent: function () {
         let me = this;
@@ -32,18 +47,7 @@ Ext.define('PVE.ha.RulesBaseView', {
             throw 'no rule type given';
         }
 
-        let store = new Ext.data.Store({
-            model: 'pve-ha-rules',
-            autoLoad: true,
-            filters: [
-                {
-                    property: 'type',
-                    value: me.ruleType,
-                },
-            ],
-        });
-
-        let reloadStore = () => store.load();
+        let reloadStore = () => me.store.load();
 
         let sm = Ext.create('Ext.selection.RowModel', {});
 
@@ -87,7 +91,6 @@ Ext.define('PVE.ha.RulesBaseView', {
         });
 
         Ext.apply(me, {
-            store: store,
             selModel: sm,
             viewConfig: {
                 trackOver: false,
