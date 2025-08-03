@@ -112,6 +112,13 @@ Ext.define('PVE.qemu.CmdMenu', {
                 handler: () => confirmedVMCommand('reboot'),
             },
             {
+                text: gettext('Reset'),
+                iconCls: 'fa fa-fw fa-bolt',
+                disabled: stopped,
+                tooltip: Ext.String.format(gettext('Reset {0}'), 'VM'),
+                handler: () => confirmedVMCommand('reset'),
+            },
+            {
                 xtype: 'menuseparator',
                 hidden:
                     (standalone || !caps.vms['VM.Migrate']) &&
