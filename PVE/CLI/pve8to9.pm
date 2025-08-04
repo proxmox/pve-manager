@@ -2095,11 +2095,12 @@ sub check_legacy_ipam_files {
 
 sub check_legacy_sysctl_conf {
     my $fn = "/etc/sysctl.conf";
+    log_info("Checking if the legacy sysctl file '$fn' needs to be migrated to new '/etc/sysctl.d/' path.");
     if (!-f $fn) {
         log_pass("Legacy file '$fn' is not present.");
         return;
     } elsif ($upgraded) {
-        log_skip("System upgraded '$fn' will not be removed anymore.");
+        log_skip("Legacy file '$fn' is present, but system was already upgraded, ignoring.");
         return;
     }
     my $raw = eval { PVE::Tools::file_get_contents($fn); };
@@ -2117,7 +2118,7 @@ sub check_legacy_sysctl_conf {
             return;
         }
     }
-    log_pass("No settings in '$fn'");
+    log_pass("Legacy file '$fn' exists but does not contain any settings.");
 }
 
 sub check_misc {
