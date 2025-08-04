@@ -1928,10 +1928,18 @@ sub check_rrd_migration {
                 . join("\n\t ", $old_files->@*)
                 . "\n\tPlease run the following command manually:\n"
                 . "\t/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
+
+            my $cfg = PVE::Storage::config();
+            my @unhandled_storages = grep { $_ =~ m|\.old$| } sort keys $cfg->{ids}->%*;
+            if (scalar(@unhandled_storages) > 0) {
+                my $storage_list_txt = join(", ", @unhandled_storages);
+                log_warn("RRD data for the following storages cannot be migrated"
+                    . " automatically: $storage_list_txt\nRename the RRD files to a name without '.old'"
+                    . " before migration and re-add that suffix after migration.");
+            }
         } else {
             log_pass("No old RRD metric files found, normally this means all have been migrated.");
         }
-
     } else {
         log_info("Check space requirements for RRD migration...");
         # multiplier values taken from KiB sizes of old and new RRD files
