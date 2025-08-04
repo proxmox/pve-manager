@@ -1,3 +1,18 @@
+pve-manager (9.0.0~20) trixie; urgency=medium
+
+  * api: node status: add the available memory to return value.
+
+  * ui: avoid stacked graphs for memory usage, can easily lead to confusion as
+    y-axis does not match the values anymore.
+
+  * ui: node memory RRD: add 'Available' graph.
+
+  * ui: ignore backend 501 error for migration precondition checks, most
+    likely stems from using a new web UI version operating on an older node,
+    e.g., when during the major upgrade.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Aug 2025 16:58:46 +0200
+
 pve-manager (9.0.0~19) trixie; urgency=medium
 
   * ui: ha affinity rules: use single data store and mirror it to child grids,
