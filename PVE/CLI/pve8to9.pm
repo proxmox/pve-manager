@@ -2126,6 +2126,46 @@ sub check_legacy_sysctl_conf {
     log_pass("Legacy file '$fn' exists but does not contain any settings.");
 }
 
+sub check_cpu_microcode_package {
+    log_info("Checking if matching CPU microcode package is installed.");
+
+    open(my $CPUINFO_FD, '<', '/proc/cpuinfo') or log_fail("failed to open '/proc/cpuinfo' - $!\n");
+    return if !defined($CPUINFO_FD);
+
+    my $vendor_id;
+    while (my $line = <$CPUINFO_FD>) {
+        if ($line =~ /^vendor_id\s*:\s*(GenuineIntel|AuthenticAMD)/) {
+            $vendor_id = $1;
+        } elsif ($line eq "") {
+            last;
+        }
+    }
+    close($CPUINFO_FD);
+
+    if (!defined($vendor_id)) {
+        log_warn("failed to parse CPU vendor ID from '/proc/cpuinfo'");
+        return;
+    }
+    my $microcode_pkg;
+    if ($vendor_id eq 'AuthenticAMD') {
+        $microcode_pkg = 'amd64-microcode';
+    } elsif ($vendor_id eq 'GenuineIntel') {
+        $microcode_pkg = 'intel-microcode';
+    } else {
+        log_warn("unexpected CPU vendor ID '$vendor_id'");
+        return;
+    }
+
+    if (defined($get_pkg->($microcode_pkg))) {
+        log_pass("Found matching CPU microcode package '$microcode_pkg' installed.");
+    } else {
+        log_warn(
+            "The matching CPU microcode package '$microcode_pkg' could not be found! Consider"
+                . " installing it to receive the latest security and bug fixes for your CPU.\n"
+                . "\tapt install $microcode_pkg");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -2222,6 +2262,7 @@ sub check_misc {
     check_rrd_migration();
     check_legacy_ipam_files();
     check_legacy_sysctl_conf();
+    check_cpu_microcode_package();
 }
 
 my sub colored_if {
