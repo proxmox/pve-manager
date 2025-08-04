@@ -1,3 +1,18 @@
+pve-manager (8.4.8) bookworm; urgency=medium
+
+  * 8to9 upgrade checks (pve8to9):
+    - check for settings in the legacy '/etc/sysctl.conf' file, they should be
+      migrated to '/etc/sysctl.d'.
+    - rrd migration: report any odd storage name where automatic migration of
+      the RRD metric files doesn't work.
+    - LVM autoactivation: add a pass entry if everything is OK.
+    - rrd metrics space increase: add a pass entry if everything is OK.
+    - detect if matching CPU microcode package is installed.
+    - warn if old udev-mac-pinning still present and recommend switching to
+      using systemd .link files.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Aug 2025 21:04:14 +0200
+
 pve-manager (8.4.7) bookworm; urgency=medium
 
   * 8to9 upgrade checks (pve8to9):
