@@ -681,6 +681,8 @@ Ext.define('PVE.window.Migrate', {
                                 return '<i class="fa fa-exclamation-triangle warning"></i> ';
                             case 'error':
                                 return '<i class="fa fa-times critical"></i>';
+                            case 'info':
+                                return '<i class="fa fa-info-circle info-blue"></i>';
                             default:
                                 return v;
                         }
