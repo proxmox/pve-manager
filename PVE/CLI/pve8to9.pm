@@ -2069,6 +2069,33 @@ sub check_legacy_ipam_files {
     }
 }
 
+sub check_legacy_sysctl_conf {
+    my $fn = "/etc/sysctl.conf";
+    if (!-f $fn) {
+        log_pass("Legacy file '$fn' is not present.");
+        return;
+    } elsif ($upgraded) {
+        log_skip("System upgraded '$fn' will not be removed anymore.");
+        return;
+    }
+    my $raw = eval { PVE::Tools::file_get_contents($fn); };
+    if ($@) {
+        log_fail("Failed to read '$fn' - $@");
+        return;
+    }
+
+    my @lines = split(/\n/, $raw);
+    for my $line (@lines) {
+        if ($line !~ /^[\s]*(:?$|[#;].*$)/m) {
+            log_warn(
+                "Deprecated config '$fn' contains settings - move them to a dedicated file in '/etc/sysctl.d/'."
+            );
+            return;
+        }
+    }
+    log_pass("No settings in '$fn'");
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -2164,6 +2191,7 @@ sub check_misc {
     check_lvm_autoactivation();
     check_rrd_migration();
     check_legacy_ipam_files();
+    check_legacy_sysctl_conf();
 }
 
 my sub colored_if {
