@@ -1628,9 +1628,10 @@ sub check_bootloader {
                 run_command(['bootctl', 'is-installed', '--quiet', '--graceful'], noerr => 1);
             };
             if ($exit_code != 0) {
-                log_warn("systemd-boot meta-package installed but the system does not seem to use it"
-                    ." for booting. This can cause problems on upgrades of other boot-related packages"
-                    ." Consider removing 'systemd-boot'");
+                log_warn(
+                    "systemd-boot meta-package installed but the system does not seem to use it"
+                        . " for booting. This can cause problems on upgrades of other boot-related packages."
+                        . " Consider removing 'systemd-boot'");
             } else {
                 log_info("systemd-boot used as bootloader and fitting meta-package installed.");
                 return;
