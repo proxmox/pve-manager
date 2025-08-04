@@ -355,11 +355,6 @@ Ext.define('PVE.StdWorkspace', {
                             },
                         },
                         {
-                            padding: 5,
-                            id: 'betalink',
-                            html: '<a href="https://bugzilla.proxmox.com" target="_blank">BETA</a>',
-                        },
-                        {
                             xtype: 'pveGlobalSearchField',
                             tree: rtree,
                         },

@@ -188,12 +188,10 @@ case "$1" in
         fi
     done
 
-    # FIXME: remove after beta is over and add hunk to actively remove the repo
     BETA_SOURCES="/etc/apt/sources.list.d/pve-test-for-beta.sources"
-    if test -e /proxmox_install_mode && ! test -f "$BETA_SOURCES"; then
-        echo "Adding pve-test repo to '$BETA_SOURCES' to enable updates during Proxmox VE 9.0 BETA"
-        printf 'Types: deb\nURIs: http://download.proxmox.com/debian/pve\nSuites: trixie\nComponents: pve-test\nSigned-By: /usr/share/keyrings/proxmox-archive-keyring.gpg\n' \
-            | tee "$BETA_SOURCES"
+    if test -f "$BETA_SOURCES" && dpkg --compare-versions "$2" 'lt' '9.0.1' && dpkg --compare-versions "$2" 'gt' '9.0~~'; then
+        printf "\nNOTE: Remove the pve-test repository, which was added during the beta phase.\nYou can (re-)add repositories on the web UI (Node -> Repositories)\n\n"
+        rm -v "$BETA_SOURCES" || true
     fi
 
     if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '8.1.4~'; then
