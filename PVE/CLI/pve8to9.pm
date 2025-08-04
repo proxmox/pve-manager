@@ -2098,7 +2098,9 @@ sub check_legacy_ipam_files {
 
 sub check_legacy_sysctl_conf {
     my $fn = "/etc/sysctl.conf";
-    log_info("Checking if the legacy sysctl file '$fn' needs to be migrated to new '/etc/sysctl.d/' path.");
+    log_info(
+        "Checking if the legacy sysctl file '$fn' needs to be migrated to new '/etc/sysctl.d/' path."
+    );
     if (!-f $fn) {
         log_pass("Legacy file '$fn' is not present.");
         return;
