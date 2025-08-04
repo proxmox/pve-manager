@@ -1831,7 +1831,9 @@ sub check_lvm_autoactivation {
                 . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation"
                 . "\n");
     } else {
-        log_pass("No volumes were found that could potentially have issues due to the disabling of LVM autoactivation.");
+        log_pass(
+            "No volumes were found that could potentially have issues due to the disabling of LVM autoactivation."
+        );
     }
 
     return undef;
@@ -1960,7 +1962,7 @@ sub check_rrd_migration {
         my $estimate_gib_str = sprintf("%.2f", $estimate_gib);
 
         my $root_free = PVE::Tools::df('/', 10);
-        if ($total_size_estimate >= $root_free->{avail} - 1<<30) {
+        if ($total_size_estimate >= $root_free->{avail} - 1 << 30) {
             my $free_gib = sprintf("%.3f", $root_free->{avail} / 1024 / 1024 / 1024);
 
             log_fail("Not enough free space to migrate existing RRD files to the new format!\n"
@@ -1968,8 +1970,13 @@ sub check_rrd_migration {
                 . " But there is currently only ${free_gib} GiB space on the root file system available.\n"
             );
         } else {
-            my $size_str = $estimate_gib > 1.0 ? "$estimate_gib_str GiB" : sprintf("%.2f", $estimate_gib * 1024) . " MiB";
-            log_pass("Enough free disk space for increased RRD metric granularity requirements, which is roughly $size_str.");
+            my $size_str =
+                $estimate_gib > 1.0
+                ? "$estimate_gib_str GiB"
+                : sprintf("%.2f", $estimate_gib * 1024) . " MiB";
+            log_pass(
+                "Enough free disk space for increased RRD metric granularity requirements, which is roughly $size_str."
+            );
         }
     }
 }
