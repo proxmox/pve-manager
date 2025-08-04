@@ -1947,36 +1947,26 @@ sub check_rrd_migration {
     } else {
         log_info("Check space requirements for RRD migration...");
         # multiplier values taken from KiB sizes of old and new RRD files
-        my $rrd_dirs = {
-            nodes => {
-                path => "/var/lib/rrdcached/db/pve2-node",
-                multiplier => 18.1,
-            },
-            guests => {
-                path => "/var/lib/rrdcached/db/pve2-vm",
-                multiplier => 20.2,
-            },
-            storage => {
-                path => "/var/lib/rrdcached/db/pve2-storage",
-                multiplier => 11.14,
-            },
+        my $rrd_usage_multipliers = {
+            'pve2-node' => 18.1,
+            'pve2-vm' => 20.2,
+            'pve2-storage' => 11.14,
         };
 
-        my $size_buffer = 1024 * 1024 * 1024; # at least one GiB of free space should be calculated in
         my $total_size_estimate = 0;
-        for my $type (keys %$rrd_dirs) {
-            my $size = PVE::Tools::du($rrd_dirs->{$type}->{path});
-            $total_size_estimate =
-                $total_size_estimate + ($size * $rrd_dirs->{$type}->{multiplier});
+        for my $dir (sort keys $rrd_usage_multipliers->%*) {
+            my $dir_size = PVE::Tools::du("/var/lib/rrdcached/db/${dir}");
+            $total_size_estimate += $dir_size * $rrd_usage_multipliers->{$dir};
         }
-        my $root_free = PVE::Tools::df('/', 10);
+        my $estimate_gib = $total_size_estimate / 1024. / 1024 / 1024;
+        my $estimate_gib_str = sprintf("%.2f", $estimate_gib);
 
-        if (($total_size_estimate + $size_buffer) >= $root_free->{avail}) {
-            my $estimate_gib = sprintf("%.2f", $total_size_estimate / 1024 / 1024 / 1024);
-            my $free_gib = sprintf("%.2f", $root_free->{avail} / 1024 / 1024 / 1024);
+        my $root_free = PVE::Tools::df('/', 10);
+        if ($total_size_estimate >= $root_free->{avail} - 1<<30) {
+            my $free_gib = sprintf("%.3f", $root_free->{avail} / 1024 / 1024 / 1024);
 
             log_fail("Not enough free space to migrate existing RRD files to the new format!\n"
-                . "Migrating the current RRD files is expected to consume about ${estimate_gib} GiB plus 1 GiB of safety."
+                . "Migrating the current RRD files is expected to consume about ${estimate_gib_str} GiB plus 1 GiB of safety."
                 . " But there is currently only ${free_gib} GiB space on the root file system available.\n"
             );
         }
