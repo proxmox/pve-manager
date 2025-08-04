@@ -1925,7 +1925,8 @@ sub check_rrd_migration {
             my $cutoff = 29; # avoid spamming the check output to much for bigger setups
             if (!$full_checks && $count > $cutoff + 1) {
                 splice @$old_files, $cutoff + 1;
-                push @$old_files, '... omitted printing ' . ($count - $cutoff) . ' additional files';
+                push @$old_files,
+                    '... omitted printing ' . ($count - $cutoff) . ' additional files';
             }
             log_warn("Found '$count' RRD files that have not yet been migrated to the new schema.\n"
                 . join("\n\t ", $old_files->@*)
@@ -2068,16 +2069,13 @@ sub check_legacy_ipam_files {
 
     if (-e $LEGACY_IPAM_DB) {
         if (-e $NEW_IPAM_DB) {
-            log_notice(
-                "Found leftover legacy IPAM DB file in $LEGACY_IPAM_DB.\n"
-                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+."
-            );
+            log_notice("Found leftover legacy IPAM DB file in $LEGACY_IPAM_DB.\n"
+                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+.");
         } else {
-            log_fail(
-                "Found IPAM DB file in $LEGACY_IPAM_DB that has not been migrated!\n"
+            log_fail("Found IPAM DB file in $LEGACY_IPAM_DB that has not been migrated!\n"
                 . "\tFile needs to be migrated to $NEW_IPAM_DB before upgrading. Updating"
-                ." pve-network to the newest version should take care of that!\n"
-                ."\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
+                . " pve-network to the newest version should take care of that!\n"
+                . "\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
         }
     } else {
@@ -2086,16 +2084,13 @@ sub check_legacy_ipam_files {
 
     if (-e $LEGACY_MAC_DB) {
         if (-e $NEW_MAC_DB) {
-            log_notice(
-                "Found leftover legacy MAC DB file in $LEGACY_MAC_DB.\n"
-                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+"
-            );
+            log_notice("Found leftover legacy MAC DB file in $LEGACY_MAC_DB.\n"
+                . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+");
         } else {
-            log_fail(
-                "Found MAC DB file in $LEGACY_MAC_DB that has not been migrated!\n"
+            log_fail("Found MAC DB file in $LEGACY_MAC_DB that has not been migrated!\n"
                 . "\tFile needs to be migrated to $NEW_MAC_DB before upgrading. Updating"
-                ." pve-network to the newest version should take care of that!\n"
-                ."\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
+                . " pve-network to the newest version should take care of that!\n"
+                . "\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
         }
     } else {
@@ -2105,7 +2100,9 @@ sub check_legacy_ipam_files {
 
 sub check_legacy_sysctl_conf {
     my $fn = "/etc/sysctl.conf";
-    log_info("Checking if the legacy sysctl file '$fn' needs to be migrated to new '/etc/sysctl.d/' path.");
+    log_info(
+        "Checking if the legacy sysctl file '$fn' needs to be migrated to new '/etc/sysctl.d/' path."
+    );
     if (!-f $fn) {
         log_pass("Legacy file '$fn' is not present.");
         return;
