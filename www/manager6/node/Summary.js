@@ -222,7 +222,7 @@ Ext.define('PVE.node.Summary', {
 
                                                 let arc = record.get('arcsize');
                                                 let arcText = '';
-                                                if (Ext.isNumeric(arc)) {
+                                                if (Ext.isNumeric(arc) && arc > 1024 * 1024) {
                                                     let v = Proxmox.Utils.format_size(value - arc);
                                                     arcText = ` (${gettext('Without ZFS ARC')}: ${v})`;
                                                 }
