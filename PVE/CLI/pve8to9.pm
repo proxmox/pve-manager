@@ -2211,6 +2211,14 @@ sub check_misc {
         }
     }
 
+    my $udev_rule_file = "/etc/udev/rules.d/70-persistent-net.rules";
+    if (-f $udev_rule_file) {
+        log_warn(
+            "Old udev rules file '$udev_rule_file' for NIC-pinning found - NICs are likely to be"
+                . " renamed with newer systemd version. Replace the file with a custom"
+                . " systemd.link file.");
+    }
+
     log_info("Check node certificate's RSA key size");
     my $certs = PVE::API2::Certificates->info({ node => $nodename });
     my $certs_check = {
