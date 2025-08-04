@@ -237,7 +237,9 @@ Ext.define('PVE.window.Migrate', {
                 });
                 migrateStats = result.data;
             } catch (error) {
-                Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                if (error?.result?.status !== 501) {
+                    Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                }
                 me.fetchingNodeMigrateInfo = false;
                 return;
             }
@@ -486,7 +488,10 @@ Ext.define('PVE.window.Migrate', {
                 migrateStats = result.data;
                 me.fetchingNodeMigrateInfo = false;
             } catch (error) {
-                Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                if (error?.result?.status !== 501) {
+                    Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
+                }
+                me.fetchingNodeMigrateInfo = false;
                 return;
             }
 
