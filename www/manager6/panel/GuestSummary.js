@@ -33,19 +33,16 @@ Ext.define('PVE.guest.Summary', {
         let hideMemhostStateKey = 'pve-vm-hide-memhost';
         let sp = Ext.state.Manager.getProvider();
 
-        let memoryFields = [
-            {
-                type: 'area',
-                yField: ['mem', 'memfree-capped'],
-                title: [gettext('Used'), gettext('Free')],
-            },
-        ];
+        let memoryStats = {
+            fields: ['maxmem', 'mem'],
+            fieldTitles: [gettext('Total'), gettext('Used')],
+        };
         if (type === 'qemu') {
-            memoryFields.push({
+            memoryStats.fields.push({
                 type: 'line',
                 fill: false,
                 yField: 'memhost',
-                title: gettext('Host memory usage'),
+                title: gettext('Host Memory Usage'),
                 hidden: sp.get(hideMemhostStateKey, true),
                 style: {
                     lineWidth: 2.5,
@@ -106,8 +103,9 @@ Ext.define('PVE.guest.Summary', {
                     xtype: 'proxmoxRRDChart',
                     title: gettext('Memory Usage'),
                     pveSelNode: me.pveSelNode,
-                    fields: memoryFields,
-                    colors: ['#115fa6', '#94ae0a', '#c4c0c0'],
+                    fields: memoryStats.fields,
+                    fieldTitles: memoryStats.fieldTitles,
+                    colors: ['#94ae0a', '#115fa6', '#c4c0c0'],
                     unit: 'bytes',
                     powerOfTwo: true,
                     store: rrdstore,

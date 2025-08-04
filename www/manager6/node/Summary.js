@@ -177,18 +177,12 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('Memory usage'),
-                            fields: [
-                                {
-                                    type: 'area',
-                                    yField: ['memused-sub-arcsize', 'arcsize', 'memfree-capped'],
-                                    title: [gettext('Used'), gettext('ZFS ARC'), gettext('Free')],
-                                },
-                            ],
-                            colors: ['#115fa6', '#7c7474', '#94ae0a'],
+                            fields: ['memtotal', 'memused', 'arcsize'],
+                            fieldTitles: [gettext('Total'), gettext('Used'), gettext('ZFS ARC')],
+                            colors: ['#94ae0a', '#115fa6', '#7c7474'],
                             unit: 'bytes',
                             powerOfTwo: true,
                             store: rrdstore,
-                            stacked: true,
                         },
                         {
                             xtype: 'proxmoxRRDChart',
