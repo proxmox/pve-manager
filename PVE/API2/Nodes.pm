@@ -483,6 +483,10 @@ __PACKAGE__->register_method({
                         type => "integer",
                         description => "The free memory in bytes.",
                     },
+                    available => {
+                        type => "integer",
+                        description => "The available memory in bytes.",
+                    },
                     total => {
                         type => "integer",
                         description => "The total memory in bytes.",
@@ -550,6 +554,7 @@ __PACKAGE__->register_method({
         $res->{memory} = {
             free => $meminfo->{memfree},
             total => $meminfo->{memtotal},
+            available => $meminfo->{memavailable},
             used => $meminfo->{memused},
         };
 
