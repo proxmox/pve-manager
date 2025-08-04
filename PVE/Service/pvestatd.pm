@@ -85,11 +85,7 @@ my $failed_flag_update_delay_sec = 120;
 # Checks if RRD files exist in the specified location.
 my $rrd_dir_exists = sub {
     my ($location) = @_;
-    if (-d "/var/lib/rrdcached/db/${location}") {
-        return 1;
-    } else {
-        return 0;
-    }
+    return -d "/var/lib/rrdcached/db/${location}";
 };
 
 sub update_supported_cpuflags {
