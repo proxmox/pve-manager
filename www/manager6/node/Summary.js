@@ -206,6 +206,7 @@ Ext.define('PVE.node.Summary', {
                                         },
                                     },
                                 },
+                                'memavailable',
                                 {
                                     yField: 'memused',
                                     title: gettext('Used'),
@@ -236,8 +237,13 @@ Ext.define('PVE.node.Summary', {
                                 },
                                 'arcsize',
                             ],
-                            fieldTitles: [gettext('Total'), gettext('Used'), gettext('ZFS ARC')],
-                            colors: ['#94ae0a', '#115fa6', '#7c7474'],
+                            fieldTitles: [
+                                gettext('Total'),
+                                gettext('Available'),
+                                gettext('Used'),
+                                gettext('ZFS ARC'),
+                            ],
+                            colors: ['#94ae0a', '#94ae0a', '#115fa6', '#7c7474'],
                             unit: 'bytes',
                             powerOfTwo: true,
                             store: rrdstore,
