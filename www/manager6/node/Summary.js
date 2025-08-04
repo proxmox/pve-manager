@@ -177,7 +177,65 @@ Ext.define('PVE.node.Summary', {
                         {
                             xtype: 'proxmoxRRDChart',
                             title: gettext('Memory usage'),
-                            fields: ['memtotal', 'memused', 'arcsize'],
+                            fields: [
+                                {
+                                    yField: 'memtotal',
+                                    title: gettext('Total'),
+                                    tooltip: {
+                                        trackMouse: true,
+                                        renderer: function (toolTip, record, item) {
+                                            let value = record.get('memtotal');
+
+                                            if (value === null) {
+                                                toolTip.setHtml(gettext('No Data'));
+                                            } else {
+                                                let total = Proxmox.Utils.format_size(value);
+                                                let time = new Date(record.get('time'));
+
+                                                let avail = record.get('memavailable');
+                                                let availText = '';
+                                                if (Ext.isNumeric(avail)) {
+                                                    let v = Proxmox.Utils.format_size(avail);
+                                                    availText = ` (${gettext('Available')}: ${v})`;
+                                                }
+
+                                                toolTip.setHtml(
+                                                    `${gettext('Total')}: ${total}${availText}<br>${time}`,
+                                                );
+                                            }
+                                        },
+                                    },
+                                },
+                                {
+                                    yField: 'memused',
+                                    title: gettext('Used'),
+                                    tooltip: {
+                                        trackMouse: true,
+                                        renderer: function (toolTip, record, item) {
+                                            let value = record.get('memused');
+
+                                            if (value === null) {
+                                                toolTip.setHtml(gettext('No Data'));
+                                            } else {
+                                                let total = Proxmox.Utils.format_size(value);
+                                                let time = new Date(record.get('time'));
+
+                                                let arc = record.get('arcsize');
+                                                let arcText = '';
+                                                if (Ext.isNumeric(arc)) {
+                                                    let v = Proxmox.Utils.format_size(value - arc);
+                                                    arcText = ` (${gettext('Without ZFS ARC')}: ${v})`;
+                                                }
+
+                                                toolTip.setHtml(
+                                                    `${gettext('Used')}: ${total}${arcText}<br>${time}`,
+                                                );
+                                            }
+                                        },
+                                    },
+                                },
+                                'arcsize',
+                            ],
                             fieldTitles: [gettext('Total'), gettext('Used'), gettext('ZFS ARC')],
                             colors: ['#94ae0a', '#115fa6', '#7c7474'],
                             unit: 'bytes',
