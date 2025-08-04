@@ -346,7 +346,8 @@ Ext.define('PVE.StdWorkspace', {
                     margin: '2 0 2 5',
                     items: [
                         {
-                            xtype: 'proxmoxlogo',
+                            xtype: 'proxmoxLogoSvg',
+                            prefix: 'pwt',
                         },
                         {
                             minWidth: 150,
