@@ -1832,6 +1832,8 @@ sub check_lvm_autoactivation {
                 . " LVM/LVM-thin guest volumes:\n\n"
                 . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation"
                 . "\n");
+    } else {
+        log_pass("No volumes were found that could potentially have issues due to the disabling of LVM autoactivation.");
     }
 
     return undef;
