@@ -394,9 +394,10 @@ Ext.define('PVE.window.Migrate', {
                 if (migration.withConntrackState && !migrateStats['has-dbus-vmstate']) {
                     migration.preconditions.push({
                         text: gettext(
-                            'Cannot migrate conntrack state, source node is lacking support. Active network connections might get dropped.',
+                            'Cannot migrate conntrack state, source node is lacking support.',
                         ),
-                        severity: 'warning',
+                        // user cannot really do anything about this, do not bother with scaring them!
+                        severity: 'info',
                     });
                 }
                 if (migration.withConntrackState && !targetCapabilities['has-dbus-vmstate']) {
