@@ -1967,6 +1967,9 @@ sub check_rrd_migration {
                 . "Migrating the current RRD files is expected to consume about ${estimate_gib_str} GiB plus 1 GiB of safety."
                 . " But there is currently only ${free_gib} GiB space on the root file system available.\n"
             );
+        } else {
+            my $size_str = $estimate_gib > 1.0 ? "$estimate_gib_str GiB" : sprintf("%.2f", $estimate_gib * 1024) . " MiB";
+            log_pass("Enough free disk space for increased RRD metric granularity requirements, which is roughly $size_str.");
         }
     }
 }
