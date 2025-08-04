@@ -12,7 +12,6 @@ CLITOOLS = \
 	pvesr \
 	pvenode \
 	pvesh \
-	pve7to8 \
 	pve8to9 \
 	proxmox-network-interface-pinning \
 
@@ -63,15 +62,6 @@ all: $(SERVICE_MANS) $(CLI_MANS)
 
 %.1.pod:
 	podselect $* > $@.tmp
-	mv $@.tmp $@
-
-pve7to8.1:
-	printf ".TH PVE7TO8 1\n.SH NAME\npve7to8 \- Proxmox VE upgrade checker script for 7.4+ to current 8.x\n" > $@.tmp
-	printf ".SH DESCRIPTION\nThis tool will help you to detect common pitfalls and misconfguration\
-	 before, and during the upgrade of a Proxmox VE system\n" >> $@.tmp
-	printf "Any failure must be addressed before the upgrade, and any warning must be addressed, \
-	 or at least carefully evaluated, if a false-positive is suspected\n" >> $@.tmp
-	printf ".SH SYNOPSIS\npve7to8 [--full]\n" >> $@.tmp
 	mv $@.tmp $@
 
 proxmox-network-interface-pinning.1:
