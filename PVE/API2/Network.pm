@@ -891,10 +891,11 @@ __PACKAGE__->register_method({
         additionalProperties => 0,
         properties => {
             node => get_standard_option('pve-node'),
-            skip_frr => {
+            'regenerate-frr' => {
                 type => 'boolean',
                 description => 'Whether FRR config generation should get skipped or not.',
                 optional => 1,
+                default => 0,
             },
         },
     },
@@ -910,7 +911,7 @@ __PACKAGE__->register_method({
         my $current_config_file = "/etc/network/interfaces";
         my $new_config_file = "/etc/network/interfaces.new";
 
-        my $skip_frr = extract_param($param, 'skip_frr');
+        my $regenerate_frr = extract_param($param, 'regenerate-frr');
 
         assert_ifupdown2_installed();
 
@@ -931,7 +932,7 @@ __PACKAGE__->register_method({
             };
             PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
-            if ($have_sdn && !$skip_frr) {
+            if ($have_sdn && $regenerate_frr) {
                 PVE::Network::SDN::generate_frr_config(1);
             }
         };

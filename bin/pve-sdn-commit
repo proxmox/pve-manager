@@ -83,7 +83,7 @@ my $previous_config_has_frr = PVE::Network::SDN::running_config_has_frr();
 PVE::Network::SDN::commit_config();
 
 my $new_config_has_frr = PVE::Network::SDN::running_config_has_frr();
-my $skip_frr = !($previous_config_has_frr || $new_config_has_frr);
+my $regenerate_frr = ($previous_config_has_frr || $new_config_has_frr);
 
 PVE::Network::SDN::generate_etc_network_config();
 PVE::Network::SDN::generate_dhcp_config();
@@ -97,6 +97,6 @@ my $err = sub {
 
 PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
-PVE::Network::SDN::generate_frr_config(1) if !$skip_frr;
+PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr;
 
 exit 0;
