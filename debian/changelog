@@ -1,3 +1,9 @@
+pve-manager (9.0.0) trixie; urgency=medium
+
+  * bump for final Proxmox VE 9.0 release.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Aug 2025 23:13:26 +0200
+
 pve-manager (9.0.0~22) trixie; urgency=medium
 
   * sync over 8 to 9 upgrade checks from stable-8 branch.
