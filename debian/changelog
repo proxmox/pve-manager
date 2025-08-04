@@ -1,3 +1,11 @@
+pve-manager (9.0.0~22) trixie; urgency=medium
+
+  * sync over 8 to 9 upgrade checks from stable-8 branch.
+
+  * api: backup: remove unneeded call of rrd_dump method.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Aug 2025 21:43:25 +0200
+
 pve-manager (9.0.0~21) trixie; urgency=medium
 
   * ui: migration pre-conditions: make lack of support for conntrack state
