@@ -1,6 +1,7 @@
 PACKAGE=pve-manager
 
 BINDIR=$(DESTDIR)/usr/bin
+LIBEXECDIR=$(DESTDIR)/usr/libexec/proxmox
 PERLLIBDIR=$(DESTDIR)/usr/share/perl5
 MAN1DIR=$(DESTDIR)/usr/share/man/man1
 MAN8DIR=$(DESTDIR)/usr/share/man/man8

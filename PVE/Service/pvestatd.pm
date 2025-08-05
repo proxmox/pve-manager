@@ -155,6 +155,8 @@ my sub broadcast_static_node_info {
     }
 }
 
+my $cached_ip_links = undef;
+
 sub update_node_status {
     my ($status_cfg, $pull_txn) = @_;
 
@@ -171,9 +173,20 @@ sub update_node_status {
     my $sublevel = $subinfo->{level} || '';
 
     my $netdev = PVE::ProcFSTools::read_proc_net_dev();
+    $cached_ip_links = PVE::Network::ip_link_details() if !$cached_ip_links;
+
     # traffic from/to physical interface cards
     my ($netin, $netout) = (0, 0);
-    for my $dev (grep { /^$PVE::Network::PHYSICAL_NIC_RE$/ } keys %$netdev) {
+    for my $dev (keys %$netdev) {
+        my $ip_link = $cached_ip_links->{$dev};
+
+        if ($ip_link && PVE::Network::ip_link_is_physical($ip_link)) {
+            $netdev->{$dev}->{type} = 'physical';
+        } else {
+            $netdev->{$dev}->{type} = 'virtual';
+            next;
+        }
+
         $netin += $netdev->{$dev}->{receive};
         $netout += $netdev->{$dev}->{transmit};
     }
