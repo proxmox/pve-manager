@@ -283,7 +283,7 @@ __PACKAGE__->register_method({
             { name => 'replication' },
             { name => 'report' },
             { name => 'rrd' }, # fixme: remove?
-            { name => 'rrddata' }, # fixme: remove?
+            { name => 'rrddata' },
             { name => 'scan' },
             { name => 'services' },
             { name => 'spiceshell' },
