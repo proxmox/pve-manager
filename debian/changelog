@@ -1,3 +1,10 @@
+pve-manager (9.0.3) trixie; urgency=medium
+
+  * d/postinst: add snippet to manage systemd-tmpfiles configurations to
+    ensure they are updated on package upgrade.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Aug 2025 12:36:45 +0200
+
 pve-manager (9.0.2) trixie; urgency=medium
 
   * fix permission regression for '/run/pve' directory, which is now managed
