@@ -1,3 +1,13 @@
+pve-manager (8.4.9) bookworm; urgency=medium
+
+  * 8 to 9 upgrade checks (pve8to9): rephrase misleading message.
+
+  * backport pve-network-pinning-tool from Proxmox VE 9.0.
+
+  * support arbirtray physical interface names.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Aug 2025 16:54:01 +0200
+
 pve-manager (8.4.8) bookworm; urgency=medium
 
   * 8to9 upgrade checks (pve8to9):
