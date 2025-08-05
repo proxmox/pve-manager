@@ -1,3 +1,11 @@
+pve-manager (9.0.2) trixie; urgency=medium
+
+  * fix permission regression for '/run/pve' directory, which is now managed
+    by systemd's tmpfile mechanism. Ensure it's created with root:www-data
+    user:group.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Aug 2025 12:15:38 +0200
+
 pve-manager (9.0.1) trixie; urgency=medium
 
   * network-interface-pinning: move to libexec and rename but add symlink to
