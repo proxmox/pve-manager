@@ -1832,7 +1832,7 @@ sub check_lvm_autoactivation {
                 . "\n");
     } else {
         log_pass(
-            "No volumes were found that could potentially have issues due to enabled LVM autoactivation."
+            "No problematic volumes found."
         );
     }
 
