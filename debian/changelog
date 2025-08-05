@@ -1,3 +1,19 @@
+pve-manager (9.0.1) trixie; urgency=medium
+
+  * network-interface-pinning: move to libexec and rename but add symlink to
+    pve-network-pinning-tool into usr/bin.
+
+  * ui: node memory RRD: change ZFS ARC color to a blue shade and available
+    memory to a green shade for more visual difference.
+
+  * pveproxy service: use heuristic to trigger initial appliance update on
+    first boot.
+
+  * network: improve reloading logic for FFR config, trust flag if set, else
+    reload only if there is a FRR controller configured.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Aug 2025 12:07:04 +0200
+
 pve-manager (9.0.0) trixie; urgency=medium
 
   * bump for final Proxmox VE 9.0 release.
