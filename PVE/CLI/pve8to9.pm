@@ -2165,6 +2165,7 @@ sub check_cpu_microcode_package {
         log_warn(
             "The matching CPU microcode package '$microcode_pkg' could not be found! Consider"
                 . " installing it to receive the latest security and bug fixes for your CPU.\n"
+                .  "\tEnsure you enable the 'non-free-firmware' component in the apt sources and run:\n"
                 . "\tapt install $microcode_pkg");
     }
 }
