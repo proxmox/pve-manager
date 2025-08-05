@@ -252,7 +252,7 @@ Ext.define('PVE.node.Summary', {
                                 gettext('ZFS ARC'),
                                 gettext('Available'),
                             ],
-                            colors: ['#94ae0a', '#115fa6', '#7c7474', '#c4c0c0'],
+                            colors: ['#94ae0a', '#115fa6', '#24ad9a', '#c4c0c0'],
                             unit: 'bytes',
                             powerOfTwo: true,
                             store: rrdstore,
