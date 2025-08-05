@@ -1824,7 +1824,7 @@ sub check_lvm_autoactivation {
             ? "Some affected volumes are on shared LVM storages, which has known issues (Bugzilla"
             . " #4997). Disabling autoactivation for those is strongly recommended!"
             : "All volumes with autoactivations reside on local storage, where this normally does"
-            . " not causes any issues.";
+            . " not cause any issues.";
         $_log->(
             "Starting with PVE 9, autoactivation will be disabled for new LVM/LVM-thin guest"
                 . " volumes. This system has some volumes that still have autoactivation enabled. "
@@ -1834,7 +1834,7 @@ sub check_lvm_autoactivation {
                 . "\n");
     } else {
         log_pass(
-            "No volumes were found that could potentially have issues due to the disabling of LVM autoactivation."
+            "No volumes were found that could potentially have issues due to enabled LVM autoactivation."
         );
     }
 
