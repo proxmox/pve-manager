@@ -932,7 +932,14 @@ __PACKAGE__->register_method({
             };
             PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
-            if ($have_sdn && $regenerate_frr) {
+            if (defined($regenerate_frr)) {
+                # SDN (or a manual invocation) is requesting a
+                # specific behavior, so we abide by the parameter set.
+                PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr;
+            } elsif (PVE::Network::SDN::running_config_has_frr()) {
+                # Reload is coming from the Web UI (or a manual
+                # invocation requesting no specific behavior), so we
+                # reload if there are FRR entities in the SDN config.
                 PVE::Network::SDN::generate_frr_config(1);
             }
         };
