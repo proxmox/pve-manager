@@ -1957,7 +1957,8 @@ sub check_rrd_migration {
 
         my $total_size_estimate = 0;
         for my $dir (sort keys $rrd_usage_multipliers->%*) {
-            my $dir_size = PVE::Tools::du("/var/lib/rrdcached/db/${dir}");
+            my $dir_size = eval { PVE::Tools::du("/var/lib/rrdcached/db/${dir}") };
+            next if !defined($dir_size);
             $total_size_estimate += $dir_size * $rrd_usage_multipliers->{$dir};
         }
         my $estimate_gib = $total_size_estimate / 1024. / 1024 / 1024;
