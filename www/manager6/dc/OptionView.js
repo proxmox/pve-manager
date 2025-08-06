@@ -80,6 +80,7 @@ Ext.define('PVE.dc.OptionView', {
             deleteEmpty: true,
         });
         me.add_text_row('http_proxy', gettext('HTTP proxy'), {
+            renderer: Ext.htmlEncode,
             defaultValue: Proxmox.Utils.noneText,
             vtype: 'HttpProxy',
             deleteEmpty: true,
@@ -182,7 +183,8 @@ Ext.define('PVE.dc.OptionView', {
             ],
         });
         me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
-            renderer: (v) => (!v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v)),
+            renderer: (v) =>
+                !v ? Proxmox.Utils.NoneText : Ext.htmlEncode(PVE.Parser.printPropertyString(v)),
             width: 450,
             url: '/api2/extjs/cluster/options',
             onlineHelp: 'pveum_configure_u2f',
@@ -222,7 +224,8 @@ Ext.define('PVE.dc.OptionView', {
             ],
         });
         me.add_inputpanel_row('webauthn', gettext('WebAuthn Settings'), {
-            renderer: (v) => (!v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v)),
+            renderer: (v) =>
+                !v ? Proxmox.Utils.NoneText : Ext.htmlEncode(PVE.Parser.printPropertyString(v)),
             width: 450,
             url: '/api2/extjs/cluster/options',
             onlineHelp: 'pveum_configure_webauthn',
