@@ -350,7 +350,8 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             prefix => {
-                description => 'Use a specific prefix for automatically choosing the pinned name.',
+                description =>
+                    'Use a specific prefix for automatically choosing the pinned name.',
                 type => 'string',
                 pattern => '^[a-zA-Z][a-zA-Z0-9-_]{0,7}$',
                 default => 'nic', # just for the docs.
@@ -414,12 +415,11 @@ __PACKAGE__->register_method({
                     $iface => $target_name,
                 });
             } else {
-                $mapping =
-                    PVE::CLI::pve_network_interface_pinning::InterfaceMapping->generate(
-                        $ip_links,
-                        $pinned,
-                        $prefix,
-                    );
+                $mapping = PVE::CLI::pve_network_interface_pinning::InterfaceMapping->generate(
+                    $ip_links,
+                    $pinned,
+                    $prefix,
+                );
             }
 
             if (!$mapping->%*) {

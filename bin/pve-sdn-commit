@@ -42,9 +42,7 @@ sub sdn_changed {
 
     for my $type (keys $configs->%*) {
         my $pending_config = PVE::Network::SDN::pending_config(
-            $running_config,
-            $configs->{$type},
-            $type,
+            $running_config, $configs->{$type}, $type,
         );
 
         return 1 if has_pending_changes($pending_config);
