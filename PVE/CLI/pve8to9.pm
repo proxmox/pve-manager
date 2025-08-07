@@ -1604,7 +1604,9 @@ sub check_bootloader {
 
     if (!-d '/sys/firmware/efi') {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            log_info("systemd-boot package installed on legacy-boot system is not necessary, consider remoing it");
+            log_info(
+                "systemd-boot package installed on legacy-boot system is not necessary, consider remoing it"
+            );
             return;
         }
         log_skip("System booted in legacy-mode - no need for additional packages");
@@ -1618,8 +1620,8 @@ sub check_bootloader {
         }
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
             log_warn("systemd-boot meta-package installed this will cause issues on upgrades of"
-                ." boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
-                ." and remove 'systemd-boot'");
+                . " boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
+                . " and remove 'systemd-boot'");
             return;
         }
     } else {
@@ -1639,7 +1641,8 @@ sub check_bootloader {
         }
         if (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
             log_warn("System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
-                . " new grub versions will not be installed to /boot/efi! Install grub-efi-amd64.");
+                . " new grub versions will not be installed to /boot/efi! Install grub-efi-amd64."
+            );
             return;
         } else {
             log_pass("bootloader packages installed correctly");
@@ -1831,9 +1834,7 @@ sub check_lvm_autoactivation {
                 . "\t/usr/share/pve-manager/migrations/pve-lvm-disable-autoactivation"
                 . "\n");
     } else {
-        log_pass(
-            "No problematic volumes found."
-        );
+        log_pass("No problematic volumes found.");
     }
 
     return undef;

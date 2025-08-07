@@ -432,12 +432,11 @@ __PACKAGE__->register_method({
                     $iface => $target_name,
                 });
             } else {
-                $mapping =
-                    PVE::CLI::pve_network_interface_pinning::InterfaceMapping->generate(
-                        $ip_links,
-                        $pinned,
-                        $prefix,
-                    );
+                $mapping = PVE::CLI::pve_network_interface_pinning::InterfaceMapping->generate(
+                    $ip_links,
+                    $pinned,
+                    $prefix,
+                );
             }
 
             if (!$mapping->%*) {
