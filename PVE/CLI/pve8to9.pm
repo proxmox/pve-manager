@@ -1267,50 +1267,6 @@ sub check_containers_cgroup_compat {
     my $supports_cgroupv2 = sub {
         my ($conf, $rootdir, $ctid) = @_;
 
-        my $get_systemd_version = sub {
-            my ($self) = @_;
-
-            my @dirs = (
-                '/lib/systemd',
-                '/usr/lib/systemd',
-                '/usr/lib/x86_64-linux-gnu/systemd',
-                '/usr/lib64/systemd',
-            );
-            my $libsd;
-            for my $dir (@dirs) {
-                $libsd = PVE::Tools::dir_glob_regex($dir, "libsystemd-shared-.+\.so");
-                last if defined($libsd);
-            }
-            if (
-                defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)(\.\d-\d)?(\.fc\d\d)?\.so/
-            ) {
-                return $1;
-            }
-
-            return undef;
-        };
-
-        my $unified_cgroupv2_support = sub {
-            my ($self) = @_;
-
-            # https://www.freedesktop.org/software/systemd/man/systemd.html
-            # systemd is installed as symlink to /sbin/init
-            my $systemd = CORE::readlink('/sbin/init');
-
-            # assume non-systemd init will run with unified cgroupv2
-            if (!defined($systemd) || $systemd !~ m@/systemd$@) {
-                return 1;
-            }
-
-            # systemd version 232 (e.g. debian stretch) supports the unified hierarchy
-            my $sdver = $get_systemd_version->();
-            if (!defined($sdver) || $sdver < 232) {
-                return 0;
-            }
-
-            return 1;
-        };
-
         my $ostype = $conf->{ostype};
         if (!defined($ostype)) {
             log_warn("Found CT ($ctid) without 'ostype' set!");
@@ -1319,7 +1275,7 @@ sub check_containers_cgroup_compat {
         }
 
         my $lxc_setup = PVE::LXC::Setup->new($conf, $rootdir);
-        return $lxc_setup->protected_call($unified_cgroupv2_support);
+        return $lxc_setup->unified_cgroupv2_support();
     };
 
     my $log_problem = sub {
