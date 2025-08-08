@@ -1410,7 +1410,7 @@ sub check_apt_repos {
             next if $line !~ m/^deb[[:space:]]/; # is case sensitive
 
             my ($url, $suite, $component);
-            if ($line =~ m|deb\s+(\w+://\S+)\s+(?:(\S+)(?:\s+(\S+))?)?|i) {
+            if ($line =~ m|deb\s+(?:\[[^\]]*\]\s+)?(\w+://\S+)\s+(?:(\S+)(?:\s+(\S+))?)?|i) {
                 ($url, $suite, $component) = ($1, $2, $3);
             } else {
                 next;
