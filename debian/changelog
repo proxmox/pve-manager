@@ -1,3 +1,16 @@
+pve-manager (8.4.10) bookworm; urgency=medium
+
+  * 8to9 upgrade checks (pve8to9):
+    - add hint that microcode package needs non-free-firmware component
+    - use check for unified cgroup v2 support via pve-container
+    - rework systemd-boot checks
+    - add check for removable GRUB entry
+    - support single-line repo entries with bracket options
+    - lvm config: check that --clear-needs-check-flag is set if there is a
+      thin_check_options override
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 08 Aug 2025 16:29:04 +0200
+
 pve-manager (8.4.9) bookworm; urgency=medium
 
   * 8 to 9 upgrade checks (pve8to9): rephrase misleading message.
