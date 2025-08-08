@@ -1814,6 +1814,32 @@ sub check_lvm_autoactivation {
     return undef;
 }
 
+sub check_lvm_thin_check_options {
+    log_info("Checking lvm config for thin_check_options...");
+
+    my $section;
+    my $detected;
+    my $detect_thin_check_override = sub {
+        my $line = shift;
+        if ($line =~ m/^(\S+) \{/) {
+            $section = $1;
+            return;
+        }
+        if ($line =~ m/thin_check_options/ && $line !~ m/--clear-needs-check-flag/) {
+            $detected = 1;
+            log_fail(
+                "detected override for 'thin_check_options' in '$section' section without"
+                    . " '--clear-needs-check-flag' option - add the option to your override (most"
+                    . " likely in /etc/lvm/lvm.conf)");
+        }
+    };
+    eval {
+        run_command(['lvmconfig'], outfunc => $detect_thin_check_override);
+        log_pass("Check for correct thin_check_options passed") if !$detected;
+    };
+    log_fail("unable to run 'lvmconfig' command - $@") if $@;
+}
+
 sub check_glusterfs_storage_usage {
     my $cfg = PVE::Storage::config();
     my $storage_info = PVE::Storage::storage_info($cfg);
@@ -2244,6 +2270,7 @@ sub check_misc {
     check_legacy_notification_sections();
     check_legacy_backup_job_options();
     check_lvm_autoactivation();
+    check_lvm_thin_check_options();
     check_rrd_migration();
     check_legacy_ipam_files();
     check_legacy_sysctl_conf();
