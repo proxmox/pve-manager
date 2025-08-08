@@ -1560,7 +1560,7 @@ sub check_bootloader {
     if (!-d '/sys/firmware/efi') {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
             log_info(
-                "systemd-boot package installed on legacy-boot system is not necessary, consider remoing it"
+                "systemd-boot package installed on legacy-boot system is not necessary, consider removing it"
             );
             return;
         }
@@ -1574,25 +1574,18 @@ sub check_bootloader {
             return;
         }
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            log_warn("systemd-boot meta-package installed this will cause issues on upgrades of"
+            log_fail("systemd-boot meta-package installed this will cause issues on upgrades of"
                 . " boot-related packages. Install 'systemd-boot-efi' and 'systemd-boot-tools' explicitly"
                 . " and remove 'systemd-boot'");
             return;
         }
     } else {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            my $exit_code = eval {
-                run_command(['bootctl', 'is-installed', '--quiet', '--graceful'], noerr => 1);
-            };
-            if ($exit_code != 0) {
-                log_warn(
-                    "systemd-boot meta-package installed but the system does not seem to use it"
-                        . " for booting. This can cause problems on upgrades of other boot-related packages."
-                        . " Consider removing 'systemd-boot'");
-            } else {
-                log_info("systemd-boot used as bootloader and fitting meta-package installed.");
-                return;
-            }
+            log_fail(
+                "systemd-boot meta-package installed. This will cause problems on upgrades of other"
+                    . " boot-related packages. Remove 'systemd-boot' See"
+                    . " https://pve.proxmox.com/wiki/Upgrade_from_8_to_9#sd-boot-warning for more information."
+            );
         }
         if (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
             log_warn("System booted in uefi mode but grub-efi-amd64 meta-package not installed,"
