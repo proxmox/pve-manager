@@ -2024,11 +2024,11 @@ sub check_legacy_ipam_files {
 
     if (-e $LEGACY_IPAM_DB) {
         if (-e $NEW_IPAM_DB) {
-            log_notice("Found leftover legacy IPAM DB file in $LEGACY_IPAM_DB.\n"
+            log_notice("Found leftover legacy IPAM DB file in '$LEGACY_IPAM_DB'.\n"
                 . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+.");
         } else {
-            log_fail("Found IPAM DB file in $LEGACY_IPAM_DB that has not been migrated!\n"
-                . "\tFile needs to be migrated to $NEW_IPAM_DB before upgrading. Updating"
+            log_fail("Found IPAM DB file in '$LEGACY_IPAM_DB' that has not been migrated!\n"
+                . "\tFile needs to be migrated to '$NEW_IPAM_DB' before upgrading. Updating"
                 . " pve-network to the newest version should take care of that!\n"
                 . "\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
@@ -2039,11 +2039,11 @@ sub check_legacy_ipam_files {
 
     if (-e $LEGACY_MAC_DB) {
         if (-e $NEW_MAC_DB) {
-            log_notice("Found leftover legacy MAC DB file in $LEGACY_MAC_DB.\n"
+            log_notice("Found leftover legacy MAC DB file in '$LEGACY_MAC_DB'.\n"
                 . "\tThis file can be deleted AFTER upgrading ALL nodes to PVE 8.4+");
         } else {
-            log_fail("Found MAC DB file in $LEGACY_MAC_DB that has not been migrated!\n"
-                . "\tFile needs to be migrated to $NEW_MAC_DB before upgrading. Updating"
+            log_fail("Found MAC DB file in '$LEGACY_MAC_DB' that has not been migrated!\n"
+                . "\tFile needs to be migrated to '$NEW_MAC_DB' before upgrading. Updating"
                 . " pve-network to the newest version should take care of that!\n"
                 . "\tIf you do not use SDN or IPAM (anymore), you can move or delete the file."
             );
