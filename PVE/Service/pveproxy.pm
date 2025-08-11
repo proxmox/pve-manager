@@ -185,7 +185,7 @@ sub is_phone {
 
     return 1 if $ua =~ m/(iPhone|iPod|Windows Phone)/;
 
-    if ($ua =~ m/Mobile(\/|\s)/) {
+    if ($ua =~ m/Mobile\b/) {
         return 1 if $ua =~ m/(BlackBerry|BB)/;
         return 1 if ($ua =~ m/(Android)/) && ($ua !~ m/(Silk)/);
     }
