@@ -90,6 +90,14 @@ Ext.define('PVE.panel.StorageBase', {
             });
 
             me.advancedColumnB = me.advancedColumnB || [];
+            if (me.type === 'lvm') {
+                me.advancedColumnB.unshift({
+                    xtype: 'displayfield',
+                    name: 'external-snapshot-hint-lvm',
+                    userCls: 'pmx-hint',
+                    value: gettext('Keep Snapshots as Volume-Chain enabled if qcow2 images exist!'),
+                });
+            }
             me.advancedColumnB.unshift({
                 xtype: 'displayfield',
                 name: 'external-snapshot-hint',
