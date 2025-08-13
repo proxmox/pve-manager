@@ -1,3 +1,13 @@
+pve-manager (9.0.5) bookworm; urgency=medium
+
+  * fix #6657: pveproxy: detect mobile firefox better
+
+  * ui: storage edit: warn about disabling snapshot-as-volume-chain on LVM
+
+  * ui: make sure more datacenter option renderers are html encoded
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 13 Aug 2025 13:00:02 +0200
+
 pve-manager (9.0.4) trixie; urgency=medium
 
   * 8to9 upgrade checks (pve8to9):
