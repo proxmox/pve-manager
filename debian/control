@@ -27,6 +27,7 @@ Build-Depends: debhelper-compat (= 13),
                pve-doc-generator (>= 8.3.2),
                qemu-server (>= 8.0~~),
                sq,
+               tzdata,
                unzip,
 Standards-Version: 4.6.1
 Maintainer: Proxmox Support Team <support@proxmox.com>
