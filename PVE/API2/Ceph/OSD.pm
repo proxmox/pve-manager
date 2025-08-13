@@ -423,6 +423,29 @@ __PACKAGE__->register_method({
         # See FIXME below
         my @udev_trigger_devs = ();
 
+        # $size is in kibibytes
+        my $osd_lvcreate = sub {
+            my ($vg, $lv, $size) = @_;
+
+            my $cmd = [
+                '/sbin/lvcreate',
+                '-aly',
+                '-Wy',
+                '--yes',
+                '--size',
+                $size . "k",
+                '--name',
+                $lv,
+                # explicitly enable autoactivation, because Ceph never explicitly
+                # activates LVs by itself
+                '--setautoactivation',
+                'y',
+                $vg,
+            ];
+
+            run_command($cmd, errmsg => "lvcreate '$vg/$lv' error");
+        };
+
         my $create_part_or_lv = sub {
             my ($dev, $size, $type) = @_;
 
@@ -443,7 +466,7 @@ __PACKAGE__->register_method({
                 my $lv = $type . "-" . UUID::uuid();
 
                 PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
-                PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
+                $osd_lvcreate->($lv, $vg, $size);
 
                 if (PVE::Diskmanage::is_partition($dev->{devpath})) {
                     eval { PVE::Diskmanage::change_parttype($dev->{devpath}, '8E00'); };
@@ -475,7 +498,7 @@ __PACKAGE__->register_method({
 
                 my $lv = $type . "-" . UUID::uuid();
 
-                PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
+                $osd_lvcreate->($vg, $lv, $size);
 
                 return "$vg/$lv";
 
