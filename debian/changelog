@@ -1,3 +1,9 @@
+pve-manager (8.4.11) bookworm; urgency=medium
+
+  * ui: make sure more datacenter option renderers are html encoded
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 13 Aug 2025 13:06:12 +0200
+
 pve-manager (8.4.10) bookworm; urgency=medium
 
   * 8to9 upgrade checks (pve8to9):
