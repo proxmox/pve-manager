@@ -96,7 +96,7 @@ Ext.define('PVE.ha.RulesBaseView', {
                     handler: () => createRuleEditWindow(),
                 },
                 {
-                    xtype: 'button',
+                    xtype: 'proxmoxButton',
                     text: gettext('Edit'),
                     disabled: true,
                     selModel: sm,
