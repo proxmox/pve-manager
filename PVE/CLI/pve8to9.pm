@@ -1559,7 +1559,7 @@ sub check_bootloader {
 
     if (!-d '/sys/firmware/efi') {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
-            log_info(
+            log_warn(
                 "systemd-boot package installed on legacy-boot system is not necessary, consider removing it"
             );
             return;
@@ -1571,8 +1571,25 @@ sub check_bootloader {
     my $boot_ok = 1;
     if (-f "/etc/kernel/proxmox-boot-uuids") {
         if (!$upgraded) {
-            log_skip("not yet upgraded, systemd-boot still needed for bootctl");
-            return;
+            my $sd_boot_used = 0;
+            eval {
+                run_command(
+                    ['proxmox-boot-tool', 'status'],
+                    outfunc => sub {
+                        my ($line) = @_;
+                        if ($line =~ m#configured with:.* (uefi|systemd-boot) \(versions:#) {
+                             $sd_boot_used = 1;
+                        }
+                    },
+                    errfunc => sub { },
+                    noerr => 1,
+                );
+            };
+
+            if ($sd_boot_used) {
+                log_skip("not yet upgraded, systemd-boot still needed for bootctl");
+                return;
+            }
         }
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
             log_fail("systemd-boot meta-package installed this will cause issues on upgrades of"
@@ -1580,6 +1597,7 @@ sub check_bootloader {
                 . " and remove 'systemd-boot'");
             return;
         }
+        log_pass("bootloader packages installed correctly");
     } else {
         if (-f "/usr/share/doc/systemd-boot/changelog.Debian.gz") {
             log_fail(
