@@ -1,4 +1,4 @@
-pve-manager (9.0.5) bookworm; urgency=medium
+pve-manager (9.0.5) trixie; urgency=medium
 
   * fix #6657: pveproxy: detect mobile firefox better
 
