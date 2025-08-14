@@ -1579,7 +1579,7 @@ sub check_bootloader {
                     outfunc => sub {
                         my ($line) = @_;
                         if ($line =~ m#configured with:.* (uefi|systemd-boot) \(versions:#) {
-                             $sd_boot_used = 1;
+                            $sd_boot_used = 1;
                         }
                     },
                     errfunc => sub { },
