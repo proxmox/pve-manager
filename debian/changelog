@@ -1,3 +1,9 @@
+pve-manager (8.4.12) bookworm; urgency=medium
+
+  * pve8to9: only allow systemd-boot when it is actually used before upgrade
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Aug 2025 14:24:50 +0200
+
 pve-manager (8.4.11) bookworm; urgency=medium
 
   * ui: make sure more datacenter option renderers are html encoded
