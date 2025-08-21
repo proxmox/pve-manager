@@ -32,6 +32,7 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
                 displayField: 'iface',
                 fieldLabel: 'SDN Fabric',
                 allowBlank: true,
+                deleteEmpty: true,
                 skipEmptyText: true,
                 autoSelect: false,
                 emptyText: gettext('used as underlay network'),
