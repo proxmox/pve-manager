@@ -54,6 +54,7 @@ Ext.define('PVE.sdn.zones.VxlanInputPanel', {
                 fieldLabel: 'SDN Fabric',
                 skipEmptyText: true,
                 allowBlank: true,
+                deleteEmpty: true,
                 autoSelect: false,
                 emptyText: gettext('used as underlay network'),
                 nodename: 'localhost',
