@@ -243,7 +243,7 @@ Ext.define('PVE.grid.PoolMembers', {
                         items: [
                             {
                                 text: gettext('Virtual Machine'),
-                                iconCls: 'pve-itype-icon-qemu',
+                                iconCls: 'fa fa-desktop',
                                 handler: function () {
                                     var win = Ext.create('PVE.pool.AddVM', { pool: me.pool });
                                     win.on('destroy', reload);

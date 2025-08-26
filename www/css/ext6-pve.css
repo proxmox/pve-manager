@@ -95,12 +95,6 @@
     background-image: url(../ext6/theme-crisp/resources/images/loadmask/loading.gif);
 }
 
-/* console icon in task list */
-.x-grid-row-console {
-    background: no-repeat center center;
-    background-image: url(../images/icon-display.png);
-}
-
 /* for font-awesome colors */
 /* tree icons */
 
@@ -299,12 +293,10 @@
 .pve-itype-icon-tigervnc,
 .pve-itype-icon-novnc,
 .pve-itype-icon-xtermjs,
-.pve-itype-icon-display,
 .pve-itype-icon-network,
 .pve-itype-icon-network-server,
 .pve-itype-icon-keyboard,
 .pve-itype-icon-cdrom,
-.pve-itype-icon-qemu,
 .pve-itype-icon-qemu-template,
 .pve-itype-icon-qemu-running,
 .pve-itype-icon-lxc,
@@ -339,12 +331,6 @@
 .pve-grid-fa {
     margin-right: 10px;
     font-size: 14px;
-}
-
-.pve-itype-icon-qemu,
-.x-tree-node-computer,
-.x-grid-tree-node-expanded .x-tree-node-computer {
-    background-image: url(../images/icon-display.png);
 }
 
 .pve-itype-icon-lxc,
@@ -389,10 +375,6 @@
 .pve-itype-icon-cdrom {
     background-size: 16px;
     background-image: url(../images/icon-cd-drive.svg);
-}
-
-.pve-itype-icon-display {
-    background-image: url(../images/icon-display.png);
 }
 
 .pve-itype-icon-tigervnc {

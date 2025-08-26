@@ -81,19 +81,23 @@ Ext.define('PVE.dc.Tasks', {
                     header: gettext('End Time'),
                     dataIndex: 'endtime',
                     width: 150,
+                    align: 'inherit',
                     renderer: function (value, metaData, record) {
+                        metaData.tdStyle = 'text-align: left;';
                         if (record.data.pid) {
                             if (
                                 record.data.type === 'vncproxy' ||
                                 record.data.type === 'vncshell' ||
                                 record.data.type === 'spiceproxy'
                             ) {
-                                metaData.tdCls = 'x-grid-row-console';
+                                metaData.tdStyle = 'text-align: center;';
+                                return '<i class="fa fa-desktop"></i>';
                             } else {
                                 metaData.tdCls = 'x-grid-row-loading';
                             }
                             return '';
                         }
+
                         return Ext.Date.format(value, 'M d H:i:s');
                     },
                 },

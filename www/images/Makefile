@@ -16,8 +16,8 @@ all:
 
 # icon-cd, icon-pci
 # are self made (sources as .xcf)
-# icon-swap, icon-display, icon-keyboard, icon-network, icon-usb, icon-cloud
-# come from fontawesome (respective fa-refresh, fa-desktop, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
+# icon-swap, icon-keyboard, icon-network, icon-usb, icon-cloud
+# come from fontawesome (respective fa-refresh, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
 # icon-serial is a modified version of
 # https://commons.wikimedia.org/wiki/File:DE9_Diagram.svg
 # (public domain)
@@ -67,7 +67,6 @@ IMAGES = $(GNOME_IMAGES)	\
 	icon-swap.png		\
 	icon-cd.png		\
 	icon-network.png	\
-	icon-display.png	\
 	icon-keyboard.png	\
 	logo-ceph.png		\
 	logo-128.png		\
