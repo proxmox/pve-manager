@@ -27,8 +27,8 @@ all:
 # https://commons.wikimedia.org/wiki/File:DE9_Diagram.svg
 # (public domain)
 
-# ceph logos are from
-#  http://ceph.com/logos/
+# logo-ceph is adapted from Ceph_Logo.svg
+# https://github.com/ceph/ceph/blob/main/src/pybind/mgr/dashboard/frontend/src/assets/Ceph_Logo.svg
 
 # xtermjs.svg was copied from the xtermjs-branding sources:
 # https://github.com/xtermjs/xtermjs-branding/blob/master/logo.svg
@@ -72,7 +72,7 @@ IMAGES = $(GNOME_IMAGES)	\
 	icon-swap.png		\
 	icon-network.png	\
 	icon-keyboard.png	\
-	logo-ceph.png		\
+	logo-ceph.svg		\
 	logo-128.png		\
 	icon-serial.svg		\
 	icon-cloud.svg		\
