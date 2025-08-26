@@ -387,7 +387,8 @@
 }
 
 .pve-itype-icon-virt-viewer {
-    background-image: url(../images/virt-viewer.png);
+    background-size: 16px;
+    background-image: url(../images/virt-viewer.svg);
 }
 
 .pve-itype-icon-xtermjs {

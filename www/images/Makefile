@@ -6,13 +6,13 @@ all:
 # stop.png /usr/share/icons/gnome/16x16/actions/media-playback-stop.png
 # computer-template.png /usr/share/icons/gnome/16x16/mimetypes/gnome-mime-application-vnd.sun.xml.calc.template.png
 
-# virt-viewer.png copied from virt-viewer sources
 # tigervnc.png converted from tigervnc sources
 # (tigervnc.org/media/tigervnc_16.svg)
-
 # checked.png converted from extjs examples/ux/css/images/checked.gif
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
 # swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
+# virt-viewer.svg copied from virt-viewer source:
+# https://github.com/webrulon/virt-viewer/blob/master/icons/virt-viewer.svg
 #
 # novnc.svg copied from the noVnc source:
 # https://github.com/novnc/noVNC/blob/master/app/images/icons/novnc-icon-sm.svg
@@ -51,8 +51,8 @@ GNOME_IMAGES = 			\
 	computer.png
 
 IMAGES = $(GNOME_IMAGES)	\
-	virt-viewer.png		\
 	tigervnc.png		\
+	virt-viewer.svg		\
 	novnc.svg		\
 	xtermjs.png		\
 	favicon.ico		\
