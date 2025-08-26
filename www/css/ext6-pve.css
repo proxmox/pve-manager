@@ -313,7 +313,6 @@
 .pve-itype-icon-swap,
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
-.pve-itype-icon-storage,
 .pve-itype-icon-pool,
 .pve-itype-icon-itype,
 .pve-itype-icon-usb,
@@ -364,12 +363,6 @@
 .x-tree-node-lxc-running,
 .x-grid-tree-node-expanded .x-tree-node-lxc-running {
     background-image: url(../images/lxc-on.png);
-}
-
-.pve-itype-icon-storage,
-.x-tree-node-harddisk,
-.x-grid-tree-node-expanded .x-tree-node-harddisk {
-    background-image: url(../images/icon-harddisk.png);
 }
 
 .x-tree-node-snapshot,

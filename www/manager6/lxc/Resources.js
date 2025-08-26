@@ -128,7 +128,7 @@ Ext.define('PVE.lxc.RessourceView', {
             rows[confid] = {
                 group: group,
                 order: i,
-                tdCls: 'pve-itype-icon-storage',
+                iconCls: 'hdd-o',
                 editor: mpeditor,
                 header: header,
                 renderer: Ext.htmlEncode,

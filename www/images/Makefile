@@ -16,9 +16,8 @@ all:
 
 # icon-cd, icon-pci
 # are self made (sources as .xcf)
-# icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network, icon-usb, icon-cloud
-# come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
-
+# icon-swap, icon-display, icon-keyboard, icon-network, icon-usb, icon-cloud
+# come from fontawesome (respective fa-refresh, fa-desktop, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
 # icon-serial is a modified version of
 # https://commons.wikimedia.org/wiki/File:DE9_Diagram.svg
 # (public domain)
@@ -69,7 +68,6 @@ IMAGES = $(GNOME_IMAGES)	\
 	icon-cd.png		\
 	icon-network.png	\
 	icon-display.png	\
-	icon-harddisk.png	\
 	icon-keyboard.png	\
 	logo-ceph.png		\
 	logo-128.png		\
@@ -88,7 +86,7 @@ IMAGES = $(GNOME_IMAGES)	\
 icon-sdn.svg: icon-sdn.dot
 	fdp -Tsvg $< > $@
 
-.PHONY: install 
+.PHONY: install
 install: $(IMAGES)
 	install -d $(WWWIMAGEDIR)
 	install -m 0644 $(IMAGES) $(WWWIMAGEDIR)

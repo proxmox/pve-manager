@@ -252,7 +252,7 @@ Ext.define('PVE.grid.PoolMembers', {
                             },
                             {
                                 text: gettext('Storage'),
-                                iconCls: 'pve-itype-icon-storage',
+                                iconCls: 'fa fa-hdd-o',
                                 handler: function () {
                                     var win = Ext.create('PVE.pool.AddStorage', { pool: me.pool });
                                     win.on('destroy', reload);
