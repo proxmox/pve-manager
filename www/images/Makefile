@@ -30,8 +30,8 @@ all:
 # ceph logos are from
 #  http://ceph.com/logos/
 
-# xtermjs.png is a cropped version of the logo found on
-# https://github.com/xtermjs/xterm.js
+# xtermjs.svg was copied from the xtermjs-branding sources:
+# https://github.com/xtermjs/xtermjs-branding/blob/master/logo.svg
 
 GNOME_IMAGES = 			\
 	checked.png		\
@@ -54,7 +54,7 @@ IMAGES = $(GNOME_IMAGES)	\
 	tigervnc.png		\
 	virt-viewer.svg		\
 	novnc.svg		\
-	xtermjs.png		\
+	xtermjs.svg		\
 	favicon.ico		\
 	snapshot.png		\
 	computer-on.png		\

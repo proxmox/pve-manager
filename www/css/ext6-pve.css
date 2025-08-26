@@ -392,7 +392,8 @@
 }
 
 .pve-itype-icon-xtermjs {
-    background-image: url(../images/xtermjs.png);
+    background-size: 16px;
+    background-image: url(../images/xtermjs.svg);
 }
 
 .pve-itype-icon-usb {
