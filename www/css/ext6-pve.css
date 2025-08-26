@@ -290,24 +290,16 @@
 }
 
 .pve-itype-icon-virt-viewer,
-.pve-itype-icon-tigervnc,
 .pve-itype-icon-novnc,
 .pve-itype-icon-xtermjs,
-.pve-itype-icon-network,
-.pve-itype-icon-network-server,
-.pve-itype-icon-keyboard,
 .pve-itype-icon-cdrom,
 .pve-itype-icon-qemu-template,
 .pve-itype-icon-qemu-running,
-.pve-itype-icon-lxc,
 .pve-itype-icon-lxc-template,
-.pve-itype-icon-lxc-running,
-.pve-itype-icon-swap,
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
 .pve-itype-icon-pool,
 .pve-itype-icon-itype,
-.pve-itype-icon-usb,
 .pve-itype-icon-serial,
 .pve-itype-icon-cloud,
 .pve-itype-icon-pci,
@@ -333,52 +325,13 @@
     font-size: 14px;
 }
 
-.pve-itype-icon-lxc,
-.x-tree-node-lxc,
-.x-grid-tree-node-expanded .x-tree-node-lxc {
-    background-image: url(../images/lxc-off.png);
-}
-
-.pve-itype-icon-swap,
-.x-tree-node-lxc-swap,
-.x-grid-tree-node-expanded .x-tree-lxc-swap {
-    background-image: url(../images/icon-swap.png);
-}
-
-.pve-itype-icon-lxc-running,
-.x-tree-node-lxc-running,
-.x-grid-tree-node-expanded .x-tree-node-lxc-running {
-    background-image: url(../images/lxc-on.png);
-}
-
-.x-tree-node-snapshot,
-.x-grid-tree-node-expanded .x-tree-node-snapshot {
-    background-image: url(../images/snapshot.png);
-}
-
 .pve-itype-icon-itype {
     background-image: url(../ext6/theme-classic/resources/images/tree/folder.gif);
-}
-
-.pve-itype-icon-network-server {
-    background-image: url(../images/network-server.png);
-}
-
-.pve-itype-icon-network {
-    background-image: url(../images/icon-network.png);
-}
-
-.pve-itype-icon-keyboard {
-    background-image: url(../images/icon-keyboard.png);
 }
 
 .pve-itype-icon-cdrom {
     background-size: 16px;
     background-image: url(../images/icon-cd-drive.svg);
-}
-
-.pve-itype-icon-tigervnc {
-    background-image: url(../images/tigervnc.png);
 }
 
 .pve-itype-icon-novnc {
@@ -394,10 +347,6 @@
 .pve-itype-icon-xtermjs {
     background-size: 16px;
     background-image: url(../images/xtermjs.svg);
-}
-
-.pve-itype-icon-usb {
-    background-image: url(../images/icon-usb.png);
 }
 
 .pve-itype-icon-pci {

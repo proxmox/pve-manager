@@ -2,15 +2,6 @@ include ../../defines.mk
 
 all:
 
-# start.png /usr/share/icons/gnome/16x16/actions/media-playback-start.png
-# stop.png /usr/share/icons/gnome/16x16/actions/media-playback-stop.png
-# computer-template.png /usr/share/icons/gnome/16x16/mimetypes/gnome-mime-application-vnd.sun.xml.calc.template.png
-
-# tigervnc.png converted from tigervnc sources
-# (tigervnc.org/media/tigervnc_16.svg)
-# checked.png converted from extjs examples/ux/css/images/checked.gif
-# unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
-# swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
 # virt-viewer.svg copied from virt-viewer source:
 # https://github.com/webrulon/virt-viewer/blob/master/icons/virt-viewer.svg
 #
@@ -19,9 +10,8 @@ all:
 
 # icon-cd-drive and icon-pci
 # are self made (sources as .xcf)
-# icon-swap, icon-keyboard, icon-network, icon-usb, icon-cloud
-# come from fontawesome (respective fa-refresh, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
-# spinner is self made
+# icon-cloud
+# come from fontawesome (respective fa-cloud)
 
 # icon-serial is a modified version of
 # https://commons.wikimedia.org/wiki/File:DE9_Diagram.svg
@@ -33,51 +23,17 @@ all:
 # xtermjs.svg was copied from the xtermjs-branding sources:
 # https://github.com/xtermjs/xtermjs-branding/blob/master/logo.svg
 
-GNOME_IMAGES = 			\
-	checked.png		\
-	unchecked.png 		\
-	start.png		\
-	stop.png		\
-	gtk-stop.png		\
-	forward.png		\
-	display.png		\
-	keyboard.png		\
-	cdrom.png		\
-	network.png		\
-	drive-harddisk.png	\
-	network-server.png	\
-	connect_established.png	\
-	computer-template.png   \
-	computer.png
-
-IMAGES = $(GNOME_IMAGES)	\
-	tigervnc.png		\
+IMAGES =			\
 	virt-viewer.svg		\
 	novnc.svg		\
 	xtermjs.svg		\
 	favicon.ico		\
-	snapshot.png		\
-	computer-on.png		\
-	memory.png		\
-	processor.png		\
 	proxmox_logo.png	\
-	network-server-on.png	\
-	network-server-off.png	\
-	lxc-on.png		\
-	lxc-off.png		\
-	openvz-on.png		\
-	openvz-off.png		\
-	blank.gif		\
-	swap.png		\
-	icon-swap.png		\
-	icon-network.png	\
-	icon-keyboard.png	\
 	logo-ceph.svg		\
 	logo-128.png		\
 	icon-serial.svg		\
 	icon-cloud.svg		\
 	icon-pci.svg		\
-	icon-usb.png 		\
 	icon-die.svg		\
 	icon-sdn.svg		\
 	icon-fa-network-wired.svg\

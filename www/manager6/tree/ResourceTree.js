@@ -30,7 +30,6 @@ Ext.define('PVE.tree.ResourceTree', {
                 text: gettext('Virtual Machine'),
             },
             lxc: {
-                //iconCls: 'x-tree-node-lxc',
                 iconCls: 'fa fa-cube',
                 text: gettext('LXC Container'),
             },
