@@ -17,7 +17,7 @@ all:
 # novnc.svg copied from the noVnc source:
 # https://github.com/novnc/noVNC/blob/master/app/images/icons/novnc-icon-sm.svg
 
-# icon-cd, icon-pci
+# icon-cd-drive and icon-pci
 # are self made (sources as .xcf)
 # icon-swap, icon-keyboard, icon-network, icon-usb, icon-cloud
 # come from fontawesome (respective fa-refresh, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
@@ -70,7 +70,6 @@ IMAGES = $(GNOME_IMAGES)	\
 	blank.gif		\
 	swap.png		\
 	icon-swap.png		\
-	icon-cd.png		\
 	icon-network.png	\
 	icon-keyboard.png	\
 	logo-ceph.png		\

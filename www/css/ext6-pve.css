@@ -250,7 +250,7 @@
 .pve-itype-treelist-item-icon-cdrom {
     top: 50%;
     transform: translateY(-50%);
-    content: url(../images/icon-cd.png);
+    content: url(../images/icon-cd-drive.svg);
 }
 
 /* the lxc template */
