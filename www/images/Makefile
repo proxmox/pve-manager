@@ -13,6 +13,9 @@ all:
 # checked.png converted from extjs examples/ux/css/images/checked.gif
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
 # swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
+#
+# novnc.svg copied from the noVnc source:
+# https://github.com/novnc/noVNC/blob/master/app/images/icons/novnc-icon-sm.svg
 
 # icon-cd, icon-pci
 # are self made (sources as .xcf)
@@ -50,7 +53,7 @@ GNOME_IMAGES = 			\
 IMAGES = $(GNOME_IMAGES)	\
 	virt-viewer.png		\
 	tigervnc.png		\
-	novnc.png		\
+	novnc.svg		\
 	xtermjs.png		\
 	favicon.ico		\
 	snapshot.png		\

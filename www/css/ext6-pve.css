@@ -382,7 +382,8 @@
 }
 
 .pve-itype-icon-novnc {
-    background-image: url(../images/novnc.png);
+    background-size: 16px;
+    background-image: url(../images/novnc.svg);
 }
 
 .pve-itype-icon-virt-viewer {
