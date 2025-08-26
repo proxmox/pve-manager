@@ -18,6 +18,8 @@ all:
 # are self made (sources as .xcf)
 # icon-swap, icon-keyboard, icon-network, icon-usb, icon-cloud
 # come from fontawesome (respective fa-refresh, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
+# spinner is self made
+
 # icon-serial is a modified version of
 # https://commons.wikimedia.org/wiki/File:DE9_Diagram.svg
 # (public domain)
@@ -80,7 +82,7 @@ IMAGES = $(GNOME_IMAGES)	\
 	icon-cpu.svg		\
 	icon-memory.svg		\
 	icon-cd-drive.svg	\
-
+	spinner.svg		\
 
 icon-sdn.svg: icon-sdn.dot
 	fdp -Tsvg $< > $@
