@@ -188,8 +188,8 @@ Ext.define('PVE.grid.PoolMembers', {
             (c) => c.dataIndex !== 'tags' && c.dataIndex !== 'lock',
         );
 
-        var reload = function () {
-            store.load();
+        const reload = function () {
+            me.rstore.load();
         };
 
         var sm = Ext.create('Ext.selection.RowModel', {});
