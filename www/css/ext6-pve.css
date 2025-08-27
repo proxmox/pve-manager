@@ -449,7 +449,7 @@ div.right-aligned {
     height: 14px;
     position: absolute;
     left: 1px;
-    top: 4px;
+    top: 5px;
     background-image: url(../images/logo-ceph.svg);
     background-size: 14px 14px;
     content: " ";
