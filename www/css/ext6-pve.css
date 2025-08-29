@@ -299,7 +299,6 @@
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
 .pve-itype-icon-pool,
-.pve-itype-icon-itype,
 .pve-itype-icon-serial,
 .pve-itype-icon-cloud,
 .pve-itype-icon-pci,
@@ -323,10 +322,6 @@
 .pve-grid-fa {
     margin-right: 10px;
     font-size: 14px;
-}
-
-.pve-itype-icon-itype {
-    background-image: url(../ext6/theme-classic/resources/images/tree/folder.gif);
 }
 
 .pve-itype-icon-cdrom {
