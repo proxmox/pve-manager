@@ -108,6 +108,7 @@ __PACKAGE__->register_method({
                 bytes_used => {
                     type => 'integer',
                     title => 'Used',
+                    renderer => 'bytes',
                 },
                 target_size => {
                     type => 'integer',
