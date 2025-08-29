@@ -52,6 +52,7 @@ Ext.define('PVE.storage.Summary', {
                     fields: ['total', 'used'],
                     fieldTitles: ['Total Size', 'Used Size'],
                     store: rrdstore,
+                    unit: 'bytes',
                 },
             ],
             listeners: {
