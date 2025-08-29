@@ -2,7 +2,7 @@ include ../../defines.mk
 
 all:
 
-# virt-viewer.svg copied from virt-viewer source:
+# virt-viewer.svg copied from virt-viewer source (and reformatted):
 # https://github.com/webrulon/virt-viewer/blob/master/icons/virt-viewer.svg
 #
 # novnc.svg copied from the noVnc source:
