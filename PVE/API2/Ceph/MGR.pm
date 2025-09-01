@@ -38,6 +38,7 @@ __PACKAGE__->register_method({
             properties => {
                 name => {
                     description => "The name (ID) for the MGR",
+                    type => 'string',
                 },
                 addr => {
                     type => 'string',
