@@ -27,7 +27,13 @@ Ext.define('PVE.ha.RuleInputPanel', {
             values.rule = 'ha-rule-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
         }
 
-        values.disable = values.enable ? 0 : 1;
+        if (values.enable) {
+            if (!me.isCreate) {
+                Proxmox.Utils.assemble_field_data(values, { delete: 'disable' });
+            }
+        } else {
+            values.disable = 1;
+        }
         delete values.enable;
 
         values.resources = me.formatResourceListString(values.resources);
