@@ -466,7 +466,7 @@ __PACKAGE__->register_method({
                 my $lv = $type . "-" . UUID::uuid();
 
                 PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
-                $osd_lvcreate->($lv, $vg, $size);
+                $osd_lvcreate->($vg, $lv, $size);
 
                 if (PVE::Diskmanage::is_partition($dev->{devpath})) {
                     eval { PVE::Diskmanage::change_parttype($dev->{devpath}, '8E00'); };
