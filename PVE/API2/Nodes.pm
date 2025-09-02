@@ -1103,6 +1103,23 @@ my $shell_cmd_map = {
     },
 };
 
+my %shell_cmd_params = (
+    cmd => {
+        type => 'string',
+        description => "Run specific command or default to login (requires 'root\@pam')",
+        enum => [sort keys %$shell_cmd_map],
+        optional => 1,
+        default => 'login',
+    },
+    'cmd-opts' => {
+        type => 'string',
+        description => "Add parameters to a command. Encoded as null terminated strings.",
+        requires => 'cmd',
+        optional => 1,
+        default => '',
+    },
+);
+
 sub get_shell_command {
     my ($user, $shellcmd, $args) = @_;
 
@@ -1156,22 +1173,7 @@ __PACKAGE__->register_method({
         additionalProperties => 0,
         properties => {
             node => get_standard_option('pve-node'),
-            cmd => {
-                type => 'string',
-                description =>
-                    "Run specific command or default to login (requires 'root\@pam')",
-                enum => [keys %$shell_cmd_map],
-                optional => 1,
-                default => 'login',
-            },
-            'cmd-opts' => {
-                type => 'string',
-                description =>
-                    "Add parameters to a command. Encoded as null terminated strings.",
-                requires => 'cmd',
-                optional => 1,
-                default => '',
-            },
+            %shell_cmd_params,
             websocket => {
                 optional => 1,
                 type => 'boolean',
@@ -1307,22 +1309,7 @@ __PACKAGE__->register_method({
         additionalProperties => 0,
         properties => {
             node => get_standard_option('pve-node'),
-            cmd => {
-                type => 'string',
-                description =>
-                    "Run specific command or default to login (requires 'root\@pam')",
-                enum => [keys %$shell_cmd_map],
-                optional => 1,
-                default => 'login',
-            },
-            'cmd-opts' => {
-                type => 'string',
-                description =>
-                    "Add parameters to a command. Encoded as null terminated strings.",
-                requires => 'cmd',
-                optional => 1,
-                default => '',
-            },
+            %shell_cmd_params,
         },
     },
     returns => {
@@ -1437,22 +1424,7 @@ __PACKAGE__->register_method({
         properties => {
             node => get_standard_option('pve-node'),
             proxy => get_standard_option('spice-proxy', { optional => 1 }),
-            cmd => {
-                type => 'string',
-                description =>
-                    "Run specific command or default to login (requires 'root\@pam')",
-                enum => [keys %$shell_cmd_map],
-                optional => 1,
-                default => 'login',
-            },
-            'cmd-opts' => {
-                type => 'string',
-                description =>
-                    "Add parameters to a command. Encoded as null terminated strings.",
-                requires => 'cmd',
-                optional => 1,
-                default => '',
-            },
+            %shell_cmd_params,
         },
     },
     returns => get_standard_option('remote-viewer-config'),
