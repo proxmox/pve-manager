@@ -1,3 +1,27 @@
+pve-manager (9.0.7) trixie; urgency=medium
+
+  * pve8to9: rework systemd-boot checks
+
+  * configs: drop unused country.dat file from install
+
+  * fix #6599: ui: use font-awesome hdd icon instead of png
+
+  * ui: icons: use svg versions where possible
+
+  * ui: properly center ceph icon
+
+  * api: ceph: add missing type to api schema
+
+  * fix #6747: ceph: osd: swap vg and lv arguments when creating an OSD
+
+  * fix #6385: ui: pool: members: fix store reload on add/remove
+
+  * ha: rule edit: fix enabling ha rules which are disabled
+
+  * api: use 'number' instead of 'amount' for countable nouns
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Sep 2025 14:26:43 +0200
+
 pve-manager (9.0.6) trixie; urgency=medium
 
   * fix #6652: ceph: osd: enable autoactivation for OSD LVs on creation
