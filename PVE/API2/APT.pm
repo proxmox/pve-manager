@@ -7,6 +7,7 @@ use POSIX;
 use File::stat ();
 use IO::File;
 use File::Basename;
+use Encode qw(decode);
 
 use LWP::UserAgent;
 
@@ -462,7 +463,7 @@ __PACKAGE__->register_method({
             timeout => 10,
             logfunc => sub {
                 my $line = shift;
-                $output .= "$line\n";
+                $output .= decode('UTF-8', $line) . "\n";
             },
             noerr => 1,
         );
