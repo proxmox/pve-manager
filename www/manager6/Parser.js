@@ -533,7 +533,7 @@ Ext.define('PVE.Parser', {
                     return undefined; // continue
                 }
 
-                let match = p.match(/^([a-z_]+)=(\S+)$/);
+                let match = p.match(/^([a-z_-]+)=(\S+)$/);
                 if (!match || Ext.isDefined(res[match[1]])) {
                     errors = true;
                     return false; // break
