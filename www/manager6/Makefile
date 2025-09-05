@@ -35,7 +35,7 @@ JSSRC= 							\
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\
 	form/DayOfWeekSelector.js			\
-	form/DirMapSelector.js                          \
+	form/DirMapSelector.js				\
 	form/DiskFormatSelector.js			\
 	form/DiskStorageSelector.js			\
 	form/FileSelector.js				\
@@ -71,7 +71,7 @@ JSSRC= 							\
 	form/SecurityGroupSelector.js			\
 	form/SnapshotSelector.js			\
 	form/SpiceEnhancementSelector.js		\
-	form/StorageScanNodeSelector.js	    		\
+	form/StorageScanNodeSelector.js			\
 	form/StorageSelector.js				\
 	form/TFASelector.js				\
 	form/TokenSelector.js 				\
@@ -130,16 +130,16 @@ JSSRC= 							\
 	window/Settings.js				\
 	window/Snapshot.js				\
 	window/StartupEdit.js				\
-	window/DownloadUrlToStorage.js 			\
+	window/DownloadUrlToStorage.js			\
 	window/UploadToStorage.js 			\
 	window/ScheduleSimulator.js			\
 	window/Wizard.js				\
-	window/GuestDiskReassign.js				\
+	window/GuestDiskReassign.js			\
 	window/GuestStop.js				\
 	window/TreeSettingsEdit.js			\
 	window/PCIMapEdit.js				\
 	window/USBMapEdit.js				\
-	window/DirMapEdit.js                            \
+	window/DirMapEdit.js				\
 	window/GuestImport.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
@@ -278,7 +278,7 @@ JSSRC= 							\
 	sdn/StatusView.js				\
 	sdn/VnetEdit.js					\
 	sdn/VnetView.js					\
-	sdn/VnetACLView.js					\
+	sdn/VnetACLView.js				\
 	sdn/VnetPanel.js				\
 	sdn/SubnetEdit.js				\
 	sdn/SubnetView.js				\
