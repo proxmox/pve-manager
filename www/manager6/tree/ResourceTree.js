@@ -292,7 +292,11 @@ Ext.define('PVE.tree.ResourceTree', {
         let stateid = 'rid';
 
         const changedFields = [
-            'text',
+            'disk',
+            'maxdisk',
+            'vmid',
+            'name',
+            'type',
             'running',
             'template',
             'status',
