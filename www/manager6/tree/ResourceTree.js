@@ -328,10 +328,22 @@ Ext.define('PVE.tree.ResourceTree', {
             return node;
         };
 
+        let firstUpdate = true;
+
         let updateTree = function () {
             store.suspendEvents();
 
-            let rootnode = me.store.getRootNode();
+            let rootnode;
+            if (firstUpdate) {
+                rootnode = Ext.create('Ext.data.TreeModel', {
+                    expanded: true,
+                    id: 'root',
+                    text: gettext('Datacenter'),
+                    iconCls: 'fa fa-server',
+                });
+            } else {
+                rootnode = me.store.getRootNode();
+            }
             // remember selected node (and all parents)
             let sm = me.getSelectionModel();
             let lastsel = sm.getSelection()[0];
@@ -449,6 +461,11 @@ Ext.define('PVE.tree.ResourceTree', {
                 me.selectById(lastsel.data.id);
             } else if (lastsel && reselect) {
                 me.selectById(lastsel.data.id);
+            }
+
+            if (firstUpdate) {
+                me.store.setRoot(rootnode);
+                firstUpdate = false;
             }
 
             // on first tree load set the selection from the stateful provider
