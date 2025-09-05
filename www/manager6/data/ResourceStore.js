@@ -2,6 +2,8 @@ Ext.define('PVE.data.ResourceStore', {
     extend: 'Proxmox.data.UpdateStore',
     singleton: true,
 
+    nodeCache: {},
+
     findVMID: function (vmid) {
         let me = this;
         return me.findExact('vmid', parseInt(vmid, 10)) >= 0;
@@ -19,6 +21,22 @@ Ext.define('PVE.data.ResourceStore', {
         });
 
         return nodes;
+    },
+
+    getNodeById: function (id) {
+        let me = this;
+
+        if (!me.nodeCache[id]) {
+            let idx = me.findExact('id', `node/${id}`);
+            me.nodeCache[id] = me.getAt(idx);
+        }
+
+        return me.nodeCache[id];
+    },
+
+    clearCache: function () {
+        let me = this;
+        me.nodeCache = {};
     },
 
     storageIsShared: function (storage_path) {
@@ -372,5 +390,7 @@ Ext.define('PVE.data.ResourceStore', {
         });
 
         me.callParent([config]);
+
+        me.on('beforeload', me.clearCache, me);
     },
 });
