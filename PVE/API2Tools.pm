@@ -52,10 +52,9 @@ sub get_rrd_key {
         return "pve2.3-${type}/${id}";
     }
 
-    # if no old key has been found, we expect on in the newer format: pve-{type}-{version}/{id}
-    # We accept all new versions, as the expectation is that they are only allowed to add new colums as non-breaking change
-    for my $k (keys %$rrd) {
-        return $k if $k =~ m/^pve-\Q${type}\E-\d\d?.\d\/\Q${id}\E$/;
+    my $key = "pve-${type}-9.0/${id}";
+    if (defined($rrd->{$key})) {
+        return $key;
     }
 }
 
