@@ -1,3 +1,18 @@
+pve-manager (8.4.13) bookworm; urgency=medium
+
+  * pve8to9: simplify systemd-boot checks.
+
+  * api: cluster resource: fix performance regression causing O(n²) lookups
+    slowing the API response, and thus also the initial load of the web UI,
+    significantly down on setups with more than a few hundred, or even
+    thousands of virtual guests.
+
+  * ui: resource tree: various performance imrpovement for the main resource
+    tree, making initial load, updates and scrolling significantly more
+    responsive on setups with thousands of virtual guests.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 05 Sep 2025 19:34:44 +0200
+
 pve-manager (8.4.12) bookworm; urgency=medium
 
   * pve8to9: only allow systemd-boot when it is actually used before upgrade
