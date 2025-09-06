@@ -1,8 +1,10 @@
 Ext.define('PVE.pool.AddVM', {
     extend: 'Proxmox.window.Edit',
 
-    width: 640,
-    height: 480,
+    width: 800,
+    height: 600,
+    resizable: true,
+
     isAdd: true,
     isCreate: true,
 
@@ -35,20 +37,13 @@ Ext.define('PVE.pool.AddVM', {
                     direction: 'ASC',
                 },
             ],
-            filters: [
-                function (item) {
-                    return (
-                        (item.data.type === 'lxc' || item.data.type === 'qemu') &&
-                        item.data.pool !== me.pool
-                    );
-                },
-            ],
+            filters: [(item) => basicFilter(item.data)],
         });
 
         var vmGrid = Ext.create('widget.grid', {
             store: vmStore,
             border: true,
-            height: 360,
+            height: 480,
             scrollable: true,
             selModel: {
                 selType: 'checkboxmodel',
