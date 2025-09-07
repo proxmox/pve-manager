@@ -17,19 +17,6 @@ sha512sum: 4c3c5c2616b46fbb0b831a87669e6f323167c2f67cca487723ff3b00284309c547fec
 Infopage: https://linuxcontainers.org
 Description: LXC default image for almalinux 9 (20240911)
 
-Package: alpine-3.19-default
-Version: 20240207
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.19-default_20240207_amd64.tar.xz
-md5sum: fe35133232231ed5918c3828e91c4069
-sha512sum: dec171b608802827a2b47ae6c473f71fdea5fae0064a7928749fc5a854a7220a3244e405fb5ad14d09f52e5325a399c903169a075cd2f6787326972094561f0a
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.19 (20240207)
-
 Package: alpine-3.20-default
 Version: 20240908
 Type: lxc
@@ -55,6 +42,19 @@ md5sum: 3e5ded410fae18bd05031f47179f2394
 sha512sum: 211ac75f4b66494e78a6e72acc206b8ac490e0d174a778ae5be2970b0a1a57a8dddea8fc5880886a3794b8bb787fe93297a1cad3aee75d07623d8443ea9062e4
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.21 (20241217)
+
+Package: alpine-3.22-default
+Version: 20250617
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.22-default_20250617_amd64.tar.xz
+md5sum: 7876712da358f2536dc0baa18169aed4
+sha512sum: 1900ccb1b092b5563c0430ff9d9ede63c23bf2fa4a872b8816d2b03d711c76c1d2ea2241796ebaa58292caee75a01e325b7a9c86f63e36d9f9425b45e0115469
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.22 (20250617)
 
 Package: archlinux-base
 Version: 20240911-1
@@ -98,18 +98,32 @@ Description: Debian 11 Bullseye (standard)
  A small Debian Bullseye system including all standard packages.
 
 Package: debian-12-standard
-Version: 12.7-1
+Version: 12.12-1
 Type: lxc
 OS: debian-12
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-12-standard_12.7-1_amd64.tar.zst
-md5sum: 0b6959720ebd506b5ddb2fbf8780ca6c
-sha512sum: 39f6d06e082d6a418438483da4f76092ebd0370a91bad30b82ab6d0f442234d63fe27a15569895e34d6d1e5ca50319f62637f7fb96b98dbde4f6103cf05bff6d
+Location: system/debian-12-standard_12.12-1_amd64.tar.zst
+md5sum: 4e5a0a7183b6c8ca6867489820961e88
+sha512sum: 50c85eaaece677a3ebe01cc909b83872e9da2a22c29ae652838afce71e83222fdf40f6accecd7d52b180e912fc1f85ecdf7b3fc4d3027da4d865e509a9e76597
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 12 Bookworm (standard)
- A small Debian Bullseye system including all standard packages.
+ A small Debian Bookworm system including all standard packages.
+
+Package: debian-13-standard
+Version: 13.1-1
+Type: lxc
+OS: debian-13
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/debian-13-standard_13.1-1_amd64.tar.zst
+md5sum: 8efac33d9ddaf2792c41202ee52b645a
+sha512sum: 7e49ac1082b1514c03439f218b73175322e2e2cfa6222ee8e52ee5a505293923247079a73e3e56ddb880eb1cf116a472958141b32fb3ae3acc8692778efd32f3
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Debian 13 Trixie (standard)
+ A small Debian Trixie system including all standard packages.
 
 Package: devuan-5.0-standard
 Version: 5.0
@@ -163,19 +177,6 @@ md5sum: d9a70f0f331b25eace92d00b9d457073
 sha512sum: 50495e3c066aa4f4a8886d8eebbb30ecf662bb7bf7209677fa9edfb82ce2d00172ad2b5ebeba3ee9d319a74691bd975e3b73e079fce503ab72c4a56d2bde8a55
 Infopage: https://linuxcontainers.org
 Description: LXC openrc image for gentoo current (20250508)
-
-Package: openeuler-24.03-default
-Version: 20250507
-Type: lxc
-OS: openeuler
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/openeuler-24.03-default_20250507_amd64.tar.xz
-md5sum: db93408ef4ac38193ef25ffb0bfc52db
-sha512sum: e0267c22e6e9401dac8ce8a6f572c51e23131b0d6b77743385a59a63fedcac36d401e818db3d0e98bac98d020e37926aade5a17de6995015733ade97bdd605be
-Infopage: https://linuxcontainers.org
-Description: LXC default image for openeuler 24.03 (20250507)
 
 Package: openeuler-25.03-default
 Version: 20250507
