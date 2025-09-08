@@ -113,6 +113,8 @@ Ext.define('PVE.panel.GuestStatusView', {
             title: gettext('Memory usage'),
             valueField: 'mem',
             maxField: 'maxmem',
+            warningThreshold: 0.9,
+            criticalThreshold: 0.975,
         },
         {
             itemId: 'memory-host',
