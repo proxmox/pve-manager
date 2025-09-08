@@ -5,6 +5,7 @@ use warnings;
 use Proxmox::RS::SharedCache;
 use PVE::Network;
 
+# with the pvestatd 10s update intervall this covers 30 minutes of data.
 use constant OLD_GENERATIONS => 180;
 use constant LOCK_TIMEOUT => 2;
 
