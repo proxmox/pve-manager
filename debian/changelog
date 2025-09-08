@@ -1,3 +1,48 @@
+pve-manager (9.0.8) trixie; urgency=medium
+
+  * api: apt list updates: complete JSON return schema to be used in the API
+    viewer and API clients like PDM.
+
+  * api: cluster resource: fix performance regression causing O(n²) lookups
+    slowing the API response, and thus also the initial load of the web UI,
+    significantly down on setups with more than a few hundred, or even
+    thousands of virtual guests.
+
+  * ui: resource tree: various performance improvement for the main resource
+    tree, making initial load, updates and scrolling significantly more
+    responsive on setups with thousands of virtual guests.
+
+  * ui: VM cpu: recognize kebab-cased properties like while parsing to avoid
+    loosing the value of such a manually set option on edit.
+
+  * api: apt: ensure change log entries are encoded as valid UTF-8.
+
+  * ui: storage summary: set 'bytes' as unit for metrics graph.
+
+  * cli: pveceph: set use bytes renderer when listing a pool's content.
+
+  * ui: SDN: ensure fabrics property gets correctly removed when editing a
+    EVPN controller or a VXLAN zone.
+
+  * ui: pool: add members: make virtual guest window bigger and resizeable.
+
+  * ui: pool members: add filter for name, node or vmid when adding guests.
+
+  * update shipped appliance info index.
+
+  * api: cluster: metric server: increase timeout when fetching other nodes
+    metrics from 5s to 20s.
+
+  * api: cluster metrics export: support requesting the metrics from a
+    specific set of nodes through a new 'node-list' parameter.
+
+  * ui: node and virtual guest status: increase warning/critical threshold
+    percentage for memory usage from 75% to 90% and 90% to 97.5% percent,
+    respectively, as leveraging most of the memory installed is fine and often
+    even wanted.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 08 Sep 2025 22:57:43 +0200
+
 pve-manager (9.0.7) trixie; urgency=medium
 
   * pve8to9: rework systemd-boot checks
