@@ -6,6 +6,7 @@ use warnings;
 use POSIX qw(isnan isinf);
 use Scalar::Util 'looks_like_number';
 use IO::Socket::IP;
+use IO::Socket::SSL qw(SSL_VERIFY_NONE);
 use LWP::UserAgent;
 use HTTP::Request;
 
@@ -92,7 +93,7 @@ my $set_ssl_opts = sub {
     if (!$cert_verify) {
         $ua->ssl_opts(
             verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
+            SSL_verify_mode => SSL_VERIFY_NONE,
         );
     }
 
