@@ -454,7 +454,7 @@ __PACKAGE__->register_method({
                         host => $ip,
                         port => 8006,
                         ticket => $ticket,
-                        timeout => 5,
+                        timeout => 20,
                     };
 
                     $conn_args->{cached_fingerprints} = { $fingerprint => 1 };
