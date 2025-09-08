@@ -54,6 +54,9 @@ Ext.define('PVE.node.StatusView', {
             title: gettext('RAM usage'),
             valueField: 'memory',
             maxField: 'memory',
+            warningThreshold: 0.9,
+            criticalThreshold: 0.975,
+            // TODO: split out ARC usage
             renderer: Proxmox.Utils.render_node_size_usage,
         },
         {
