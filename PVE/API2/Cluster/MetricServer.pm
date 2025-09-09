@@ -409,10 +409,12 @@ __PACKAGE__->register_method({
             $generations = 0;
         }
 
-        my @node_list = $param->{'node-list'} ? PVE::Tools::split_list($param->{'node-list'}) : ();
+        my @node_list =
+            $param->{'node-list'} ? PVE::Tools::split_list($param->{'node-list'}) : ();
 
         my $nodename = PVE::INotify::nodename();
-        my $include_local_metrics = !$param->{'node-list'} || grep { $nodename eq $_ } @node_list;
+        my $include_local_metrics =
+            !$param->{'node-list'} || grep { $nodename eq $_ } @node_list;
 
         my @metrics;
         if ($include_local_metrics) {
