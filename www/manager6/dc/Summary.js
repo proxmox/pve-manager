@@ -40,6 +40,8 @@ Ext.define('PVE.dc.Summary', {
                 {
                     title: gettext('Memory'),
                     itemId: 'memory',
+                    warningThreshold: 0.9,
+                    criticalThreshold: 0.975,
                 },
                 {
                     title: gettext('Storage'),
