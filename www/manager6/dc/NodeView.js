@@ -110,6 +110,9 @@ Ext.define('PVE.widget.ProgressBar', {
     animate: true,
     textTpl: ['{percent}%'],
 
+    warningThreshold: 0.75,
+    criticalThreshold: 0.9,
+
     setValue: function (value) {
         let me = this;
 
@@ -117,9 +120,9 @@ Ext.define('PVE.widget.ProgressBar', {
 
         me.removeCls(['warning', 'critical']);
 
-        if (value > 0.89) {
+        if (value >= me.criticalThreshold) {
             me.addCls('critical');
-        } else if (value > 0.75) {
+        } else if (value >= me.warningThreshold) {
             me.addCls('warning');
         }
     },
