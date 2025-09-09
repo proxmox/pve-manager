@@ -125,7 +125,10 @@ eval {
         PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
     };
 
-    if (PVE::Certificate::check_expiry($certpath, time() + 14 * 24 * 60 * 60)) {
+    if (PVE::Certificate::check_expiry($certpath)) {
+        # already expired
+        $renew->("expired, renewing...");
+    } elsif (PVE::Certificate::check_expiry($certpath, time() + 14 * 24 * 60 * 60)) {
         # expires in next 2 weeks
         $renew->("expires soon, renewing...");
     } elsif (!PVE::Certificate::check_expiry($certpath, time() + 2 * 365 * 24 * 60 * 60)) {
