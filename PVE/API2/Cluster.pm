@@ -411,6 +411,11 @@ __PACKAGE__->register_method({
                     type => 'integer',
                     optional => 1,
                 },
+                sdn => {
+                    description => "The name of an SDN entity (for type 'sdn')",
+                    type => "string",
+                    optional => 1,
+                },
                 tags => {
                     description => "The guest's tags (for types 'qemu' and 'lxc')",
                     type => "string",
