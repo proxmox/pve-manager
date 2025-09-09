@@ -111,7 +111,10 @@ eval {
 
         # check if cert is really signed by the ca
         # TODO: replace by low level ssleay interface if version 1.86 is available
-        PVE::Tools::run_command(['/usr/bin/openssl', 'verify', '-CAfile', $capath, $certpath]);
+        my $cmd = [
+            '/usr/bin/openssl', 'verify', '-no_check_time', '-CAfile', $capath, '--', $certpath,
+        ];
+        PVE::Tools::run_command($cmd);
 
         print "PVE certificate $msg\n";
         # create new certificate
