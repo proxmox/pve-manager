@@ -64,6 +64,8 @@ Ext.define(
                 xtype: 'widgetcolumn',
                 widget: {
                     xtype: 'pveProgressBar',
+                    warningThreshold: 0.9,
+                    criticalThreshold: 0.975,
                 },
             },
             {
