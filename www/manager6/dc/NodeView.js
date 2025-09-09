@@ -110,7 +110,7 @@ Ext.define('PVE.widget.ProgressBar', {
     animate: true,
     textTpl: ['{percent}%'],
 
-    warningThreshold: 0.75,
+    warningThreshold: 0.8,
     criticalThreshold: 0.9,
 
     setValue: function (value) {
