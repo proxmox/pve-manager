@@ -3,16 +3,16 @@ package PVE::API2::Cluster::MetricServer;
 use warnings;
 use strict;
 
-use PVE::Tools qw(extract_param extract_sensitive_params);
-use PVE::Exception qw(raise_perm_exc raise_param_exc);
-use PVE::JSONSchema qw(get_standard_option);
+use PVE::APIClient::LWP;
+use PVE::AccessControl;
+use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
+use PVE::SafeSyslog;
+use PVE::Tools qw(extract_param extract_sensitive_params);
+
 use PVE::ExtMetric;
 use PVE::PullMetric;
-use PVE::SafeSyslog;
-
-use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
