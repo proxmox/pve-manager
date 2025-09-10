@@ -70,6 +70,7 @@ Ext.define('PVE.pool.AddVM', {
                     width: 200,
                     enableKeyEvents: true,
                     emptyText: gettext('Name, Node, VMID'),
+                    submitValue: false,
                     listeners: {
                         keyup: {
                             buffer: 350,
