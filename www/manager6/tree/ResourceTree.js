@@ -340,7 +340,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
             let rootnode;
             if (firstUpdate) {
-                rootnode = Ext.create('Ext.data.TreeModel', {
+                rootnode = Ext.create('PVETree', {
                     expanded: true,
                     id: 'root',
                     text: gettext('Datacenter'),
