@@ -1,3 +1,18 @@
+pve-manager (9.0.10) trixie; urgency=medium
+
+  * ui: datacenter notes: fix visibility of top toolbar to allow editing the
+    notes again.
+
+  * api: node xterm.js and VNC shells: avoid nested login for already logged
+    in root@pam when tunneling to another node. This should avoid a race where
+    the shell hangs on load that seems to very rarely happen in Proxmox VE 9,
+    but currently the fix only covers the root@pam users. While this makes
+    this just a partial fix, as the issue is hard to reproduce it should not
+    only benefit some of the affected users, it will also help in confirming
+    the underlying root cause.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Sep 2025 18:05:12 +0200
+
 pve-manager (9.0.9) trixie; urgency=medium
 
   * ui: cluster dashboard: use higher warning thresholds for memory gauge and
