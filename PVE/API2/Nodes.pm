@@ -1129,10 +1129,20 @@ sub get_shell_command {
     if ($user eq 'root@pam') {
         if (defined($shellcmd) && exists($shell_cmd_map->{$shellcmd})) {
             my $def = $shell_cmd_map->{$shellcmd};
-            $cmd = [@{ $def->{cmd} }]; # clone
+
+            if ($is_ssh_tunneling && $cmd eq 'login') {
+                # stop-gap to avoid running into a racy bug with nested login, i.e. first from SSH
+                # second would be this command here, likely related to vhangup.
+                $cmd = [];
+            } else {
+                $cmd = [ $def->{cmd}->@* ]; # clone
+            }
+
             if (defined($args) && $def->{allow_args}) {
                 push @$cmd, split("\0", $args);
             }
+        } elsif ($is_ssh_tunneling) {
+            $cmd = []; # SSH logs us already in as root, and we must not nest login (vhangup).
         } else {
             $cmd = ['/bin/login', '-f', 'root'];
         }
