@@ -3,6 +3,7 @@ package PVE::CLI::pve_network_interface_pinning;
 use v5.36;
 
 use File::Copy;
+use File::Path qw(make_path);
 use POSIX qw(:errno_h);
 use Storable qw(dclone);
 
@@ -176,8 +177,7 @@ my sub parse_link_file {
 my $LINK_DIRECTORY = "/usr/local/lib/systemd/network/";
 
 sub ensure_link_directory_exists {
-    mkdir '/usr/local/lib/systemd' if !-d '/usr/local/lib/systemd';
-    mkdir $LINK_DIRECTORY if !-d $LINK_DIRECTORY;
+    make_path($LINK_DIRECTORY);
 }
 
 my sub get_pinned {
