@@ -1,3 +1,12 @@
+pve-manager (8.4.14) bookworm; urgency=medium
+
+  * ui: datacenter notes: fix visibility of top toolbar to allow editing the
+    notes again.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 17 Sep 2025 16:22:59 +0200
+
 pve-manager (8.4.13) bookworm; urgency=medium
 
   * pve8to9: simplify systemd-boot checks.
