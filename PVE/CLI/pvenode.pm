@@ -21,8 +21,7 @@ use PVE::RPCEnvironment;
 use PVE::CLIFormatter;
 use PVE::RESTHandler;
 use PVE::CLIHandler;
-
-use Term::ReadLine;
+use PVE::PTY;
 
 use base qw(PVE::CLIHandler);
 
@@ -108,13 +107,12 @@ __PACKAGE__->register_method({
             }
             print $i, ") Custom\n";
 
-            my $term = Term::ReadLine->new('pvenode');
             my $get_dir_selection = sub {
-                my $selection = $term->readline("Enter selection: ");
+                my $selection = PVE::PTY::read_line("Enter selection: ");
                 if ($selection =~ /^(\d+)$/) {
                     $selection = $1;
                     if ($selection == $i) {
-                        $param->{directory} = $term->readline("Enter custom URL: ");
+                        $param->{directory} = PVE::PTY::read_line("Enter custom URL: ");
                         $custom_directory = 1;
                         return;
                     } elsif ($selection < $i && $selection >= 0) {
@@ -137,8 +135,7 @@ __PACKAGE__->register_method({
         if ($meta->{termsOfService}) {
             my $tos = $meta->{termsOfService};
             print "Terms of Service: $tos\n";
-            my $term = Term::ReadLine->new('pvenode');
-            my $agreed = $term->readline('Do you agree to the above terms? [y|N]: ');
+            my $agreed = PVE::PTY::read_line('Do you agree to the above terms? [y|N]: ');
             die "Cannot continue without agreeing to ToS, aborting.\n"
                 if ($agreed !~ /^y$/i);
 
@@ -149,18 +146,16 @@ __PACKAGE__->register_method({
 
         my $eab_enabled = $meta->{externalAccountRequired};
         if (!$eab_enabled && $custom_directory) {
-            my $term = Term::ReadLine->new('pvenode');
             my $agreed =
-                $term->readline('Do you want to use external account binding? [y|N]: ');
+                PVE::PTY::read_line('Do you want to use external account binding? [y|N]: ');
             $eab_enabled = ($agreed =~ /^y$/i);
         } elsif ($eab_enabled) {
             print "The CA requires external account binding.\n";
         }
         if ($eab_enabled) {
             print "You should have received a key id and a key from your CA.\n";
-            my $term = Term::ReadLine->new('pvenode');
-            my $eab_kid = $term->readline('Enter EAB key id: ');
-            my $eab_hmac_key = $term->readline('Enter EAB key: ');
+            my $eab_kid = PVE::PTY::read_line('Enter EAB key id: ');
+            my $eab_hmac_key = PVE::PTY::read_line('Enter EAB key: ');
 
             $param->{'eab-kid'} = $eab_kid;
             $param->{'eab-hmac-key'} = $eab_hmac_key;
