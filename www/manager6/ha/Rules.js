@@ -148,7 +148,7 @@ Ext.define('PVE.ha.RulesBaseView', {
                             getClass: (value) =>
                                 Object.keys(value ?? {}).length
                                     ? 'fa fa-exclamation-triangle'
-                                    : 'fa fa-check',
+                                    : 'fa fa-check pmx-unclickable',
                         },
                     ],
                 },
