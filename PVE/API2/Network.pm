@@ -873,7 +873,7 @@ sub assert_ifupdown2_installed {
     die "you need ifupdown2 to reload network configuration\n" if !-e '/usr/share/ifupdown2';
     my ($v, $pve, $v_str) = ifupdown2_version();
     die
-        "incompatible 'ifupdown2' package version '$v_str'! Did you installed from Proxmox repositories?\n"
+        "incompatible 'ifupdown2' package version '$v_str'! Did you install from Proxmox repositories?\n"
         if $v < (1 * 100000 + 2 * 1000 + 8 * 10) || !$pve;
 }
 
