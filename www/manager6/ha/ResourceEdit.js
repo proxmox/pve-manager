@@ -165,6 +165,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
     vmid: undefined,
     guestType: undefined,
     isCreate: undefined,
+    defaultFocus: undefined,
 
     initComponent: function () {
         var me = this;
