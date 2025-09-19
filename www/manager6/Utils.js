@@ -1014,9 +1014,6 @@ Ext.define('PVE.Utils', {
 
             if (value.managed) {
                 text = value.state || Proxmox.Utils.noneText;
-
-                text += ', ' + Proxmox.Utils.groupText + ': ';
-                text += value.group || Proxmox.Utils.noneText;
             }
 
             return text;
