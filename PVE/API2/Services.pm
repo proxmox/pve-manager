@@ -137,6 +137,82 @@ my $service_state = sub {
     return $res;
 };
 
+my $service_state_api_return_schema = {
+    'active-state' => {
+        type => 'string',
+        enum => [
+            qw(active inactive failed activating deactivating maintenance reloading refreshing unknown)
+        ],
+        description => 'Current state of the service process (systemd ActiveState).',
+    },
+    'desc' => {
+        type => 'string',
+        description => 'Description of the service.',
+    },
+    'name' => {
+        type => 'string',
+        description => 'Short identifier for the service (e.g., "pveproxy").',
+    },
+    'service' => {
+        type => 'string',
+        description => 'Systemd unit name (e.g., pveproxy).',
+    },
+    'state' => {
+        type => 'string',
+        # all systemd service unit substates
+        enum => [qw(
+            dead
+            condition
+            start-pre
+            start
+            start-post
+            running
+            exited
+            reload
+            reload-signal
+            reload-notify
+            mounting
+            stop
+            stop-watchdog
+            stop-sigterm
+            stop-sigkill
+            stop-post
+            final-watchdog
+            final-sigterm
+            final-sigkill
+            failed
+            dead-before-auto-restart
+            failed-before-auto-restart
+            dead-resources-pinned
+            auto-restart
+            auto-restart-queued
+            cleaning
+            unknown
+        )],
+        description => 'Execution status of the service (systemd SubState).',
+    },
+    'unit-state' => {
+        type => 'string',
+        enum => [qw(
+            enabled
+            enabled-runtime
+            linked
+            linked-runtime
+            alias
+            masked
+            masked-runtime
+            static
+            disabled
+            indirect
+            generated
+            transient
+            bad not-found
+            unknown
+        )],
+        description => 'Whether the service is enabled (systemd UnitFileState).',
+    },
+};
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -157,7 +233,7 @@ __PACKAGE__->register_method({
         type => 'array',
         items => {
             type => "object",
-            properties => {},
+            properties => $service_state_api_return_schema,
         },
         links => [{ rel => 'child', href => "{service}" }],
     },
@@ -241,7 +317,7 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => "object",
-        properties => {},
+        properties => $service_state_api_return_schema,
     },
     code => sub {
         my ($param) = @_;
