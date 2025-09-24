@@ -50,6 +50,8 @@ my $modify_cfg_for_api = sub {
     return $plugin_cfg;
 };
 
+my $acme_challenge_api_create_and_return_schema = PVE::ACME::Challenge->createSchema();
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -72,12 +74,7 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => 'array',
-        items => {
-            type => "object",
-            properties => {
-                plugin => get_standard_option('pve-acme-pluginid'),
-            },
-        },
+        items => $acme_challenge_api_create_and_return_schema,
         links => [{ rel => 'child', href => "{plugin}" }],
     },
     code => sub {
@@ -111,9 +108,7 @@ __PACKAGE__->register_method({
             id => get_standard_option('pve-acme-pluginid'),
         },
     },
-    returns => {
-        type => 'object',
-    },
+    returns => $acme_challenge_api_create_and_return_schema,
     code => sub {
         my ($param) = @_;
 
@@ -131,7 +126,7 @@ __PACKAGE__->register_method({
         check => ['perm', '/', ['Sys.Modify']],
     },
     protected => 1,
-    parameters => PVE::ACME::Challenge->createSchema(),
+    parameters => $acme_challenge_api_create_and_return_schema,
     returns => {
         type => "null",
     },
