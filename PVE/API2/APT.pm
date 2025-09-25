@@ -107,7 +107,7 @@ my $assemble_pkginfo = sub {
     if (my $desc = $info->{LongDesc}) {
         $desc =~ s/^.*\n\s?//; # remove first line
         $desc =~ s/\n / /g;
-        $data->{Description} = $desc;
+        $data->{Description} = decode('UTF-8', $desc);
     }
 
     foreach my $k (qw(Section Arch Priority)) {
