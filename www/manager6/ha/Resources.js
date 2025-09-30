@@ -74,12 +74,20 @@ Ext.define('PVE.ha.ResourcesView', {
                     handler: run_editor,
                 },
                 {
-                    xtype: 'proxmoxStdRemoveButton',
+                    xtype: 'proxmoxButton',
+                    text: gettext('Remove'),
                     selModel: sm,
-                    getUrl: function (rec) {
-                        return `/cluster/ha/resources/${rec.get('sid')}`;
+                    itemId: 'removeBtn',
+                    disabled: true,
+                    handler: function (btn, e, rec) {
+                        Ext.create('PVE.window.ConfirmRemoveResource', {
+                            url: `/cluster/ha/resources/${rec.data.sid}`,
+                            item: {
+                                id: rec.data.sid,
+                            },
+                            apiCallDone: () => me.rstore.load(),
+                        }).show();
                     },
-                    callback: () => me.rstore.load(),
                 },
             ],
             columns: [
