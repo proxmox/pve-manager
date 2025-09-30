@@ -120,6 +120,7 @@ JSSRC= 							\
 	window/BulkAction.js				\
 	window/CephInstall.js				\
 	window/Clone.js					\
+	window/ConfirmRemoveResource.js			\
 	window/FirewallEnableEdit.js			\
 	window/FirewallLograteEdit.js			\
 	window/LoginWindow.js				\
