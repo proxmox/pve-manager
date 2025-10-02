@@ -146,7 +146,7 @@ Ext.define('PVE.window.Snapshot', {
                 me.vmid,
                 me.vmname,
             );
-            subject = `${guestTypeStr} ${formattedGuestIdentifier} ${gettext('Snapshot')}}`;
+            subject = `${guestTypeStr} ${formattedGuestIdentifier} ${gettext('Snapshot')}`;
             me.method = 'POST';
             me.showTaskViewer = true;
         } else {
