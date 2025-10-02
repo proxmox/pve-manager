@@ -17,6 +17,18 @@ use PVE::API2::Replication;
 
 use base qw(PVE::RESTHandler);
 
+my $replication_api_return_props = {
+    PVE::ReplicationConfig->createSchema()->{properties}->%*,
+    guest => {
+        type => 'integer',
+        description => 'Guest ID.',
+    },
+    jobnum => {
+        type => 'integer',
+        description => 'Unique, sequential ID assigned to each job.',
+    },
+};
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -35,7 +47,7 @@ __PACKAGE__->register_method({
         type => 'array',
         items => {
             type => "object",
-            properties => {},
+            properties => $replication_api_return_props,
         },
         links => [{ rel => 'child', href => "{id}" }],
     },
@@ -75,7 +87,13 @@ __PACKAGE__->register_method({
             id => get_standard_option('pve-replication-id'),
         },
     },
-    returns => { type => 'object' },
+    returns => {
+        type => 'object',
+        properties => {
+            $replication_api_return_props->%*,
+            digest => get_standard_option('pve-config-digest'),
+        },
+    },
     code => sub {
         my ($param) = @_;
 
