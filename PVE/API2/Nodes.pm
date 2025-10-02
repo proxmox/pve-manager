@@ -1135,7 +1135,7 @@ sub get_shell_command {
                 # second would be this command here, likely related to vhangup.
                 $cmd = [];
             } else {
-                $cmd = [ $def->{cmd}->@* ]; # clone
+                $cmd = [$def->{cmd}->@*]; # clone
             }
 
             if (defined($args) && $def->{allow_args}) {
@@ -1151,7 +1151,7 @@ sub get_shell_command {
         $cmd = ['/bin/login'];
     }
 
-    return $is_ssh_tunneling ? [ $tunnel_cmd->@*, $cmd->@* ] : $cmd;
+    return $is_ssh_tunneling ? [$tunnel_cmd->@*, $cmd->@*] : $cmd;
 }
 
 my $get_vnc_connection_info = sub {
