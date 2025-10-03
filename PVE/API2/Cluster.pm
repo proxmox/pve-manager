@@ -178,7 +178,10 @@ __PACKAGE__->register_method({
     path => 'log',
     method => 'GET',
     description => "Read cluster log",
-    permissions => { user => 'all' },
+    permissions => {
+        description => "The user needs 'Sys.Syslog' on '/' in order to get all logs.",
+        user => 'all',
+    },
     parameters => {
         additionalProperties => 0,
         properties => {
