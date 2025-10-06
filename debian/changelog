@@ -1,3 +1,23 @@
+pve-manager (9.0.11) trixie; urgency=medium
+
+  * close #4248: ui: Add Reset button to right click context menu of virtual
+    machines, like available in the resource tree or the global search result.
+
+  * ui: guest snapshot: remove excess '}' at the end of window title
+
+  * fix #5244 pveceph: install: add new 'manual' repository option, which, for
+    example, can be useful for offline installation
+
+  * ui: ceph install wizard: add option and hint for 'manual' repository for,
+    e.g., offline installation through a Proxmox Offline Mirror managed
+    repository.
+
+  * fix typo in ifupdown2 version error message.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 06 Oct 2025 19:03:25 +0200
+
 pve-manager (9.0.10) trixie; urgency=medium
 
   * ui: datacenter notes: fix visibility of top toolbar to allow editing the
