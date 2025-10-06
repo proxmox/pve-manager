@@ -166,23 +166,23 @@ __PACKAGE__->register_method({
             $enterprise_repo ? 'https://enterprise.proxmox.com' : 'http://download.proxmox.com';
 
         if (has_valid_subscription()) {
-            warn
-                "\nNOTE: The node has an active subscription but a non-production Ceph repository selected.\n\n"
-                if !$enterprise_repo;
+            if (!$enterprise_repo) {
+                warn "\nNOTE: The node has an active subscription but a non-production Ceph"
+                    . " repository selected.\n\n";
+            }
         } elsif ($enterprise_repo) {
             warn "\nWARN: Enterprise repository selected, but no active subscription!\n\n";
         } elsif ($repo eq 'no-subscription') {
-            warn
-                "\nHINT: The no-subscription repository is not the best choice for production setups.\n"
+            warn "\nHINT: The no-subscription repository is not the best choice for production"
+                . " setups.\n"
                 . "Proxmox recommends using the enterprise repository with a valid subscription.\n";
         } elsif ($repo eq 'manual') {
-            warn
-                "\nHINT: The manual repository option expects that the Ceph repository is already correctly configured."
-                . " For example, when used in combination with Proxmox Offline Mirror.\n";
+            warn "\nHINT: The manual repository option expects that the Ceph repository is"
+                . " already correctly configured. For example, when used in combination with"
+                . " Proxmox Offline Mirror.\n";
         } else {
-            warn
-                "\nWARN: The test repository should only be used for test setups or after consulting"
-                . " the official Proxmox support!\n\n";
+            warn "\nWARN: The test repository should only be used for test setups or after"
+                . " consulting the official Proxmox support!\n\n";
         }
 
         my $available_ceph_releases = PVE::Ceph::Releases::get_all_available_ceph_releases();
@@ -216,15 +216,15 @@ EOF
                     warn
                         "NOTE: installing experimental/tech-preview Ceph release ${rendered_release}!\n";
                 } elsif (-t STDOUT) {
-                    print
-                        "Ceph ${rendered_release} is currently considered a technology preview for Proxmox VE - continue (y/N)? ";
+                    print "Ceph ${rendered_release} is currently considered a technology"
+                        . " preview for Proxmox VE - continue (y/N)? ";
                     my $answer = <STDIN>;
                     my $continue = defined($answer) && $answer =~ m/^\s*y(?:es)?\s*$/i;
 
                     die "Aborting installation as requested\n" if !$continue;
                 } else {
-                    die
-                        "Refusing to install tech-preview Ceph release ${rendered_release} without 'allow-experimental' parameter!\n";
+                    die "Refusing to install tech-preview Ceph release ${rendered_release}"
+                        . " without 'allow-experimental' parameter!\n";
                 }
             }
         }
@@ -246,9 +246,10 @@ EOF
             my $selected_version =
                 PVE::Ceph::Releases::get_ceph_release_info($cephver)->{'release'};
 
-            die
-                "Selected Ceph version '${selected_version}' does not match the available version in the repository '${latest_available}' \n"
-                if ($latest_available !~ "^$selected_version");
+            if ($latest_available !~ "^$selected_version") {
+                die "Selected Ceph version '${selected_version}' does not match the available"
+                    . " version in the repository '${latest_available}' \n";
+            }
 
             my $pkg_infos = $ceph_versions[0]->{'FileList'}->[0]->{'File'};
             print "\nUsing the following manual repository:\n"
