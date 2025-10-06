@@ -209,7 +209,7 @@ EOF
         }
 
         if ($repo ne "manual") {
-            PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
+            PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.sources", $repo_source);
 
             if ($available_ceph_releases->{$cephver}->{unsupported}) {
                 if ($param->{'allow-experimental'}) {
