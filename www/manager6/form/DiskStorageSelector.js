@@ -58,16 +58,28 @@ Ext.define('PVE.form.DiskStorageSelector', {
         }
 
         let validFormats = {};
-        let selectFormat = 'raw';
-        if (rec.data.format) {
-            validFormats = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
+        let defaultFormat = 'raw';
+        let selectFormat = defaultFormat;
+        if (rec.data.formats) {
+            for (const format of rec.data.formats.supported) {
+                validFormats[format] = true;
+            }
+            defaultFormat = rec.data.formats.default;
+        } else if (rec.data.format) {
+            // legacy api, just for compatibility
+            // 0 is the formats, 1 the default in the backend
+            validFormats = rec.data.format[0];
+            defaultFormat = rec.data.format[1];
+        }
+
+        if (Object.keys(validFormats).length > 0) {
             delete validFormats.subvol; // we never need subvol in the gui
             if (validFormats.qcow2) {
                 selectFormat = 'qcow2';
             } else if (validFormats.raw) {
                 selectFormat = 'raw';
             } else {
-                selectFormat = rec.data.format[1];
+                selectFormat = defaultFormat;
             }
         }
 
