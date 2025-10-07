@@ -41,6 +41,9 @@ Ext.define('PVE.window.Restore', {
             if (values.start && !values['live-restore']) {
                 params.start = 1;
             }
+            if (values['ha-managed']) {
+                params['ha-managed'] = 1;
+            }
             if (values['live-restore']) {
                 params['live-restore'] = 1;
             }
@@ -238,6 +241,15 @@ Ext.define('PVE.window.Restore', {
                         flex: 1,
                         fieldLabel: gettext('Start after restore'),
                         labelWidth: 105,
+                        checked: false,
+                    },
+                    {
+                        xtype: 'proxmoxcheckbox',
+                        name: 'ha-managed',
+                        reference: 'ha-managed',
+                        flex: 1,
+                        fieldLabel: gettext('Add as HA resource'),
+                        labelWidth: 120,
                         checked: false,
                     },
                 ],
