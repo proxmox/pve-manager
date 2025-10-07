@@ -82,6 +82,13 @@ Ext.define('PVE.lxc.CreateWizard', {
                     },
                     fieldLabel: gettext('Nesting'),
                 },
+                {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'ha-managed',
+                    uncheckedValue: 0,
+                    defaultValue: 0,
+                    fieldLabel: gettext('Add as HA resource'),
+                },
             ],
             column2: [
                 {
