@@ -242,6 +242,7 @@ __PACKAGE__->register_method({
             { name => 'netstat' },
             { name => 'network' },
             { name => 'qemu' },
+            { name => 'query-oci-repo-tags' },
             { name => 'query-url-metadata' },
             { name => 'replication' },
             { name => 'report' },
@@ -1732,6 +1733,52 @@ __PACKAGE__->register_method({
         my $upid = $rpcenv->fork_worker('download', $template, $user, $worker);
 
         return $upid;
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'query_oci_repo_tags',
+    path => 'query-oci-repo-tags',
+    method => 'GET',
+    description => "List all tags for an OCI repository reference.",
+    proxyto => 'node',
+    permissions => {
+        check => ['perm', '/nodes/{node}', ['Sys.AccessNetwork']],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            reference => {
+                description => "The reference to the repository to query tags from.",
+                type => 'string',
+                pattern => '^(?:(?:[a-zA-Z\d]|[a-zA-Z\d][a-zA-Z\d-]*[a-zA-Z\d])'
+                    . '(?:\.(?:[a-zA-Z\d]|[a-zA-Z\d][a-zA-Z\d-]*[a-zA-Z\d]))*(?::\d+)?/)?[a-z\d]+'
+                    . '(?:(?:[._]|__|[-]*)[a-z\d]+)*(?:/[a-z\d]+(?:(?:[._]|__|[-]*)[a-z\d]+)*)*$',
+            },
+        },
+    },
+    returns => {
+        type => 'array',
+        items => {
+            type => 'string',
+        },
+    },
+    code => sub {
+        my ($param) = @_;
+
+        die "Install 'skopeo' to list tags from OCI registries.\n" if (!-f '/usr/bin/skopeo');
+
+        my $reference = $param->{reference};
+        my $tags_json = "";
+        PVE::Tools::run_command(
+            ["skopeo", "list-tags", "docker://$reference"],
+            outfunc => sub {
+                $tags_json = $tags_json . shift;
+            },
+        );
+        my $tags = decode_json($tags_json);
+        return $tags->{Tags};
     },
 });
 
