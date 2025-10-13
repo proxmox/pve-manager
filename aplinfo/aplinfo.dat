@@ -112,15 +112,15 @@ Description: Debian 12 Bookworm (standard)
  A small Debian Bookworm system including all standard packages.
 
 Package: debian-13-standard
-Version: 13.1-1
+Version: 13.1-2
 Type: lxc
 OS: debian-13
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-13-standard_13.1-1_amd64.tar.zst
-md5sum: 8efac33d9ddaf2792c41202ee52b645a
-sha512sum: 7e49ac1082b1514c03439f218b73175322e2e2cfa6222ee8e52ee5a505293923247079a73e3e56ddb880eb1cf116a472958141b32fb3ae3acc8692778efd32f3
+Location: system/debian-13-standard_13.1-2_amd64.tar.zst
+md5sum: 5ee736fbc37d2068ca6695d7686b7d62
+sha512sum: 5aec4ab2ac5c16c7c8ecb87bfeeb10213abe96db6b85e2463585cea492fc861d7c390b3f9c95629bf690b95e9dfe1037207fc69c0912429605f208d5cb2621f8
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 13 Trixie (standard)
  A small Debian Trixie system including all standard packages.
@@ -216,6 +216,20 @@ md5sum: 0dd1c7dca99aca52a785a7b83f39d069
 sha512sum: 2631776cc7014e6a5562bba951cfad1ad9caa58e3626a28136b15add42d8c7769c25d0dcdc86c4d421384160481e9d9a1975c41f11bbdb0004a8f8695b92900b
 Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
 Description: Proxmox Mail Gateway 8.2
+ A full featured mail proxy for spam and virus filtering, optimized for container environment.
+
+Package: proxmox-mail-gateway-9.0-standard
+Version: 9.0-1
+Type: lxc
+OS: debian-13
+Section: mail
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: mail/proxmox-mail-gateway-9.0-standard_9.0-1_amd64.tar.zst
+md5sum: 2346458e2947248b25ebbe3484086e5c
+sha512sum: 8c20d93aa5af8a94526ecedb6b1a18e45ea2dd80d48d1ca9c413fffcd93cccaf4f6767e6326d9fe12e737388a9fbe328ef16e677f7442d7da29b75c5eb9f5b01
+Infopage: https://www.proxmox.com/en/proxmox-mail-gateway/overview
+Description: Proxmox Mail Gateway 9.0
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: proxmox-mailgateway-7.3-standard
