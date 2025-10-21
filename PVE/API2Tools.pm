@@ -45,16 +45,16 @@ sub get_hwaddress {
 sub get_rrd_key {
     my ($rrd, $type, $id) = @_;
 
+    my $key = "pve-${type}-9.0/${id}";
+    if (defined($rrd->{$key})) {
+        return $key;
+    }
+
     # check for old formats: pve2-{type}/{id}. For VMs and CTs the version number is different than for nodes and storages
     if ($type ne "vm" && exists $rrd->{"pve2-${type}/${id}"}) {
         return "pve2-${type}/${id}";
     } elsif ($type eq "vm" && exists $rrd->{"pve2.3-${type}/${id}"}) {
         return "pve2.3-${type}/${id}";
-    }
-
-    my $key = "pve-${type}-9.0/${id}";
-    if (defined($rrd->{$key})) {
-        return $key;
     }
 }
 
