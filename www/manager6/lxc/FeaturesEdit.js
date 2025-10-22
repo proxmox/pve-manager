@@ -1,6 +1,7 @@
 Ext.define('PVE.lxc.FeaturesInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveLxcFeaturesInputPanel',
+    onlineHelp: 'pct_options',
 
     // used to save the mounts fstypes until sending
     mounts: [],
