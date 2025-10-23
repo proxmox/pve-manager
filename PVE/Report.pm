@@ -113,6 +113,12 @@ my $init_report_cmds = sub {
                 'cat /etc/pve/jobs.cfg',
             ],
         },
+        replication => {
+            order => 67,
+            cmds => [
+                'cat /etc/pve/replication.cfg',
+            ],
+        },
         hardware => {
             order => 70,
             cmds => [
