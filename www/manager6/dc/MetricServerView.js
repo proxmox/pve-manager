@@ -369,7 +369,7 @@ Ext.define('PVE.dc.InfluxDBEdit', {
                 {
                     xtype: 'proxmoxintegerfield',
                     name: 'max-body-size',
-                    fieldLabel: gettext('Batch Size (b)'),
+                    fieldLabel: gettext('Batch Size (bytes)'),
                     minValue: 1,
                     emptyText: '25000000',
                     submitEmpty: false,
