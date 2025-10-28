@@ -275,6 +275,7 @@ JSSRC= 							\
 	qemu/SevEdit.js					\
 	qemu/Smbios1Edit.js				\
 	qemu/SystemEdit.js				\
+	qemu/TdxEdit.js					\
 	qemu/USBEdit.js					\
 	qemu/VirtiofsEdit.js				\
 	sdn/Browser.js					\
