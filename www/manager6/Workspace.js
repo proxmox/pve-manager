@@ -13,6 +13,8 @@ Ext.define('PVE.Workspace', {
 
     loginData: null, // Data from last login call
 
+    response401count: 0,
+
     onLogin: function (loginData) {
         // override me
     },
