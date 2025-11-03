@@ -352,7 +352,7 @@ Ext.define('PVE.qemu.Options', {
                     ? {
                           xtype: 'proxmoxWindowEdit',
                           subject: gettext('VM State storage'),
-                          onlineHelp: 'chapter_virtual_machines', // FIXME: use 'qm_vmstatestorage' once available
+                          onlineHelp: 'qm_vmstatestorage',
                           width: 350,
                           items: {
                               xtype: 'pveStorageSelector',
