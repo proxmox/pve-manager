@@ -865,10 +865,9 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $path = "pve-node-9.0/$param->{node}";
-        $path = "pve2-node/$param->{node}" if !-e "/var/lib/rrdcached/db/${path}";
-        return PVE::RRD::create_rrd_graph($path, $param->{timeframe},
-            $param->{ds}, $param->{cf});
+        return PVE::RRD::create_rrd_graph(
+            "pve-node-9.0/$param->{node}", $param->{timeframe}, $param->{ds}, $param->{cf},
+        );
 
     },
 });
@@ -909,9 +908,9 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $path = "pve-node-9.0/$param->{node}";
-        $path = "pve2-node/$param->{node}" if !-e "/var/lib/rrdcached/db/${path}";
-        return PVE::RRD::create_rrd_data($path, $param->{timeframe}, $param->{cf});
+        return PVE::RRD::create_rrd_data(
+            "pve-node-9.0/$param->{node}", $param->{timeframe}, $param->{cf},
+        );
     },
 });
 
