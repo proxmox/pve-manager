@@ -204,7 +204,7 @@ my $apt_package_return_props = {
     Arch => {
         type => 'string',
         description => 'Package Architecture.',
-        enum => [qw(armhf arm64 amd64 ppc64el risc64 s390x)],
+        enum => [qw(armhf arm64 amd64 ppc64el risc64 s390x all)],
     },
     Description => {
         type => 'string',
