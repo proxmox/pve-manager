@@ -70,8 +70,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         let store = me.getStore();
         let flags = '';
 
-        // ExtJS does not has a nice getAllRecords interface for stores :/
-        store.queryBy(Ext.returnTrue).each(function (rec) {
+        store.getData().each(function (rec) {
             let s = rec.get('state');
             if (s && s !== '=') {
                 let f = rec.get('flag');
@@ -96,11 +95,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
         me.unkownFlags = [];
 
-        me.getStore()
-            .queryBy(Ext.returnTrue)
-            .each(function (rec) {
-                rec.set('state', '=');
-            });
+        me.getStore().getData().each((rec) => rec.set('state', '='));
 
         let flags = value ? value.split(';') : [];
         flags.forEach(function (flag) {
