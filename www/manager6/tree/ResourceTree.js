@@ -42,6 +42,39 @@ Ext.define('PVE.tree.ResourceTree', {
         },
     },
 
+    columns: [
+        {
+            xtype: 'treecolumn',
+            flex: 1,
+            dataIndex: 'text',
+            renderer: function (val, meta, rec) {
+                let info = rec.data;
+
+                let text = '';
+                let status = '';
+                if (info.type === 'storage') {
+                    let usage = info.disk / info.maxdisk;
+                    if (usage >= 0.0 && usage <= 1.0) {
+                        let barHeight = (usage * 100).toFixed(0);
+                        let remainingHeight = (100 - barHeight).toFixed(0);
+                        status = '<div class="usage-wrapper">';
+                        status += `<div class="usage-negative" style="height: ${remainingHeight}%"></div>`;
+                        status += `<div class="usage" style="height: ${barHeight}%"></div>`;
+                        status += '</div> ';
+                    }
+                }
+                if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
+                    if (PVE.UIOptions.getTreeSortingValue('sort-field') !== 'vmid') {
+                        text = `${info.name} (${String(info.vmid)})`;
+                    }
+                }
+                text = `<span>${status}${info.text}</span>`;
+                text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
+                return (info.renderedText = text);
+            },
+        },
+    ],
+
     useArrows: true,
 
     // private
@@ -130,30 +163,6 @@ Ext.define('PVE.tree.ResourceTree', {
         }
     },
 
-    setText: function (info) {
-        let _me = this;
-
-        let status = '';
-        if (info.type === 'storage') {
-            let usage = info.disk / info.maxdisk;
-            if (usage >= 0.0 && usage <= 1.0) {
-                let barHeight = (usage * 100).toFixed(0);
-                let remainingHeight = (100 - barHeight).toFixed(0);
-                status = '<div class="usage-wrapper">';
-                status += `<div class="usage-negative" style="height: ${remainingHeight}%"></div>`;
-                status += `<div class="usage" style="height: ${barHeight}%"></div>`;
-                status += '</div> ';
-            }
-        }
-        if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
-            if (PVE.UIOptions.getTreeSortingValue('sort-field') !== 'vmid') {
-                info.text = `${info.name} (${String(info.vmid)})`;
-            }
-        }
-        info.text = `<span>${status}${info.text}</span>`;
-        info.text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
-    },
-
     getToolTip: function (info) {
         let qtips = [];
         if (info.qmpstatus || info.status) {
@@ -186,7 +195,6 @@ Ext.define('PVE.tree.ResourceTree', {
         let me = this;
 
         me.setIconCls(info);
-        me.setText(info);
 
         if (info.groupbyid) {
             if (me.viewFilter.groupRenderer) {
@@ -408,7 +416,6 @@ Ext.define('PVE.tree.ResourceTree', {
                         info.id = oldid;
                     }
                     me.setIconCls(info);
-                    me.setText(info);
                     olditem.commit();
                 }
                 if ((!item || moved) && olditem.isLeaf()) {
@@ -609,7 +616,6 @@ Ext.define('PVE.tree.ResourceTree', {
                         node.beginEdit();
                         let info = node.data;
                         me.setIconCls(info);
-                        me.setText(info);
                         if (me.viewFilter.groupRenderer) {
                             info.text = me.viewFilter.groupRenderer(info);
                         }
