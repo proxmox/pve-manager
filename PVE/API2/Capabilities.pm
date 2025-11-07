@@ -7,6 +7,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
 
 use PVE::API2::Qemu::CPU;
+use PVE::API2::Qemu::CPUFlags;
 use PVE::API2::Qemu::Machine;
 use PVE::API2::NodeCapabilities::Qemu::Migration;
 
@@ -15,6 +16,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method({
     subclass => "PVE::API2::Qemu::CPU",
     path => 'qemu/cpu',
+});
+
+__PACKAGE__->register_method({
+    subclass => "PVE::API2::Qemu::CPUFlags",
+    path => 'qemu/cpu-flags',
 });
 
 __PACKAGE__->register_method({
