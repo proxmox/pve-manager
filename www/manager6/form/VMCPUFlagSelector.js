@@ -66,13 +66,13 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     },
 
     getValue: function () {
-        var me = this;
-        var store = me.getStore();
-        var flags = '';
+        let me = this;
+        let store = me.getStore();
+        let flags = '';
 
         // ExtJS does not has a nice getAllRecords interface for stores :/
         store.queryBy(Ext.returnTrue).each(function (rec) {
-            var s = rec.get('state');
+            let s = rec.get('state');
             if (s && s !== '=') {
                 let f = rec.get('flag');
                 if (flags === '') {
@@ -89,8 +89,8 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     },
 
     setValue: function (value) {
-        var me = this;
-        var store = me.getStore();
+        let me = this;
+        let store = me.getStore();
 
         me.value = value || '';
 
@@ -102,12 +102,12 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                 rec.set('state', '=');
             });
 
-        var flags = value ? value.split(';') : [];
+        let flags = value ? value.split(';') : [];
         flags.forEach(function (flag) {
-            var sign = flag.substr(0, 1);
+            let sign = flag.substr(0, 1);
             flag = flag.substr(1);
 
-            var rec = store.findRecord('flag', flag, 0, false, true, true);
+            let rec = store.findRecord('flag', flag, 0, false, true, true);
             if (rec !== null) {
                 rec.set('state', sign);
             } else {
@@ -116,7 +116,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         });
         store.reload();
 
-        var res = me.mixins.field.setValue.call(me, value);
+        let res = me.mixins.field.setValue.call(me, value);
 
         return res;
     },
@@ -142,7 +142,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             dataIndex: 'state',
             width: 95,
             onWidgetAttach: function (column, widget, record) {
-                var val = record.get('state') || '=';
+                let val = record.get('state') || '=';
                 widget.down('[inputValue=' + val + ']').setValue(true);
                 // TODO: disable if selected CPU model and flag are incompatible
             },
@@ -154,10 +154,10 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                 value: '=',
                 listeners: {
                     change: function (f, value) {
-                        var v = Object.values(value)[0];
+                        let v = Object.values(value)[0];
                         f.getWidgetRecord().set('state', v);
 
-                        var view = this.up('grid');
+                        let view = this.up('grid');
                         view.dirty = view.getValue() !== view.originalValue;
                         view.checkDirty();
                         //view.checkChange();
@@ -195,7 +195,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     ],
 
     initComponent: function () {
-        var me = this;
+        let me = this;
 
         // static class store, thus gets not recreated, so ensure defaults are set!
         me.getStore().data.forEach(function (v) {
