@@ -1289,10 +1289,16 @@ __PACKAGE__->register_method({
     returns => {
         additionalProperties => 0,
         properties => {
-            user => { type => 'string' },
-            ticket => { type => 'string' },
-            port => { type => 'integer' },
-            upid => { type => 'string' },
+            user => {
+                type => 'string',
+                description => 'user/token that generated the VNC ticket in `ticket`.',
+            },
+            ticket => {
+                type => 'string',
+                description => 'VNC ticket used to verify websocket connection.',
+            },
+            port => { type => 'integer', description => 'port used to bind termproxy to.' },
+            upid => { type => 'string', description => 'UPID for termproxy worker task.' },
         },
     },
     code => sub {
