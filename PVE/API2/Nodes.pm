@@ -1299,7 +1299,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $rpcenv = PVE::RPCEnvironment::get();
-        my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
+        my $user = $rpcenv->get_user();
 
         my $node = $param->{node};
         my $authpath = "/nodes/$node";
@@ -1315,7 +1315,14 @@ __PACKAGE__->register_method({
             syslog('info', "starting termproxy $upid\n");
 
             my $cmd = [
-                '/usr/bin/termproxy', $port, '--path', $authpath, '--perm', 'Sys.Console', '--',
+                '/usr/bin/termproxy',
+                $port,
+                '--path',
+                $authpath,
+                '--perm',
+                'Sys.Console',
+                '--vncticket-endpoint',
+                '--',
             ];
             push @$cmd, @$shcmd;
 
@@ -1371,7 +1378,7 @@ __PACKAGE__->register_method({
 
         my $rpcenv = PVE::RPCEnvironment::get();
 
-        my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
+        my $user = $rpcenv->get_user();
 
         my $authpath = "/nodes/$param->{node}";
 
