@@ -222,6 +222,32 @@ __PACKAGE__->register_method({
     },
 });
 
+my sub can_access_network {
+    my ($rpcenv, $network) = @_;
+    my $authuser = $rpcenv->get_user();
+
+    if ($network->{'network-type'} eq 'fabric') {
+        return $rpcenv->check_any(
+            $authuser,
+            "/sdn/fabrics/$network->{network}",
+            ['SDN.Audit', 'SDN.Allocate'],
+            1,
+        );
+    } elsif ($network->{'network-type'} eq 'zone') {
+        return $rpcenv->check(
+            $authuser,
+            "/sdn/zones/$network->{network}",
+            ['SDN.Audit'],
+            1,
+        );
+    }
+
+    # unknown type, so most likely introduced in a newer
+    # version - avoid leaking information by suppressing any
+    # unknown sdn types in the returned array.
+    return 0;
+}
+
 __PACKAGE__->register_method({
     name => 'resources',
     path => 'resources',
@@ -251,7 +277,8 @@ __PACKAGE__->register_method({
                 type => {
                     description => "Resource type.",
                     type => 'string',
-                    enum => ['node', 'storage', 'pool', 'qemu', 'lxc', 'openvz', 'sdn'],
+                    enum =>
+                        ['node', 'storage', 'pool', 'qemu', 'lxc', 'openvz', 'sdn', 'network'],
                 },
                 status => {
                     description => "Resource type dependent status.",
@@ -431,6 +458,23 @@ __PACKAGE__->register_method({
                     optional => 1,
                     default => 0,
                 },
+                network => {
+                    description => "The name of a Network entity (for type 'network').",
+                    type => "string",
+                    optional => 1,
+                },
+                'network-type' => {
+                    description => "The type of network resource (for type 'network').",
+                    type => "string",
+                    enum => ["fabric", "zone"],
+                    optional => 1,
+                },
+                protocol => {
+                    description =>
+                        "The protocol of a fabric (for type 'network', network-type 'fabric').",
+                    type => "string",
+                    optional => 1,
+                },
             },
         },
     },
@@ -584,25 +628,15 @@ __PACKAGE__->register_method({
         }
 
         if (!$param->{type} || $param->{type} eq 'sdn') {
-            #add default "localnetwork" zone
-            if ($rpcenv->check($authuser, "/sdn/zones/localnetwork", ['SDN.Audit'], 1)) {
-                foreach my $node (@$nodelist) {
-                    my $local_sdn = {
-                        id => "sdn/$node/localnetwork",
-                        sdn => 'localnetwork',
-                        node => $node,
-                        type => 'sdn',
-                        status => 'ok',
-                    };
-                    push @$res, $local_sdn;
-                }
-            }
+            my $nodes = PVE::Cluster::get_node_kv("sdn");
+            my $network_nodes = PVE::Cluster::get_node_kv("network");
 
-            if ($have_sdn) {
-                my $nodes = PVE::Cluster::get_node_kv("sdn");
+            for my $node (sort keys %{$nodes}) {
+                # host is already sending the new network resource, so ignore
+                # its sdn resources
+                next if defined $network_nodes->{$node};
 
-                for my $node (sort keys %{$nodes}) {
-                    my $sdns = decode_json($nodes->{$node});
+                my $sdns = decode_json($nodes->{$node});
 
                     for my $id (sort keys %{$sdns}) {
                         next if !$rpcenv->check($authuser, "/sdn/zones/$id", ['SDN.Audit'], 1);
@@ -616,6 +650,42 @@ __PACKAGE__->register_method({
                         };
                         push @$res, $entry;
                     }
+                }
+            }
+        }
+
+        if (!$param->{type} || $param->{type} eq 'network') {
+            my $nodes = PVE::Cluster::get_node_kv("network");
+
+            # add default "localnetwork" zone
+            if ($rpcenv->check($authuser, "/sdn/zones/localnetwork", ['SDN.Audit'], 1)) {
+                foreach my $node (@$nodelist) {
+                    my $local_sdn = {
+                        id => "network/$node/zone/localnetwork",
+                        type => 'network',
+                        'network-type' => 'zone',
+                        network => 'localnetwork',
+                        node => $node,
+                        status => 'ok',
+                    };
+                    push $res->@*, $local_sdn;
+                }
+            }
+
+            for my $node (sort keys $nodes->%*) {
+                my $node_config = decode_json($nodes->{$node});
+
+                for my $id (sort keys $node_config->%*) {
+                    my $entry = $node_config->{$id};
+
+                    next if !can_access_network($rpcenv, $entry);
+
+                    push $res->@*,
+                        {
+                            "id" => "network/$node/$entry->{'network-type'}/$entry->{network}",
+                            "node" => $node,
+                            $entry->%*,
+                        };
                 }
             }
         }
