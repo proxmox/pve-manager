@@ -16,6 +16,43 @@ Ext.define(
                 groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})',
             },
         ],
+
+        sub_panel: null,
+
+        columns: [
+            {
+                header: gettext('VNet'),
+                width: 100,
+                sortable: true,
+                dataIndex: 'vnet',
+            },
+            {
+                header: gettext('Alias'),
+                width: 300,
+                sortable: true,
+                dataIndex: 'alias',
+            },
+            {
+                header: gettext('Status'),
+                width: 100,
+                sortable: true,
+                dataIndex: 'status',
+            },
+            {
+                header: gettext('Details'),
+                flex: 1,
+                dataIndex: 'statusmsg',
+            },
+        ],
+
+        on_select: function (selectionModel, record) {
+            // do nothing by default
+        },
+
+        on_deselect: function () {
+            // do nothing by default
+        },
+
         initComponent: function () {
             var me = this;
 
@@ -44,8 +81,6 @@ Ext.define(
                 },
             });
 
-            var sm = Ext.create('Ext.selection.RowModel', {});
-
             var reload = function () {
                 store.load();
             };
@@ -53,43 +88,11 @@ Ext.define(
             Proxmox.Utils.monStoreErrors(me, store);
             Ext.apply(me, {
                 store: store,
-                selModel: sm,
-                tbar: [],
-                columns: [
-                    {
-                        header: 'VNet',
-                        width: 100,
-                        sortable: true,
-                        dataIndex: 'vnet',
-                    },
-                    {
-                        header: 'Alias',
-                        width: 300,
-                        sortable: true,
-                        dataIndex: 'alias',
-                    },
-                    {
-                        header: gettext('Status'),
-                        width: 100,
-                        sortable: true,
-                        dataIndex: 'status',
-                    },
-                    {
-                        header: gettext('Details'),
-                        flex: 1,
-                        dataIndex: 'statusmsg',
-                    },
-                ],
                 listeners: {
                     activate: reload,
                     show: reload,
-                    select: function (_sm, rec) {
-                        let path = `/sdn/zones/${me.zone}/${rec.data.vnet}`;
-                        me.permissions_panel.setPath(path);
-                    },
-                    deselect: function () {
-                        me.permissions_panel.setPath(undefined);
-                    },
+                    select: me.on_select,
+                    deselect: me.on_deselect,
                 },
             });
             store.load();

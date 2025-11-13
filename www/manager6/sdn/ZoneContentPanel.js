@@ -18,12 +18,21 @@ Ext.define('PVE.sdn.ZoneContentPanel', {
         var vnetview_panel = Ext.createWidget('pveSDNZoneContentView', {
             title: 'VNets',
             region: 'west',
-            permissions_panel: permissions_panel,
+            sub_panel: permissions_panel,
             nodename: me.nodename,
             zone: me.zone,
             width: '50%',
             border: false,
             split: true,
+
+            on_select: function (_sm, rec) {
+                let path = `/sdn/zones/${me.zone}/${rec.data.vnet}`;
+                permissions_panel.setPath(path);
+            },
+
+            on_deselect: function () {
+                permissions_panel.setPath(undefined);
+            },
         });
 
         Ext.apply(me, {
