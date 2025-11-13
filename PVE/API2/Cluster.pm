@@ -469,6 +469,11 @@ __PACKAGE__->register_method({
                     enum => ["fabric", "zone"],
                     optional => 1,
                 },
+                'zone-type' => {
+                    description => "The type of an SDN zone (for type 'sdn').",
+                    type => "string",
+                    optional => 1,
+                },
                 protocol => {
                     description =>
                         "The protocol of a fabric (for type 'network', network-type 'fabric').",
@@ -638,18 +643,20 @@ __PACKAGE__->register_method({
 
                 my $sdns = decode_json($nodes->{$node});
 
-                    for my $id (sort keys %{$sdns}) {
-                        next if !$rpcenv->check($authuser, "/sdn/zones/$id", ['SDN.Audit'], 1);
-                        my $sdn = $sdns->{$id};
-                        my $entry = {
-                            id => "sdn/$node/$id",
-                            sdn => $id,
-                            node => $node,
-                            type => 'sdn',
-                            status => $sdn->{'status'},
-                        };
-                        push @$res, $entry;
-                    }
+                for my $id (sort keys %{$sdns}) {
+                    next if !$rpcenv->check($authuser, "/sdn/zones/$id", ['SDN.Audit'], 1);
+                    my $sdn = $sdns->{$id};
+                    my $entry = {
+                        id => "sdn/$node/$id",
+                        sdn => $id,
+                        node => $node,
+                        type => 'sdn',
+                        status => $sdn->{'status'},
+                    };
+
+                    $entry->{'zone-type'} = $sdn->{'zone-type'} if defined($sdn->{'zone-type'});
+
+                    push @$res, $entry;
                 }
             }
         }

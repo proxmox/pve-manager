@@ -15,6 +15,7 @@ use PVE::CpuSet;
 use Filesys::Df;
 use PVE::INotify;
 use PVE::Network;
+use PVE::Network::SDN::Zones;
 use PVE::RS::SDN::Fabrics;
 use PVE::NodeConfig;
 use PVE::Cluster qw(cfs_read_file);
@@ -37,12 +38,6 @@ use PVE::PullMetric;
 use PVE::Status::Plugin;
 
 use base qw(PVE::Daemon);
-
-my $have_sdn;
-eval {
-    require PVE::Network::SDN;
-    $have_sdn = 1;
-};
 
 my $opt_debug;
 my $restart_request;
@@ -767,13 +762,10 @@ sub update_ceph_metadata {
 }
 
 sub update_sdn_status {
+    my ($zone_status, $vnet_status) = PVE::Network::SDN::Zones::status();
 
-    if ($have_sdn) {
-        my ($transport_status, $vnet_status) = PVE::Network::SDN::status();
-
-        my $status = $transport_status ? encode_json($transport_status) : undef;
-        PVE::Cluster::broadcast_node_kv("sdn", $status);
-    }
+    my $status = $zone_status ? encode_json($zone_status) : undef;
+    PVE::Cluster::broadcast_node_kv("sdn", $status);
 }
 
 sub update_network_status {
