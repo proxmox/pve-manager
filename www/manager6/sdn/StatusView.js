@@ -33,7 +33,7 @@ Ext.define(
                 ],
                 filters: {
                     property: 'type',
-                    value: 'sdn',
+                    value: 'network',
                     operator: '==',
                 },
             });
@@ -77,12 +77,17 @@ Ext.define(
                     {
                         header: 'SDN',
                         width: 80,
-                        dataIndex: 'sdn',
+                        dataIndex: 'network',
                     },
                     {
                         header: gettext('Node'),
                         width: 80,
                         dataIndex: 'node',
+                    },
+                    {
+                        header: gettext('Type'),
+                        width: 80,
+                        dataIndex: 'network-type',
                     },
                     {
                         header: gettext('Status'),
@@ -102,7 +107,7 @@ Ext.define(
     function () {
         Ext.define('pve-sdn-status', {
             extend: 'Ext.data.Model',
-            fields: ['id', 'type', 'node', 'status', 'sdn'],
+            fields: ['id', 'type', 'node', 'status', 'network'],
             idProperty: 'id',
         });
     },
