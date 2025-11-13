@@ -49,6 +49,7 @@ use PVE::API2::Hardware;
 use PVE::API2::LXC::Status;
 use PVE::API2::LXC;
 use PVE::API2::Network;
+use PVE::API2::Network::SDN::Nodes::Status;
 use PVE::API2::NodeConfig;
 use PVE::API2::Qemu::CPU;
 use PVE::API2::Qemu;
@@ -59,12 +60,6 @@ use PVE::API2::Storage::Status;
 use PVE::API2::Subscription;
 use PVE::API2::Tasks;
 use PVE::API2::VZDump;
-
-my $have_sdn;
-eval {
-    require PVE::API2::Network::SDN::Zones::Status;
-    $have_sdn = 1;
-};
 
 use base qw(PVE::RESTHandler);
 
@@ -201,42 +196,10 @@ __PACKAGE__->register_method({
     path => 'config',
 });
 
-if ($have_sdn) {
-    __PACKAGE__->register_method({
-        subclass => "PVE::API2::Network::SDN::Zones::Status",
-        path => 'sdn/zones',
-    });
-
-    __PACKAGE__->register_method({
-        name => 'sdnindex',
-        path => 'sdn',
-        method => 'GET',
-        permissions => { user => 'all' },
-        description => "SDN index.",
-        parameters => {
-            additionalProperties => 0,
-            properties => {
-                node => get_standard_option('pve-node'),
-            },
-        },
-        returns => {
-            type => 'array',
-            items => {
-                type => "object",
-                properties => {},
-            },
-            links => [{ rel => 'child', href => "{name}" }],
-        },
-        code => sub {
-            my ($param) = @_;
-
-            my $result = [
-                { name => 'zones' },
-            ];
-            return $result;
-        },
-    });
-}
+__PACKAGE__->register_method({
+    subclass => "PVE::API2::Network::SDN::Nodes::Status",
+    path => 'sdn',
+});
 
 __PACKAGE__->register_method({
     name => 'index',
@@ -285,6 +248,7 @@ __PACKAGE__->register_method({
             { name => 'rrd' }, # fixme: remove?
             { name => 'rrddata' },
             { name => 'scan' },
+            { name => 'sdn' },
             { name => 'services' },
             { name => 'spiceshell' },
             { name => 'startall' },
@@ -302,8 +266,6 @@ __PACKAGE__->register_method({
             { name => 'vzdump' },
             { name => 'wakeonlan' },
         ];
-
-        push @$result, { name => 'sdn' } if $have_sdn;
 
         return $result;
     },
