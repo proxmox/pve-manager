@@ -15,6 +15,7 @@ use PVE::CpuSet;
 use Filesys::Df;
 use PVE::INotify;
 use PVE::Network;
+use PVE::RS::SDN::Fabrics;
 use PVE::NodeConfig;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
@@ -775,6 +776,28 @@ sub update_sdn_status {
     }
 }
 
+sub update_network_status {
+    my $network_status = {};
+
+    my ($fabric_status) = PVE::RS::SDN::Fabrics::status();
+    for my $fabric (values $fabric_status->%*) {
+        $network_status->{"fabric/$fabric->{network}"} = $fabric;
+    }
+
+    my ($zone_status, $vnet_status) = PVE::Network::SDN::Zones::status();
+    for my $id (sort keys $zone_status->%*) {
+        my $zone = $zone_status->{$id};
+
+        $zone->{'network-type'} = 'zone';
+        $zone->{network} = $id;
+        $zone->{type} = 'network';
+
+        $network_status->{"zone/$id"} = $zone;
+    }
+
+    PVE::Cluster::broadcast_node_kv("network", encode_json($network_status));
+}
+
 my $broadcast_version_info_done = 0;
 my sub broadcast_version_info : prototype() {
     if (
@@ -839,6 +862,10 @@ sub update_status {
     eval { update_sdn_status(); };
     $err = $@;
     syslog('err', "sdn status update error: $err") if $err;
+
+    eval { update_network_status(); };
+    $err = $@;
+    syslog('err', "network status update error: $err") if $err;
 
     eval { broadcast_version_info(); };
     $err = $@;
