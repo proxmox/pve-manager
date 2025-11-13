@@ -1276,6 +1276,13 @@ Ext.define('PVE.Utils', {
                 // templates
                 objType = 'template';
                 status = type;
+            } else if (type === 'network') {
+                const networkTypeMapping = {
+                    fabric: 'fa fa-road',
+                    zone: 'fa fa-th',
+                };
+
+                return networkTypeMapping[record['network-type']] ?? '';
             } else if (type === 'storage' && record.content === 'import') {
                 return 'fa fa-cloud-download';
             } else {
@@ -1299,6 +1306,11 @@ Ext.define('PVE.Utils', {
             var cls = PVE.Utils.get_object_icon_class(value, record.data);
 
             var fa = '<i class="fa-fw x-grid-icon-custom ' + cls + '"></i> ';
+
+            if (value === 'network') {
+                return fa + record.data['network-type'];
+            }
+
             return fa + value;
         },
 

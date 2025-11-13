@@ -252,6 +252,7 @@ Ext.define('PVE.StdWorkspace', {
                             lxc: 'pveLXCConfig',
                             storage: 'PVE.storage.Browser',
                             sdn: 'PVE.sdn.Browser',
+                            network: 'PVE.network.Browser',
                             pool: 'pvePoolConfig',
                             tag: 'pveTagConfig',
                         };

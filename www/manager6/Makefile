@@ -278,6 +278,7 @@ JSSRC= 							\
 	qemu/USBEdit.js					\
 	qemu/VirtiofsEdit.js				\
 	sdn/Browser.js					\
+	sdn/NetworkBrowser.js					\
 	sdn/ControllerView.js				\
 	sdn/Status.js					\
 	sdn/StatusView.js				\
@@ -313,6 +314,7 @@ JSSRC= 							\
 	sdn/zones/VlanEdit.js				\
 	sdn/zones/VxlanEdit.js				\
 	sdn/FabricsView.js				\
+	sdn/FabricsContentView.js			\
 	sdn/fabrics/Common.js				\
 	sdn/fabrics/InterfacePanel.js			\
 	sdn/fabrics/NodeEdit.js				\

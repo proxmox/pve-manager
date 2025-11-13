@@ -25,6 +25,10 @@ Ext.define('PVE.tree.ResourceTree', {
                 iconCls: 'fa fa-th',
                 text: gettext('SDN'),
             },
+            network: {
+                iconCls: 'fa fa-globe',
+                text: gettext('Network'),
+            },
             qemu: {
                 iconCls: 'fa fa-desktop',
                 text: gettext('Virtual Machine'),
@@ -88,6 +92,8 @@ Ext.define('PVE.tree.ResourceTree', {
                 return 2;
             case 'sdn':
                 return 3;
+            case 'network':
+                return 3.5;
             case 'storage':
                 return 4;
             default:
