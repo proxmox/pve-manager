@@ -48,6 +48,17 @@ Ext.define('PVE.sdn.Browser', {
             });
         }
 
+        if (me.pveSelNode.data['zone-type'] && me.pveSelNode.data['zone-type'] === 'evpn') {
+            me.items.push({
+                nodename: nodename,
+                zone: sdnId,
+                xtype: 'pveSDNEvpnZoneIpVrfPanel',
+                title: gettext('IP-VRF'),
+                iconCls: 'fa fa-th-list',
+                itemId: 'ip-vrf',
+            });
+        }
+
         me.callParent();
     },
 });
