@@ -57,6 +57,15 @@ Ext.define('PVE.sdn.Browser', {
                 iconCls: 'fa fa-th-list',
                 itemId: 'ip-vrf',
             });
+
+            me.items.push({
+                nodename: nodename,
+                zone: sdnId,
+                xtype: 'pveSDNEvpnZoneMacVrfPanel',
+                title: gettext('MAC-VRFs'),
+                iconCls: 'fa fa-th-list',
+                itemId: 'mac-vrfs',
+            });
         }
 
         me.callParent();
