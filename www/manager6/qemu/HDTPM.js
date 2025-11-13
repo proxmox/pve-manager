@@ -21,6 +21,7 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
             me.drive.file = values.hdstorage + ':1';
         }
 
+        me.drive.format = values.diskformat;
         me.drive.version = values.version;
         var params = {};
         params[confid] = PVE.Parser.printQemuDrive(me.drive);
@@ -54,7 +55,6 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
                 nodename: me.nodename,
                 disabled: me.disabled,
                 hideSize: true,
-                hideFormat: true,
             },
             {
                 xtype: 'proxmoxKVComboBox',

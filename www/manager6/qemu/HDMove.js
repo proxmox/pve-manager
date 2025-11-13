@@ -76,7 +76,6 @@ Ext.define('PVE.window.HDMove', {
                     cbind: {
                         nodename: '{nodename}',
                         storageContent: (get) => (get('isQemu') ? 'images' : 'rootdir'),
-                        hideFormat: (get) => get('disk') === 'tpmstate0',
                     },
                     hideSize: true,
                 },
