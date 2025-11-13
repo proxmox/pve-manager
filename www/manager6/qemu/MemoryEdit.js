@@ -33,23 +33,39 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
     },
 
     onGetValues: function (values) {
-        var _me = this;
+        let res = {};
 
-        var res = {};
+        let deleteSet = new Set([]);
 
-        res.memory = values.memory;
+        // properties that can be passed as-is
+        let propagate = ['allow-ksm', 'memory'];
+
+        propagate.forEach(function (prop) {
+            if (values.delete?.split(',').includes(prop)) {
+                deleteSet.add(prop);
+            }
+            if (prop in values) {
+                res[prop] = values[prop];
+            }
+        });
+
         res.balloon = values.balloon;
 
         if (!values.ballooning) {
             res.balloon = 0;
-            res.delete = 'shares';
+            deleteSet.add('shares');
         } else if (values.memory === values.balloon) {
             delete res.balloon;
-            res.delete = 'balloon,shares';
+            deleteSet.add('balloon');
+            deleteSet.add('shares');
         } else if (Ext.isDefined(values.shares) && values.shares !== '') {
             res.shares = values.shares;
         } else {
-            res.delete = 'shares';
+            deleteSet.add('shares');
+        }
+
+        if (deleteSet.size > 0) {
+            res.delete = deleteSet.keys().toArray().join(',');
         }
 
         return res;
@@ -133,6 +149,22 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
                     },
                 },
             },
+            {
+                xtype: 'proxmoxcheckbox',
+                name: 'allow-ksm',
+                labelWidth: labelWidth,
+                fieldLabel: gettext('Allow KSM'),
+                checked: true,
+                uncheckedValue: '0',
+                defaultValue: '1',
+                deleteDefaultValue: true,
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Allow the Kernel Samepage Merging daemon to merge memory pages of this VM.',
+                    ),
+                },
+            },
         ];
 
         if (me.insideWizard) {
@@ -183,6 +215,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
                     shares: data.shares,
                     memory: data.memory || '512',
                     balloon: data.balloon > 0 ? data.balloon : data.memory || '512',
+                    'allow-ksm': data['allow-ksm'] ?? true,
                 };
 
                 ipanel.setValues(values);

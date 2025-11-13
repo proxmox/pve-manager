@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.HardwareView', {
                 defaultValue: '512',
                 tdCls: 'pve-itype-icon-memory',
                 group: 2,
-                multiKey: ['memory', 'balloon', 'shares'],
+                multiKey: ['memory', 'balloon', 'shares', 'allow-ksm'],
                 renderer: function (value, metaData, record, ri, ci, store, pending) {
                     var res = '';
 
@@ -92,6 +92,12 @@ Ext.define('PVE.qemu.HardwareView', {
                     } else if (balloon === 0) {
                         res += ' [balloon=0]';
                     }
+
+                    let allowKsm = me.getObjectValue('allow-ksm', undefined, pending);
+                    if (allowKsm !== undefined) {
+                        res += ' [allow-ksm=' + allowKsm + ']';
+                    }
+
                     return res;
                 },
             },
@@ -212,6 +218,9 @@ Ext.define('PVE.qemu.HardwareView', {
                 visible: false,
             },
             numa: {
+                visible: false,
+            },
+            'allow-ksm': {
                 visible: false,
             },
             balloon: {
