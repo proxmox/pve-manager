@@ -290,6 +290,8 @@ JSSRC= 							\
 	sdn/SubnetView.js				\
 	sdn/ZoneContentView.js				\
 	sdn/ZoneContentPanel.js				\
+	sdn/ZoneBridgesPanel.js				\
+	sdn/ZoneBridgeView.js				\
 	sdn/EvpnZoneIpVrfPanel.js	\
 	sdn/EvpnZoneMacVrfPanel.js	\
 	sdn/FirewallPanel.js				\
