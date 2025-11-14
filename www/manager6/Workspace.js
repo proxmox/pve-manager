@@ -360,11 +360,17 @@ Ext.define('PVE.StdWorkspace', {
                             },
                         },
                         {
-                            xtype: 'pveGlobalSearchField',
-                            tree: rtree,
+                            flex: 2,
                         },
                         {
-                            flex: 1,
+                            xtype: 'pveGlobalSearchField',
+                            tree: rtree,
+                            minWidth: 150,
+                            maxWidth: 600,
+                            flex: 3,
+                        },
+                        {
+                            flex: 2,
                         },
                         {
                             xtype: 'proxmoxHelpButton',
