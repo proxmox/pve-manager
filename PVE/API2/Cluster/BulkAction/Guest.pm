@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use PVE::APIClient::LWP;
-use PVE::AccessControl;
 use PVE::Cluster;
 use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
 use PVE::INotify;
