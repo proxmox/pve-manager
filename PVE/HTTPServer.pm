@@ -184,6 +184,10 @@ sub rest_handler {
             return;
         }
 
+        if ($info->{expose_credentials}) {
+            $rpcenv->set_credentials($auth);
+        }
+
         $resp = {
             data => $handler->handle($info, $uri_param),
             info => $info, # useful to format output
@@ -201,6 +205,7 @@ sub rest_handler {
     my $err = $@;
 
     $rpcenv->set_user(undef); # clear after request
+    $rpcenv->set_credentials(undef); # clear after request
 
     if ($err) {
         $resp = { info => $info };

@@ -356,7 +356,25 @@ sub call_api_method {
             $param->{$p} = $uri_param->{$p};
         }
 
+        if ($info->{expose_credentials}) {
+            # create a ticket for the root@pam user, since the
+            # api call expects to read those credentials
+            my $rpcenv = PVE::RPCEnvironment->get();
+            my $authuser = $rpcenv->get_user();
+
+            my $ticket = PVE::AccessControl::assemble_ticket($authuser);
+            my $csrf_token = PVE::AccessControl::assemble_csrf_prevention_token($authuser);
+            $rpcenv->set_credentials({
+                userid => $authuser,
+                ticket => $ticket,
+                token => $csrf_token,
+            });
+        }
+
         $data = $handler->handle($info, $param);
+
+        # remove credentials after api call
+        PVE::RPCEnvironment->get()->set_credentials(undef);
 
         # TODO: remove 'download' check with PVE 9.0
         if (
