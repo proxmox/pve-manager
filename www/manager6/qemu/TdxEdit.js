@@ -56,8 +56,9 @@ Ext.define('PVE.qemu.TdxInputPanel', {
         {
             xtype: 'displayfield',
             userCls: 'pmx-hint',
-            value:
-                gettext('Note: Intel TDX is only supported by specific recent CPU models and requires host kernel version 6.16 or higher.'),
+            value: gettext(
+                'Note: Intel TDX is only supported by specific recent CPU models and requires host kernel version 6.16 or higher.',
+            ),
             bind: {
                 hidden: '{!tdxEnabled}',
             },
