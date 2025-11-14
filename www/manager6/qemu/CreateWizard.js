@@ -101,7 +101,7 @@ Ext.define('PVE.qemu.CreateWizard', {
                     name: 'ha-managed',
                     uncheckedValue: 0,
                     defaultValue: 0,
-                    fieldLabel: gettext('Add as HA resource'),
+                    fieldLabel: gettext('Add to HA'),
                 },
             ],
             column2: [

@@ -248,7 +248,7 @@ Ext.define('PVE.window.Restore', {
                         name: 'ha-managed',
                         reference: 'ha-managed',
                         flex: 1,
-                        fieldLabel: gettext('Add as HA resource'),
+                        fieldLabel: gettext('Add to HA'),
                         labelWidth: 120,
                         checked: false,
                     },
