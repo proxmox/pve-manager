@@ -13,7 +13,7 @@ use PVE::RESTEnvironment qw(log_warn);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Storage;
-use PVE::Tools qw();
+use PVE::UPID;
 
 use PVE::API2::Nodes;
 
@@ -151,7 +151,7 @@ sub handle_task_foreach_guest {
 
                         delete $workers->{$upid};
                     } elsif ($task->{status} ne 'running') {
-                        my $is_error = PVE::Tools::upid_status_is_error($task->{exitstatus});
+                        my $is_error = PVE::UPID::status_is_error($task->{exitstatus});
                         push $failed->@*, $worker->{vmid} if $is_error;
 
                         $check_task->(
@@ -189,7 +189,7 @@ sub handle_task_foreach_guest {
 
             my $task = eval { wait_for_task_finished($api_client, $node, $upid) };
             my $err = $@;
-            my $is_error = ($err || PVE::Tools::upid_status_is_error($task->{exitstatus})) ? 1 : 0;
+            my $is_error = ($err || PVE::UPID::status_is_error($task->{exitstatus})) ? 1 : 0;
             push $failed->@*, $worker->{vmid} if $is_error;
 
             $check_task->($api_client, $worker->{vmid}, $worker->{guest}, $is_error, $task);
