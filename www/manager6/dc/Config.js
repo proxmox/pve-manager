@@ -15,9 +15,77 @@ Ext.define('PVE.dc.Config', {
 
         me.items = [];
 
+        let actionBtn = Ext.create('Ext.Button', {
+            text: gettext('Bulk Actions'),
+            iconCls: 'fa fa-fw fa-ellipsis-v',
+            disabled: !caps.vms['VM.PowerMgmt'] && !caps.vms['VM.Migrate'],
+            menu: new Ext.menu.Menu({
+                items: [
+                    {
+                        text: gettext('Bulk Start'),
+                        iconCls: 'fa fa-fw fa-play',
+                        disabled: !caps.vms['VM.PowerMgmt'],
+                        handler: function () {
+                            Ext.create('PVE.window.BulkAction', {
+                                autoShow: true,
+                                vmsAsArray: true,
+                                title: gettext('Bulk Start'),
+                                btnText: gettext('Start'),
+                                action: 'start',
+                            });
+                        },
+                    },
+                    {
+                        text: gettext('Bulk Shutdown'),
+                        iconCls: 'fa fa-fw fa-stop',
+                        disabled: !caps.vms['VM.PowerMgmt'],
+                        handler: function () {
+                            Ext.create('PVE.window.BulkAction', {
+                                autoShow: true,
+                                vmsAsArray: true,
+                                title: gettext('Bulk Shutdown'),
+                                btnText: gettext('Shutdown'),
+                                action: 'shutdown',
+                            });
+                        },
+                    },
+                    {
+                        text: gettext('Bulk Suspend'),
+                        iconCls: 'fa fa-fw fa-download',
+                        disabled: !caps.vms['VM.PowerMgmt'],
+                        handler: function () {
+                            Ext.create('PVE.window.BulkAction', {
+                                autoShow: true,
+                                vmsAsArray: true,
+                                title: gettext('Bulk Suspend'),
+                                btnText: gettext('Suspend'),
+                                action: 'suspend',
+                            });
+                        },
+                    },
+                    {
+                        text: gettext('Bulk Migrate'),
+                        iconCls: 'fa fa-fw fa-send-o',
+                        disabled: !caps.vms['VM.Migrate'],
+                        hidden: PVE.Utils.isStandaloneNode(),
+                        handler: function () {
+                            Ext.create('PVE.window.BulkAction', {
+                                autoShow: true,
+                                vmsAsArray: true,
+                                title: gettext('Bulk Migrate'),
+                                btnText: gettext('Migrate'),
+                                action: 'migrate',
+                            });
+                        },
+                    },
+                ],
+            }),
+        });
+
         Ext.apply(me, {
             title: gettext('Datacenter'),
             hstateid: 'dctab',
+            tbar: [actionBtn],
         });
 
         if (caps.dc['Sys.Audit']) {
