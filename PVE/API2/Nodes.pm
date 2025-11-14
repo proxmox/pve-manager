@@ -1867,7 +1867,7 @@ __PACKAGE__->register_method({
 # * vmid whitelist
 # * guest is a template (default: skip)
 # * guest is HA manged (default: skip)
-my $get_filtered_vmlist = sub {
+sub get_filtered_vmlist {
     my ($nodename, $vmfilter, $templates, $ha_managed) = @_;
 
     my $vmlist = PVE::Cluster::get_vmlist();
@@ -1894,28 +1894,29 @@ my $get_filtered_vmlist = sub {
                 die "unknown virtual guest type '$d->{type}'\n";
             }
 
-            my $conf = $class->load_config($vmid);
+            my $conf = $class->load_config($vmid, $d->{node});
             return if !$templates && $class->is_template($conf);
             return if !$ha_managed && PVE::HA::Config::vm_is_ha_managed($vmid);
 
             $res->{$vmid}->{conf} = $conf;
             $res->{$vmid}->{type} = $d->{type};
             $res->{$vmid}->{class} = $class;
+            $res->{$vmid}->{node} = $d->{node};
         };
         warn $@ if $@;
     }
 
     return $res;
-};
+}
 
 # return all VMs which should get started/stopped on power up/down
-my $get_start_stop_list = sub {
+sub get_start_stop_list {
     my ($nodename, $autostart, $vmfilter) = @_;
 
     # do not skip HA vms on force or if a specific VMID set is wanted
     my $include_ha_managed = defined($vmfilter) ? 1 : 0;
 
-    my $vmlist = $get_filtered_vmlist->($nodename, $vmfilter, undef, $include_ha_managed);
+    my $vmlist = get_filtered_vmlist($nodename, $vmfilter, undef, $include_ha_managed);
 
     my $resList = {};
     foreach my $vmid (keys %$vmlist) {
@@ -1928,15 +1929,16 @@ my $get_start_stop_list = sub {
 
         $resList->{$order}->{$vmid} = $startup;
         $resList->{$order}->{$vmid}->{type} = $vmlist->{$vmid}->{type};
+        $resList->{$order}->{$vmid}->{node} = $vmlist->{$vmid}->{node};
     }
 
     return $resList;
-};
+}
 
 my $remove_locks_on_startup = sub {
     my ($nodename) = @_;
 
-    my $vmlist = &$get_filtered_vmlist($nodename, undef, undef, 1);
+    my $vmlist = get_filtered_vmlist($nodename, undef, undef, 1);
 
     foreach my $vmid (keys %$vmlist) {
         my $conf = $vmlist->{$vmid}->{conf};
@@ -2028,7 +2030,7 @@ __PACKAGE__->register_method({
             warn $@ if $@;
 
             my $autostart = $force ? undef : 1;
-            my $startList = $get_start_stop_list->($nodename, $autostart, $param->{vms});
+            my $startList = get_start_stop_list($nodename, $autostart, $param->{vms});
 
             # Note: use numeric sorting with <=>
             for my $order (sort { $a <=> $b } keys %$startList) {
@@ -2174,7 +2176,7 @@ __PACKAGE__->register_method({
 
             $rpcenv->{type} = 'priv'; # to start tasks in background
 
-            my $stopList = $get_start_stop_list->($nodename, undef, $param->{vms});
+            my $stopList = get_start_stop_list($nodename, undef, $param->{vms});
 
             my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
             my $datacenterconfig = cfs_read_file('datacenter.cfg');
@@ -2303,7 +2305,7 @@ __PACKAGE__->register_method({
 
             $rpcenv->{type} = 'priv'; # to start tasks in background
 
-            my $toSuspendList = $get_start_stop_list->($nodename, undef, $param->{vms});
+            my $toSuspendList = get_start_stop_list($nodename, undef, $param->{vms});
 
             my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
             my $datacenterconfig = cfs_read_file('datacenter.cfg');
@@ -2508,7 +2510,7 @@ __PACKAGE__->register_method({
         my $code = sub {
             $rpcenv->{type} = 'priv'; # to start tasks in background
 
-            my $vmlist = &$get_filtered_vmlist($nodename, $param->{vms}, 1, 1);
+            my $vmlist = get_filtered_vmlist($nodename, $param->{vms}, 1, 1);
             if (!scalar(keys %$vmlist)) {
                 warn "no virtual guests matched, nothing to do..\n";
                 return;
