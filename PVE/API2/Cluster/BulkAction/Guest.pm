@@ -54,12 +54,6 @@ sub create_client {
     my $authuser = $rpcenv->get_user();
     my $credentials = $rpcenv->get_credentials();
 
-    my $api_token = $credentials->{api_token};
-    if (defined($api_token)) {
-        # this is the format the client expects it, but we don't save it such in the rpcenv
-        $api_token = "PVEAPIToken=${api_token}";
-    }
-
     my $node = PVE::INotify::nodename();
     my $fingerprint = PVE::Cluster::get_node_fingerprint($node);
 
@@ -70,7 +64,7 @@ sub create_client {
         port => 8006,
         username => $authuser,
         ticket => $credentials->{ticket},
-        apitoken => $api_token,
+        api_token => $credentials->{api_token},
         timeout => $request_timeout // 25, # default slightly shorter than the proxy->daemon timeout
         cached_fingerprints => {
             $fingerprint => 1,
