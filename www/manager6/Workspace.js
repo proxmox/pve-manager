@@ -353,10 +353,10 @@ Ext.define('PVE.StdWorkspace', {
                             minWidth: 150,
                             id: 'versioninfo',
                             html: 'Virtual Environment',
-                            padding: '0 0 0 5',
+                            padding: '0 5',
                             style: {
-                                'font-size': '14px',
-                                'line-height': '18px',
+                                'font-size': '16px',
+                                'line-height': '20px',
                             },
                         },
                         {
