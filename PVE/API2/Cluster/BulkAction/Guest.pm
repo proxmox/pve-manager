@@ -9,7 +9,6 @@ use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTEnvironment qw(log_warn);
-use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::UPID;
