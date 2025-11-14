@@ -1,3 +1,49 @@
+pve-manager (9.0.13) trixie; urgency=medium
+
+  * ui: qemu options: add support to configure Intel TDX for confidential
+    computing (similar to AMD SEV).
+
+  * ui: ha: do not show legacy HA group info in guest status view, as groups
+    got replaced with the more flexible HA Affinity-Rules in Proxmox VE 9.
+
+  * ui: qemu: tpm drive: non-raw image formats are now supported for TPM state
+    drives.
+
+  * rrd metrics: always prefer new-format keys over old-format keys to avoid
+    artificially delaying showing the current status of a VM/CT on a fresh
+    cluster.
+
+  * api: termproxy, vncwebsocket: allow one to using API tokens, the user
+    still needs a local PAM login to use the shell.
+
+  * 8to9: drop warnings specific to now outdated RRD migration tool.
+
+  * api: implement node-independent cluster wide guest bulk actions like
+    start, stop, migrate or suspend.
+
+  * ui: add guest bulk actions menu at the right side of the datacenter level
+    top bar.
+
+  * api: metric export: re-use credentials from request for proxying.
+
+  * ui: ha resource removal: allow one to purge resource from all rules.
+
+  * VM and CT create wizard: add checkbox for creating HA resource upon VM
+    creation.
+
+  * ui: restore: add checkbox for adding HA resource upon restore of a guest
+    backup.
+
+  * ui: ha: rules: make status icon unclickable if there are no errors.
+
+  * ui: replace Proxmox logo with slightly larger SVG version for better and
+    crisper scaling on HiDPI displays.
+
+  * ui: workspace: move global search bar in the middle and make it flexible
+    to better use available space in the top bar.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Nov 2025 21:58:08 +0100
+
 pve-manager (9.0.12) trixie; urgency=medium
 
   * fix #6815: ui: resource tree: update tag colors properly.
