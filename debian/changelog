@@ -1,3 +1,52 @@
+pve-manager (9.0.12) trixie; urgency=medium
+
+  * fix #6815: ui: resource tree: update tag colors properly.
+
+  * fix #6779: daily update: renew already expired certificates, e.g. for when
+    nodes are offline for a longer period of time.
+
+  * fix #6897: ui: add online help reference for LXC container feature edit
+    window.
+
+  * ui: properly reset API 401 count to avoid rare edge case where there is no
+    login mask shown after having been logged out (e.g. expired ticket).
+
+  * api: apt: add 'all' variant to architecture property.
+
+  * api: apt: correctly encode fields from available updates as utf8.
+
+  * fix #6443: ui: improve online help for VM State storage.
+
+  * ui: ha: remove default focus from VM/CT dropdown in resource edit window
+    to avoid opening the picker immediately when opening the window.
+
+  * ha: do not allow an empty VM/CT dropdown in resource edit window.
+
+  * fix #6932: api: acme: add digest and plugin to return schema.
+
+  * ui: VM cpu flag selector: query CPU flag list via API.
+
+  * status: rrd metrics: always use pve-node-9.0 data format path and drop RRD
+    metrics format migration on upgrade as we now transparently read from the
+    old file if a time-frame falls under the old file(s).
+
+  * api: nodes: use new status module for sdn subdirectory.
+
+  * pvestatd: add network resource to status reporting.
+
+  * api: cluster: add support for network resource type.
+
+  * ui: resource tree: add network resource.
+
+  * ui: network browser:
+    - add ip-vrf panel for evpn zones.
+    - add mac vrf panel.
+    - add zone bridge view.
+
+  * ui: sdn: status view: adapt to new network resource.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Nov 2025 02:05:47 +0100
+
 pve-manager (9.0.11) trixie; urgency=medium
 
   * close #4248: ui: Add Reset button to right click context menu of virtual
