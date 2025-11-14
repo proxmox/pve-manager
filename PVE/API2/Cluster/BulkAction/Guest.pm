@@ -257,7 +257,6 @@ __PACKAGE__->register_method({
             . "each ID passed via the 'vms' parameter.",
         user => 'all',
     },
-    protected => 1,
     expose_credentials => 1,
     parameters => {
         additionalProperties => 0,
@@ -381,7 +380,6 @@ __PACKAGE__->register_method({
             . "each ID passed via the 'vms' parameter.",
         user => 'all',
     },
-    protected => 1,
     expose_credentials => 1,
     parameters => {
         additionalProperties => 0,
@@ -518,7 +516,6 @@ __PACKAGE__->register_method({
             . " '/vms/{vmid}' path and 'Datastore.AllocateSpace' for the configured state-storage(s)",
         user => 'all',
     },
-    protected => 1,
     expose_credentials => 1,
     parameters => {
         additionalProperties => 0,
@@ -655,7 +652,6 @@ __PACKAGE__->register_method({
             . "ID passed via the 'vms' parameter.",
         user => 'all',
     },
-    protected => 1,
     expose_credentials => 1,
     parameters => {
         additionalProperties => 0,
