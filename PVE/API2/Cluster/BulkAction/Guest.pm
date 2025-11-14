@@ -61,27 +61,25 @@ sub create_client {
         # this is the format the client expects it, but we don't save it such in the rpcenv
         $api_token = "PVEAPIToken=${api_token}";
     }
-    my $ticket = $credentials->{ticket};
-    my $csrf_token = $credentials->{token};
 
     my $node = PVE::INotify::nodename();
     my $fingerprint = PVE::Cluster::get_node_fingerprint($node);
 
-    my $conn_args = {
+    my $api_client = PVE::APIClient::LWP->new(
         protocol => 'https',
+        # TODO: avoid extra proxying level to reduce overhead
         host => 'localhost', # always call the api locally, let pveproxy handle the proxying
         port => 8006,
         username => $authuser,
-        ticket => $ticket,
+        ticket => $credentials->{ticket},
         apitoken => $api_token,
         timeout => $request_timeout // 25, # default slightly shorter than the proxy->daemon timeout
         cached_fingerprints => {
             $fingerprint => 1,
         },
-    };
+    );
 
-    my $api_client = PVE::APIClient::LWP->new($conn_args->%*);
-    if (defined($csrf_token)) {
+    if (defined(my $csrf_token = $credentials->{token})) {
         $api_client->update_csrftoken($csrf_token);
     }
 
