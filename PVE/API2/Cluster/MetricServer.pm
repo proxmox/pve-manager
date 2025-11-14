@@ -310,7 +310,7 @@ __PACKAGE__->register_method({
     name => 'export',
     path => 'export',
     method => 'GET',
-    protected => 1,
+    expose_credentials => 1,
     description => "Retrieve metrics of the cluster.",
     permissions => {
         check => ['perm', '/', ['Sys.Audit']],
@@ -441,19 +441,7 @@ __PACKAGE__->register_method({
 
             my $rpcenv = PVE::RPCEnvironment::get();
             my $authuser = $rpcenv->get_user();
-
-            my ($user, undef) = PVE::AccessControl::split_tokenid($authuser, 1);
-
-            my $ticket;
-            if ($user) {
-                # Theoretically, we might now bypass token privilege separation, since
-                # we use the regular user instead of the token, but
-                # since we already passed the permission check for this handler,
-                # this should be fine.
-                $ticket = PVE::AccessControl::assemble_ticket($user);
-            } else {
-                $ticket = PVE::AccessControl::assemble_ticket($authuser);
-            }
+            my $credentials = $rpcenv->get_credentials();
 
             for my $name (@node_list) {
                 if ($name eq $nodename) {
@@ -473,7 +461,8 @@ __PACKAGE__->register_method({
                         protocol => 'https',
                         host => $ip,
                         port => 8006,
-                        ticket => $ticket,
+                        ticket => $credentials->{ticket},
+                        api_token => $credentials->{api_token},
                         timeout => 20,
                     };
 
