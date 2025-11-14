@@ -233,12 +233,6 @@ case "$1" in
         fi
     fi
 
-    if test -n "$2" && dpkg --compare-versions "$2" 'lt' '9.0.0~15'; then
-        printf '\n\nNOTE: Migrating existing RRD metrics data from nodes, storages and virtual guests to new PVE format version - this can take some time!\n\n'
-        /usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate || \
-            echo "migration failed, see output above for errors and try to migrate existing data manually by running '/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate'"
-    fi
-
     if test -n "$2" && dpkg --compare-versions "$2" 'lt' '9.0.4'; then
         if test -e /etc/lvm/lvm.conf && grep "^\s*thin_check_options" /etc/lvm/lvm.conf | grep -qv -- "--clear-needs-check-flag"; then
             printf '\nNOTE: Detected override for 'thin_check_options' without '--clear-needs-check-flag' option in /etc/lvm/lvm.conf\n'
