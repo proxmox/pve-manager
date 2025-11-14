@@ -1911,7 +1911,7 @@ sub check_bridge_mtu {
 
 sub check_rrd_migration {
     if (-e "/var/lib/rrdcached/db/pve-node-9.0") {
-        log_info("Check post RRD metrics data format migration situation...");
+        log_info("Check post RRD metrics data format update situation...");
 
         my $old_files = [];
         my $record_old = sub {
@@ -1944,24 +1944,13 @@ sub check_rrd_migration {
                 push @$old_files,
                     '... omitted printing ' . ($count - $cutoff) . ' additional files';
             }
-            log_warn("Found '$count' RRD files that have not yet been migrated to the new schema.\n"
-                . join("\n\t ", $old_files->@*)
-                . "\n\tPlease run the following command manually:\n"
-                . "\t/usr/libexec/proxmox/proxmox-rrd-migration-tool --migrate\n");
-
-            my $cfg = PVE::Storage::config();
-            my @unhandled_storages = grep { $_ =~ m|\.old$| } sort keys $cfg->{ids}->%*;
-            if (scalar(@unhandled_storages) > 0) {
-                my $storage_list_txt = join(", ", @unhandled_storages);
-                log_warn("RRD data for the following storages cannot be migrated"
-                    . " automatically: $storage_list_txt\nRename the RRD files to a name without '.old'"
-                    . " before migration and re-add that suffix after migration.");
-            }
+            log_info("Found '$count' RRD files using the old format.\n"
+                . " These are now only used to display historic data. You can delete them if you do not need that.\n");
         } else {
             log_pass("No old RRD metric files found, normally this means all have been migrated.");
         }
     } else {
-        log_info("Check space requirements for RRD migration...");
+        log_info("Check space requirements for RRD format upgrade...");
         # multiplier values taken from KiB sizes of old and new RRD files
         my $rrd_usage_multipliers = {
             'pve2-node' => 18.1,
@@ -1982,8 +1971,8 @@ sub check_rrd_migration {
         if ($total_size_estimate >= $root_free->{avail} - 1 << 30) {
             my $free_gib = sprintf("%.3f", $root_free->{avail} / 1024 / 1024 / 1024);
 
-            log_fail("Not enough free space to migrate existing RRD files to the new format!\n"
-                . "Migrating the current RRD files is expected to consume about ${estimate_gib_str} GiB plus 1 GiB of safety."
+            log_fail("Not enough free space for new RRD format!\n"
+                . " With the new format the current RRD files are expected to consume about ${estimate_gib_str} GiB plus 1 GiB of safety."
                 . " But there is currently only ${free_gib} GiB space on the root file system available.\n"
             );
         } else {
