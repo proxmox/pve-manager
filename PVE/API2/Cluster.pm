@@ -235,10 +235,7 @@ my sub can_access_network {
         );
     } elsif ($network->{'network-type'} eq 'zone') {
         return $rpcenv->check(
-            $authuser,
-            "/sdn/zones/$network->{network}",
-            ['SDN.Audit'],
-            1,
+            $authuser, "/sdn/zones/$network->{network}", ['SDN.Audit'], 1,
         );
     }
 
