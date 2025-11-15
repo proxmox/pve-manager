@@ -104,6 +104,7 @@ JSSRC= 							\
 	panel/BackupJobPrune.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
+	panel/IPView.js					\
 	panel/RunningChart.js				\
 	panel/StatusPanel.js				\
 	panel/GuestStatusView.js			\
@@ -240,7 +241,6 @@ JSSRC= 							\
 	pool/Config.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
-	qemu/AgentIPView.js				\
 	qemu/AudioEdit.js				\
 	qemu/BootOrderEdit.js				\
 	qemu/CDEdit.js					\

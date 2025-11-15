@@ -176,7 +176,7 @@ Ext.define('PVE.guest.Summary', {
                     },
                     minWidth: 700,
                     defaults: {
-                        minHeight: 330,
+                        minHeight: 360,
                         padding: 5,
                     },
                     items: items,

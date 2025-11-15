@@ -163,13 +163,10 @@ Ext.define('PVE.panel.GuestStatusView', {
             height: 10,
         },
         {
-            itemId: 'ips',
-            xtype: 'pveAgentIPView',
             cbind: {
+                xtype: get => get('isQemu') ? 'pveIPViewQEMU' : 'pveIPViewLXC',
                 rstore: '{rstore}',
                 pveSelNode: '{pveSelNode}',
-                hidden: '{isLxc}',
-                disabled: '{isLxc}',
             },
         },
     ],
@@ -196,8 +193,7 @@ Ext.define('PVE.panel.GuestStatusView', {
             };
 
             const distro = namemap[me.ostype] ?? Ext.String.capitalize(me.ostype);
-            title += `<div class="right-aligned">
-		<i class="fl-${me.ostype} fl-fw"></i>&nbsp;${distro}</div>`;
+            title += `<div class="right-aligned"><i class="fl-${me.ostype} fl-fw"></i>&nbsp;${distro}</div>`;
         }
 
         me.setTitle(title);

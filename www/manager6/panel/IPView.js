@@ -1,7 +1,7 @@
 Ext.define('PVE.window.IPInfo', {
     extend: 'Ext.window.Window',
     width: 600,
-    title: gettext('Guest Agent Network Information'),
+    title: gettext('Network Information'),
     height: 300,
     layout: {
         type: 'fit',
@@ -53,9 +53,9 @@ Ext.define('PVE.window.IPInfo', {
     ],
 });
 
-Ext.define('PVE.qemu.AgentIPView', {
+Ext.define('PVE.panel.IPViewBase', {
     extend: 'Ext.container.Container',
-    xtype: 'pveAgentIPView',
+    xtype: 'pveIPViewBase',
 
     layout: {
         type: 'hbox',
@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.AgentIPView', {
                     hidden: true,
                     ui: 'default-toolbar',
                     handler: function (btn) {
-                        let view = this.up('pveAgentIPView');
+                        let view = this.up('pveIPViewBase');
 
                         var win = Ext.create('PVE.window.IPInfo');
                         win.down('grid').getStore().setData(view.nics);
@@ -127,33 +127,73 @@ Ext.define('PVE.qemu.AgentIPView', {
         return ips;
     },
 
-    startIPStore: function (store, records, success) {
-        var me = this;
-        let agentRec = store.getById('agent');
-        let state = store.getById('status');
-
-        me.agent = agentRec && agentRec.data.value === 1;
-        me.running = state && state.data.value === 'running';
-
-        var caps = Ext.state.Manager.get('GuiCap');
-
-        if (!caps.vms['VM.GuestAgent.Audit']) {
-            let errorText = gettext("Requires '{0}' Privileges");
-            me.updateStatus(false, Ext.String.format(errorText, 'VM.GuestAgent.Audit'));
-            return;
-        }
-
-        if (me.agent && me.running && me.ipStore.isStopped) {
-            me.ipStore.startUpdate();
-        } else if (me.ipStore.isStopped) {
-            me.updateStatus();
-        }
+    createUpdateStore: function (nodename, vmid) {
+        // implement me in sub-class
     },
 
-    updateStatus: function (unsuccessful, defaulttext) {
+    startIPStore: function (store, records, success) {
+        // implement me in sub-class
+    },
+
+    updateStatus: function (unsuccessful, defaultText) {
+        // implement me in sub-class
+    },
+
+    initComponent: function () {
         var me = this;
-        var text = defaulttext || gettext('No network information');
-        var more = false;
+
+        if (!me.rstore) {
+            throw 'rstore not given';
+        }
+
+        if (!me.pveSelNode) {
+            throw 'pveSelNode not given';
+        }
+
+        let { node, vmid } = me.pveSelNode.data;
+        me.createUpdateStore(node, vmid);
+
+        me.on('destroy', me.ipStore.stopUpdate, me.ipStore);
+
+        // if we already have info about the vm, use it immediately
+        if (me.rstore.getCount()) {
+            me.startIPStore(me.rstore, me.rstore.getData(), false);
+        }
+
+        me.mon(me.rstore, 'load', me.startIPStore, me);
+
+        me.callParent();
+    },
+});
+
+Ext.define('PVE.panel.IPViewQEMU', {
+    extend: 'PVE.panel.IPViewBase',
+    xtype: 'pveIPViewQEMU',
+
+    createUpdateStore: function (nodename, vmid) {
+        let me = this;
+
+        me.ipStore = Ext.create('Proxmox.data.UpdateStore', {
+            interval: 10000,
+            storeid: `pve-qemu-agent-${vmid}`,
+            method: 'POST',
+            proxy: {
+                type: 'proxmox',
+                url: `/api2/json/nodes/${nodename}/qemu/${vmid}/agent/network-get-interfaces`,
+            },
+        });
+
+        me.mon(me.ipStore, 'load', function (_store, records, success) {
+            me.nics = records?.[0]?.data.result;
+            me.updateStatus(!success);
+        });
+    },
+
+    updateStatus: function (unsuccessful, defaultText) {
+        let me = this;
+
+        let text = defaultText || gettext('No network information');
+        let more = false;
         if (unsuccessful) {
             text = gettext('Guest Agent not running');
         } else if (me.agent && me.running) {
@@ -173,61 +213,95 @@ Ext.define('PVE.qemu.AgentIPView', {
             text = gettext('No Guest Agent configured');
         }
 
-        var ipBox = me.down('#ipBox');
-        ipBox.update(text);
-
-        var moreBtn = me.down('#moreBtn');
-        moreBtn.setVisible(more);
+        me.down('#ipBox').update(text);
+        me.down('#moreBtn').setVisible(more);
     },
 
-    initComponent: function () {
-        var me = this;
+    startIPStore: function (store, records, success) {
+        let me = this;
 
-        if (!me.rstore) {
-            throw 'rstore not given';
+        let agentRec = store.getById('agent');
+        let state = store.getById('status');
+
+        me.agent = agentRec && agentRec.data.value === 1;
+        me.running = state && state.data.value === 'running';
+
+        let caps = Ext.state.Manager.get('GuiCap');
+        if (!caps.vms['VM.GuestAgent.Audit']) {
+            me.updateStatus(
+                false,
+                Ext.String.format(gettext("Requires '{0}' Privileges"), 'VM.GuestAgent.Audit'),
+            );
+            return;
         }
 
-        if (!me.pveSelNode) {
-            throw 'pveSelNode not given';
+        if (me.agent && me.running && me.ipStore.isStopped) {
+            me.ipStore.startUpdate();
+        } else if (me.ipStore.isStopped) {
+            me.updateStatus();
         }
+    },
+});
 
-        var nodename = me.pveSelNode.data.node;
-        var vmid = me.pveSelNode.data.vmid;
+Ext.define('PVE.panel.IPViewLXC', {
+    extend: 'PVE.panel.IPViewBase',
+    xtype: 'pveIPViewLXC',
+
+    createUpdateStore: function (nodename, vmid) {
+        let me = this;
 
         me.ipStore = Ext.create('Proxmox.data.UpdateStore', {
             interval: 10000,
-            storeid: 'pve-qemu-agent-' + vmid,
-            method: 'POST',
+            storeid: `lxc-interfaces-${vmid}`,
+            method: 'GET',
             proxy: {
                 type: 'proxmox',
-                url:
-                    '/api2/json/nodes/' +
-                    nodename +
-                    '/qemu/' +
-                    vmid +
-                    '/agent/network-get-interfaces',
+                url: `/api2/json/nodes/${nodename}/lxc/${vmid}/interfaces`,
             },
         });
 
-        me.callParent();
-
-        me.mon(me.ipStore, 'load', function (store, records, success) {
-            if (records && records.length) {
-                me.nics = records[0].data.result;
-            } else {
-                me.nics = undefined;
-            }
+        me.mon(me.ipStore, 'load', function (_store, records, success) {
+            me.nics = records?.map((r) => r.data);
             me.updateStatus(!success);
         });
+    },
 
-        me.on('destroy', me.ipStore.stopUpdate, me.ipStore);
+    updateStatus: function (_unsuccessful, defaultText) {
+        let me = this;
 
-        // if we already have info about the vm, use it immediately
-        if (me.rstore.getCount()) {
-            me.startIPStore(me.rstore, me.rstore.getData(), false);
+        let text = defaultText || gettext('No network information');
+        let more = false;
+        if (Ext.isArray(me.nics) && me.nics.length) {
+            more = true;
+            let ips = me.getDefaultIps(me.nics);
+            if (ips.length !== 0) {
+                text = ips.join('<br>');
+            }
+        }
+        me.down('#ipBox').update(text);
+        me.down('#moreBtn').setVisible(more);
+    },
+
+    startIPStore: function (store, records, success) {
+        let me = this;
+
+        let state = store.getById('status');
+        me.running = state && state.data.value === 'running';
+
+        var caps = Ext.state.Manager.get('GuiCap');
+
+        if (!caps.vms['VM.Audit']) {
+            me.updateStatus(
+                false,
+                Ext.String.format(gettext("Requires '{0}' Privileges"), 'VM.Audit'),
+            );
+            return;
         }
 
-        // check if the guest agent is there on every statusstore load
-        me.mon(me.rstore, 'load', me.startIPStore, me);
+        if (me.running && me.ipStore.isStopped) {
+            me.ipStore.startUpdate();
+        } else if (me.ipStore.isStopped) {
+            me.updateStatus();
+        }
     },
 });
