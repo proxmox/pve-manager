@@ -150,6 +150,8 @@ Ext.define('PVE.panel.IPViewBase', {
             throw 'pveSelNode not given';
         }
 
+        me.callParent();
+
         let { node, vmid } = me.pveSelNode.data;
         me.createUpdateStore(node, vmid);
 
@@ -161,8 +163,6 @@ Ext.define('PVE.panel.IPViewBase', {
         }
 
         me.mon(me.rstore, 'load', me.startIPStore, me);
-
-        me.callParent();
     },
 });
 
