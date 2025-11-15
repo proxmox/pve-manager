@@ -1,3 +1,18 @@
+pve-manager (9.0.14) trixie; urgency=medium
+
+  * fix creating worker task log file for new cluster-wide bulk migrations.
+
+  * ui: container: show dynamically assigned IPs in network tab.
+
+  * ui: re-use IP overview from VMs for container and show it in the CT
+    summary view.
+
+  * ui: summary view: increase row height to ensure there's enough space by
+    default for new IP overview. This results in the RRD metrics charts to
+    have 250px height for the actual data.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 15 Nov 2025 17:22:14 +0100
+
 pve-manager (9.0.13) trixie; urgency=medium
 
   * ui: qemu options: add support to configure Intel TDX for confidential
