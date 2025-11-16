@@ -167,6 +167,7 @@ JSSRC= 							\
 	dc/Backup.js					\
 	dc/Cluster.js					\
 	dc/ClusterEdit.js				\
+	dc/CmdMenu.js					\
 	dc/Config.js					\
 	dc/CorosyncLinkEdit.js				\
 	dc/GroupEdit.js					\

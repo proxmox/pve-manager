@@ -1563,6 +1563,11 @@ Ext.define('PVE.Utils', {
                     pveSelNode: record,
                     nodename: record.data.node,
                 });
+            } else if (record?.isRoot()) {
+                menu = Ext.create('PVE.dc.CmdMenu', {
+                    pveSelNode: record,
+                    nodename: record.data.node,
+                });
             } else {
                 return undefined;
             }
