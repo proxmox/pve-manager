@@ -301,6 +301,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
                 emptyText: 'unlimited',
                 allowBlank: true,
             },
+            {
+                xtype: 'proxmoxcheckbox',
+                fieldLabel: gettext('Host-Managed'),
+                name: 'host-managed',
+                value: cdata['host-managed'],
+            },
         ];
 
         me.callParent();
