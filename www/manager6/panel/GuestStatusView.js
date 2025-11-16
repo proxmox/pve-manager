@@ -164,7 +164,7 @@ Ext.define('PVE.panel.GuestStatusView', {
         },
         {
             cbind: {
-                xtype: get => get('isQemu') ? 'pveIPViewQEMU' : 'pveIPViewLXC',
+                xtype: (get) => (get('isQemu') ? 'pveIPViewQEMU' : 'pveIPViewLXC'),
                 rstore: '{rstore}',
                 pveSelNode: '{pveSelNode}',
             },
