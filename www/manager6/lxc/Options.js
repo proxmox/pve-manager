@@ -153,6 +153,34 @@ Ext.define('PVE.lxc.Options', {
             hookscript: {
                 header: gettext('Hookscript'),
             },
+            entrypoint: {
+                header: gettext('Entrypoint'),
+                defaultValue: '/sbin/init',
+                editor: caps.vms['VM.Config.Options']
+                    ? {
+                          xtype: 'proxmoxWindowEdit',
+                          subject: gettext('Entrypoint Init Command'),
+                          defaultFocus: undefined,
+                          items: [
+                              {
+                                  xtype: 'proxmoxtextfield',
+                                  name: 'entrypoint',
+                                  deleteEmpty: true,
+                                  emptyText: '/sbin/init',
+                              },
+
+                              {
+                                  xtype: 'displayfield',
+                                  reference: 'emptyWarning',
+                                  userCls: 'pmx-hint',
+                                  value: gettext(
+                                      'Changing the entrypoint command can lead to start failure!',
+                                  ),
+                              },
+                          ],
+                      }
+                    : undefined,
+            },
             env: {
                 header: gettext('Environment'),
                 renderer: (v) => v?.replaceAll(/\0+/g, ' '),
