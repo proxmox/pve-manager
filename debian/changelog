@@ -1,3 +1,36 @@
+pve-manager (9.0.16) trixie; urgency=medium
+
+  * api: add endpoint to query OCI registries for the tags (versions) of an
+    image.
+
+  * ui: template view: add OCI registry pull dialog.
+
+  * ui: lxc: add support to edit container runtime environment.
+    The new environment management provides a convenient way to change the
+    containers runtime environment. Some container (OCI) images support basic
+    configuration through the environment.
+
+  * ui: lxc network: support advanced host-managed option for containers where
+    the network is setup on start directly by the host, avoiding the need for
+    any network management stack inside the CT.
+
+  * ui: lxc options: add support for init command entrypoint. Custom container
+    images or OCI images might want to adapt the initial command that gets
+    executed as entry point on container start. For system containers this is
+    `/sbin/init`, which quite often points to systemd. Most OCI application
+    images use a different command, and some even support passing
+    (configuration) arguments through this command line.
+
+  * ui: provide a context menu for the datacenter node in the main resource
+    tree providing central access to the new cluster-wide bulk-actions for
+    guests.
+
+  * ui: provide a context menu for the tag nodes in the main resource tree if
+    the "Tag View" is selected. This allows one to conveniently execute bulk
+    actions for all guests that have a specific tag.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 16 Nov 2025 22:48:04 +0100
+
 pve-manager (9.0.15) trixie; urgency=medium
 
   * ui: ip view: ensure container is fully initialized before store update.
