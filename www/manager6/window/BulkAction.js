@@ -537,6 +537,10 @@ Ext.define('PVE.window.BulkAction', {
 
         me.callParent();
 
+        if (me.prefilterIncludeTag) {
+            me.down('#includetagfilter').setValue(me.prefilterIncludeTag);
+        }
+
         form.on('validitychange', function () {
             let valid = form.isValid();
             submitBtn.setDisabled(!valid);
