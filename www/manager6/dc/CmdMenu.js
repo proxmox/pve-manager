@@ -4,18 +4,22 @@ Ext.define('PVE.dc.CmdMenu', {
 
     showSeparator: false,
 
+    extraHandlerArgs: {},
+
     items: [
         {
             text: gettext('Bulk Start'),
             itemId: 'bulkstart',
             iconCls: 'fa fa-fw fa-play',
             handler: function () {
+                let extraArgs = this.up('datacenterCmdMenu').extraHandlerArgs ?? {};
                 Ext.create('PVE.window.BulkAction', {
                     autoShow: true,
                     vmsAsArray: true,
                     title: gettext('Bulk Start'),
                     btnText: gettext('Start'),
                     action: 'start',
+                    ...extraArgs,
                 });
             },
         },
@@ -24,12 +28,14 @@ Ext.define('PVE.dc.CmdMenu', {
             itemId: 'bulkstop',
             iconCls: 'fa fa-fw fa-stop',
             handler: function () {
+                let extraArgs = this.up('datacenterCmdMenu').extraHandlerArgs ?? {};
                 Ext.create('PVE.window.BulkAction', {
                     autoShow: true,
                     vmsAsArray: true,
                     title: gettext('Bulk Shutdown'),
                     btnText: gettext('Shutdown'),
                     action: 'shutdown',
+                    ...extraArgs,
                 });
             },
         },
@@ -38,12 +44,14 @@ Ext.define('PVE.dc.CmdMenu', {
             itemId: 'bulksuspend',
             iconCls: 'fa fa-fw fa-download',
             handler: function () {
+                let extraArgs = this.up('datacenterCmdMenu').extraHandlerArgs ?? {};
                 Ext.create('PVE.window.BulkAction', {
                     autoShow: true,
                     vmsAsArray: true,
                     title: gettext('Bulk Suspend'),
                     btnText: gettext('Suspend'),
                     action: 'suspend',
+                    ...extraArgs,
                 });
             },
         },
@@ -52,12 +60,14 @@ Ext.define('PVE.dc.CmdMenu', {
             itemId: 'bulkmigrate',
             iconCls: 'fa fa-fw fa-send-o',
             handler: function () {
+                let extraArgs = this.up('datacenterCmdMenu').extraHandlerArgs ?? {};
                 Ext.create('PVE.window.BulkAction', {
                     autoShow: true,
                     vmsAsArray: true,
                     title: gettext('Bulk Migrate'),
                     btnText: gettext('Migrate'),
                     action: 'migrate',
+                    ...extraArgs,
                 });
             },
         },
@@ -66,10 +76,12 @@ Ext.define('PVE.dc.CmdMenu', {
     initComponent: function () {
         let me = this;
 
-        me.title = gettext('Datacenter');
-        if (PVE.ClusterName?.length) {
-            me.title += ` (${PVE.ClusterName})`;
-            me.minWidth = 220;
+        if (!me.title) {
+            me.title = gettext('Datacenter');
+            if (PVE.ClusterName?.length) {
+                me.title += ` (${PVE.ClusterName})`;
+                me.minWidth = 220;
+            }
         }
 
         me.callParent();
@@ -89,3 +101,32 @@ Ext.define('PVE.dc.CmdMenu', {
         }
     },
 });
+
+
+Ext.define('PVE.dc.TagCmdMenu', {
+    extend: 'PVE.dc.CmdMenu',
+    xtype: 'tagCmdMenu',
+
+    minWidth: 220,
+
+    initComponent: function () {
+        let me = this;
+
+        if (!me.tag) {
+            throw 'no tag specified';
+        }
+
+        me.title = `${gettext('Tag')} '${me.tag}'`;
+        if (PVE.ClusterName?.length) {
+            me.title += ` (${me.nodename})`;
+        }
+
+        me.extraHandlerArgs = {
+            prefilterIncludeTag: me.tag,
+        };
+
+        me.callParent();
+    },
+});
+
+
