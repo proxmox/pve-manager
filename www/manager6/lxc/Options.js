@@ -153,6 +153,12 @@ Ext.define('PVE.lxc.Options', {
             hookscript: {
                 header: gettext('Hookscript'),
             },
+            env: {
+                header: gettext('Environment'),
+                renderer: (v) => v?.replaceAll(/\0+/g, ' '),
+                defaultValue: Proxmox.Utils.noneText,
+                editor: 'PVE.lxc.EnvEdit',
+            },
         };
 
         var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';

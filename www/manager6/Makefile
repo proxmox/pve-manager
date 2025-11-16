@@ -204,6 +204,7 @@ JSSRC= 							\
 	lxc/DeviceEdit.js				\
 	lxc/DNS.js					\
 	lxc/FeaturesEdit.js				\
+	lxc/EnvEdit.js				\
 	lxc/MPEdit.js					\
 	lxc/MPResize.js					\
 	lxc/Network.js					\
