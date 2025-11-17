@@ -243,9 +243,12 @@ Ext.define('PVE.storage.OciRegistryPull', {
             xtype: 'inputpanel',
             border: false,
             onGetValues: function (values) {
-                return {
-                    reference: values.reference + ':' + values.tag,
-                };
+                values.reference = values.reference + ':' + values.tag;
+                delete values.tag;
+                if (!values.filename) {
+                    delete values.filename;
+                }
+                return values;
             },
             items: [
                 {
@@ -284,6 +287,12 @@ Ext.define('PVE.storage.OciRegistryPull', {
                     editable: true,
                     typeAhead: true,
                     comboItems: [],
+                },
+                {
+                    xtype: 'textfield',
+                    name: 'filename',
+                    emptyText: '<reference>_<tag>',
+                    fieldLabel: gettext('File name'),
                 },
             ],
         },
