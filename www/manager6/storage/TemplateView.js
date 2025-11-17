@@ -216,7 +216,7 @@ Ext.define('PVE.storage.OciRegistryPull', {
             let me = this;
             let view = me.getView();
             let refField = view.down('[name=reference]');
-            let reference = refField.value;
+            let reference = refField.value.trim();
             let tagField = view.down('[name=tag]');
 
             Proxmox.Utils.API2Request({
