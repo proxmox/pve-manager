@@ -7,9 +7,11 @@ Ext.define('PVE.qemu.TdxInputPanel', {
     viewModel: {
         data: {
             type: '__default__',
+            attestation: 1,
         },
         formulas: {
             tdxEnabled: (get) => get('type') === 'tdx',
+            attestationEnabled: (get) => Number(get('attestation')) === 1,
         },
     },
 
@@ -65,7 +67,47 @@ Ext.define('PVE.qemu.TdxInputPanel', {
         },
     ],
 
-    advancedItems: [],
+    advancedItems: [
+        {
+            xtype: 'proxmoxcheckbox',
+            fieldLabel: gettext('Enable Attestation'),
+            labelWidth: 150,
+            name: 'attestation',
+            value: 1,
+            uncheckedValue: 0,
+            bind: {
+                value: '{attestation}',
+                hidden: '{!tdxEnabled}',
+                disabled: '{!tdxEnabled}',
+            },
+        },
+        {
+            xtype: 'proxmoxintegerfield',
+            fieldLabel: gettext('CID'),
+            labelWidth: 150,
+            name: 'vsock-cid',
+            minValue: 2,
+            value: '2',
+            allowBlank: false,
+            bind: {
+                hidden: '{!tdxEnabled}',
+                disabled: '{!attestationEnabled || !tdxEnabled}',
+            },
+        },
+        {
+            xtype: 'proxmoxintegerfield',
+            fieldLabel: gettext('Port'),
+            labelWidth: 150,
+            name: 'vsock-port',
+            minValue: 0,
+            value: '4050',
+            allowBlank: false,
+            bind: {
+                hidden: '{!tdxEnabled}',
+                disabled: '{!attestationEnabled || !tdxEnabled}',
+            },
+        },
+    ],
 });
 
 Ext.define('PVE.qemu.TdxEdit', {
