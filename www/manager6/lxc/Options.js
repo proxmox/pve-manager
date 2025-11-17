@@ -90,7 +90,6 @@ Ext.define('PVE.lxc.Options', {
                               name: 'tty',
                               minValue: 0,
                               maxValue: 6,
-                              value: 2,
                               fieldLabel: gettext('TTY count'),
                               emptyText: gettext('Default'),
                               deleteEmpty: true,
