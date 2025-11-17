@@ -76,7 +76,7 @@ Ext.define('PVE.sdn.ZoneBridgePortsPanel', {
             dataIndex: 'vmid',
         },
         {
-            text: gettext('Network Device Index'),
+            text: gettext('Guest Network Device'),
             flex: 1,
             sortable: true,
             dataIndex: 'index',
