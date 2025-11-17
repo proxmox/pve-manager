@@ -184,7 +184,7 @@ Ext.define('PVE.lxc.Options', {
             },
             env: {
                 header: gettext('Environment'),
-                renderer: (v) => v ? Ext.htmlEncode(v.replaceAll(/\0+/g, ' ')) : null,
+                renderer: (v) => (v ? Ext.htmlEncode(v.replaceAll(/\0+/g, ' ')) : null),
                 defaultValue: Proxmox.Utils.noneText,
                 editor: 'PVE.lxc.EnvEdit',
             },

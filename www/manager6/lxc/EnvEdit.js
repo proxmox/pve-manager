@@ -85,10 +85,10 @@ Ext.define('PVE.lxc.EnvVariableField', {
             xtype: 'button',
             cls: 'x-btn-default-toolbar-small proxmox-inline-button',
             iconCls: 'x-btn-icon-el-default-toolbar-small fa fa-trash-o',
-            handler: function(button, event) {
+            handler: function (button, event) {
                 let field = button.up('pveLxcEnvVariableField');
                 field.onRemove.call(field, field);
-            }
+            },
         },
     ],
 });
@@ -101,7 +101,7 @@ Ext.define('PVE.lxc.EnvInputPanel', {
     onGetValues: function (formValues) {
         let variables = formValues?.variable;
         if (typeof variables === 'string') {
-            variables = [ variables ];
+            variables = [variables];
         }
         variables = variables?.filter((v) => typeof v === 'string' && v.length);
 
@@ -112,7 +112,7 @@ Ext.define('PVE.lxc.EnvInputPanel', {
             submitValues.delete = 'env';
         }
 
-        return submitValues
+        return submitValues;
     },
 
     items: [
@@ -157,8 +157,10 @@ Ext.define('PVE.lxc.EnvInputPanel', {
             items: {
                 xtype: 'button',
                 text: gettext('Add Variable'),
-                handler: function(button, event) {
-                    let variableContainer = button.up('pveLxcEnvInputPanel').down('container[name=variableContainer]');
+                handler: function (button, event) {
+                    let variableContainer = button
+                        .up('pveLxcEnvInputPanel')
+                        .down('container[name=variableContainer]');
 
                     variableContainer.add(
                         Ext.create({

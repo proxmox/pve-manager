@@ -1945,7 +1945,8 @@ sub check_rrd_migration {
                     '... omitted printing ' . ($count - $cutoff) . ' additional files';
             }
             log_info("Found '$count' RRD files using the old format.\n"
-                . " These are now only used to display historic data. You can delete them if you do not need that.\n");
+                . " These are now only used to display historic data. You can delete them if you do not need that.\n"
+            );
         } else {
             log_pass("No old RRD metric files found, normally this means all have been migrated.");
         }

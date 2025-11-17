@@ -102,7 +102,6 @@ Ext.define('PVE.dc.CmdMenu', {
     },
 });
 
-
 Ext.define('PVE.dc.TagCmdMenu', {
     extend: 'PVE.dc.CmdMenu',
     xtype: 'tagCmdMenu',
@@ -128,5 +127,3 @@ Ext.define('PVE.dc.TagCmdMenu', {
         me.callParent();
     },
 });
-
-
