@@ -232,7 +232,7 @@ Ext.define('PVE.storage.OciRegistryPull', {
                 success: function (res, opt) {
                     let tags = res.result.data;
                     tagField.clearValue();
-                    tagField.setComboItems(tags.map((tag) => [tag, tag]));
+                    tagField.setComboItems(tags.map((tag) => [tag, Ext.htmlEncode(tag)]));
                 },
             });
         },
