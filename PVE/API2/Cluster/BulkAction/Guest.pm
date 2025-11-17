@@ -367,7 +367,7 @@ __PACKAGE__->register_method({
             }
         };
 
-        return $rpcenv->fork_worker('bulkstart', undef, $authuser, $code);
+        return $rpcenv->fork_worker('bulk-start', undef, $authuser, $code);
     },
 });
 
@@ -502,7 +502,7 @@ __PACKAGE__->register_method({
             }
         };
 
-        return $rpcenv->fork_worker('bulkshutdown', undef, $authuser, $code);
+        return $rpcenv->fork_worker('bulk-shutdown', undef, $authuser, $code);
     },
 });
 
@@ -640,7 +640,7 @@ __PACKAGE__->register_method({
             }
         };
 
-        return $rpcenv->fork_worker('bulksuspend', undef, $authuser, $code);
+        return $rpcenv->fork_worker('bulk-suspend', undef, $authuser, $code);
     },
 });
 
@@ -757,7 +757,7 @@ __PACKAGE__->register_method({
             }
         };
 
-        return $rpcenv->fork_worker('bulkmigrate', undef, $authuser, $code);
+        return $rpcenv->fork_worker('bulk-migrate', undef, $authuser, $code);
     },
 });
 
