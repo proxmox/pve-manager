@@ -25,8 +25,6 @@ Ext.define('PVE.Workspace', {
         me.loginData = loginData;
         Proxmox.Utils.setAuthData(loginData);
 
-        let rt = me.down('pveResourceTree');
-        rt.setDatacenterText(loginData.clustername);
         PVE.ClusterName = loginData.clustername;
 
         if (loginData.cap) {
@@ -454,7 +452,7 @@ Ext.define('PVE.StdWorkspace', {
                                         me.showLogin();
                                         me.setContent(null);
                                         var rt = me.down('pveResourceTree');
-                                        rt.setDatacenterText(undefined);
+                                        PVE.ClusterName = undefined;
                                         rt.clearTree();
 
                                         // empty the stores of the StatusPanel child items
