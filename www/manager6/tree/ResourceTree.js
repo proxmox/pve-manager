@@ -54,7 +54,7 @@ Ext.define('PVE.tree.ResourceTree', {
             renderer: function (val, meta, rec) {
                 let info = rec.data;
 
-                let text = '';
+                let text = info.text;
                 let status = '';
                 if (info.type === 'storage') {
                     let usage = info.disk / info.maxdisk;
@@ -72,7 +72,7 @@ Ext.define('PVE.tree.ResourceTree', {
                         text = `${info.name} (${String(info.vmid)})`;
                     }
                 }
-                text = `<span>${status}${info.text}</span>`;
+                text = `<span>${status}${text}</span>`;
                 text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
 
                 if (info.id === 'root' && PVE.ClusterName) {
