@@ -61,8 +61,8 @@ Ext.define('PVE.qemu.SevInputPanel', {
                     Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')',
                 ],
                 ['std', 'AMD SEV'],
-                ['es', 'AMD SEV-ES (highly experimental)'],
-                ['snp', 'AMD SEV-SNP (highly experimental)'],
+                ['es', 'AMD SEV-ES'],
+                ['snp', 'AMD SEV-SNP'],
             ],
             bind: {
                 value: '{type}',
