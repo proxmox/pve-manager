@@ -152,10 +152,12 @@ Ext.define('PVE.lxc.Options', {
             },
             hookscript: {
                 header: gettext('Hookscript'),
+                renderer: Ext.htmlEncode,
             },
             entrypoint: {
                 header: gettext('Entrypoint'),
                 defaultValue: '/sbin/init',
+                renderer: Ext.htmlEncode,
                 editor: caps.vms['VM.Config.Options']
                     ? {
                           xtype: 'proxmoxWindowEdit',
@@ -183,7 +185,7 @@ Ext.define('PVE.lxc.Options', {
             },
             env: {
                 header: gettext('Environment'),
-                renderer: (v) => v?.replaceAll(/\0+/g, ' '),
+                renderer: (v) => v ? Ext.htmlEncode(v.replaceAll(/\0+/g, ' ')) : null,
                 defaultValue: Proxmox.Utils.noneText,
                 editor: 'PVE.lxc.EnvEdit',
             },
