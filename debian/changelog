@@ -1,3 +1,39 @@
+pve-manager (9.0.17) trixie; urgency=medium
+
+  * ui: lxc: options: make sure values of recently added properties are
+    html-encoded.
+
+  * ui: lxc options: fix rendering default value tty count in edit window.
+
+  * fix: ui: trim leading and trailing white space from OCI registry reference
+    for convenience.
+
+  * ui: qemu: stop marking SEV-ES and SEV-SNP options as experimental.
+
+  * ui: sdn: improve naming of vm network device column in bridge view.
+
+  * ui: qemu tdx: add support for configuring TDX attestation.
+
+  * ui: resource tree: fix timing race where rendered clustername in root-node
+    could seemingly vanish.
+
+  * ui: lxc: support configuring empty environment variables.
+
+  * network-interface-pinning: fix creating directory when '/usr/local/lib'
+    does not exist.
+
+  * ui: create wizard: only submit ha-managed if checked for better
+    compatibility with other nodes that are still running a slightly older
+    package version set.
+
+  * ui: storage: oci registry pull: add filename field to allow overriding the
+    default one.
+
+  * ui: add worker task type description mappings for cluster-wide bulk
+    actions.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 17 Nov 2025 22:22:23 +0100
+
 pve-manager (9.0.16) trixie; urgency=medium
 
   * api: add endpoint to query OCI registries for the tags (versions) of an
