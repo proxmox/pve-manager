@@ -50,7 +50,6 @@ Ext.define('PVE.lxc.EnvVariableField', {
         },
         formulas: {
             valueEmpty: (get) => !get('value')?.length,
-            nameEmpty: (get) => !get('name')?.length,
         },
     },
 
@@ -75,7 +74,6 @@ Ext.define('PVE.lxc.EnvVariableField', {
             xtype: 'proxmoxtextfield',
             emptyText: gettext('Value'),
             bind: {
-                allowBlank: '{nameEmpty}',
                 value: '{value}',
             },
             submitValue: false,
