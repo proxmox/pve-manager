@@ -243,18 +243,11 @@ Ext.define('PVE.window.BulkAction', {
 
         let clearFilters = function () {
             me.down('#namefilter').setValue('');
-            [
-                'name',
-                'status',
-                'pool',
-                'type',
-                'hastate',
-                'includetag',
-                'excludetag',
-                'vmid',
-            ].forEach((filter) => {
-                me.down(`#${filter}filter`).setValue('');
-            });
+            ['name', 'status', 'pool', 'type', 'hastate', 'includetag', 'excludetag'].forEach(
+                (filter) => {
+                    me.down(`#${filter}filter`).setValue('');
+                },
+            );
         };
 
         let filterChange = function () {
