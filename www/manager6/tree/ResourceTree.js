@@ -71,6 +71,11 @@ Ext.define('PVE.tree.ResourceTree', {
                 }
                 text = `<span>${status}${text}</span>`;
                 text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
+
+                if (info.id === 'root' && PVE.ClusterName) {
+                    text += ` (${PVE.ClusterName})`;
+                }
+
                 return (info.renderedText = text);
             },
         },
@@ -548,18 +553,6 @@ Ext.define('PVE.tree.ResourceTree', {
                 me.viewFilter = view;
                 me.clearTree();
                 updateTree();
-            },
-            setDatacenterText: function (clustername) {
-                let rootnode = me.store.getRootNode();
-
-                let rnodeText = gettext('Datacenter');
-                if (clustername !== undefined) {
-                    rnodeText += ' (' + clustername + ')';
-                }
-
-                rootnode.beginEdit();
-                rootnode.data.text = rnodeText;
-                rootnode.commit();
             },
             clearTree: function () {
                 pdata.updateCount = 0;
