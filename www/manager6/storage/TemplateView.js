@@ -281,6 +281,14 @@ Ext.define('PVE.storage.OciRegistryPull', {
                             listeners: {
                                 change: 'onReferenceChange',
                             },
+                            validator: function (value) {
+                                let me = this;
+                                let controller = me.up('pveOciRegistryPull').getController();
+                                if (controller.parseReference(value)) {
+                                    return true;
+                                }
+                                return gettext('Invalid OCI Registry Reference');
+                            },
                         },
                         {
                             xtype: 'button',
