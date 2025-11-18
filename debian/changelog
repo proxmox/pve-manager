@@ -1,3 +1,16 @@
+pve-manager (9.0.18) trixie; urgency=medium
+
+  * ui: resource tree: fix rendering of guest text when sorted by name.
+
+  * ui: fix recent regression from wrongly rendering guest entries in the tag
+    view.
+
+  * ui: console: add a simple heuristic to detect application containers and
+    show a warning for them in the console view, as the console for such
+    containers is (currently) likely not fully functional.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Nov 2025 15:21:34 +0100
+
 pve-manager (9.0.17) trixie; urgency=medium
 
   * ui: lxc: options: make sure values of recently added properties are
