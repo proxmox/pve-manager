@@ -305,7 +305,7 @@ Ext.define('PVE.storage.OciRegistryPull', {
                     xtype: 'proxmoxKVComboBox',
                     name: 'tag',
                     allowBlank: false,
-                    emptyText: 'latest',
+                    emptyText: gettext("for example 'latest'"),
                     fieldLabel: gettext('Tag'),
                     forceSelection: false,
                     editable: true,
