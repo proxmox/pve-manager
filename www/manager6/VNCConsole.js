@@ -29,11 +29,25 @@ Ext.define('PVE.noVncConsole', {
 
         // always use same iframe, to avoid running several noVnc clients
         // at same time (to avoid performance problems)
-        var box = Ext.create('Ext.ux.IFrame', { itemid: 'vncconsole' });
+        var box = Ext.create('Ext.ux.IFrame', { itemid: 'vncconsole', flex: 1 });
+
+        let warning = Ext.create('Ext.Component', {
+            userCls: 'pmx-hint',
+            padding: 5,
+            hidden: true,
+            style: {
+                'text-align': 'center',
+            },
+            html: gettext('Application container detected - console might not be fully functional.'),
+        });
 
         var type = me.xtermjs ? 'xtermjs' : 'novnc';
         Ext.apply(me, {
-            items: box,
+            layout: {
+                type: 'vbox',
+                align: 'stretch',
+            },
+            items: [warning, box],
             listeners: {
                 activate: function () {
                     let sp = Ext.state.Manager.getProvider();
@@ -58,8 +72,24 @@ Ext.define('PVE.noVncConsole', {
 
         me.callParent();
 
+        // check for app container
+        if (me.consoleType === 'lxc') {
+            Proxmox.Utils.API2Request({
+                url: `/nodes/${me.nodename}/lxc/${me.vmid}/config`,
+                success: function (response) {
+                    let consoleMode = response?.result?.data?.cmode;
+                    let entryPoint = response?.result?.data?.entrypoint;
+                    let customEntryPoint = entryPoint !== undefined && entryPoint !== '/sbin/init';
+
+                    if (customEntryPoint && consoleMode === 'console') {
+                        warning.setVisible(true);
+                    }
+                },
+            });
+        }
+
         me.on('afterrender', function () {
-            me.focus();
+            box.focus();
         });
     },
 
