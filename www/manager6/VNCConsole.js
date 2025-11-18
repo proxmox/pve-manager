@@ -83,6 +83,9 @@ Ext.define('PVE.noVncConsole', {
 
                     if (customEntryPoint && consoleMode === 'console') {
                         warning.setVisible(true);
+                        setTimeout(() => {
+                            warning.setVisible(false);
+                        }, 8_000);
                     }
                 },
             });
