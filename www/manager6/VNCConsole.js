@@ -38,7 +38,9 @@ Ext.define('PVE.noVncConsole', {
             style: {
                 'text-align': 'center',
             },
-            html: gettext('Application container detected - console might not be fully functional.'),
+            html: gettext(
+                'Application container detected - console might not be fully functional.',
+            ),
         });
 
         var type = me.xtermjs ? 'xtermjs' : 'novnc';
