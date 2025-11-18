@@ -1,3 +1,21 @@
+pve-manager (9.1.1) trixie; urgency=medium
+
+  * ui: storage: oci registry pull: make parsing the reference of a OCI image
+    URL more robust and add a validator to the reference field for better
+    immediate feedback to the user.
+
+  * ui: storage oci pull: reword empty text for tag field to avoid suggesting
+    that this placeholder is the default value, as we currently do not have
+    any here.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Nov 2025 19:08:54 +0100
+
+pve-manager (9.1.0) trixie; urgency=medium
+
+  * bump for Proxmox VE 9.1.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Nov 2025 00:32:05 +0100
+
 pve-manager (9.0.18) trixie; urgency=medium
 
   * ui: resource tree: fix rendering of guest text when sorted by name.
