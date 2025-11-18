@@ -1251,10 +1251,10 @@ sub check_storage_content_dirs {
     }
     if ($any_problematic) {
         log_fail(
-            "re-using directory for multiple content types (see above) is no longer supported in Proxmox VE 8!"
+            "reusing directory for multiple content types (see above) is no longer supported in Proxmox VE 8!"
         );
     } else {
-        log_pass("no storage re-uses a directory for multiple content types.");
+        log_pass("no storage reuses a directory for multiple content types.");
     }
 }
 

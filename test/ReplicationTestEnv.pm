@@ -286,7 +286,7 @@ sub setup {
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 }
 
-# code to generate/conpare test logs
+# code to generate/compare test logs
 
 my $logname;
 my $logfh;

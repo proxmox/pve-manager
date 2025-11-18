@@ -118,7 +118,7 @@ sub compute_alg1 {
 
     if ($goal > 10 * 1024 * 1024) {
         &$log("grow request start $goal\n");
-        # priorize VMs with memory pressure
+        # prioritize VMs with memory pressure
         my $rest = &$change_func($res, $idlist1, $goal);
         if ($rest >= $goal) { # no progress ==> consider all VMs
             &$log("grow request loop $rest\n");
@@ -128,7 +128,7 @@ sub compute_alg1 {
 
     } elsif ($goal < -10 * 1024 * 1024) {
         &$log("shrink request $goal\n");
-        # priorize VMs with enough free memory
+        # prioritize VMs with enough free memory
         my $rest = &$change_func($res, $idlist2, $goal);
         if ($rest <= $goal) { # no progress ==> consider all VMs
             &$log("shrink request loop $rest\n");

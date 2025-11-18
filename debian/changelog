@@ -110,7 +110,7 @@ pve-manager (9.0.14) trixie; urgency=medium
 
   * ui: container: show dynamically assigned IPs in network tab.
 
-  * ui: re-use IP overview from VMs for container and show it in the CT
+  * ui: reuse IP overview from VMs for container and show it in the CT
     summary view.
 
   * ui: summary view: increase row height to ensure there's enough space by
@@ -145,7 +145,7 @@ pve-manager (9.0.13) trixie; urgency=medium
   * ui: add guest bulk actions menu at the right side of the datacenter level
     top bar.
 
-  * api: metric export: re-use credentials from request for proxying.
+  * api: metric export: reuse credentials from request for proxying.
 
   * ui: ha resource removal: allow one to purge resource from all rules.
 
@@ -277,7 +277,7 @@ pve-manager (9.0.8) trixie; urgency=medium
     responsive on setups with thousands of virtual guests.
 
   * ui: VM cpu: recognize kebab-cased properties like while parsing to avoid
-    loosing the value of such a manually set option on edit.
+    losing the value of such a manually set option on edit.
 
   * api: apt: ensure change log entries are encoded as valid UTF-8.
 
@@ -740,7 +740,7 @@ pve-manager (9.0.0~3) trixie; urgency=medium
 
 pve-manager (9.0.0~2) trixie; urgency=medium
 
-  * d/control: run all binary tragets under (fake)root to ensure dpkg-deb
+  * d/control: run all binary targets under (fake)root to ensure dpkg-deb
     knows about different file ownerships when assembling the archive, like
     the one from /var/log/pveproxy.
 
@@ -905,7 +905,7 @@ pve-manager (8.3.5) bookworm; urgency=medium
 
   * ui: sdn ipam: powerDNS, NetBox, phpIPAM: add fingerprint textfield
 
-  * ui: storage pbs: re-use new pmxFingerprintField from widget-toolkit
+  * ui: storage pbs: reuse new pmxFingerprintField from widget-toolkit
 
  -- Proxmox Support Team <support@proxmox.com>  Thu, 06 Mar 2025 10:50:15 +0100
 
@@ -1405,7 +1405,7 @@ pve-manager (8.1.7) bookworm; urgency=medium
 pve-manager (8.1.6) bookworm; urgency=medium
 
   * ui: add guest import wizard in the content browser for storages that
-     upport the new 'import' content type.
+     support the new 'import' content type.
 
   * ui: support to add the new ESXi storage type, which provides only the
     'import' content type and can be used for importing VMs from a ESXi host
@@ -1544,12 +1544,12 @@ pve-manager (8.0.9) bookworm; urgency=medium
 
 pve-manager (8.0.8) bookworm; urgency=medium
 
-  * update shipped apliance info index
+  * update shipped appliance info index
 
   * report: add files from  interfaces.d and SDN config directories
 
   * node console: allow usage for non-pam realms, users still need to login
-    with credential recoginzed by PAM
+    with credential recognized by PAM
 
   * ui: wizards: allow adding tags in the qemu/lxc create wizard
 
@@ -2773,7 +2773,7 @@ pve-manager (7.0-15) bullseye; urgency=medium
     as markdown
 
   * fix #3505: ui: upload to storage: add checksum and algorithm to
-    auto-verify intergrity of files after they have been uploaded, similar to
+    auto-verify integrity of files after they have been uploaded, similar to
     the URL downloader.
 
   * ui: node: LVMThin: add volume group to columns
@@ -2798,7 +2798,7 @@ pve-manager (7.0-15) bullseye; urgency=medium
 
   * ui: storage: avoid deleting preallocation setting on creation
 
-  * ui: more re-use of user and TFA related widgets from widget-toolkit
+  * ui: more reuse of user and TFA related widgets from widget-toolkit
 
   * fix #2841: implement multiple second factors for users
 
@@ -2818,7 +2818,7 @@ pve-manager (7.0-15) bullseye; urgency=medium
 
   * ui: index: set Proxmox.NodeName variable
 
-  * ui: tfa: include cluster or node name in issuer for better recogintion in,
+  * ui: tfa: include cluster or node name in issuer for better recognition in,
     for example, TOTP apps
 
  -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Nov 2021 21:37:07 +0100
@@ -3124,7 +3124,7 @@ pve-manager (6.4-7) pve; urgency=medium
 
   * pvereport: log pressure stall information
 
-  * pvereport: re-organize: add systemd-load section abd unify bios/pci in HW
+  * pvereport: re-organize: add systemd-load section and unify bios/pci in HW
     a single section
 
   * fix #3430: handle hook script paths better
@@ -3820,7 +3820,7 @@ pve-manager (6.1-2) pve; urgency=medium
 
   * LXC: Disable resize button when volume is unused
 
-  * ui: dc/options: fix capabillities for u2f, bwlimits, ha settings
+  * ui: dc/options: fix capabilities for u2f, bwlimits, ha settings
 
   * api: apt/versions: track ifupdown and ifupdown2 as optional package
 
@@ -4537,7 +4537,7 @@ pve-manager (5.2-11) unstable; urgency=medium
   * dc/user: render user fullnames htmlEncoded
 
   * ceph: osd: wipe start of blockdevice when destroying ceph disk to ensure it
-    can be re-used for any purpose
+    can be reused for any purpose
 
   * gui: expose lxc features
 
@@ -4581,7 +4581,7 @@ pve-manager (5.2-9) unstable; urgency=medium
 
 pve-manager (5.2-8) unstable; urgency=medium
 
-  * fix doubleclick on VM with spice console
+  * fix double-click on VM with spice console
 
   * ui: storage: combine RBD external and hyperconverged add dialog
 
@@ -4768,13 +4768,13 @@ pve-manager (5.1-50) unstable; urgency=medium
 
   * add advanced checkbox to the wizard
 
-  * Add CIFS in strorage info to allow backup.
+  * Add CIFS in storage info to allow backup.
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 06 Apr 2018 13:55:38 +0200
 
 pve-manager (5.1-49) unstable; urgency=medium
 
-  * add cluster administartion panel
+  * add cluster administration panel
 
   * ui: add storage plugin base class
 

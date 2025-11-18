@@ -1913,7 +1913,7 @@ __PACKAGE__->register_method({
 # * current parent node
 # * vmid whitelist
 # * guest is a template (default: skip)
-# * guest is HA manged (default: skip)
+# * guest is HA managed (default: skip)
 sub get_filtered_vmlist {
     my ($nodename, $vmfilter, $templates, $ha_managed) = @_;
 
@@ -2589,7 +2589,7 @@ __PACKAGE__->register_method({
             }
             while (scalar(keys %$workers)) {
                 foreach my $p (keys %$workers) {
-                    # FIXME: what about PID re-use ?!?!
+                    # FIXME: what about PID reuse ?!?!
                     if (!PVE::ProcFSTools::check_process_running($p)) {
                         delete $workers->{$p};
                     }

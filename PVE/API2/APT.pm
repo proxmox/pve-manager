@@ -188,7 +188,7 @@ my $update_pve_pkgstatus = sub {
         }
     }
 
-    # keep notification status (avoid sending mails abou new packages more than once)
+    # keep notification status (avoid sending mails about new packages more than once)
     foreach my $pi (@$pkglist) {
         if (my $ns = $notify_status->{ $pi->{Package} }) {
             $pi->{NotifyStatus} = $ns if $ns eq $pi->{Version};

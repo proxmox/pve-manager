@@ -11,7 +11,7 @@ use PVE::API2::Ceph::OSD;
 
 use Data::Dumper;
 
-# NOTE: not exhausive, reduced to actually required fields!
+# NOTE: not exhaustive, reduced to actually required fields!
 my $tree = {
     nodes => [
         {

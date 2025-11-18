@@ -104,7 +104,7 @@ sub main {
             }
 
             # in order to avoid holding the lock for too long at a time, update LVs in batches of 32
-            # and release the lock inbetween
+            # and release the lock in between
             my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
             while (@$autoactivated_lvs) {
                 my @current_lvs = splice @$autoactivated_lvs, 0, 32;

@@ -113,7 +113,7 @@ sub make_get_request {
 # }
 #
 # max_workers: how many parallel tasks should be started.
-# start_task: a sub that returns eiter a upid or 1 (undef means failure)
+# start_task: a sub that returns either a upid or 1 (undef means failure)
 # check_task: if start_task returned a upid, will wait for that to finish and
 #    call check_task with the resulting task status
 sub handle_task_foreach_guest {
