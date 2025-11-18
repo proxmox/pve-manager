@@ -201,15 +201,31 @@ Ext.define('PVE.storage.OciRegistryPull', {
             let view = me.getView();
             let tagField = view.down('[name=tag]');
             tagField.setComboItems([]);
+            let matches = me.parseReference(value);
+            if (matches) {
+                let ref = matches[0];
+                let tag = matches[1];
 
-            let parts = value.split(':');
-            if (parts.length > 1) {
-                field.setValue(parts[0]);
-                tagField.setValue(parts[1]);
-                tagField.focus();
-            } else {
-                tagField.clearValue();
+                if (tag) {
+                    field.setValue(ref);
+                    tagField.setValue(tag);
+                    tagField.focus();
+                } else {
+                    tagField.clearValue();
+                }
             }
+        },
+
+        parseReference: function (value) {
+            const re =
+                /^((?:(?:[a-zA-Z\d]|[a-zA-Z\d][a-zA-Z\d-]*[a-zA-Z\d])(?:\.(?:[a-zA-Z\d]|[a-zA-Z\d][a-zA-Z\d-]*[a-zA-Z\d]))*(?::\d+)?\/)?[a-z\d]+(?:(?:[._]|__|[-]*)[a-z\d]+)*(?:\/[a-z\d]+(?:(?:[._]|__|[-]*)[a-z\d]+)*)*)(:(\w[\w.-]{0,127}))?$/;
+            let matches = value.match(re);
+            if (matches) {
+                let ref = matches[1];
+                let tag = matches[3];
+                return [ref, tag];
+            }
+            return undefined;
         },
 
         queryTags: function (field) {
