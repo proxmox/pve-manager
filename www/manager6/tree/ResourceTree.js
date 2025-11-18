@@ -613,7 +613,7 @@ Ext.define('PVE.tree.ResourceTree', {
         me.mon(Ext.GlobalEvents, 'loadedUiOptions', () => {
             me.store.getRootNode().cascadeBy({
                 before: function (node) {
-                    if (node.data.groupbyid || node.data.tags) {
+                    if (node.data.groupbyid) {
                         node.beginEdit();
                         let info = node.data;
                         me.setIconCls(info);
