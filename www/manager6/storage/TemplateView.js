@@ -217,8 +217,12 @@ Ext.define('PVE.storage.OciRegistryPull', {
         },
 
         parseReference: function (value) {
-            const re =
-                /^((?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?(?:\.(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?))*(?::\d+)?\/)?[a-z\d]+(?:(?:[._]|__|-+)[a-z\d]+)*(?:\/[a-z\d]+(?:(?:[._]|__|-+)[a-z\d]+)*)*)(?::(\w[\w.-]{0,127}))?$/;
+            const re = new RegExp(
+                '^((?:[a-zA-Z\\d](?:[a-zA-Z\\d-]*[a-zA-Z\\d])?(?:\\.(?:[a-zA-Z\\d]' +
+                    '(?:[a-zA-Z\\d-]*[a-zA-Z\\d])?))*(?::\\d+)?/)?[a-z\\d]+(?:(?:[._]|__|-+)' +
+                    '[a-z\\d]+)*(?:/[a-z\\d]+(?:(?:[._]|__|-+)[a-z\\d]+)*)*)' +
+                    '(?::(\\w[\\w.-]{0,127}))?$',
+            );
             let matches = value.match(re);
             if (matches) {
                 let ref = matches[1];
