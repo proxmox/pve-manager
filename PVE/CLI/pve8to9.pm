@@ -2263,12 +2263,16 @@ sub check_misc {
             next;
         }
 
-        if ($size < $check->{minsize}) {
-            log_fail("'$fn', certificate's $check->{name} public key size is less than 2048 bit");
+        my $min_size = $check->{minsize};
+        my $name = $check->{name};
+        if ($size < $min_size) {
+            log_fail(
+                "'$fn', certificate's $check->{name} public key size is less than $min_size bit for $name"
+            );
             $certs_check_failed = 1;
         } else {
             log_pass(
-                "Certificate '$fn' passed Debian Busters (and newer) security level for TLS connections ($size >= 2048)"
+                "Certificate '$fn' passed Debian Busters (and newer) security level for TLS connections ($size >= $min_size $name)"
             );
         }
     }
