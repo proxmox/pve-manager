@@ -247,6 +247,17 @@ sub print_start_action {
     }
 }
 
+sub get_max_workers {
+    my ($param) = @_;
+
+    return $param->{'max-workers'} if $param->{'max-workers'};
+
+    my $datacenter_config = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    return $datacenter_config->{max_workers} if $datacenter_config->{max_workers};
+
+    return 1;
+}
+
 __PACKAGE__->register_method({
     name => 'start',
     path => 'start',
@@ -361,7 +372,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{'max-workers'} // 1;
+            my $max_workers = get_max_workers($param);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -499,7 +510,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{'max-workers'} // 1;
+            my $max_workers = get_max_workers($param);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -640,7 +651,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{'max-workers'} // 1;
+            my $max_workers = get_max_workers($param);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -696,6 +707,7 @@ __PACKAGE__->register_method({
                 type => 'integer',
             },
             # TODO:
+            # Node mappings, not just a single target node!
             # Failure resolution mode (fail, warn, retry?)
             # mode-limits (offline only, suspend only, ?)
             # filter (tags, name, ?)
@@ -760,7 +772,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{'max-workers'} // 1;
+            my $max_workers = get_max_workers($param);
             my $failed =
                 handle_task_foreach_guest({ '0' => $list }, $max_workers, $start_task, $check_task);
 
