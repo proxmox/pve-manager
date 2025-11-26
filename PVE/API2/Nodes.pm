@@ -2499,6 +2499,9 @@ __PACKAGE__->register_method({
             node => get_standard_option('pve-node'),
             target => get_standard_option('pve-node', { description => "Target node." }),
             maxworkers => {
+                alias => 'max-workers',
+            },
+            'max-workers' => {
                 description => "Maximal number of parallel migration job. If not set, uses"
                     . "'max_workers' from datacenter.cfg. One of both must be set!",
                 optional => 1,
@@ -2550,7 +2553,7 @@ __PACKAGE__->register_method({
         my $datacenterconfig = cfs_read_file('datacenter.cfg');
         # prefer parameter over datacenter cfg settings
         my $maxWorkers =
-            $param->{maxworkers}
+            $param->{'max-workers'}
             || $datacenterconfig->{max_workers}
             || die "either 'maxworkers' parameter or max_workers in datacenter.cfg must be set!\n";
 

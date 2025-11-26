@@ -275,6 +275,9 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
+                alias => 'max-workers',
+            },
+            'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
                 default => 1,
@@ -358,7 +361,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{maxworkers} // 1;
+            my $max_workers = $param->{'max-workers'} // 1;
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -406,6 +409,9 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
+                alias => 'max-workers',
+            },
+            'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
                 default => 1,
@@ -493,7 +499,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{maxworkers} // 1;
+            my $max_workers = $param->{'max-workers'} // 1;
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -546,6 +552,9 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
+                alias => 'max-workers',
+            },
+            'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
                 default => 1,
@@ -631,7 +640,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{maxworkers} // 1;
+            my $max_workers = $param->{'max-workers'} // 1;
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -678,6 +687,9 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
+                alias => 'max-workers',
+            },
+            'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
                 default => 1,
@@ -748,7 +760,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = $param->{maxworkers} // 1;
+            my $max_workers = $param->{'max-workers'} // 1;
             my $failed =
                 handle_task_foreach_guest({ '0' => $list }, $max_workers, $start_task, $check_task);
 
