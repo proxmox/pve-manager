@@ -248,14 +248,14 @@ sub print_start_action {
 }
 
 sub get_max_workers {
-    my ($param) = @_;
+    my ($param, $default) = @_;
 
     return $param->{'max-workers'} if $param->{'max-workers'};
 
     my $datacenter_config = PVE::Cluster::cfs_read_file('datacenter.cfg');
     return $datacenter_config->{max_workers} if $datacenter_config->{max_workers};
 
-    return 1;
+    return $default || 1;
 }
 
 __PACKAGE__->register_method({
@@ -291,7 +291,7 @@ __PACKAGE__->register_method({
             'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
-                default => 1,
+                default => 4,
                 type => 'integer',
             },
             # TODO:
@@ -372,7 +372,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = get_max_workers($param);
+            my $max_workers = get_max_workers($param, 4);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -425,7 +425,7 @@ __PACKAGE__->register_method({
             'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
-                default => 1,
+                default => 4,
                 type => 'integer',
             },
             # TODO:
@@ -510,7 +510,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = get_max_workers($param);
+            my $max_workers = get_max_workers($param, 4);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
@@ -568,7 +568,7 @@ __PACKAGE__->register_method({
             'max-workers' => {
                 description => "How many parallel tasks at maximum should be started.",
                 optional => 1,
-                default => 1,
+                default => 4,
                 type => 'integer',
             },
             # TODO:
@@ -651,7 +651,7 @@ __PACKAGE__->register_method({
                 }
             };
 
-            my $max_workers = get_max_workers($param);
+            my $max_workers = get_max_workers($param, 4);
             my $failed =
                 handle_task_foreach_guest($startlist, $max_workers, $start_task, $check_task);
 
