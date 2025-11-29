@@ -2003,6 +2003,19 @@ my $remove_locks_on_startup = sub {
     }
 };
 
+my sub get_max_workers {
+    my ($param) = @_;
+
+    return $param->{'max-workers'} if $param->{'max-workers'};
+
+    my $datacenter_config = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    return $datacenter_config->{max_workers} if $datacenter_config->{max_workers};
+
+    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
+
+    return $cpuinfo->{cpus};
+}
+
 __PACKAGE__->register_method({
     name => 'startall',
     path => 'startall',
@@ -2196,6 +2209,15 @@ __PACKAGE__->register_method({
                 minimum => 0,
                 maximum => 2 * 3600, # mostly arbitrary, but we do not want to high timeouts
             },
+            'max-workers' => {
+                description => "Defines the maximum number of tasks running concurrently. If"
+                    . " not set, uses 'max_workers' from datacenter.cfg, and if that's not set, the"
+                    . " available CPU threads are used.",
+                optional => 1,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
+            },
         },
     },
     returns => {
@@ -2225,10 +2247,7 @@ __PACKAGE__->register_method({
 
             my $stopList = get_start_stop_list($nodename, undef, $param->{vms});
 
-            my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
-            my $datacenterconfig = cfs_read_file('datacenter.cfg');
-            # if not set by user spawn max cpu count number of workers
-            my $max_workers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
+            my $max_workers = get_max_workers($param);
 
             for my $order (sort { $b <=> $a } keys %$stopList) {
                 my $vmlist = $stopList->{$order};
@@ -2324,6 +2343,15 @@ __PACKAGE__->register_method({
                 format => 'pve-vmid-list',
                 optional => 1,
             },
+            'max-workers' => {
+                description => "Maximal number of parallel migration job. If not set, uses"
+                    . "'max_workers' from datacenter.cfg, and if that's not set the available'
+                    .' CPU threads are used.",
+                optional => 1,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
+            },
         },
     },
     returns => {
@@ -2354,10 +2382,7 @@ __PACKAGE__->register_method({
 
             my $toSuspendList = get_start_stop_list($nodename, undef, $param->{vms});
 
-            my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
-            my $datacenterconfig = cfs_read_file('datacenter.cfg');
-            # if not set by user spawn max cpu count number of workers
-            my $max_workers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
+            my $max_workers = get_max_workers($param);
 
             for my $order (sort { $b <=> $a } keys %$toSuspendList) {
                 my $vmlist = $toSuspendList->{$order};
