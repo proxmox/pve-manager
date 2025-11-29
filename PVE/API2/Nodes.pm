@@ -2567,6 +2567,7 @@ __PACKAGE__->register_method({
                 optional => 1,
                 type => 'integer',
                 minimum => 1,
+                maximum => 64,
             },
             vms => {
                 description => "Only consider Guests with these IDs.",
