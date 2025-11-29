@@ -8,6 +8,7 @@ use Digest::SHA;
 use Filesys::Df;
 use HTTP::Status qw(:constants);
 use JSON;
+use List::Util qw(max min);
 use POSIX qw(LONG_MAX);
 use Time::Local qw(timegm_nocheck);
 use Socket;
@@ -2013,7 +2014,7 @@ my sub get_max_workers {
 
     my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 
-    return $cpuinfo->{cpus};
+    return min(max(1, $cpuinfo->{cpus} - 1), 8);
 }
 
 __PACKAGE__->register_method({
@@ -2210,9 +2211,9 @@ __PACKAGE__->register_method({
                 maximum => 2 * 3600, # mostly arbitrary, but we do not want to high timeouts
             },
             'max-workers' => {
-                description => "Defines the maximum number of tasks running concurrently. If"
+                description => "Defines the maximum number of tasks running concurrently. If "
                     . " not set, uses 'max_workers' from datacenter.cfg, and if that's not set, the"
-                    . " available CPU threads are used.",
+                    . " available CPU threads, clamped to a maximum of 8, are used.",
                 optional => 1,
                 type => 'integer',
                 minimum => 1,
@@ -2346,7 +2347,7 @@ __PACKAGE__->register_method({
             'max-workers' => {
                 description => "Maximal number of parallel migration job. If not set, uses"
                     . "'max_workers' from datacenter.cfg, and if that's not set the available'
-                    .' CPU threads are used.",
+                    .' CPU threads, clamped to a maximum of 8, are used.",
                 optional => 1,
                 type => 'integer',
                 minimum => 1,
