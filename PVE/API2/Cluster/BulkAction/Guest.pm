@@ -289,7 +289,7 @@ __PACKAGE__->register_method({
                 alias => 'max-workers',
             },
             'max-workers' => {
-                description => "How many parallel tasks at maximum should be started.",
+                description => "Defines the maximum number of tasks running concurrently.",
                 optional => 1,
                 default => 4,
                 type => 'integer',
@@ -423,7 +423,7 @@ __PACKAGE__->register_method({
                 alias => 'max-workers',
             },
             'max-workers' => {
-                description => "How many parallel tasks at maximum should be started.",
+                description => "Defines the maximum number of tasks running concurrently.",
                 optional => 1,
                 default => 4,
                 type => 'integer',
@@ -566,7 +566,7 @@ __PACKAGE__->register_method({
                 alias => 'max-workers',
             },
             'max-workers' => {
-                description => "How many parallel tasks at maximum should be started.",
+                description => "Defines the maximum number of tasks running concurrently.",
                 optional => 1,
                 default => 4,
                 type => 'integer',
@@ -701,7 +701,7 @@ __PACKAGE__->register_method({
                 alias => 'max-workers',
             },
             'max-workers' => {
-                description => "How many parallel tasks at maximum should be started.",
+                description => "Defines the maximum number of tasks running concurrently.",
                 optional => 1,
                 default => 1,
                 type => 'integer',
