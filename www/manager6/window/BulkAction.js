@@ -164,6 +164,29 @@ Ext.define('PVE.window.BulkAction', {
                 ],
             });
         }
+        if (me.action !== 'migrateall' && me.action !== 'migrate') {
+            items.push({
+                xtype: 'fieldcontainer',
+                layout: 'hbox',
+                items: [
+                    {
+                        xtype: 'box',
+                        flex: 7,
+                    },
+                    {
+                        xtype: 'proxmoxintegerfield',
+                        name: 'max-workers',
+                        minValue: 1,
+                        maxValue: 64,
+                        emptyText: 'auto',
+                        fieldLabel: gettext('Parallel jobs'),
+                        labelWidth: 120,
+                        allowBlank: true,
+                        flex: 3,
+                    },
+                ],
+            });
+        }
 
         let refreshLxcWarning = function (vmids, records) {
             let showWarning = records.some(
