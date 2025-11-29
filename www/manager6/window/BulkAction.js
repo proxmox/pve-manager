@@ -89,7 +89,7 @@ Ext.define('PVE.window.BulkAction', {
                             xtype: 'proxmoxintegerfield',
                             name: 'maxworkers',
                             minValue: 1,
-                            maxValue: 100,
+                            maxValue: 64,
                             value: 1,
                             fieldLabel: gettext('Parallel jobs'),
                             allowBlank: false,
