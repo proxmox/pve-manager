@@ -148,7 +148,7 @@ Ext.define('PVE.window.BulkAction', {
                         boxLabel: gettext('Force stop guest if shutdown times out.'),
                         checked: true,
                         uncheckedValue: 0,
-                        flex: 1,
+                        flex: 7,
                     },
                     {
                         xtype: 'proxmoxintegerfield',
@@ -159,7 +159,7 @@ Ext.define('PVE.window.BulkAction', {
                         minValue: 0,
                         maxValue: 7200,
                         allowBlank: true,
-                        flex: 1,
+                        flex: 3,
                     },
                 ],
             });
