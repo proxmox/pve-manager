@@ -2228,7 +2228,7 @@ __PACKAGE__->register_method({
             my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
             my $datacenterconfig = cfs_read_file('datacenter.cfg');
             # if not set by user spawn max cpu count number of workers
-            my $maxWorkers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
+            my $max_workers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
 
             for my $order (sort { $b <=> $a } keys %$stopList) {
                 my $vmlist = $stopList->{$order};
@@ -2262,7 +2262,7 @@ __PACKAGE__->register_method({
                     my $pid = $task->{pid};
 
                     $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
-                    while (scalar(keys %$workers) >= $maxWorkers) {
+                    while (scalar(keys %$workers) >= $max_workers) {
                         foreach my $p (keys %$workers) {
                             if (!PVE::ProcFSTools::check_process_running($p)) {
                                 $finish_worker->($p);
@@ -2357,7 +2357,7 @@ __PACKAGE__->register_method({
             my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
             my $datacenterconfig = cfs_read_file('datacenter.cfg');
             # if not set by user spawn max cpu count number of workers
-            my $maxWorkers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
+            my $max_workers = $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
 
             for my $order (sort { $b <=> $a } keys %$toSuspendList) {
                 my $vmlist = $toSuspendList->{$order};
@@ -2386,7 +2386,7 @@ __PACKAGE__->register_method({
                     my $pid = $task->{pid};
                     $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
 
-                    while (scalar(keys %$workers) >= $maxWorkers) {
+                    while (scalar(keys %$workers) >= $max_workers) {
                         for my $p (keys %$workers) {
                             if (!PVE::ProcFSTools::check_process_running($p)) {
                                 $finish_worker->($p);
@@ -2552,7 +2552,7 @@ __PACKAGE__->register_method({
 
         my $datacenterconfig = cfs_read_file('datacenter.cfg');
         # prefer parameter over datacenter cfg settings
-        my $maxWorkers =
+        my $max_workers =
             $param->{'max-workers'}
             || $datacenterconfig->{max_workers}
             || die "either 'maxworkers' parameter or max_workers in datacenter.cfg must be set!\n";
@@ -2581,7 +2581,7 @@ __PACKAGE__->register_method({
 
                 $workers_started++;
                 $workers->{$pid} = 1;
-                while (scalar(keys %$workers) >= $maxWorkers) {
+                while (scalar(keys %$workers) >= $max_workers) {
                     foreach my $p (keys %$workers) {
                         if (!PVE::ProcFSTools::check_process_running($p)) {
                             delete $workers->{$p};
