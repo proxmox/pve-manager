@@ -1,3 +1,50 @@
+pve-manager (9.1.2) trixie; urgency=medium
+
+  * pve8to9: improve message for TLS checks in relation to different key bit
+    size for RSA or ECC based keys.
+
+  * fix #2077: pvenode: drop dependency on GNU readline Perl module in favor
+    of our own PTY module. While it's less flexible, it's much simpler and
+    robust, and–more importantly–it has no issues with being instantiated more
+    than once, which recently became an error in the readline module, breaking
+    EAB ACME integration.
+
+  * api: bulk actions: use kebab-case for 'max-workers' parameter with alias
+    to old 'maxworkers' spelling for backwards compatibility.
+
+  * api: cluster bulk actions: fall-back to datacenter.cfg for max-workers.
+
+  * api: cluster bulk actions: increase default worker from 1 to 4 for start,
+    stop & suspend actions.
+
+  * api: cluster bulk actions: define minimum of 1 and a maximum of 64 for
+    max-workers parameter.
+
+  * api: node bulk action: add max-worker parameter to stop and suspend
+    actions to allow overriding through API.
+
+  * api: node bulk action: improve the cpu-thread-count derived max-worker
+    fallback, which is used when neither an API parameter nor an max_worker
+    setting in the datacenter config is set. Ensure that there is always one
+    core left over for the system and use maximum of 8 workers.
+
+  * api: node bulk start: implement concurrent workers and add max-worker
+    API parameter.
+
+  * api: node bulk migrate: set maximum of max-worker parameter to 64.
+
+  * ui: bulk action window: give box-label hint for force-stop checkbox more
+    space.
+
+  * ui: bulk action window: add max-workers field to all actions.
+
+  * ui: bulk action window: adapt to lowered upper-limit for migrate
+    max-worker.
+
+  * pveupdate: do not try to update subscription when using offline key.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 29 Nov 2025 20:18:26 +0100
+
 pve-manager (9.1.1) trixie; urgency=medium
 
   * ui: storage: oci registry pull: make parsing the reference of a OCI image
