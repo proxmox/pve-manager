@@ -293,6 +293,8 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 4,
                 type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             # TODO:
             # Failure resolution mode (fail, warn, retry?)
@@ -427,6 +429,8 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 4,
                 type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             # TODO:
             # Failure resolution mode (fail, warn, retry?)
@@ -570,6 +574,8 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 4,
                 type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             # TODO:
             # Failure resolution mode (fail, warn, retry?)
@@ -705,6 +711,8 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 1,
                 type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             # TODO:
             # Node mappings, not just a single target node!
