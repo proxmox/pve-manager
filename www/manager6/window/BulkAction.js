@@ -87,6 +87,7 @@ Ext.define('PVE.window.BulkAction', {
                         },
                         {
                             xtype: 'proxmoxintegerfield',
+                            // TODO: change to newer max-worker spelling for PVE 10
                             name: 'maxworkers',
                             minValue: 1,
                             maxValue: 64,
