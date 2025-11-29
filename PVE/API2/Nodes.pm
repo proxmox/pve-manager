@@ -2047,6 +2047,15 @@ __PACKAGE__->register_method({
                 format => 'pve-vmid-list',
                 optional => 1,
             },
+            'max-workers' => {
+                description => "Defines the maximum number of tasks running concurrently. If"
+                    . " not set, uses 'max_workers' from datacenter.cfg, and if that's not set, the"
+                    . " available CPU threads, clamped to a maximum of 8, are used.",
+                optional => 1,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
+            },
         },
     },
     returns => {
@@ -2093,6 +2102,22 @@ __PACKAGE__->register_method({
             my $autostart = $force ? undef : 1;
             my $startList = get_start_stop_list($nodename, $autostart, $param->{vms});
 
+            my $max_workers = get_max_workers($param);
+            my $workers = {};
+            my $finish_worker = sub {
+                my $pid = shift;
+                my $worker = delete $workers->{$pid} || return;
+
+                my ($w_upid, $w_vmid, $w_type) = $worker->@{ 'upid', 'vmid', 'type' };
+
+                my $status = PVE::Tools::upid_read_status($w_upid);
+                if (PVE::Tools::upid_status_is_error($status)) {
+                    my $rendered_type = $w_type eq 'lxc' ? 'CT' : 'VM';
+                    print STDERR "Starting $rendered_type $w_vmid failed: $status\n";
+                }
+
+            };
+
             # Note: use numeric sorting with <=>
             for my $order (sort { $a <=> $b } keys %$startList) {
                 my $vmlist = $startList->{$order};
@@ -2122,27 +2147,36 @@ __PACKAGE__->register_method({
                         }
 
                         my $task = PVE::Tools::upid_decode($upid);
-                        while (PVE::ProcFSTools::check_process_running($task->{pid})) {
-                            sleep(1);
+                        $workers->{ $task->{pid} } =
+                            { upid => $upid, vmid => $vmid, type => $d->{type} };
+
+                        # use default delay to reduce load
+                        my $delay = defined($d->{up}) ? int($d->{up}) : $default_delay;
+                        if ($delay > 0) {
+                            print STDERR "Waiting for $delay seconds (startup delay)\n"
+                                if $d->{up};
+                            for (my $i = 0; $i < $delay; $i++) {
+                                sleep(1);
+                            }
                         }
 
-                        my $status = PVE::Tools::upid_read_status($upid);
-                        if (!PVE::Tools::upid_status_is_error($status)) {
-                            # use default delay to reduce load
-                            my $delay = defined($d->{up}) ? int($d->{up}) : $default_delay;
-                            if ($delay > 0) {
-                                print STDERR "Waiting for $delay seconds (startup delay)\n"
-                                    if $d->{up};
-                                for (my $i = 0; $i < $delay; $i++) {
-                                    sleep(1);
-                                }
+                        while (scalar(keys $workers->%*) >= $max_workers) {
+                            for my $pid (keys $workers->%*) {
+                                next if PVE::ProcFSTools::check_process_running($pid);
+                                $finish_worker->($pid);
                             }
-                        } else {
-                            my $rendered_type = $d->{type} eq 'lxc' ? 'CT' : 'VM';
-                            print STDERR "Starting $rendered_type $vmid failed: $status\n";
+                            sleep(1);
                         }
                     };
                     warn $@ if $@;
+                }
+
+                while (scalar(keys %$workers)) {
+                    for my $pid (keys $workers->%*) {
+                        next if PVE::ProcFSTools::check_process_running($pid);
+                        $finish_worker->($pid);
+                    }
+                    sleep(1);
                 }
             }
             return;
