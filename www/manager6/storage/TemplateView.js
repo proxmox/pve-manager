@@ -309,6 +309,7 @@ Ext.define('PVE.storage.OciRegistryPull', {
                     xtype: 'proxmoxKVComboBox',
                     name: 'tag',
                     allowBlank: false,
+                    // TRANSLATORS: As in a version of an OCI container, e.g. debian:latest
                     emptyText: gettext("for example 'latest'"),
                     fieldLabel: gettext('Tag'),
                     forceSelection: false,
