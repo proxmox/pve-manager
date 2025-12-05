@@ -251,6 +251,7 @@ sub get_max_workers {
     my ($param, $default) = @_;
 
     return $param->{'max-workers'} if $param->{'max-workers'};
+    return $param->{maxworkers} if $param->{maxworkers}; # alias
 
     my $datacenter_config = PVE::Cluster::cfs_read_file('datacenter.cfg');
     return $datacenter_config->{max_workers} if $datacenter_config->{max_workers};
@@ -286,7 +287,13 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
-                alias => 'max-workers',
+                description => "Defines the maximum number of tasks running concurrently."
+                    . " Deprecated, use 'max-workers' instead.",
+                optional => 1,
+                default => 4,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             'max-workers' => {
                 description => "Defines the maximum number of tasks running concurrently.",
@@ -422,7 +429,13 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
-                alias => 'max-workers',
+                description => "Defines the maximum number of tasks running concurrently."
+                    . " Deprecated, use 'max-workers' instead.",
+                optional => 1,
+                default => 4,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             'max-workers' => {
                 description => "Defines the maximum number of tasks running concurrently.",
@@ -567,7 +580,13 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
-                alias => 'max-workers',
+                description => "Defines the maximum number of tasks running concurrently."
+                    . " Deprecated, use 'max-workers' instead.",
+                optional => 1,
+                default => 4,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             'max-workers' => {
                 description => "Defines the maximum number of tasks running concurrently.",
@@ -704,7 +723,13 @@ __PACKAGE__->register_method({
                 optional => 1,
             },
             maxworkers => {
-                alias => 'max-workers',
+                description => "Defines the maximum number of tasks running concurrently."
+                    . " Deprecated, use 'max-workers' instead.",
+                optional => 1,
+                default => 1,
+                type => 'integer',
+                minimum => 1,
+                maximum => 64,
             },
             'max-workers' => {
                 description => "Defines the maximum number of tasks running concurrently.",
