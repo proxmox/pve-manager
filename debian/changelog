@@ -1,3 +1,16 @@
+pve-manager (8.4.15) bookworm; urgency=medium
+
+  * update shipped aplliance info index.
+
+  * ui: backport various fixes for the resource tree rendering, especially
+    w.r.t. tags.
+
+  * pve8to9: improve error/log message for tls checks.
+
+  * pve-sdn-commit: run for vlan/qinq zones on non-vlan-aware bridges.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 10 Dec 2025 20:45:36 +0100
+
 pve-manager (8.4.14) bookworm; urgency=medium
 
   * ui: datacenter notes: fix visibility of top toolbar to allow editing the
