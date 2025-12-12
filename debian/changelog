@@ -1,3 +1,39 @@
+pve-manager (9.1.3) trixie; urgency=medium
+
+  * ui: ceph install wizard: fix typo.
+
+  * close #6209: ui: allow creating snapshots and backups from the context menu.
+
+  * ui: improve some translatable strings and add some context for translators.
+
+  * ui: bulk actions: don't try to reset non-existing 'vmidfilter', which would
+    cause an error in the browser console.
+
+  * d/postinst: drop now obsolete apt-auth.conf migration. It was required after
+    upgrading from Proxmox VE 7 to 8. A direct upgrade from Proxmox VE 7 to 9 is
+    not possible, so it's obsolete.
+
+  * fix #7125: ui: fix loading network section in folder view. Navigating to the
+    'Network' section would fail with a browser error, because of a missing
+    reference to the documentation.
+
+  * pve-sdn-commit: run for vlan/qinq zones on non-vlan-aware bridges. When
+    using non-vlan-aware bridges for the VLAN or QinQ zones, it is necessary to
+    regenerate the SDN configuration when the name of the physical NIC might
+    have changed. In particular, this fixes issues in combination with pinning
+    NIC names.
+
+  * api: workaround broken 'maxworkers' alias in bulk actions api calls. For the
+    new, cluster-wide bulk actions, only the 'max-workers' spelling would have
+    an effect. For the pre-existing node-specific bulk migration, an error would
+    occur when specifying the deprecated 'maxworkers' spelling, causing an error
+    when using the UI.
+
+  * ui: storage oci pull: optimize regular expression for the reference to avoid
+    catastrophic backtracking potentially causing hangs in the dialog window.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Dec 2025 10:32:10 +0100
+
 pve-manager (9.1.2) trixie; urgency=medium
 
   * pve8to9: improve message for TLS checks in relation to different key bit
