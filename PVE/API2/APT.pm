@@ -387,6 +387,7 @@ __PACKAGE__->register_method({
             node => get_standard_option('pve-node'),
             name => {
                 description => "Package name.",
+                pattern => qr/[a-z0-9][-+.a-z0-9:]+/,
                 type => 'string',
             },
             version => {
@@ -404,7 +405,7 @@ __PACKAGE__->register_method({
 
         my $pkgname = $param->{name};
 
-        my $cmd = ['apt-get', 'changelog', '-qq'];
+        my $cmd = ['apt-get', 'changelog', '-qq', '--'];
         if (my $version = $param->{version}) {
             push @$cmd, "$pkgname=$version";
         } else {
