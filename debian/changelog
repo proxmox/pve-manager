@@ -1,3 +1,11 @@
+pve-manager (8.4.16) bookworm; urgency=medium
+
+  * api: apt changelog: make package name and option handling more robust.
+
+  * pveupdate: do not try to update subscription when using offline key.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 22 Dec 2025 18:14:08 +0100
+
 pve-manager (8.4.15) bookworm; urgency=medium
 
   * update shipped aplliance info index.
