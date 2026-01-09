@@ -171,7 +171,10 @@ __PACKAGE__->register_method({
         my $cdn =
             $enterprise_repo ? 'https://enterprise.proxmox.com' : 'http://download.proxmox.com';
 
-        if (has_valid_subscription()) {
+        if ($experimental_release && $enterprise_repo) {
+            warn "\nWARN: Enterprise repository selected, but Ceph release is still marked as"
+                ." experimental, repository might not (yet) be useable!\n\n";
+        } elsif (has_valid_subscription()) {
             if (!$enterprise_repo) {
                 warn "\nNOTE: The node has an active subscription but a non-production Ceph"
                     . " repository selected.\n\n";
