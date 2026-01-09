@@ -164,6 +164,7 @@ __PACKAGE__->register_method({
         die "unsupported ceph version: $cephver"
             if !exists($available_ceph_releases->{$cephver});
 
+        my $experimental_release = !!$available_ceph_releases->{$cephver}->{unsupported};
 
         my $repo = $param->{'repository'} // 'enterprise';
         my $enterprise_repo = $repo eq 'enterprise';
@@ -212,7 +213,7 @@ EOF
         if ($repo ne "manual") {
             PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.sources", $repo_source);
 
-            if ($available_ceph_releases->{$cephver}->{unsupported}) {
+            if ($experimental_release) {
                 if ($param->{'allow-experimental'}) {
                     warn
                         "NOTE: installing experimental/tech-preview Ceph release ${rendered_release}!\n";
