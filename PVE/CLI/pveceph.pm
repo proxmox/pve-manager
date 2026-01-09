@@ -160,6 +160,11 @@ __PACKAGE__->register_method({
 
         my $cephver = $param->{version} || $default_ceph_version;
 
+        my $available_ceph_releases = PVE::Ceph::Releases::get_all_available_ceph_releases();
+        die "unsupported ceph version: $cephver"
+            if !exists($available_ceph_releases->{$cephver});
+
+
         my $repo = $param->{'repository'} // 'enterprise';
         my $enterprise_repo = $repo eq 'enterprise';
         my $cdn =
@@ -184,10 +189,6 @@ __PACKAGE__->register_method({
             warn "\nWARN: The test repository should only be used for test setups or after"
                 . " consulting the official Proxmox support!\n\n";
         }
-
-        my $available_ceph_releases = PVE::Ceph::Releases::get_all_available_ceph_releases();
-        die "unsupported ceph version: $cephver"
-            if !exists($available_ceph_releases->{$cephver});
 
         my $repo_source = <<"EOF";
 Types: deb
