@@ -174,6 +174,17 @@ __PACKAGE__->register_method({
         if ($experimental_release && $enterprise_repo) {
             warn "\nWARN: Enterprise repository selected, but Ceph release is still marked as"
                 ." experimental, repository might not (yet) be useable!\n\n";
+
+            if (-t STDOUT) {
+                print "Do you want to switch to the test repository (Y/n)? ";
+                my $answer = <STDIN> // '';
+                chomp $answer;
+                if (!$answer || $answer =~ m/^\s*y(?:es)?\s*$/i) {
+                    $repo = 'test';
+                    $enterprise_repo = 0;
+                    $cdn = 'http://download.proxmox.com';
+                }
+            }
         } elsif (has_valid_subscription()) {
             if (!$enterprise_repo) {
                 warn "\nNOTE: The node has an active subscription but a non-production Ceph"
