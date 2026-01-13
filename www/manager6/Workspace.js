@@ -53,6 +53,11 @@ Ext.define('PVE.Workspace', {
         }
         me.onLogin(null);
         me.login.show();
+
+        // reset ui state
+        PVE.ClusterName = undefined;
+        me.down('pveResourceTree')?.clearTree();
+        me.setContent(null);
     },
 
     initComponent: function () {
@@ -428,10 +433,6 @@ Ext.define('PVE.StdWorkspace', {
                                     handler: function () {
                                         PVE.data.ResourceStore.loadData([], false);
                                         me.showLogin();
-                                        me.setContent(null);
-                                        var rt = me.down('pveResourceTree');
-                                        PVE.ClusterName = undefined;
-                                        rt.clearTree();
 
                                         // empty the stores of the StatusPanel child items
                                         var statusPanels =
