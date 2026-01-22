@@ -508,7 +508,10 @@ Ext.define('PVE.StdWorkspace', {
                                     handler: () => {
                                         Ext.create('PVE.window.TreeSettingsEdit', {
                                             autoShow: true,
-                                            apiCallDone: () => PVE.UIOptions.fireUIConfigChanged(),
+                                            apiCallDone: () => {
+                                                rtree.refreshTree();
+                                                PVE.UIOptions.fireUIConfigChanged();
+                                            },
                                         });
                                     },
                                 },

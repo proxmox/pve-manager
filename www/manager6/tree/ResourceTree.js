@@ -202,10 +202,28 @@ Ext.define('PVE.tree.ResourceTree', {
     },
 
     // private
-    addChildSorted: function (node, info) {
+    addChildSorted: function (node, info, insertPool = false) {
         let me = this;
 
         me.setIconCls(info);
+
+        let nestPools = PVE.UIOptions.getTreeSortingValue('nest-pools');
+        if (info.type === 'pool' && info.pool && !insertPool && nestPools) {
+            let parentPool = info.pool.split('/').slice(0, -1).join('/');
+            if (parentPool.length > 0) {
+                let parent = node.findChild('id', `/pool/${parentPool}`, true);
+                if (parent !== node) {
+                    if (!parent) {
+                        parent = me.addChildSorted(node, {
+                            type: 'pool',
+                            id: `/pool/${parentPool}`,
+                            pool: parentPool,
+                        });
+                    }
+                    return me.addChildSorted(parent, info, true);
+                }
+            }
+        }
 
         if (info.groupbyid) {
             if (me.viewFilter.groupRenderer) {
@@ -239,7 +257,7 @@ Ext.define('PVE.tree.ResourceTree', {
         let v = info[groupBy];
 
         if (v) {
-            let group = node.findChild('groupbyid', v);
+            let group = node.findChild('groupbyid', v, true);
             if (!group) {
                 let groupinfo;
                 if (info.type === groupBy) {
@@ -270,7 +288,7 @@ Ext.define('PVE.tree.ResourceTree', {
     saveSortingOptions: function () {
         let me = this;
         let changed = false;
-        for (const key of ['sort-field', 'group-templates', 'group-guest-types']) {
+        for (const key of ['sort-field', 'group-templates', 'group-guest-types', 'nest-pools']) {
             let newValue = PVE.UIOptions.getTreeSortingValue(key);
             if (me[key] !== newValue) {
                 me[key] = newValue;
@@ -555,8 +573,7 @@ Ext.define('PVE.tree.ResourceTree', {
             },
             setViewFilter: function (view) {
                 me.viewFilter = view;
-                me.clearTree();
-                updateTree();
+                me.refreshTree();
             },
             clearTree: function () {
                 pdata.updateCount = 0;
@@ -565,6 +582,10 @@ Ext.define('PVE.tree.ResourceTree', {
                 rootnode.removeAll();
                 pdata.dataIndex = {};
                 me.getSelectionModel().deselectAll();
+            },
+            refreshTree: function () {
+                me.clearTree();
+                updateTree();
             },
             selectExpand: function (node) {
                 let sm = me.getSelectionModel();
