@@ -253,7 +253,6 @@ Ext.define('PVE.tree.ResourceTree', {
                         groupinfo[groupBy] = v;
                     }
                 }
-                groupinfo.leaf = false;
                 groupinfo.groupbyid = v;
                 group = me.addChildSorted(node, groupinfo);
             }
