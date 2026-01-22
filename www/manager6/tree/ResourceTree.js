@@ -79,6 +79,10 @@ Ext.define('PVE.tree.ResourceTree', {
                     text += ` (${PVE.ClusterName})`;
                 }
 
+                if (info.type === 'pool' && PVE.UIOptions.getTreeSortingValue('nest-pools')) {
+                    text = info.pool.split('/').pop();
+                }
+
                 return (info.renderedText = text);
             },
         },
