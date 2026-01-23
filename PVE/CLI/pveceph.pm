@@ -173,7 +173,7 @@ __PACKAGE__->register_method({
 
         if ($experimental_release && $enterprise_repo) {
             warn "\nWARN: Enterprise repository selected, but Ceph release is still marked as"
-                ." experimental, repository might not (yet) be useable!\n\n";
+                . " experimental, repository might not (yet) be useable!\n\n";
 
             if (-t STDOUT) {
                 print "Do you want to switch to the test repository (Y/n)? ";
