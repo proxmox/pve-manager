@@ -1,3 +1,41 @@
+pve-manager (9.1.5) trixie; urgency=medium
+
+  * ui: display: update 'live-migration with VNC-clipboard not working' note.
+
+  * pveceph setup: warn if experimental release is selected with (default)
+    enterprise repo.
+
+  * pveceph setup: prompt switch from enterprise to test repo for experimental
+    release.
+
+  * ceph: add Ceph 20.2 Tentacle as available (preview) release.
+
+  * fix #7149: ui: user create: do not leak changing the realm for a new user
+    into the pre-selected realm of the currently logged in user, as that might
+    cause some UX friction and confusion on their next login.
+
+  * ui: fully reset UI state on automatic logout due to stale ticket (e.g.,
+    after resuming a computer from longer suspend), as just showing the login
+    mask on top of the current state might be a bit confusing.
+
+  * ui: utils: fix OVMF typo in error message translation.
+
+  * update shipped appliance info index to current CDN state.
+
+  * fix #7229: bulk actions: refresh pmxcfs infos between processing each
+    guest to ensure any changes in-between, like from a hook script, are
+    visible for successive starts.
+
+  * http server: unify error message in case of authentication failure due to
+    wrong credentials.
+
+  * ui: resource tree: don't show empty grouping nodes as expandable.
+
+  * ui: resource tree: show nested pools as actual child nodes of their parent
+    pool and in turn drop rendering their parent path prefix.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Jan 2026 19:59:53 +0100
+
 pve-manager (9.1.4) trixie; urgency=medium
 
   * api: apt changelog: check for odd package name and ensure arguments are
