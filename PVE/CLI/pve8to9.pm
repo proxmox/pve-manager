@@ -967,7 +967,7 @@ my sub check_qemu_machine_versions {
         my $conf = PVE::QemuConfig->load_config($vmid);
 
         # first, actually configured machine version
-        my $machine_type = PVE::QemuServer::Machine::get_vm_machine($conf, undef, $conf->{arch});
+        my $machine_type = PVE::QemuServer::Machine::get_vm_machine($conf);
         if (
             PVE::QemuServer::Machine::extract_version($machine_type) # no version means latest
             && !PVE::QemuServer::Machine::is_machine_version_at_least($machine_type, @baseline)
@@ -978,9 +978,7 @@ my sub check_qemu_machine_versions {
         # second, if hibernated, running machine version
         if ($conf->{vmstate}) {
             my $machine_type = PVE::QemuServer::Machine::get_vm_machine(
-                $conf,
-                $conf->{runningmachine},
-                $conf->{arch},
+                $conf, $conf->{runningmachine},
             );
             if (
                 PVE::QemuServer::Machine::extract_version($machine_type) # no version means latest
@@ -1000,7 +998,6 @@ my sub check_qemu_machine_versions {
                 my $machine_type = PVE::QemuServer::Machine::get_vm_machine(
                     $snap_conf,
                     $snap_conf->{runningmachine},
-                    $snap_conf->{arch},
                 );
                 if ( # no version means latest
                     PVE::QemuServer::Machine::extract_version($machine_type)
