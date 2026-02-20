@@ -56,6 +56,19 @@ sha512sum: 1900ccb1b092b5563c0430ff9d9ede63c23bf2fa4a872b8816d2b03d711c76c1d2ea2
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.22 (20250617)
 
+Package: alpine-3.23-default
+Version: 20260116
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.23-default_20260116_amd64.tar.xz
+md5sum: 2538c3bc2ca5215cc0392383f838d643
+sha512sum: d6835836b59888d8bb3971668820483a246cfa46e992f62209464b6faabd6a223f4132bc0aa86675603223b6646edf4fc33b8b6e80673e1b31183fac191baee4
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.23 (20260116)
+
 Package: archlinux-base
 Version: 20240911-1
 Type: lxc
@@ -165,6 +178,19 @@ sha512sum: 05d08e345648277fd35ed4b9b99832dc4ca4536340a135400ef9c9c51ac76d78d5d5d
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 42 (20250428)
 
+Package: fedora-43-default
+Version: 20260115
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-43-default_20260115_amd64.tar.xz
+md5sum: a50b573c7a24e6de2227709349606ca0
+sha512sum: 2a1d710f8d9671e6cea2e775bff94c7e00a9dfde3aaaa07cc932e4df8938de398d65f7b2c4d7242196fec25101a33be9f6b8200185e4c24a4b869acf9f174781
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 43 (20260115)
+
 Package: gentoo-current-openrc
 Version: 20250508
 Type: lxc
@@ -258,6 +284,20 @@ md5sum: 3a782d5d1c33d05eeff2e21579bdfae8
 sha512sum: 864bcf3f21fd8616d3cd9e2330f7372ad7b29b070b746c4a4bd73f372db7cc5d06f3e7058b5571379e8f6c3c9d987a3ea3b43559c12f63c7ef096e9afa9ead46
 Infopage: https://linuxcontainers.org
 Description: LXC default image for rockylinux 9 (20240912)
+
+Package: ubuntu-18.04-standard
+Version: 18.04.1-1
+Type: lxc
+OS: ubuntu-18.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
+md5sum: 6da8032da517264477b844aed82cb929
+sha512sum: 64ffa07e012115567b29cc460686687528d674ba2fbcb198d9cf4e3943bc0f58149b266bf0366c2ef03c6bb8909225e2a3010f7c29878ba83e1ef388ef56b1dd
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
+Description: Ubuntu Bionic (standard)
+ A small Ubuntu Bionic system including all standard packages.
 
 Package: ubuntu-20.04-standard
 Version: 20.04-1
