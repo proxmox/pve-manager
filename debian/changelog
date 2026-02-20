@@ -1,3 +1,22 @@
+pve-manager (8.4.17) bookworm; urgency=medium
+
+  * ui: fully reset UI state on automatic logout due to stale ticket (e.g.,
+    after resuming a computer from longer suspend), as just showing the login
+    mask on top of the current state might be a bit confusing.
+
+  * ui: resource tree: fix timing race where rendered clustername in root-node
+    could seemingly vanish.
+
+  * ui: utils: fix OVMF typo in error message translation.
+
+  * ui: resource tree: don't show empty grouping nodes as expandable.
+
+  * http server: unify error message in case of auth failure.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 20 Feb 2026 09:53:29 +0100
+
 pve-manager (8.4.16) bookworm; urgency=medium
 
   * api: apt changelog: make package name and option handling more robust.
