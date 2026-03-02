@@ -183,30 +183,8 @@ Ext.define('PVE.qemu.CreateWizard', {
             },
         },
         {
-            xtype: 'container',
-            layout: 'hbox',
-            defaults: {
-                flex: 1,
-                padding: '0 10',
-            },
+            xtype: 'pveQemuOSPanel',
             title: gettext('OS'),
-            items: [
-                {
-                    xtype: 'pveQemuCDInputPanel',
-                    bind: {
-                        nodename: '{nodename}',
-                    },
-                    confid: 'ide2',
-                    insideWizard: true,
-                },
-                {
-                    xtype: 'pveQemuOSTypePanel',
-                    insideWizard: true,
-                    bind: {
-                        nodename: '{nodename}',
-                    },
-                },
-            ],
         },
         {
             xtype: 'pveQemuSystemPanel',

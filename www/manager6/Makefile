@@ -268,6 +268,7 @@ JSSRC= 							\
 	qemu/NetworkEdit.js				\
 	qemu/OSDefaults.js				\
 	qemu/OSTypeEdit.js				\
+	qemu/OSPanel.js					\
 	qemu/Options.js					\
 	qemu/PCIEdit.js					\
 	qemu/ProcessorEdit.js				\
