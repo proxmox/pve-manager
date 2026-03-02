@@ -45,6 +45,7 @@ Ext.define('PVE.qemu.MultiHDPanel', {
             let vm = me.getViewModel();
 
             let res = {
+                arch: vm.get('current.architecture'),
                 scsihw: vm.get('current.scsihw'),
                 ostype: vm.get('current.ostype'),
             };

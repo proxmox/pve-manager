@@ -24,6 +24,14 @@ Ext.define('PVE.form.ControllerSelector', {
         }
     },
 
+    filterListByArchitecture: function (clist, arch) {
+        let allowedList = PVE.form.BusTypeSelector.prototype.allowedValuesPerCategory[arch];
+        if (!allowedList) {
+            return clist;
+        }
+        return clist.filter((controller) => allowedList.indexOf(controller) !== -1);
+    },
+
     updateVMConfig: function (vmconfig) {
         let me = this;
         me.vmconfig = Ext.apply({}, vmconfig);
@@ -40,10 +48,13 @@ Ext.define('PVE.form.ControllerSelector', {
         let deviceid = me.down('field[name=deviceid]');
 
         let clist;
+        let arch = PVE.qemu.Architecture.getGuestArchitecture(vmconfig.arch, me.nodename);
+        bussel.setCategory(arch);
         if (autoSelect === 'cdrom') {
             if (!Ext.isDefined(me.vmconfig.ide2)) {
-                bussel.setValue('ide');
-                deviceid.setValue(2);
+                let [controller, id] = PVE.qemu.Architecture.defaultCDDrive[arch];
+                bussel.setValue(controller);
+                deviceid.setValue(id);
                 return;
             }
             clist = ['ide', 'scsi', 'sata'];
@@ -51,6 +62,8 @@ Ext.define('PVE.form.ControllerSelector', {
             // in most cases we want to add a disk to the same controller we previously used
             clist = PVE.Utils.sortByPreviousUsage(me.vmconfig, me.nodename);
         }
+
+        clist = me.filterListByArchitecture(clist, arch);
 
         me.setToFree(clist, bussel, deviceid);
 
