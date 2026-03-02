@@ -57,19 +57,24 @@ Ext.define('PVE.qemu.SystemInputPanel', {
                 change: 'biosChange',
             },
             '#': {
-                afterrender: 'setMachine',
+                afterrender: 'setDefaults',
             },
         },
 
-        setMachine: function () {
+        setDefaults: function () {
             let me = this;
             let vm = this.getViewModel();
+
             let ostype = vm.get('current.ostype');
+            let architecture = vm.get('current.architecture');
+
+            let defaults = PVE.qemu.OSDefaults.getDefaults(ostype, architecture);
             if (ostype === 'win11') {
-                me.lookup('machine').setValue('q35');
-                me.lookup('bios').setValue('ovmf');
                 me.lookup('addtpmbox').setValue(true);
             }
+
+            me.lookup('machine').setValue(defaults.machine ?? '__default__');
+            me.lookup('bios').setValue(defaults.bios ?? '__default__');
         },
     },
 

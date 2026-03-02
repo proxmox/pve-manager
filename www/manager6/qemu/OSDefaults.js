@@ -111,6 +111,13 @@ Ext.define('PVE.qemu.OSDefaults', {
             parent: 'w2k',
         });
 
+        addOS({
+            pveOS: 'win11',
+            parent: 'generic',
+            machine: 'q35',
+            bios: 'ovmf',
+        });
+
         me.getDefaults = function (ostype, arch = 'x86_64') {
             if (!PVE.qemu.OSDefaults[ostype]) {
                 ostype = 'generic';
