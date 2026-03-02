@@ -305,8 +305,19 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                         vm.set('showCustomModelPermWarning', true);
                     }
                 }
-                me.setValues(data);
                 let arch = PVE.qemu.Architecture.getGuestArchitecture(data.arch, me.nodename);
+                // change default cputype for x86 in gui only
+                if (arch === 'x86_64') {
+                    if (!data.cputype) {
+                        // use our backend default as explicit value
+                        data.cputype = 'kvm64';
+                    } else if (
+                        data.cputype === PVE.qemu.Architecture.defaultProcessorModel.x86_64
+                    ) {
+                        delete data.cputype;
+                    }
+                }
+                me.setValues(data);
                 ipanel.setArch(arch);
             },
         });

@@ -20,6 +20,28 @@ Ext.define('PVE.form.CPUModelSelector', {
 
     deleteEmpty: true,
 
+    getSubmitData: function () {
+        let me = this,
+            data = null,
+            val;
+        if (!me.disabled && me.submitValue) {
+            val = me.getSubmitValue();
+            if (val !== null && val !== '' && val !== undefined) {
+                data = {};
+                data[me.getName()] = val;
+            } else if (me.getDeleteEmpty()) {
+                data = {};
+                // special case to change gui default for x86
+                if (me.arch === 'x86_64') {
+                    data[me.getName()] = PVE.qemu.Architecture.defaultProcessorModel.x86_64;
+                } else {
+                    data.delete = me.getName();
+                }
+            }
+        }
+        return data;
+    },
+
     listConfig: {
         columns: [
             {
@@ -51,6 +73,10 @@ Ext.define('PVE.form.CPUModelSelector', {
         }
         me.store.getProxy().setExtraParams(params);
         me.store.reload();
+
+        let defaultCPU = PVE.qemu.Architecture.defaultProcessorModel[arch] ?? 'kvm64';
+
+        me.setEmptyText(`${Proxmox.Utils.defaultText} (${defaultCPU})`);
     },
 
     store: {

@@ -52,7 +52,6 @@ Ext.define('PVE.qemu.OSDefaults', {
                     virtio: 1,
                 },
                 scsihw: 'virtio-scsi-single',
-                cputype: 'x86-64-v2-AES',
             },
 
             aarch64: {
