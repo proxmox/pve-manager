@@ -1962,10 +1962,8 @@ Ext.define('PVE.Utils', {
             return true;
         },
 
-        sortByPreviousUsage: function (vmconfig, controllerList) {
-            if (!controllerList) {
-                controllerList = ['ide', 'virtio', 'scsi', 'sata'];
-            }
+        sortByPreviousUsage: function (vmconfig, nodename) {
+            let controllerList = ['ide', 'virtio', 'scsi', 'sata'];
             let usedControllers = {};
             for (const type of Object.keys(PVE.Utils.diskControllerMaxIDs)) {
                 usedControllers[type] = 0;
@@ -1981,7 +1979,8 @@ Ext.define('PVE.Utils', {
                 }
             }
 
-            let sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype).busPriority;
+            let arch = PVE.qemu.Architecture.getGuestArchitecture(vmconfig.arch, nodename);
+            let sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype, arch).busPriority;
 
             let sortedList = Ext.clone(controllerList);
             sortedList.sort(function (a, b) {

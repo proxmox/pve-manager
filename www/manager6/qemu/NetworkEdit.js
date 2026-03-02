@@ -264,7 +264,11 @@ Ext.define('PVE.qemu.NetworkEdit', {
                     }
 
                     let ostype = me.vmconfig.ostype;
-                    let defaults = PVE.qemu.OSDefaults.getDefaults(ostype);
+                    let arch = PVE.qemu.Architecture.getGuestArchitecture(
+                        me.vmconfig.arch,
+                        me.nodename,
+                    );
+                    let defaults = PVE.qemu.OSDefaults.getDefaults(ostype, arch);
                     let data = {
                         model: defaults.networkCard,
                     };

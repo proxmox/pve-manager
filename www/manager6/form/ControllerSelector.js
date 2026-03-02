@@ -7,6 +7,13 @@ Ext.define('PVE.form.ControllerSelector', {
 
     vmconfig: {}, // used to check for existing devices
 
+    nodename: undefined,
+
+    setNodename: function (nodename) {
+        let me = this;
+        me.nodename = nodename;
+    },
+
     setToFree: function (controllers, busField, deviceIDField) {
         let me = this;
         let freeId = PVE.Utils.nextFreeDisk(controllers, me.vmconfig);
@@ -42,7 +49,7 @@ Ext.define('PVE.form.ControllerSelector', {
             clist = ['ide', 'scsi', 'sata'];
         } else {
             // in most cases we want to add a disk to the same controller we previously used
-            clist = PVE.Utils.sortByPreviousUsage(me.vmconfig);
+            clist = PVE.Utils.sortByPreviousUsage(me.vmconfig, me.nodename);
         }
 
         me.setToFree(clist, bussel, deviceid);

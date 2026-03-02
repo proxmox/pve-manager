@@ -17,7 +17,8 @@ Ext.define('PVE.qemu.MultiHDPanel', {
             ) - 1,
 
         getNextFreeDisk: function (vmconfig) {
-            let clist = PVE.Utils.sortByPreviousUsage(vmconfig);
+            let nodename = this.getView().nodename;
+            let clist = PVE.Utils.sortByPreviousUsage(vmconfig, nodename);
             return PVE.Utils.nextFreeDisk(clist, vmconfig);
         },
 

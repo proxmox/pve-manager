@@ -5,6 +5,7 @@ Ext.define('PVE.panel.MultiDiskPanel', {
 
     setNodename: function (nodename) {
         this.items.each((panel) => panel.setNodename(nodename));
+        this.nodename = nodename;
     },
 
     border: false,
@@ -210,12 +211,13 @@ Ext.define('PVE.panel.MultiDiskPanel', {
             'grid[reference=grid]': {
                 selectionchange: 'onSelectionChange',
             },
-        },
-
-        init: function (view) {
-            let me = this;
-            me.onAdd();
-            me.lookup('grid').getSelectionModel().select(0, false);
+            '#': {
+                afterrender: function (view) {
+                    let me = this;
+                    me.onAdd();
+                    me.lookup('grid').getSelectionModel().select(0, false);
+                },
+            },
         },
     },
 
