@@ -17,6 +17,7 @@ JSSRC= 							\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
 	container/TwoColumnContainer.js			\
+	form/FilteredKVComboBox.js			\
 	form/ACMEAPISelector.js 			\
 	form/ACMEAccountSelector.js			\
 	form/ACMEPluginSelector.js			\
