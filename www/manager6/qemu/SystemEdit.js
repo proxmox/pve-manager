@@ -102,6 +102,9 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             reference: 'bios',
             value: '__default__',
             fieldLabel: 'BIOS',
+            bind: {
+                category: '{current.architecture}',
+            },
         },
         {
             xtype: 'proxmoxcheckbox',

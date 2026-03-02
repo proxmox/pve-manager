@@ -512,9 +512,10 @@ Ext.define('PVE.Utils', {
             return value;
         },
 
-        render_qemu_bios: function (value) {
+        render_qemu_bios: function (value, arch = 'x86_64') {
             if (!value) {
-                return Proxmox.Utils.defaultText + ' (SeaBIOS)';
+                let defaultBios = arch === 'aarch64' ? 'OVMF (UEFI)' : 'SeaBIOS';
+                return `${Proxmox.Utils.defaultText} (${defaultBios})`;
             } else if (value === 'seabios') {
                 return 'SeaBIOS';
             } else if (value === 'ovmf') {
