@@ -83,15 +83,14 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             comboItems: Object.entries(PVE.Utils.kvm_vga_drivers),
         },
         {
-            xtype: 'proxmoxKVComboBox',
+            xtype: 'pveQemuMachineSelector',
             name: 'machine',
             reference: 'machine',
             value: '__default__',
             fieldLabel: gettext('Machine'),
-            comboItems: [
-                ['__default__', PVE.Utils.render_qemu_machine('')],
-                ['q35', 'q35'],
-            ],
+            bind: {
+                category: '{current.architecture}',
+            },
         },
         {
             xtype: 'displayfield',

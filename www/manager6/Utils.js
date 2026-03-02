@@ -500,8 +500,16 @@ Ext.define('PVE.Utils', {
             return agentstring;
         },
 
-        render_qemu_machine: function (value) {
-            return value || Proxmox.Utils.defaultText + ' (i440fx)';
+        render_qemu_machine: function (value, arch = 'x86_64') {
+            let machineTextMap = {
+                pc: 'i440fx',
+            };
+            if (!value) {
+                let machine = PVE.qemu.Architecture.defaultMachines[arch];
+                let machineText = machineTextMap[machine] ?? machine;
+                return `${Proxmox.Utils.defaultText} (${machineText})`;
+            }
+            return value;
         },
 
         render_qemu_bios: function (value) {

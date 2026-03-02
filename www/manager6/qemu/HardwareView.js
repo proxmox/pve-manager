@@ -193,13 +193,17 @@ Ext.define('PVE.qemu.HardwareView', {
                 defaultValue: '',
                 renderer: function (value, metaData, record, rowIndex, colIndex, store, pending) {
                     let ostype = me.getObjectValue('ostype', undefined, pending);
+                    let arch = PVE.qemu.Architecture.getGuestArchitecture(
+                        me.getObjectValue('arch'),
+                        nodename,
+                    );
                     if (
                         PVE.Utils.is_windows(ostype) &&
                         (!value || value === 'pc' || value === 'q35')
                     ) {
                         return value === 'q35' ? 'pc-q35-5.1' : 'pc-i440fx-5.1';
                     }
-                    return PVE.Utils.render_qemu_machine(value);
+                    return PVE.Utils.render_qemu_machine(value, arch);
                 },
             },
             scsihw: {
