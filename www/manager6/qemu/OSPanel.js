@@ -36,7 +36,9 @@ Ext.define('PVE.qemu.OSPanel', {
         onOSTypeChange: function (field) {
             var me = this,
                 ostype = field.getValue();
-            var targetValues = PVE.qemu.OSDefaults.getDefaults(ostype);
+
+            let arch = me.getViewModel().get('current.architecture');
+            var targetValues = PVE.qemu.OSDefaults.getDefaults(ostype, arch);
 
             me.setWidget('pveBusSelector', targetValues.busType);
             me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
@@ -77,7 +79,8 @@ Ext.define('PVE.qemu.OSPanel', {
                 updateVMConfig();
                 me.setWidget('pveBusSelector', 'scsi');
                 let ostype = me.getView().down('[name=ostype]').getValue();
-                let targetValues = PVE.qemu.OSDefaults.getDefaults(ostype);
+                let arch = vm.get('current.architecture');
+                let targetValues = PVE.qemu.OSDefaults.getDefaults(ostype, arch);
                 me.setWidget('pveBusSelector', targetValues.busType);
             }
         },
@@ -110,6 +113,9 @@ Ext.define('PVE.qemu.OSPanel', {
                 {
                     xtype: 'pveQemuOSTypePanel',
                     insideWizard: true,
+                    bind: {
+                        arch: '{current.architecture}',
+                    },
                 },
                 {
                     xtype: 'inputpanel',

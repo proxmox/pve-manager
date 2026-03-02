@@ -17,6 +17,25 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
         },
     },
 
+    setArch: function (arch) {
+        let me = this;
+        me.arch = arch;
+
+        let osbaseStore = me.lookup('osbase').getStore();
+        osbaseStore.clearFilter();
+        let list = PVE.qemu.Architecture.kvmOSTypes[arch]?.bases;
+        if (list) {
+            osbaseStore.addFilter((rec) => list.indexOf(rec.data.field1) !== -1);
+        }
+
+        let ostypeStore = me.lookup('ostype').getStore();
+        ostypeStore.clearFilter();
+        list = PVE.qemu.Architecture.kvmOSTypes[arch]?.ostypes;
+        if (list) {
+            ostypeStore.addFilter((rec) => list.indexOf(rec.data.val) !== -1);
+        }
+    },
+
     onGetValues: function (values) {
         if (values.ide0) {
             let drive = {
@@ -36,6 +55,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
                 xtype: 'combobox',
                 submitValue: false,
                 name: 'osbase',
+                reference: 'osbase',
                 fieldLabel: gettext('Type'),
                 editable: false,
                 queryMode: 'local',
@@ -77,6 +97,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 
 Ext.define('PVE.qemu.OSTypeEdit', {
     extend: 'Proxmox.window.Edit',
+    alias: 'widget.pveQemuOSTypeEdit',
 
     subject: 'OS Type',
 
@@ -92,6 +113,11 @@ Ext.define('PVE.qemu.OSTypeEdit', {
                 var value = response.result.data.ostype || 'other';
                 var osinfo = PVE.Utils.get_kvm_osinfo(value);
                 me.setValues({ ostype: value, osbase: osinfo.base });
+                let arch = PVE.qemu.Architecture.getGuestArchitecture(
+                    response.result.data.arch,
+                    me.nodename,
+                );
+                me.down('pveQemuOSTypePanel').setArch(arch);
             },
         });
     },
