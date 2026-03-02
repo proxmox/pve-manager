@@ -489,6 +489,13 @@ __PACKAGE__->register_method({
                     type => "string",
                     optional => 1,
                 },
+                'host-arch' => {
+                    description => "The node's CPU architecture. (for type 'node').",
+                    type => 'string',
+                    enum => [qw(x86_64 aarch64)],
+                    default => 'x86_64',
+                    optional => 1,
+                },
             },
         },
     },
@@ -612,6 +619,9 @@ __PACKAGE__->register_method({
                 my $info = eval { decode_json($static_node_info->{$node}); };
                 if (defined(my $mode = $info->{'cgroup-mode'})) {
                     $entry->{'cgroup-mode'} = int($mode);
+                }
+                if (defined(my $host_arch = $info->{'host-arch'})) {
+                    $entry->{'host-arch'} = $host_arch;
                 }
                 if (defined(my $status = $hastatus->{node_status}->{$node})) {
                     $entry->{'hastate'} = $status;
