@@ -57,6 +57,15 @@ Ext.define('PVE.qemu.MachineInputPanel', {
             store.addFilter((val) => val.data.id === 'latest' || val.data.type === type);
             store.isWindows = me.getView().isWindows;
         },
+
+        setArch: function (arch) {
+            let me = this;
+            let store = me.lookup('version').getStore();
+            store.getProxy().setExtraParams({
+                arch,
+            });
+            store.reload();
+        },
     },
 
     onGetValues: function (values) {
@@ -112,6 +121,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 
         this.callParent(arguments);
         this.getController().setVersionFilter(values.machine);
+        this.getController().setArch(values.arch);
     },
 
     items: [
