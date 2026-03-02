@@ -66,6 +66,12 @@ Ext.define('PVE.qemu.HardwareView', {
         };
 
         let rows = {
+            arch: {
+                header: gettext('vCPU Architecture'),
+                tdCls: 'pve-itype-icon-cpu',
+                never_delete: true,
+                renderer: PVE.qemu.Architecture.render_vcpu_architecture,
+            },
             memory: {
                 header: gettext('Memory'),
                 editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
@@ -419,6 +425,10 @@ Ext.define('PVE.qemu.HardwareView', {
                 pveSelNode: me.pveSelNode,
                 confid: rec.data.key,
                 url: `/api2/extjs/${baseurl}`,
+                arch: PVE.qemu.Architecture.getGuestArchitecture(
+                    me.getObjectValue('arch'),
+                    nodename,
+                ),
                 listeners: {
                     destroy: () => me.reload(),
                 },
