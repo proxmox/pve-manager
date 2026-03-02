@@ -139,6 +139,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             name: 'scsihw',
             value: '__default__',
             bind: {
+                category: '{current.architecture}',
                 value: '{current.scsihw}',
             },
             fieldLabel: gettext('SCSI Controller'),
