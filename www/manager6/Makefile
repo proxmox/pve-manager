@@ -5,6 +5,7 @@ BIOME ?= proxmox-biome
 JSSRC= 							\
 	Parser.js					\
 	StateProvider.js				\
+	qemu/Architecture.js				\
 	Utils.js					\
 	UIOptions.js					\
 	Toolkit.js					\
