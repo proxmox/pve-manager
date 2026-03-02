@@ -108,6 +108,15 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
     cpu: {},
 
+    arch: undefined,
+
+    setArch: function (arch) {
+        let me = this;
+        me.arch = arch;
+        me.lookup('cputype').setArch(arch);
+        me.lookup('cpuFlags').setArch(arch);
+    },
+
     column1: [
         {
             xtype: 'proxmoxintegerfield',
@@ -236,10 +245,12 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
     advancedColumnB: [
         {
             xtype: 'label',
+            reference: 'cpuFlagsLabel',
             text: 'Extra CPU Flags:',
         },
         {
             xtype: 'vmcpuflagselector',
+            reference: 'cpuFlags',
             name: 'flags',
         },
     ],
@@ -259,6 +270,12 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
     initComponent: function () {
         let me = this;
+
+        me.nodename = me.pveSelNode?.data.node;
+        if (!me.nodename) {
+            throw 'no nodename given';
+        }
+
         me.getViewModel().set('cgroupMode', me.cgroupMode);
 
         var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel');
@@ -289,6 +306,8 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                     }
                 }
                 me.setValues(data);
+                let arch = PVE.qemu.Architecture.getGuestArchitecture(data.arch, me.nodename);
+                ipanel.setArch(arch);
             },
         });
     },

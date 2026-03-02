@@ -40,6 +40,19 @@ Ext.define('PVE.form.CPUModelSelector', {
         width: 360,
     },
 
+    arch: undefined,
+
+    setArch: function (arch) {
+        let me = this;
+        me.arch = arch;
+        let params = {};
+        if (arch) {
+            params.arch = arch;
+        }
+        me.store.getProxy().setExtraParams(params);
+        me.store.reload();
+    },
+
     store: {
         autoLoad: true,
         model: 'PVE.data.CPUModel',

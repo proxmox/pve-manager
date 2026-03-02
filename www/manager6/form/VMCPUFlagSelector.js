@@ -16,6 +16,8 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
     unkownFlags: [],
 
+    emptyText: gettext('No CPU flags available'),
+
     store: {
         type: 'store',
         fields: ['name', { name: 'state', defaultValue: '=' }, 'description'],
@@ -65,6 +67,17 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         flags += me.unkownFlags.join(';');
 
         return flags;
+    },
+
+    setArch: function (arch) {
+        let me = this;
+        me.arch = arch;
+        let params = {};
+        if (arch) {
+            params.arch = arch;
+        }
+        me.store.getProxy().setExtraParams(params);
+        me.store.reload();
     },
 
     // Adjusts the store for the current value and determines the unkown flags based on what the

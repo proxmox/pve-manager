@@ -246,6 +246,9 @@ Ext.define('PVE.qemu.CreateWizard', {
             xtype: 'pveQemuProcessorPanel',
             insideWizard: true,
             title: gettext('CPU'),
+            bind: {
+                arch: '{current.architecture}',
+            },
         },
         {
             xtype: 'pveQemuMemoryPanel',
