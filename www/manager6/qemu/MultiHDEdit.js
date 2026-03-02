@@ -45,10 +45,12 @@ Ext.define('PVE.qemu.MultiHDPanel', {
             let vm = me.getViewModel();
 
             let res = {
-                ide2: 'media=cdrom',
                 scsihw: vm.get('current.scsihw'),
                 ostype: vm.get('current.ostype'),
             };
+
+            let isoConfig = vm.get('current.isoConfig') ?? 'ide2';
+            res[isoConfig] = 'media=cdrom';
 
             if (vm.get('current.ide0') === 'some') {
                 res.ide0 = 'media=cdrom';

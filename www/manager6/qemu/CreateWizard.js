@@ -225,6 +225,9 @@ Ext.define('PVE.qemu.CreateWizard', {
         {
             xtype: 'pveQemuOSPanel',
             title: gettext('OS'),
+            bind: {
+                arch: '{current.architecture}',
+            },
         },
         {
             xtype: 'pveQemuSystemPanel',

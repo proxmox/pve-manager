@@ -10,6 +10,17 @@ Ext.define('PVE.qemu.OSPanel', {
         padding: '0 10',
     },
 
+    setArch: function (arch) {
+        let me = this;
+        let defaultCD = PVE.qemu.Architecture.defaultCDDrive;
+        let [controller, id] = defaultCD[arch] ?? defaultCD.x86_64;
+        let vm = me.getController().getViewModel();
+        let conf = `${controller}${id}`;
+        vm.set('current.isoConfig', conf);
+        me.lookup('cdSelector').confid = conf;
+        // TODO change confid for second cd if windows is allowed for other architectures
+    },
+
     controller: {
         xclass: 'Ext.app.ViewController',
         control: {
