@@ -108,6 +108,8 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     },
 
     setValues: function (values) {
+        let me = this;
+
         let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
         if (!Ext.isDefined(res['freeze-fs-on-backup'])) {
             res['freeze-fs-on-backup'] = 1;
@@ -116,6 +118,6 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             res['guest-fsfreeze'] = 1;
         }
 
-        this.callParent([res]);
+        me.callParent([res]);
     },
 });
