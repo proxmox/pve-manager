@@ -22,7 +22,7 @@ Ext.define('PVE.data.PermPathStore', {
     ],
 
     constructor: function (config) {
-        var me = this;
+        let me = this;
 
         config = config || {};
 
