@@ -2,7 +2,18 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     extend: 'Proxmox.panel.InputPanel',
     alias: ['widget.pveAgentFeatureSelector'],
 
-    viewModel: {},
+    viewModel: {
+        data: {
+            hideFreezeFsOnBackup: true,
+            freezeFsOnBackupChecked: true,
+        },
+
+        formulas: {
+            hideFreezeFsOnBackupNotes: function (get) {
+                return get('freezeFsOnBackupChecked') || get('hideFreezeFsOnBackup');
+            },
+        },
+    },
 
     items: [
         {
@@ -75,9 +86,10 @@ Ext.define('PVE.form.AgentFeatureSelector', {
                 'Freeze/thaw guest filesystems on backup for consistency. Deprecated in favor of the more general setting.',
             ),
             name: 'freeze-fs-on-backup',
-            reference: 'freeze_fs_on_backup',
             bind: {
                 disabled: '{!enabled.checked}',
+                value: '{freezeFsOnBackupChecked}',
+                hidden: '{hideFreezeFsOnBackup}',
             },
             disabled: true,
             uncheckedValue: '0',
@@ -90,7 +102,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
                 'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk backups.',
             ),
             bind: {
-                hidden: '{freeze_fs_on_backup.checked}',
+                hidden: '{hideFreezeFsOnBackupNotes}',
             },
         },
     ],
@@ -109,8 +121,18 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 
     setValues: function (values) {
         let me = this;
+        let vm = me.getViewModel();
 
         let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
+
+        // We hide the switch for the deprecated freeze-fs-on-backup if the setting was not
+        // explicitly set by the user or if was explicitly enabled.
+        vm.set(
+            'hideFreezeFsOnBackup',
+            !Ext.isDefined(res['freeze-fs-on-backup']) ||
+                PVE.Parser.parseBoolean(res['freeze-fs-on-backup']),
+        );
+
         if (!Ext.isDefined(res['freeze-fs-on-backup'])) {
             res['freeze-fs-on-backup'] = 1;
         }
