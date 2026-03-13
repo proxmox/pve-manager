@@ -22,28 +22,6 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             disabled: true,
         },
         {
-            xtype: 'proxmoxcheckbox',
-            boxLabel: gettext('Freeze/thaw guest filesystems on backup for consistency'),
-            name: 'freeze-fs-on-backup',
-            reference: 'freeze_fs_on_backup',
-            bind: {
-                disabled: '{!enabled.checked}',
-            },
-            disabled: true,
-            uncheckedValue: '0',
-            defaultValue: '1',
-        },
-        {
-            xtype: 'displayfield',
-            userCls: 'pmx-hint',
-            value: gettext(
-                'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk backups.',
-            ),
-            bind: {
-                hidden: '{freeze_fs_on_backup.checked}',
-            },
-        },
-        {
             xtype: 'displayfield',
             userCls: 'pmx-hint',
             value: gettext('Make sure the QEMU Guest Agent is installed in the VM'),
@@ -65,6 +43,28 @@ Ext.define('PVE.form.AgentFeatureSelector', {
                 ['virtio', 'VirtIO'],
                 ['isa', 'ISA'],
             ],
+        },
+        {
+            xtype: 'proxmoxcheckbox',
+            boxLabel: gettext('Freeze/thaw guest filesystems on backup for consistency'),
+            name: 'freeze-fs-on-backup',
+            reference: 'freeze_fs_on_backup',
+            bind: {
+                disabled: '{!enabled.checked}',
+            },
+            disabled: true,
+            uncheckedValue: '0',
+            defaultValue: '1',
+        },
+        {
+            xtype: 'displayfield',
+            userCls: 'pmx-hint',
+            value: gettext(
+                'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk backups.',
+            ),
+            bind: {
+                hidden: '{freeze_fs_on_backup.checked}',
+            },
         },
     ],
 
