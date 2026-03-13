@@ -36,6 +36,9 @@ Ext.define('PVE.data.PermPathStore', {
                 case 'node':
                     path = '/nodes/' + record.get('text');
                     break;
+                case 'network':
+                    path = '/sdn/' + record.get('network-type') + 's/' + record.get('network');
+                    break;
                 case 'qemu':
                     path = '/vms/' + record.get('vmid');
                     break;
