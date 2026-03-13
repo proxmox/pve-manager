@@ -7,7 +7,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     items: [
         {
             xtype: 'proxmoxcheckbox',
-            boxLabel: Ext.String.format(gettext('Use {0}'), 'QEMU Guest Agent'),
+            boxLabel: gettext('Use QEMU Guest Agent'),
             name: 'enabled',
             reference: 'enabled',
             uncheckedValue: 0,
