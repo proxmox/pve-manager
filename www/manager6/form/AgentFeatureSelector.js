@@ -44,9 +44,12 @@ Ext.define('PVE.form.AgentFeatureSelector', {
                 ['isa', 'ISA'],
             ],
         },
+        // TODO Remove these two items with Proxmox VE 10.
         {
             xtype: 'proxmoxcheckbox',
-            boxLabel: gettext('Freeze/thaw guest filesystems on backup for consistency'),
+            boxLabel: gettext(
+                'Freeze/thaw guest filesystems on backup for consistency. Deprecated in favor of the more general setting.',
+            ),
             name: 'freeze-fs-on-backup',
             reference: 'freeze_fs_on_backup',
             bind: {
