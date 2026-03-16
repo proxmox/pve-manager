@@ -124,21 +124,14 @@ Ext.define('PVE.form.AgentFeatureSelector', {
         let vm = me.getViewModel();
 
         let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
+        res.enabled = PVE.Parser.parseBoolean(res.enabled, false);
+        res.fstrim_cloned_disks = PVE.Parser.parseBoolean(res.fstrim_cloned_disks, false);
+        res['freeze-fs-on-backup'] = PVE.Parser.parseBoolean(res['freeze-fs-on-backup'], true);
+        res['guest-fsfreeze'] = PVE.Parser.parseBoolean(res['guest-fsfreeze'], true);
 
         // We hide the switch for the deprecated freeze-fs-on-backup if the setting was not
         // explicitly set by the user or if was explicitly enabled.
-        vm.set(
-            'hideFreezeFsOnBackup',
-            !Ext.isDefined(res['freeze-fs-on-backup']) ||
-                PVE.Parser.parseBoolean(res['freeze-fs-on-backup']),
-        );
-
-        if (!Ext.isDefined(res['freeze-fs-on-backup'])) {
-            res['freeze-fs-on-backup'] = 1;
-        }
-        if (!Ext.isDefined(res['guest-fsfreeze'])) {
-            res['guest-fsfreeze'] = 1;
-        }
+        vm.set('hideFreezeFsOnBackup', res['freeze-fs-on-backup']);
 
         me.callParent([res]);
     },
