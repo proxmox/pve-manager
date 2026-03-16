@@ -1,3 +1,13 @@
+pve-manager (8.4.18) bookworm; urgency=medium
+
+  * fix #6985: ui: qemu: hardware: efidisk: add 'Enroll Updated Certificates'
+    disk action for enrolling Microsoft's 2023 UEFI certificates. The original
+    set of Microsoft certificates from 2011, which Windows and common Linux
+    distributions use for secure boot, expires in June 2026. Microsoft created
+    replacement certificates in 2023.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 16 Mar 2026 12:29:33 +0100
+
 pve-manager (8.4.17) bookworm; urgency=medium
 
   * ui: fully reset UI state on automatic logout due to stale ticket (e.g.,
