@@ -1,3 +1,50 @@
+pve-manager (9.1.7) trixie; urgency=medium
+
+  * ui: qga: rename freeze-fs-on-backup checkbox to freeze-fs, reflecting
+    that filesystem freeze/thaw now also applies to snapshots and
+    replication, not just backups.
+
+  * ui: qemu: hardware: efi: suggest enrolling UEFI 2023 certificates from
+    Microsoft when pre-enrolled keys are present but the 2023 certs are
+    missing, as the 2011 certificates expire mid-2026.
+
+  * fix #7175: replace deprecated /etc/timezone handling with systemd
+    timedatectl.
+
+  * fix #7337: ui: preserve deep link hash on OpenID login redirect, so users
+    are directed to the intended page after authentication.
+
+  * ceph: osd: fix bootstrap keyring creation when auth_client_required is not
+    set in ceph.conf, defaulting to 'cephx' to match Ceph's own default.
+
+  * fix #7011: ceph monitor: set ownership of monitor logs to ceph:ceph after
+    creation, so logging works on freshly set up clusters without waiting for
+    a ceph-common upgrade.
+
+  * fix #7386: ui: vm memory: fix compatibility with Firefox ESR 115 by
+    avoiding ES2025 Iterator.toArray, as we target ES2024 for the Trixie based
+    releases.
+
+  * fix #7191: ui: correctly sort TFA column in the PVE user list.
+
+  * api: cluster resources: add missing 'shared'-storage flag to return
+    schema, required by the proxmox-datacenter backend.
+
+  * ui: download iso: trim filename to correctly detect file extension when a
+    custom filename has trailing spaces.
+
+  * ui: ceph: fix pool edit dialog sometimes showing incorrect size and
+    min_size values due to a race condition, which could lead to unintended
+    replication setting changes on save.
+
+  * ui: ceph: osd: fix toolbar overflow on small screens by enabling
+    horizontal scrolling.
+
+  * fix #7300: ui: acl: include pre-generated SDN zones and fabrics in the
+    permission path selector.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 27 Mar 2026 02:26:28 +0100
+
 pve-manager (9.1.6) trixie; urgency=medium
 
   * ui: lxc/MPEdit: add "keepattrs" flag
