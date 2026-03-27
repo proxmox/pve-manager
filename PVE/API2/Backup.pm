@@ -120,6 +120,80 @@ my $schedule_param_check = sub {
     delete $param->{dow};
 };
 
+my $backup_job_return_schema = PVE::VZDump::Common::json_config_properties({
+    id => get_standard_option('pve-backup-jobid'),
+    schedule => {
+        description => "Backup schedule. The format is a subset of `systemd` calendar events.",
+        type => 'string',
+        format => 'pve-calendar-event',
+        maxLength => 128,
+        optional => 1,
+    },
+    starttime => {
+        type => 'string',
+        description => "Job Start time.",
+        pattern => '\d{1,2}:\d{1,2}',
+        typetext => 'HH:MM',
+        optional => 1,
+    },
+    dow => {
+        type => 'string',
+        format => 'pve-day-of-week-list',
+        optional => 1,
+        description => "Day of week selection.",
+        requires => 'starttime',
+        default => ALL_DAYS,
+    },
+    enabled => {
+        type => 'boolean',
+        optional => 1,
+        description => "Enable or disable the job.",
+        default => '1',
+    },
+    'repeat-missed' => {
+        optional => 1,
+        type => 'boolean',
+        description => "If true, the job will be run as soon as possible if it was missed"
+            . " while the scheduler was not running.",
+        default => 0,
+    },
+    comment => {
+        optional => 1,
+        type => 'string',
+        description => "Description for the Job.",
+        maxLength => 512,
+    },
+    'next-run' => {
+        description => "UNIX timestamp when this backup job will be executed next",
+        optional => 1,
+        type => 'integer',
+    },
+});
+
+# 'fleecing', 'prune-backups' and 'performance' are property strings in POST and PUT,  but proper
+# objects when they are returned from the API, which is why we need to override them here.
+$backup_job_return_schema->{'fleecing'} = {
+    description => "Options for backup fleecing (VM only).",
+    type => 'object',
+    optional => 1,
+    properties => PVE::JSONSchema::get_format('backup-fleecing'),
+};
+
+$backup_job_return_schema->{'prune-backups'} = {
+    description =>
+        "Use these retention options instead of those from the storage configuration.",
+    type => 'object',
+    optional => 1,
+    properties => PVE::JSONSchema::get_format('prune-backups'),
+};
+
+$backup_job_return_schema->{'performance'} = {
+    description => "Other performance-related settings.",
+    type => 'object',
+    optional => 1,
+    properties => PVE::JSONSchema::get_format('backup-performance'),
+};
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -136,9 +210,7 @@ __PACKAGE__->register_method({
         type => 'array',
         items => {
             type => "object",
-            properties => {
-                id => get_standard_option('pve-backup-jobid'),
-            },
+            properties => $backup_job_return_schema,
         },
         links => [{ rel => 'child', href => "{id}" }],
     },
@@ -309,6 +381,7 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => 'object',
+        properties => $backup_job_return_schema,
     },
     code => sub {
         my ($param) = @_;
