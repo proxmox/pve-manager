@@ -64,10 +64,21 @@ Ext.define('PVE.dc.BackupEdit', {
             let vmgrid = me.lookup('vmgrid');
             let store = vmgrid.getStore();
 
+            me.resetSearch();
+
             store.clearFilter();
             store.filterBy(function (rec) {
                 return !value || rec.get('node') === value;
             });
+
+            if (value) {
+                let selModel = vmgrid.getSelectionModel();
+                let selections = selModel.getSelection();
+                let hiddenSelections = selections.filter((rec) => rec.get('node') !== value);
+                if (hiddenSelections.length > 0) {
+                    selModel.deselect(hiddenSelections, true);
+                }
+            }
 
             let mode = me.lookup('modeSelector').getValue();
             if (mode === 'all') {
@@ -76,6 +87,8 @@ Ext.define('PVE.dc.BackupEdit', {
             if (mode === 'pool') {
                 me.selectPoolMembers();
             }
+
+            me.updateSelectionCount();
         },
 
         storageChange: function (f, v) {
@@ -114,6 +127,8 @@ Ext.define('PVE.dc.BackupEdit', {
                 },
             ]);
             vmgrid.selModel.selectAll(true);
+
+            me.updateSelectionCount();
         },
 
         modeChange: function (f, value, oldValue) {
@@ -121,7 +136,12 @@ Ext.define('PVE.dc.BackupEdit', {
             let vmgrid = me.lookup('vmgrid');
             vmgrid.getStore().removeFilter('poolFilter');
 
-            if (oldValue === 'all' && value !== 'all') {
+            me.resetSearch();
+
+            if (
+                (oldValue === 'all' && value !== 'all') ||
+                (oldValue === 'pool' && (value === 'include' || value === 'exclude'))
+            ) {
                 vmgrid.getSelectionModel().deselectAll(true);
             }
 
@@ -132,6 +152,8 @@ Ext.define('PVE.dc.BackupEdit', {
             if (value === 'pool') {
                 me.selectPoolMembers();
             }
+
+            me.updateSelectionCount();
         },
 
         compressionChange: function (f, value, oldValue) {
@@ -181,8 +203,98 @@ Ext.define('PVE.dc.BackupEdit', {
             return data;
         },
 
+        searchFn: function (record) {
+            let me = this;
+            let searchQuery = me.searchValue;
+
+            if (!searchQuery) {
+                return true;
+            }
+
+            let name = (record.get('name') ?? '').toLowerCase();
+            let vmid = (record.get('vmid') ?? '').toString();
+
+            return name.includes(searchQuery) || vmid.includes(searchQuery);
+        },
+
+        searchChange: function (_, value) {
+            let me = this;
+            let search = (value ?? '').toLowerCase();
+            let vmgrid = me.lookup('vmgrid');
+            let store = vmgrid.getStore();
+
+            me.searchValue = search;
+
+            if (!search) {
+                store.removeFilter(me.searchFilter);
+            } else {
+                store.addFilter(me.searchFilter);
+            }
+        },
+
+        resetSearch: function () {
+            let me = this;
+
+            me.searchValue = '';
+            me.lookup('searchTextField').setValue('');
+            me.lookup('vmgrid').getStore().removeFilter(me.searchFilter);
+        },
+
+        selectionChange: function (_, selected) {
+            let me = this;
+            let store = me.lookup('vmgrid').getStore();
+
+            if (store.getFilters().contains(me.reviewFilter)) {
+                store.removeFilter(me.reviewFilter);
+                store.addFilter(me.reviewFilter);
+            }
+            me.updateSelectionCount(selected);
+        },
+
+        updateSelectionCount: function (selected) {
+            let me = this;
+            let selection = selected || me.lookup('vmgrid').getSelectionModel().getSelection();
+            let count = selection.length;
+
+            let label = me.lookup('selectionCount');
+            let text = Ext.String.format(gettext('Selected ({0})'), count);
+            label.setText(text);
+        },
+
+        reviewFn: function (record) {
+            let me = this;
+            let vmgrid = me.lookup('vmgrid');
+            let selModel = vmgrid.getSelectionModel();
+            return selModel.isSelected(record);
+        },
+
+        reviewModeChange: function (_, value) {
+            let me = this;
+            let store = me.lookup('vmgrid').getStore();
+
+            me.resetSearch();
+            if (value) {
+                store.addFilter(me.reviewFilter);
+            } else {
+                store.removeFilter(me.reviewFilter);
+            }
+        },
+
         init: function (view) {
             let me = this;
+
+            me.searchValue = '';
+            me.searchFilter = new Ext.util.Filter({
+                id: 'search',
+                scope: me,
+                filterFn: me.searchFn,
+            });
+
+            me.reviewFilter = new Ext.util.Filter({
+                id: 'review',
+                scope: me,
+                filterFn: me.reviewFn,
+            });
 
             if (view.isCreate) {
                 me.lookup('modeSelector').setValue('include');
@@ -334,12 +446,62 @@ Ext.define('PVE.dc.BackupEdit', {
                             xtype: 'vmselector',
                             reference: 'vmgrid',
                             height: 300,
+                            padding: '0 0 2 0',
                             name: 'vmid',
                             disabled: true,
                             allowBlank: false,
                             columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
                             bind: {
                                 disabled: '{disableVMSelection}',
+                            },
+                            listeners: {
+                                selectionChange: 'selectionChange',
+                            },
+                            getValue: function () {
+                                let me = this;
+                                let selModel = me.getSelectionModel();
+                                let selection = selModel.getSelection();
+                                return selection.map((rec) => rec.get('vmid')).join(',');
+                            },
+                            tbar: {
+                                xtype: 'toolbar',
+                                items: [
+                                    {
+                                        xtype: 'proxmoxtextfield',
+                                        reference: 'searchTextField',
+                                        fieldLabel: gettext('Search'),
+                                        emptyText: 'Name, VMID',
+                                        flex: 1,
+                                        margin: '2 4 4 0',
+                                        labelWidth: 92,
+                                        enableKeyEvents: true,
+                                        submitValue: false,
+                                        listeners: {
+                                            buffer: 250,
+                                            change: 'searchChange',
+                                        },
+                                    },
+                                ],
+                            },
+                            bbar: {
+                                xtype: 'toolbar',
+                                padding: '4 0',
+                                items: [
+                                    {
+                                        xtype: 'tbtext',
+                                        reference: 'selectionCount',
+                                        text: Ext.String.format(gettext('Selected ({0})'), 0),
+                                    },
+                                    '->',
+                                    {
+                                        xtype: 'proxmoxcheckbox',
+                                        boxLabel: gettext('Review'),
+                                        submitValue: false,
+                                        listeners: {
+                                            change: 'reviewModeChange',
+                                        },
+                                    },
+                                ],
                             },
                         },
                     ],
