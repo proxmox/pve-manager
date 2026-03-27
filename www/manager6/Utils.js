@@ -489,7 +489,7 @@ Ext.define('PVE.Utils', {
                     displayText = map[value] || Proxmox.Utils.unknownText;
                 } else if (key === 'freeze-fs-on-backup' && PVE.Parser.parseBoolean(value)) {
                     continue;
-                } else if (key === 'guest-fsfreeze' && PVE.Parser.parseBoolean(value)) {
+                } else if (key === 'freeze-fs' && PVE.Parser.parseBoolean(value)) {
                     continue;
                 } else if (PVE.Parser.parseBoolean(value)) {
                     displayText = Proxmox.Utils.enabledText;

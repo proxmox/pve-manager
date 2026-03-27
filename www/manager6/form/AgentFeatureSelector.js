@@ -2,18 +2,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     extend: 'Proxmox.panel.InputPanel',
     alias: ['widget.pveAgentFeatureSelector'],
 
-    viewModel: {
-        data: {
-            hideFreezeFsOnBackup: true,
-            freezeFsOnBackupChecked: true,
-        },
-
-        formulas: {
-            hideFreezeFsOnBackupNotes: function (get) {
-                return get('freezeFsOnBackupChecked') || get('hideFreezeFsOnBackup');
-            },
-        },
-    },
+    viewModel: {},
 
     items: [
         {
@@ -37,8 +26,8 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             boxLabel: gettext(
                 'Freeze/thaw guest filesystems during certain operations for consistency',
             ),
-            name: 'guest-fsfreeze',
-            reference: 'guest_fsfreeze',
+            name: 'freeze-fs',
+            reference: 'freeze_fs',
             bind: {
                 disabled: '{!enabled.checked}',
             },
@@ -50,10 +39,10 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             xtype: 'displayfield',
             userCls: 'pmx-hint',
             value: gettext(
-                'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk images after performing certain operations.',
+                'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk images during snapshots, backups, and similar operations.',
             ),
             bind: {
-                hidden: '{guest_fsfreeze.checked}',
+                hidden: '{freeze_fs.checked}',
             },
         },
         {
@@ -79,40 +68,11 @@ Ext.define('PVE.form.AgentFeatureSelector', {
                 ['isa', 'ISA'],
             ],
         },
-        // TODO Remove these two items with Proxmox VE 10.
-        {
-            xtype: 'proxmoxcheckbox',
-            boxLabel: gettext(
-                'Freeze/thaw guest filesystems on backup for consistency. Deprecated in favor of the more general setting.',
-            ),
-            name: 'freeze-fs-on-backup',
-            bind: {
-                disabled: '{!enabled.checked}',
-                value: '{freezeFsOnBackupChecked}',
-                hidden: '{hideFreezeFsOnBackup}',
-            },
-            disabled: true,
-            uncheckedValue: '0',
-            defaultValue: '1',
-        },
-        {
-            xtype: 'displayfield',
-            userCls: 'pmx-hint',
-            value: gettext(
-                'Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk backups.',
-            ),
-            bind: {
-                hidden: '{hideFreezeFsOnBackupNotes}',
-            },
-        },
     ],
 
     onGetValues: function (values) {
-        if (PVE.Parser.parseBoolean(values['freeze-fs-on-backup'])) {
-            delete values['freeze-fs-on-backup'];
-        }
-        if (PVE.Parser.parseBoolean(values['guest-fsfreeze'])) {
-            delete values['guest-fsfreeze'];
+        if (PVE.Parser.parseBoolean(values['freeze-fs'])) {
+            delete values['freeze-fs'];
         }
 
         const agentstr = PVE.Parser.printPropertyString(values, 'enabled');
@@ -120,19 +80,17 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     },
 
     setValues: function (values) {
-        let me = this;
-        let vm = me.getViewModel();
-
         let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
-        res.enabled = PVE.Parser.parseBoolean(res.enabled, false);
-        res.fstrim_cloned_disks = PVE.Parser.parseBoolean(res.fstrim_cloned_disks, false);
-        res['freeze-fs-on-backup'] = PVE.Parser.parseBoolean(res['freeze-fs-on-backup'], true);
-        res['guest-fsfreeze'] = PVE.Parser.parseBoolean(res['guest-fsfreeze'], true);
+        // cope with older backends that still return the previous name
+        if (Ext.isDefined(res['freeze-fs-on-backup']) && !Ext.isDefined(res['freeze-fs'])) {
+            res['freeze-fs'] = res['freeze-fs-on-backup'];
+        }
+        delete res['freeze-fs-on-backup'];
 
-        // We hide the switch for the deprecated freeze-fs-on-backup if the setting was not
-        // explicitly set by the user or if was explicitly enabled.
-        vm.set('hideFreezeFsOnBackup', res['freeze-fs-on-backup']);
+        if (!Ext.isDefined(res['freeze-fs'])) {
+            res['freeze-fs'] = 1;
+        }
 
-        me.callParent([res]);
+        this.callParent([res]);
     },
 });
