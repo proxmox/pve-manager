@@ -237,11 +237,11 @@ __PACKAGE__->register_method({
                 minimum => 1,
                 maximum => 7,
             },
-            # TODO: deprecrated, remove with PVE 9
+            # TODO: deprecated, remove with PVE 10
             pg_bits => {
                 description => "Placement group bits, used to specify the "
-                    . "default number of placement groups.\n\nDepreacted. This "
-                    . "setting was deprecated in recent Ceph versions.",
+                    . "default number of placement groups.\n\nDeprecated. This "
+                    . "setting has been ignored since Ceph Nautilus.",
                 type => 'integer',
                 default => 6,
                 optional => 1,
@@ -303,9 +303,6 @@ __PACKAGE__->register_method({
                         'mon_allow_pool_delete' => 'true',
                     };
 
-                    # this does not work for default pools
-                    #'osd pool default pg num' => $pg_num,
-                    #'osd pool default pgp num' => $pg_num,
                 }
 
                 if ($auth eq 'cephx') {
