@@ -175,7 +175,7 @@ my $get_pkg = sub {
     }
 
     my $pkgs = [grep { $_->{Package} eq $pkg } @$versions];
-    if (!defined $pkgs || $pkgs == 0) {
+    if (!@$pkgs) {
         log_fail("unable to determine installed $pkg version.");
         return undef;
     } else {
