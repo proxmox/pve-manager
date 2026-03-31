@@ -787,7 +787,7 @@ __PACKAGE__->register_method({
 
             foreach my $d (@{ $res->{pools} }) {
                 next if !$d->{stats};
-                next if !defined($d->{name}) && !$d->{name} ne "$pool";
+                next if $d->{name} ne $pool;
                 $data->{statistics} = $d->{stats};
             }
 
