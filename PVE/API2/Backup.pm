@@ -269,18 +269,22 @@ __PACKAGE__->register_method({
                 maxLength => 128,
                 optional => 1,
             },
+            # FIXME: MAJOR VERSION: Drop this deprecated parameter.
             starttime => {
                 type => 'string',
-                description => "Job Start time.",
+                description => "Deprecated: Use 'schedule' instead. Job Start time."
+                    . " 'starttime' and 'dow' will be converted into 'schedule' if used.",
                 pattern => '\d{1,2}:\d{1,2}',
                 typetext => 'HH:MM',
                 optional => 1,
             },
+            # FIXME: MAJOR VERSION: Drop this deprecated parameter.
             dow => {
                 type => 'string',
                 format => 'pve-day-of-week-list',
                 optional => 1,
-                description => "Day of week selection.",
+                description => "Deprecated: Use 'schedule' instead. Day of week selection."
+                    . " 'starttime' and 'dow' will be converted into 'schedule' if used.",
                 requires => 'starttime',
                 default => ALL_DAYS,
             },
@@ -497,19 +501,23 @@ __PACKAGE__->register_method({
                 maxLength => 128,
                 optional => 1,
             },
+            # FIXME: MAJOR VERSION: Drop this deprecated parameter.
             starttime => {
                 type => 'string',
-                description => "Job Start time.",
+                description => "Deprecated: Use 'schedule' instead. Job Start time."
+                    . " 'starttime' and 'dow' will be converted into 'schedule' if used.",
                 pattern => '\d{1,2}:\d{1,2}',
                 typetext => 'HH:MM',
                 optional => 1,
             },
+            # FIXME: MAJOR VERSION: Drop this deprecated parameter.
             dow => {
                 type => 'string',
                 format => 'pve-day-of-week-list',
                 optional => 1,
                 requires => 'starttime',
-                description => "Day of week selection.",
+                description => "Deprecated: Use 'schedule' instead. Day of week selection."
+                    . " 'starttime' and 'dow' will be converted into 'schedule' if used.",
             },
             delete => {
                 type => 'string',
