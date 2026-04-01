@@ -213,6 +213,8 @@ __PACKAGE__->register_method({
         my $res = $data->{jobs} || [];
         foreach my $job (@$res) {
             $job->{schedule} = $convert_to_schedule->($job);
+            delete $job->{starttime};
+            delete $job->{dow};
         }
 
         foreach my $jobid (sort { $order->{$a} <=> $order->{$b} } keys %$jobs) {
@@ -381,6 +383,9 @@ __PACKAGE__->register_method({
         foreach my $job (@$jobs) {
             if ($job->{id} eq $param->{id}) {
                 $job->{schedule} = $convert_to_schedule->($job);
+                delete $job->{starttime};
+                delete $job->{dow};
+
                 return $job;
             }
         }
