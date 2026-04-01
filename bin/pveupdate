@@ -103,26 +103,22 @@ syslog('err', "Renewing ACME certificate failed: $@") if $@;
 
 eval {
     my $certpath = PVE::CertHelpers::default_cert_path_prefix($nodename) . ".pem";
-    my $capath = "/etc/pve/pve-root-ca.pem";
+    my $ca_path = "/etc/pve/pve-root-ca.pem";
+
+    my $ca_info = PVE::Certificate::get_certificate_info($ca_path);
 
     my $renew = sub {
         my ($msg) = @_;
 
-        # get CA info
-        my $cainfo = PVE::Certificate::get_certificate_info($capath);
-
         # get cert and check issuer and chain metadata
         my $certinfo = PVE::Certificate::get_certificate_info($certpath);
-        if ($certinfo->{issuer} ne $cainfo->{subject}) {
-            die "SSL certificate ($certpath) is not issued by root CA ($capath)!\n";
+        if ($certinfo->{issuer} ne $ca_info->{subject}) {
+            die "SSL certificate ($certpath) is not issued by root CA ($ca_path)!\n";
         }
 
         # check if cert is really signed by the ca
         # TODO: replace by low level ssleay interface if version 1.86 is available
-        my $cmd = [
-            '/usr/bin/openssl', 'verify', '-no_check_time', '-CAfile', $capath, '--', $certpath,
-        ];
-        PVE::Tools::run_command($cmd);
+        PVE::Tools::run_command(['/usr/bin/openssl', 'verify', '-CAfile', $ca_path, $certpath]);
 
         print "PVE certificate $msg\n";
         # create new certificate
@@ -133,13 +129,32 @@ eval {
         PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
     };
 
-    if (PVE::Certificate::check_expiry($certpath)) {
-        # already expired
-        $renew->("expired, renewing...");
-    } elsif (PVE::Certificate::check_expiry($certpath, time() + 14 * 24 * 60 * 60)) {
+    my $now = time();
+
+    if ($ca_info->{notafter} < $now + 90 * 24 * 60 * 60) {
+        my $renew_ca_msg =
+            "re-generate a new CA by removing the '$ca_path' once and then running"
+            . " 'pvecm updatecerts -f' on every cluster node."
+            if ($days_to_ca_expiry < 0) {
+            syslog('err', "the Proxmox VE cluster root CA expired!\nYou must $renew_ca_msg");
+        } else {
+            my $level =
+                $days_to_ca_expiry > 45
+                ? 'notice'
+                : ($days_to_ca_expiry > 14 ? 'warning' : 'error');
+            my $remaining_time_msg =
+                $days_to_ca_expiry >= 1 ? "in $days_to_ca_expiry days" : "today";
+            syslog(
+                $level,
+                "the Proxmox VE cluster root CA will expire $remaining_time_msg!\nYou should $renew_ca_msg",
+            );
+        }
+    }
+
+    if (PVE::Certificate::check_expiry($certpath, $now + 14 * 24 * 60 * 60)) {
         # expires in next 2 weeks
         $renew->("expires soon, renewing...");
-    } elsif (!PVE::Certificate::check_expiry($certpath, time() + 2 * 365 * 24 * 60 * 60)) {
+    } elsif (!PVE::Certificate::check_expiry($certpath, $now + 2 * 365 * 24 * 60 * 60)) {
         # expires in more than 2 years
         $renew->(
             "expires in more than 2 years, renewing to reduce certificate life-span for client compatibility..."
@@ -189,7 +204,8 @@ sub cleanup_tasks {
     }
 
     if ($count) {
-        syslog('info', "cleanup removed $count task logs");
+        my $local_endtime = gmtime($endtime);
+        syslog('info', "cleanup removed $count task logs that were older than $local_endtime UTC");
     }
 }
 
