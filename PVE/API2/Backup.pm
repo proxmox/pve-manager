@@ -129,21 +129,6 @@ my $backup_job_return_schema = PVE::VZDump::Common::json_config_properties({
         maxLength => 128,
         optional => 1,
     },
-    starttime => {
-        type => 'string',
-        description => "Job start-time (server timezone); deprecated and replaced by schedule.",
-        pattern => '\d{1,2}:\d{1,2}',
-        typetext => 'HH:MM',
-        optional => 1,
-    },
-    dow => {
-        type => 'string',
-        format => 'pve-day-of-week-list',
-        optional => 1,
-        description => "Day of week selection; deprecated and replaced by schedule.",
-        requires => 'starttime',
-        default => ALL_DAYS,
-    },
     enabled => {
         type => 'boolean',
         optional => 1,
