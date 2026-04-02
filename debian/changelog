@@ -1,3 +1,19 @@
+pve-manager (9.1.8) trixie; urgency=medium
+
+  * ui: datacenter options: add dynamic load scheduler and auto rebalancing
+    configuration for HA cluster resource scheduling, including threshold,
+    hold duration, margin, and method settings.
+
+  * api: backup: deprecate the legacy 'starttime' and 'dow' parameters in
+    favor of 'schedule' and drop them from the API response, as they have been
+    superseded since PVE 7.1.
+
+  * api: backup: add return schema for backup job endpoints.
+
+  * system report: adapt to ZFS 2.4.0 renaming arcstat to zarcstat.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 02 Apr 2026 18:09:10 +0200
+
 pve-manager (9.1.7) trixie; urgency=medium
 
   * ui: qga: rename freeze-fs-on-backup checkbox to freeze-fs, reflecting
