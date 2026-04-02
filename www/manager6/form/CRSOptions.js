@@ -7,7 +7,7 @@ Ext.define('PVE.form.CRSOptions', {
     onlineHelp: 'ha_manager_crs',
 
     fieldDefaults: {
-        labelWidth: 120,
+        labelWidth: 150,
     },
 
     setValues: function (values) {
@@ -15,6 +15,8 @@ Ext.define('PVE.form.CRSOptions', {
             panel.setValues(values.crs);
         });
     },
+
+    viewModel: {},
 
     items: [
         {
@@ -49,6 +51,64 @@ Ext.define('PVE.form.CRSOptions', {
                         'Use CRS to select the least loaded node when starting an HA service',
                     ),
                     value: 0,
+                },
+                {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'ha-auto-rebalance',
+                    fieldLabel: gettext('Automatic Rebalance'),
+                    boxLabel: gettext('Automatically rebalance HA resources'),
+                    value: 0,
+                    reference: 'enableAutoRebalance',
+                },
+                {
+                    xtype: 'numberfield',
+                    name: 'ha-auto-rebalance-threshold',
+                    fieldLabel: gettext('Imbalance Threshold'),
+                    emptyText: '0.3',
+                    minValue: 0.0,
+                    step: 0.01,
+                    bind: {
+                        disabled: '{!enableAutoRebalance.checked}',
+                    },
+                },
+                {
+                    xtype: 'proxmoxKVComboBox',
+                    name: 'ha-auto-rebalance-method',
+                    fieldLabel: gettext('Rebalancing Method'),
+                    deleteEmpty: false,
+                    value: '__default__',
+                    comboItems: [
+                        ['__default__', Proxmox.Utils.defaultText + ' (bruteforce)'],
+                        ['bruteforce', 'Bruteforce'],
+                        ['topsis', 'TOPSIS'],
+                    ],
+                    defaultValue: '__default__',
+                    bind: {
+                        disabled: '{!enableAutoRebalance.checked}',
+                    },
+                },
+                {
+                    xtype: 'numberfield',
+                    name: 'ha-auto-rebalance-hold-duration',
+                    fieldLabel: gettext('Hold Duration'),
+                    emptyText: '3',
+                    minValue: 0,
+                    step: 1,
+                    bind: {
+                        disabled: '{!enableAutoRebalance.checked}',
+                    },
+                },
+                {
+                    xtype: 'numberfield',
+                    name: 'ha-auto-rebalance-margin',
+                    fieldLabel: gettext('Minimum Imbalance Improvement'),
+                    emptyText: '0.1',
+                    minValue: 0.0,
+                    maxValue: 1.0,
+                    step: 0.01,
+                    bind: {
+                        disabled: '{!enableAutoRebalance.checked}',
+                    },
                 },
             ],
         },
