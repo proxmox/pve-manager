@@ -195,8 +195,8 @@ Ext.define('PVE.dc.OptionView', {
                     value: '__default__',
                     comboItems: [
                         ['__default__', Proxmox.Utils.defaultText + ' (basic)'],
-                        ['basic', 'Basic (Resource Count)'],
-                        ['static', 'Static Load'],
+                        ['basic', gettext('Basic (Resource Count)')],
+                        ['static', gettext('Static Load')],
                     ],
                     defaultValue: '__default__',
                 },
