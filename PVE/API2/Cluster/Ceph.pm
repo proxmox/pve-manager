@@ -193,39 +193,37 @@ __PACKAGE__->register_method({
             osd => {
                 type => "array",
                 description => "OSDs configured in the cluster and their properties.",
-                properties => {
-                    "{id}" => {
-                        type => "object",
-                        description => "Useful properties are listed, but not the full list.",
-                        properties => {
-                            id => {
-                                type => "integer",
-                                description => "OSD ID.",
-                            },
-                            front_addr => {
-                                type => "string",
-                                description =>
-                                    "Bind addresses and ports for frontend traffic to OSDs.",
-                            },
-                            back_addr => {
-                                type => "string",
-                                description =>
-                                    "Bind addresses and ports for backend inter OSD traffic.",
-                            },
-                            device_id => {
-                                type => "string",
-                                description => "Devices used by the OSD.",
-                            },
-                            osd_data => {
-                                type => "string",
-                                description => "Path to the OSD data directory.",
-                            },
-                            osd_objectstore => {
-                                type => "string",
-                                description => "OSD objectstore type.",
-                            },
-                            %{$metadata_common_props},
+                items => {
+                    type => "object",
+                    description => "Useful properties are listed, but not the full list.",
+                    properties => {
+                        id => {
+                            type => "integer",
+                            description => "OSD ID.",
                         },
+                        front_addr => {
+                            type => "string",
+                            description =>
+                                "Bind addresses and ports for frontend traffic to OSDs.",
+                        },
+                        back_addr => {
+                            type => "string",
+                            description =>
+                                "Bind addresses and ports for backend inter OSD traffic.",
+                        },
+                        device_id => {
+                            type => "string",
+                            description => "Devices used by the OSD.",
+                        },
+                        osd_data => {
+                            type => "string",
+                            description => "Path to the OSD data directory.",
+                        },
+                        osd_objectstore => {
+                            type => "string",
+                            description => "OSD objectstore type.",
+                        },
+                        %{$metadata_common_props},
                     },
                 },
             },
