@@ -3,6 +3,7 @@ Ext.define('PVE.form.CRSOptions', {
     alias: 'widget.pveCRSOptions',
 
     width: 450,
+    subject: gettext('Cluster Resource Scheduling'),
     url: '/api2/extjs/cluster/options',
     onlineHelp: 'ha_manager_crs',
 
