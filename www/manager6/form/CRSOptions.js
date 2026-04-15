@@ -17,7 +17,14 @@ Ext.define('PVE.form.CRSOptions', {
         });
     },
 
-    viewModel: {},
+    viewModel: {
+        data: {
+            autoRebalancing: 0,
+        },
+        formulas: {
+            autoRebalancingDisabled: (get) => !get('autoRebalancing'),
+        },
+    },
 
     items: [
         {
@@ -58,8 +65,9 @@ Ext.define('PVE.form.CRSOptions', {
                     name: 'ha-auto-rebalance',
                     fieldLabel: gettext('Automatic Rebalance'),
                     boxLabel: gettext('Automatically rebalance HA resources'),
-                    value: 0,
-                    reference: 'enableAutoRebalance',
+                    bind: {
+                        value: '{autoRebalancing}',
+                    },
                 },
                 {
                     xtype: 'numberfield',
@@ -69,7 +77,7 @@ Ext.define('PVE.form.CRSOptions', {
                     minValue: 0.0,
                     step: 0.01,
                     bind: {
-                        disabled: '{!enableAutoRebalance.checked}',
+                        disabled: '{autoRebalancingDisabled}',
                     },
                 },
                 {
@@ -85,7 +93,7 @@ Ext.define('PVE.form.CRSOptions', {
                     ],
                     defaultValue: '__default__',
                     bind: {
-                        disabled: '{!enableAutoRebalance.checked}',
+                        disabled: '{autoRebalancingDisabled}',
                     },
                 },
                 {
@@ -96,7 +104,7 @@ Ext.define('PVE.form.CRSOptions', {
                     minValue: 0,
                     step: 1,
                     bind: {
-                        disabled: '{!enableAutoRebalance.checked}',
+                        disabled: '{autoRebalancingDisabled}',
                     },
                 },
                 {
@@ -108,7 +116,7 @@ Ext.define('PVE.form.CRSOptions', {
                     maxValue: 1.0,
                     step: 0.01,
                     bind: {
-                        disabled: '{!enableAutoRebalance.checked}',
+                        disabled: '{autoRebalancingDisabled}',
                     },
                 },
             ],
