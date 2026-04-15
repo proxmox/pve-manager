@@ -33,7 +33,7 @@ Ext.define('PVE.form.CRSOptions', {
                 {
                     xtype: 'proxmoxKVComboBox',
                     name: 'ha',
-                    fieldLabel: gettext('HA Scheduling'),
+                    fieldLabel: gettext('Scheduling Mode'),
                     deleteEmpty: false,
                     value: '__default__',
                     comboItems: [
