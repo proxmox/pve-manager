@@ -19,10 +19,14 @@ Ext.define('PVE.form.CRSOptions', {
 
     viewModel: {
         data: {
+            crsMode: '__default__',
             autoRebalancing: 0,
         },
         formulas: {
-            autoRebalancingDisabled: (get) => !get('autoRebalancing'),
+            canUseAutoRebalancing: (get) =>
+                get('crsMode') === 'static' || get('crsMode') === 'dynamic',
+            autoRebalancingDisabled: (get) =>
+                !get('autoRebalancing') || !get('canUseAutoRebalancing'),
         },
     },
 
@@ -42,14 +46,15 @@ Ext.define('PVE.form.CRSOptions', {
                     name: 'ha',
                     fieldLabel: gettext('Scheduling Mode'),
                     deleteEmpty: false,
-                    value: '__default__',
                     comboItems: [
                         ['__default__', Proxmox.Utils.defaultText + ' (basic)'],
                         ['basic', gettext('Basic (Resource Count)')],
                         ['static', gettext('Static Load')],
                         ['dynamic', gettext('Dynamic Load')],
                     ],
-                    defaultValue: '__default__',
+                    bind: {
+                        value: '{crsMode}',
+                    },
                 },
                 {
                     xtype: 'proxmoxcheckbox',
@@ -67,6 +72,7 @@ Ext.define('PVE.form.CRSOptions', {
                     boxLabel: gettext('Automatically rebalance HA resources'),
                     bind: {
                         value: '{autoRebalancing}',
+                        disabled: '{!canUseAutoRebalancing}',
                     },
                 },
                 {
