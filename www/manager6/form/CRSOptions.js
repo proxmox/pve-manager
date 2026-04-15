@@ -49,7 +49,7 @@ Ext.define('PVE.form.CRSOptions', {
                     name: 'ha-rebalance-on-start',
                     fieldLabel: gettext('Rebalance on Start'),
                     boxLabel: gettext(
-                        'Use CRS to select the least loaded node when starting an HA service',
+                        'Use CRS to select the least loaded node when starting an HA resource',
                     ),
                     value: 0,
                 },
