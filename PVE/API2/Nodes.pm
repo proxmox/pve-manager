@@ -5,6 +5,7 @@ use warnings;
 
 use Digest::MD5;
 use Digest::SHA;
+use Fcntl qw(F_GETFD F_SETFD FD_CLOEXEC);
 use Filesys::Df;
 use HTTP::Status qw(:constants);
 use JSON;
@@ -1369,6 +1370,13 @@ __PACKAGE__->register_method({
 
             syslog('info', "starting termproxy $upid\n");
 
+            pipe(my $ticket_rd, my $ticket_wr) or die "failed to create pipe: $!\n";
+
+            my $flags = fcntl($ticket_rd, F_GETFD, 0)
+                // die "failed to get file descriptor flags: $!\n";
+            fcntl($ticket_rd, F_SETFD, $flags & ~FD_CLOEXEC)
+                // die "failed to remove CLOEXEC flag from fd: $!\n";
+
             my $cmd = [
                 '/usr/bin/termproxy',
                 $port,
@@ -1378,11 +1386,18 @@ __PACKAGE__->register_method({
                 'Sys.Console',
                 '--vncticket-endpoint',
                 '--verify-port',
+                '--ticket-fd',
+                fileno($ticket_rd),
                 '--',
             ];
             push @$cmd, @$shcmd;
 
-            PVE::Tools::run_command($cmd);
+            my $afterfork = sub {
+                print {$ticket_wr} $ticket;
+                close($ticket_wr);
+            };
+
+            PVE::Tools::run_command($cmd, afterfork => $afterfork);
         };
         my $upid = $rpcenv->fork_worker('vncshell', "", $user, $realcmd);
 
