@@ -1,3 +1,20 @@
+pve-manager (8.4.19) bookworm; urgency=medium
+
+  * ui: prepare notice for slowly nearing Proxmox VE 8 End-of-Life after
+    August 2026.
+
+  * api: vnc/termproxy: bind VNC and SPICE tickets to the listen port to
+    harden authentication for interactive console sessions.
+
+  * api: vncproxy: always use a freshly generated password when
+    authenticating via the VNC protocol, improving entropy compared to
+    the previous ticket-derived scheme.
+
+  * api: termproxy: pin the accepted ticket in the spawned termproxy
+    process as an additional defense-in-depth measure.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Apr 2026 22:24:17 +0200
+
 pve-manager (8.4.18) bookworm; urgency=medium
 
   * fix #6985: ui: qemu: hardware: efidisk: add 'Enroll Updated Certificates'
