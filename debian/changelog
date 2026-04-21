@@ -1,3 +1,32 @@
+pve-manager (9.1.9) trixie; urgency=medium
+
+  * ui: ha: status: handle the 'fencing' entry when ordering the grid, so it
+    no longer bounces around between API requests on some browsers. Place it
+    directly after 'quorum' for quick visibility.
+
+  * api: apt package versions: fix typo in libpve-notify-perl package name,
+    which caused the package to be missing from the versions list.
+
+  * fix #6234: ui: ceph: make the CephFS page scrollable along the Y-axis, so
+    entries stay reachable on clusters with multiple MDS.
+
+  * api: vnc/termproxy: bind VNC and SPICE tickets to the listen port to
+    harden authentication for interactive console sessions.
+
+  * api: vncproxy: always use a freshly generated password when
+    authenticating via the VNC protocol, improving entropy compared to
+    the previous ticket-derived scheme.
+
+  * api: termproxy: pin the accepted ticket in the spawned termproxy
+    process as an additional defense-in-depth measure.
+
+  * sdn: add a dry-run diff view to the SDN apply action, showing the upcoming
+    FRR and ifupdown2 configuration changes before the user commits them.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Apr 2026 22:13:05 +0200
+
 pve-manager (9.1.8) trixie; urgency=medium
 
   * ui: datacenter options: add dynamic load scheduler and auto rebalancing
