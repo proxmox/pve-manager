@@ -37,6 +37,7 @@ use PVE::RRD;
 use PVE::Report;
 use PVE::SafeSyslog;
 use PVE::Storage;
+use PVE::Ticket;
 use PVE::Tools qw(file_get_contents);
 use PVE::pvecfg;
 
@@ -1176,6 +1177,12 @@ __PACKAGE__->register_method({
         properties => {
             user => { type => 'string' },
             ticket => { type => 'string' },
+            password => {
+                optional => 1,
+                description => "Password used for authentication within the VNC protocol."
+                    . " Consists of printable ASCII characters ('!' .. '~').",
+                type => 'string',
+            },
             cert => { type => 'string' },
             port => { type => 'integer' },
             upid => { type => 'string' },
@@ -1222,9 +1229,16 @@ __PACKAGE__->register_method({
         push @$cmd, '-width', $param->{width} if $param->{width};
         push @$cmd, '-height', $param->{height} if $param->{height};
 
+        my $password;
         if ($param->{websocket}) {
-            $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm
+            $password = PVE::Ticket::generate_vnc_password();
+            # FIXME: MAJOR VERSION: Avoid this hack, require using explicit 'password' return value
+            $ticket = "${password}:${ticket}";
+            $ENV{PVE_VNC_TICKET} = $password; # pass VNC protocol password to vncterm
             push @$cmd, '-notls', '-listen', 'localhost';
+        } else {
+            # else authentication happens via ticket only, not via password in VNC protocol
+            $ENV{PVE_VNC_TICKET} = $ticket; # pass VNC ticket to vncterm
         }
 
         push @$cmd, '-c', @$shcmd;
@@ -1264,13 +1278,17 @@ __PACKAGE__->register_method({
 
         PVE::Tools::wait_for_vnc_port($port);
 
-        return {
+        my $res = {
             user => $user,
             ticket => $ticket,
             port => $port,
             upid => $upid,
             cert => $sslcert,
         };
+
+        $res->{password} = $password if defined($password);
+
+        return $res;
     },
 });
 
