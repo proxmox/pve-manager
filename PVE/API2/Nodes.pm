@@ -1212,12 +1212,13 @@ __PACKAGE__->register_method({
         my $node = $param->{node};
 
         my $authpath = "/nodes/$node";
-        my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
 
         $sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
             if !$sslcert;
 
         my ($port, $tunnel_cmd) = $get_vnc_connection_info->($node);
+
+        my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath, $port);
 
         my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'}, $tunnel_cmd);
 
@@ -1233,6 +1234,7 @@ __PACKAGE__->register_method({
             $authpath,
             '-perm',
             'Sys.Console',
+            '-verify-port',
         ];
 
         push @$cmd, '-width', $param->{width} if $param->{width};
@@ -1338,9 +1340,9 @@ __PACKAGE__->register_method({
 
         my $node = $param->{node};
         my $authpath = "/nodes/$node";
-        my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
 
         my ($port, $tunnel_cmd) = $get_vnc_connection_info->($node);
+        my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath, $port);
 
         my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'}, $tunnel_cmd);
 
@@ -1350,7 +1352,15 @@ __PACKAGE__->register_method({
             syslog('info', "starting termproxy $upid\n");
 
             my $cmd = [
-                '/usr/bin/termproxy', $port, '--path', $authpath, '--perm', 'Sys.Console', '--',
+                '/usr/bin/termproxy',
+                $port,
+                '--path',
+                $authpath,
+                '--perm',
+                'Sys.Console',
+                '--vncticket-endpoint',
+                '--verify-port',
+                '--',
             ];
             push @$cmd, @$shcmd;
 
@@ -1410,9 +1420,9 @@ __PACKAGE__->register_method({
 
         my $authpath = "/nodes/$param->{node}";
 
-        PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $user, $authpath);
-
         my $port = $param->{port};
+
+        PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $user, $authpath, $port);
 
         return { port => $port };
     },
