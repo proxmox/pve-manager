@@ -1363,12 +1363,12 @@ __PACKAGE__->register_method({
         properties => {
             node => get_standard_option('pve-node'),
             vncticket => {
-                description => "Ticket from previous call to vncproxy.",
+                description => "Ticket from previous call to 'vncshell'.",
                 type => 'string',
                 maxLength => 512,
             },
             port => {
-                description => "Port number returned by previous vncproxy call.",
+                description => "Port number returned by previous 'vncshell' call.",
                 type => 'integer',
                 minimum => 5900,
                 maximum => 5999,
