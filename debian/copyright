@@ -14,30 +14,3 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
--------------
-
-Ext JS - JavaScript Library
-Copyright (c) 2006-2021, Sencha Inc.
-All rights reserved.
-licensing@sencha.com
-
-http://www.sencha.com/license
-
-Open Source License
-----------------------------------------------------------------------------
-This version of Ext JS is licensed under the terms of the
-Open Source GPL 3.0 license.
-
-http://www.gnu.org/licenses/gpl.html (/usr/share/common-licenses/GPL-3)
-
-There are several FLOSS exceptions available for use with this release for
-open source applications that are distributed under a license other than GPL.
-
-* Open Source License Exception for Applications
-
-  http://www.sencha.com/products/floss-exception.php
-
-* Open Source License Exception for Development
-
-  http://www.sencha.com/products/ux-exception.php
