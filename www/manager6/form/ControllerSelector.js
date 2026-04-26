@@ -92,7 +92,7 @@ Ext.define('PVE.form.ControllerSelector', {
                     xtype: 'pveBusSelector',
                     name: 'controller',
                     itemId: 'controller',
-                    value: PVE.qemu.OSDefaults.generic.busType,
+                    value: PVE.qemu.OSDefaults.getDefaults().busType,
                     withVirtIO: me.withVirtIO,
                     withUnused: me.withUnused,
                     allowBlank: false,

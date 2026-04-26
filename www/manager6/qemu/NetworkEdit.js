@@ -163,7 +163,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
                 name: 'model',
                 fieldLabel: gettext('Model'),
                 bind: '{networkModel}',
-                value: PVE.qemu.OSDefaults.generic.networkCard,
+                value: PVE.qemu.OSDefaults.getDefaults().networkCard,
                 allowBlank: false,
             },
             {
