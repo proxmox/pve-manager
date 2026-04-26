@@ -51,8 +51,8 @@ Ext.define('PVE.form.ControllerSelector', {
         let arch = PVE.qemu.Architecture.getGuestArchitecture(vmconfig.arch, me.nodename);
         bussel.setCategory(arch);
         if (autoSelect === 'cdrom') {
-            if (!Ext.isDefined(me.vmconfig.ide2)) {
-                let [controller, id] = PVE.qemu.Architecture.defaultCDDrive[arch];
+            let [controller, id] = PVE.qemu.Architecture.defaultCDDrive[arch];
+            if (!Ext.isDefined(me.vmconfig[`${controller}${id}`])) {
                 bussel.setValue(controller);
                 deviceid.setValue(id);
                 return;
