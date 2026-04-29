@@ -47,7 +47,7 @@ Ext.define('PVE.Utils', {
 
         kvm_ostypes: {
             Linux: [
-                { desc: '6.x - 2.6 Kernel', val: 'l26' },
+                { desc: '7.x - 2.6 Kernel', val: 'l26' },
                 { desc: '2.4 Kernel', val: 'l24' },
             ],
             'Microsoft Windows': [
