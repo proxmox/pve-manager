@@ -600,6 +600,14 @@ __PACKAGE__->register_method({
     },
 });
 
+my $probe_osd_encrypted = sub {
+    my ($dev_node) = @_;
+
+    return 0 if !$dev_node || $dev_node !~ m{^/dev/(dm-\d+)$};
+    my $uuid = eval { PVE::Tools::file_read_firstline("/sys/block/$1/dm/uuid") };
+    return $uuid && $uuid =~ /^CRYPT-LUKS\d-/ ? 1 : 0;
+};
+
 my $OSD_DEV_RETURN_PROPS = {
     device => {
         type => 'string',
@@ -734,6 +742,10 @@ __PACKAGE__->register_method({
                         type => 'string',
                         description => 'Heartbeat address and port for other OSDs.',
                     },
+                    encrypted => {
+                        type => 'boolean',
+                        description => 'Whether the OSD is encrypted with LUKS via dm-crypt.',
+                    },
                 },
             },
             devices => {
@@ -791,6 +803,7 @@ __PACKAGE__->register_method({
                 back_addr => $metadata->{back_addr},
                 hb_front_addr => $metadata->{hb_front_addr},
                 hb_back_addr => $metadata->{hb_back_addr},
+                encrypted => $probe_osd_encrypted->($metadata->{bluestore_bdev_dev_node}),
             },
         };
 
