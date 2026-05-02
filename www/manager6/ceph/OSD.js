@@ -316,6 +316,357 @@ Ext.define('PVE.CephSetFlags', {
     },
 });
 
+Ext.define('PVE.window.CephBulkRestartOSDs', {
+    extend: 'Ext.window.Window',
+
+    width: 600,
+    title: gettext('Bulk Restart OSDs'),
+    modal: true,
+    resizable: false,
+    layout: 'fit',
+
+    // required: { host: count, ... } enumerated from the tree
+    osdsByHost: undefined,
+    // optional: the currently-navigated node, used to pre-select that node in the combo
+    nodename: undefined,
+    // required: function(upid) called after the API accepts the request
+    onTaskStarted: undefined,
+
+    initComponent: function () {
+        let me = this;
+
+        if (!me.osdsByHost || !me.onTaskStarted) {
+            throw 'osdsByHost and onTaskStarted are required';
+        }
+
+        let totalOsds = Object.values(me.osdsByHost).reduce((a, b) => a + b, 0);
+        let hosts = Object.keys(me.osdsByHost).sort();
+
+        // Combo store: only per-host entries. Cluster-wide scope is its own checkbox
+        // below that disables the combo when checked.
+        let hostStore = hosts.map((host) => {
+            let c = me.osdsByHost[host];
+            return {
+                value: host,
+                label: Ext.String.format(
+                    ngettext("Node '{0}' ({1} OSD)", "Node '{0}' ({1} OSDs)", c),
+                    host,
+                    c,
+                ),
+            };
+        });
+
+        // Default node: the currently-navigated node if it has OSDs, otherwise the
+        // first node with OSDs. The 'all nodes' checkbox starts off (per-node action
+        // is the common case and the dialog opened from a node-level toolbar).
+        let defaultNode = me.nodename && me.osdsByHost[me.nodename] ? me.nodename : hosts[0];
+
+        // Populated asynchronously from /cluster/ceph/metadata. Keyed by host:
+        // count of OSDs whose ceph_version_short differs from the host's installed
+        // ceph package version. Used when the 'only outdated' checkbox is on.
+        // Falls back to "up to N" wording while undefined or if the fetch failed.
+        let outdatedByHost; // { host: count } once loaded, undef while pending
+
+        let computeAffected = function (allNodes, node, onlyOutdated) {
+            let maxCount = allNodes ? totalOsds : me.osdsByHost[node] || 0;
+            let scope = allNodes
+                ? gettext('cluster-wide')
+                : Ext.String.format(gettext("on node '{0}'"), node);
+
+            let count, affected;
+            if (onlyOutdated && outdatedByHost) {
+                count = allNodes
+                    ? Object.values(outdatedByHost).reduce((a, b) => a + b, 0)
+                    : outdatedByHost[node] || 0;
+                affected = Ext.String.format(
+                    ngettext(
+                        '{0} outdated OSD {1} (of {2} total)',
+                        '{0} outdated OSDs {1} (of {2} total)',
+                        count,
+                    ),
+                    count,
+                    scope,
+                    maxCount,
+                );
+            } else if (onlyOutdated) {
+                // metadata not yet loaded - acknowledge uncertainty
+                count = maxCount;
+                affected = Ext.String.format(
+                    ngettext(
+                        'up to {0} OSD {1} (outdated filter, exact count at task start)',
+                        'up to {0} OSDs {1} (outdated filter, exact count at task start)',
+                        maxCount,
+                    ),
+                    maxCount,
+                    scope,
+                );
+            } else {
+                count = maxCount;
+                affected = Ext.String.format(
+                    ngettext('{0} OSD {1}', '{0} OSDs {1}', count),
+                    count,
+                    scope,
+                );
+            }
+
+            let mins = Math.max(2, count * 2);
+            return {
+                affected,
+                duration: Ext.String.format(
+                    gettext(
+                        'Approximately 2 minutes per OSD (total {0} minutes, depending on cluster recovery speed).',
+                    ),
+                    mins,
+                ),
+            };
+        };
+
+        let initial = computeAffected(false, defaultNode, false);
+
+        let refreshDisplay = function () {
+            let allNodes = me.down('#allNodesCheck').getValue();
+            let node = me.down('#nodeSelector').getValue();
+            let onlyOutdated = me.down('#onlyOutdatedCheck').getValue();
+            let info = computeAffected(allNodes, node, onlyOutdated);
+            me.down('#affectedField').setValue(info.affected);
+            me.down('#durationField').setValue(info.duration);
+        };
+
+        // Compute outdated counts from cluster metadata: per host, count OSDs whose
+        // running ceph_version_short does not match the host's installed package
+        // version. An approximation of the backend's exact check (which compares
+        // full "version (commit)" tuples); the task log shows authoritative numbers.
+        // Fetched lazily the first time the "only outdated" filter is enabled, so a
+        // plain per-node restart needs no cluster metadata round-trip (which also
+        // spares users holding only Sys.Modify a pointless 403 on every dialog open).
+        let outdatedRequested = false;
+        let loadOutdatedCounts = function () {
+            if (outdatedRequested) {
+                return;
+            }
+            outdatedRequested = true;
+            Proxmox.Utils.API2Request({
+                url: '/cluster/ceph/metadata',
+                method: 'GET',
+                params: { scope: 'all' },
+                success: function (response) {
+                    if (me.destroyed) {
+                        return;
+                    }
+                    let d = response.result.data || {};
+                    let nodeVer = {};
+                    for (const [n, info] of Object.entries(d.node || {})) {
+                        nodeVer[n] = info?.version?.str;
+                    }
+                    let counts = {};
+                    for (const osd of d.osd || []) {
+                        let host = osd.hostname;
+                        if (!host) {
+                            continue;
+                        }
+                        counts[host] ||= 0;
+                        let installed = nodeVer[host];
+                        if (!installed || osd.ceph_version_short !== installed) {
+                            counts[host]++;
+                        }
+                    }
+                    outdatedByHost = counts;
+                    refreshDisplay();
+                },
+                failure: () => {
+                    /* leave outdatedByHost undef; UI shows "up to N" wording */
+                },
+            });
+        };
+
+        // Surface cluster health on open: the backend refuses to start on a
+        // non-benign HEALTH_WARN (and always on HEALTH_ERR), so warn upfront that
+        // the restart may be rejected rather than letting the operator find out
+        // only on submit.
+        Proxmox.Utils.API2Request({
+            url: '/cluster/ceph/status',
+            method: 'GET',
+            success: function (response) {
+                if (me.destroyed) {
+                    return;
+                }
+                let health = response.result.data?.health || {};
+                if (!health.status || health.status === 'HEALTH_OK') {
+                    return;
+                }
+                let checks = health.checks || {};
+                let items = Object.keys(checks)
+                    .sort()
+                    .map(
+                        (k) =>
+                            '<li>' +
+                            Ext.String.htmlEncode(checks[k].summary?.message || k) +
+                            '</li>',
+                    )
+                    .join('');
+                let hint = me.down('#healthHint');
+                hint.setValue(
+                    '<i class="fa fa-exclamation-triangle"></i> ' +
+                        Ext.String.format(
+                            gettext(
+                                'Cluster health is {0}. A rolling restart may be refused unless every warning is benign:',
+                            ),
+                            Ext.String.htmlEncode(health.status),
+                        ) +
+                        `<ul>${items}</ul>`,
+                );
+                hint.setHidden(false);
+            },
+            failure: () => {
+                /* health unknown; skip the hint rather than block the dialog */
+            },
+        });
+
+        Ext.apply(me, {
+            items: [
+                {
+                    xtype: 'form',
+                    bodyPadding: 10,
+                    border: false,
+                    fieldDefaults: { labelWidth: 100, anchor: '100%' },
+                    items: [
+                        {
+                            xtype: 'displayfield',
+                            itemId: 'healthHint',
+                            hideLabel: true,
+                            hidden: true,
+                            userCls: 'pmx-hint',
+                        },
+                        {
+                            xtype: 'combobox',
+                            itemId: 'nodeSelector',
+                            fieldLabel: gettext('Node'),
+                            editable: false,
+                            queryMode: 'local',
+                            valueField: 'value',
+                            displayField: 'label',
+                            store: {
+                                fields: ['value', 'label'],
+                                data: hostStore,
+                            },
+                            value: defaultNode,
+                            listeners: { change: refreshDisplay },
+                        },
+                        {
+                            xtype: 'fieldcontainer',
+                            fieldLabel: gettext('Apply to'),
+                            layout: 'hbox',
+                            items: [
+                                {
+                                    xtype: 'proxmoxcheckbox',
+                                    itemId: 'allNodesCheck',
+                                    boxLabel: gettext('all nodes (cluster-wide)'),
+                                    uncheckedValue: 0,
+                                    checked: false,
+                                    margin: '0 20 0 0',
+                                    listeners: {
+                                        change: function (cb, val) {
+                                            me.down('#nodeSelector').setDisabled(!!val);
+                                            refreshDisplay();
+                                        },
+                                    },
+                                },
+                                {
+                                    xtype: 'proxmoxcheckbox',
+                                    itemId: 'onlyOutdatedCheck',
+                                    boxLabel: gettext('only outdated OSD versions'),
+                                    boxLabelAttrTpl:
+                                        'data-qtip="' +
+                                        Ext.String.htmlEncode(
+                                            gettext(
+                                                'Restart only OSDs whose running version differs' +
+                                                    ' from the locally-installed ceph-osd' +
+                                                    ' binary on each node. Useful for' +
+                                                    ' post-upgrade rolling restarts.',
+                                            ),
+                                        ) +
+                                        '"',
+                                    uncheckedValue: 0,
+                                    checked: false,
+                                    listeners: {
+                                        change: function (cb, val) {
+                                            if (val) {
+                                                loadOutdatedCounts();
+                                            }
+                                            refreshDisplay();
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            xtype: 'displayfield',
+                            itemId: 'affectedField',
+                            fieldLabel: gettext('Affected'),
+                            value: initial.affected,
+                        },
+                        {
+                            xtype: 'displayfield',
+                            itemId: 'durationField',
+                            fieldLabel: gettext('Duration'),
+                            value: initial.duration,
+                        },
+                        {
+                            xtype: 'displayfield',
+                            fieldLabel: gettext('Notes'),
+                            value: gettext(
+                                "OSDs are restarted serially with a per-step 'ok-to-stop' check." +
+                                    " 'noout' is applied per-OSD for the duration and unset on" +
+                                    ' completion. A host crash or SIGKILL of the task can leave' +
+                                    " 'noout' set on the affected OSDs; see the Ceph chapter of" +
+                                    ' the Proxmox VE documentation for cleanup steps.',
+                            ),
+                        },
+                    ],
+                },
+            ],
+            buttons: [
+                {
+                    xtype: 'proxmoxHelpButton',
+                    onlineHelp: 'pve_ceph_osds',
+                    hidden: false,
+                },
+                '->',
+                { text: gettext('Cancel'), handler: () => me.close() },
+                {
+                    text: gettext('Restart'),
+                    iconCls: 'fa fa-refresh',
+                    handler: function () {
+                        let allNodes = me.down('#allNodesCheck').getValue();
+                        let onlyOutdated = me.down('#onlyOutdatedCheck').getValue();
+                        let url = allNodes
+                            ? '/cluster/ceph/restart-bulk'
+                            : `/nodes/${me.down('#nodeSelector').getValue()}/ceph/restart-bulk`;
+                        let params = { 'service-type': 'osd' };
+                        if (onlyOutdated) {
+                            params['only-outdated'] = 1;
+                        }
+                        Proxmox.Utils.API2Request({
+                            url,
+                            method: 'POST',
+                            params,
+                            waitMsgTarget: me,
+                            success: function (response) {
+                                me.close();
+                                me.onTaskStarted(response.result.data);
+                            },
+                            failure: (response) =>
+                                Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+                        });
+                    },
+                },
+            ],
+        });
+
+        me.callParent();
+    },
+});
+
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveNodeCephOsdTree'],
@@ -545,6 +896,54 @@ Ext.define('PVE.node.CephOsdTree', {
                     me.reload();
                 },
             }).show();
+        },
+
+        bulk_restart_osds: function () {
+            let me = this;
+            let vm = this.getViewModel();
+            let nodename = vm.get('nodename');
+
+            // Walk the full node tree to count OSDs per host; cascadeBy descends collapsed
+            // nodes too, which a flat store iteration would skip. Each OSD record's tree path
+            // includes its parent host bucket (the CRUSH tree's typical layout), so we walk
+            // up parentNode until we find a host entry.
+            let osdsByHost = {};
+            me.getView()
+                .getRootNode()
+                .cascadeBy(function (rec) {
+                    if (rec.data.type !== 'osd') {
+                        return;
+                    }
+                    let p = rec.parentNode;
+                    while (p && p.data.type !== 'host') {
+                        p = p.parentNode;
+                    }
+                    if (p) {
+                        let h = p.data.name;
+                        osdsByHost[h] = (osdsByHost[h] || 0) + 1;
+                    }
+                });
+
+            if (!Object.keys(osdsByHost).length) {
+                Ext.Msg.alert(
+                    gettext('No OSDs'),
+                    gettext('No OSDs are configured in the cluster. Nothing to restart.'),
+                );
+                return;
+            }
+
+            Ext.create('PVE.window.CephBulkRestartOSDs', {
+                autoShow: true,
+                osdsByHost,
+                nodename,
+                onTaskStarted: (upid) => {
+                    Ext.create('Proxmox.window.TaskProgress', {
+                        autoShow: true,
+                        upid,
+                        taskDone: () => me.reload(),
+                    });
+                },
+            });
         },
 
         service_cmd: function (comp) {
@@ -875,6 +1274,11 @@ Ext.define('PVE.node.CephOsdTree', {
             {
                 text: gettext('Manage Global Flags'),
                 handler: 'set_flags',
+            },
+            {
+                text: gettext('Bulk Restart OSDs'),
+                iconCls: 'fa fa-refresh',
+                handler: 'bulk_restart_osds',
             },
             '->',
             {
