@@ -130,6 +130,16 @@ Ext.define('PVE.qemu.OSPanel', {
                 },
                 {
                     xtype: 'inputpanel',
+                    onGetValues: function (values) {
+                        if (values.ide0) {
+                            let drive = {
+                                media: 'cdrom',
+                                file: values.ide0,
+                            };
+                            values.ide0 = PVE.Parser.printQemuDrive(drive);
+                        }
+                        return values;
+                    },
                     items: [
                         {
                             xtype: 'proxmoxcheckbox',
