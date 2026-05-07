@@ -431,7 +431,9 @@ __PACKAGE__->register_method({
         . " The 'noout' flag is applied only to the OSDs targeted by this run, so unrelated OSDs"
         . " on other nodes that fail during the restart window still get out-marked normally."
         . " Aborting the resulting task (for example via 'pvesh task stop') triggers a SIGTERM"
-        . " handler that unsets the per-OSD 'noout' if this endpoint set it.",
+        . " handler that unsets the per-OSD 'noout' if this endpoint set it. Per-daemon progress"
+        . " is checkpointed in Ceph's config-key store ('pve/ceph-bulk-restart/node/<node>'), so"
+        . " an aborted run can be resumed by re-issuing this endpoint with 'resume=1'.",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -495,6 +497,16 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 0,
             },
+            resume => {
+                description => "Resume an aborted bulk-restart from the checkpoint stored in"
+                    . " Ceph's config-key store. The plan and noout decision from the prior"
+                    . " run are honored; 'set-noout' is ignored. When false (default), the"
+                    . " endpoint refuses to start if a checkpoint exists for this node, to"
+                    . " avoid silently overwriting in-progress work.",
+                type => 'boolean',
+                optional => 1,
+                default => 0,
+            },
         },
     },
     returns => { type => 'string' },
@@ -510,6 +522,7 @@ __PACKAGE__->register_method({
         my $dry_run = $param->{'dry-run'} // 0;
         my $force = $param->{force} // 0;
         my $only_outdated = $param->{'only-outdated'} // 0;
+        my $resume = $param->{resume} // 0;
 
         PVE::Ceph::Tools::check_ceph_inited();
 
@@ -529,9 +542,9 @@ __PACKAGE__->register_method({
 
             # Entry health check: HEALTH_ERR always blocks. HEALTH_WARN blocks unless
             # every firing check is on a benign-for-rolling-restart allowlist, or the
-            # caller passed force=1. Skipped on dry-run so operators can still inspect
-            # a marginal cluster.
-            if (!$dry_run) {
+            # caller passed force=1. Skipped on dry-run/resume so operators can still
+            # inspect or recover a stuck run on a marginal cluster.
+            if (!$dry_run && !$resume) {
                 my ($ok, $sev, $blockers) =
                     PVE::Ceph::Services::check_health_acceptable($rados, $force);
                 if (!$ok) {
@@ -551,11 +564,47 @@ __PACKAGE__->register_method({
                 }
             }
 
-            my $daemons = PVE::Ceph::Services::get_node_daemons($rados, $type, $node);
+            my $existing_state = PVE::Ceph::Services::load_bulk_restart_state($rados, $node);
+
+            my ($daemons, $start_index, $noout_active);
+            if ($resume) {
+                die "no resumable bulk-restart state found for node '$node'\n"
+                    if !$existing_state;
+                $daemons = $existing_state->{plan};
+                $start_index = $existing_state->{next_index} // 0;
+                $noout_active = $existing_state->{noout_active} ? 1 : 0;
+                my $age = time() - ($existing_state->{timestamp} // time());
+                print "resuming bulk-restart on '$node' (state ${age}s old, "
+                    . scalar(@$daemons)
+                    . " daemons in plan, starting at index $start_index)\n";
+                warn
+                    "set-noout parameter ignored on resume, using saved value '$noout_active'\n"
+                    if defined($param->{'set-noout'})
+                    && (!!$param->{'set-noout'} != !!$noout_active);
+            } else {
+                # Refuse to silently overwrite state from a still-meaningful prior run,
+                # but tolerate the common "prior run died before completing a single OSD"
+                # case (next_index == 0): there is no progress worth preserving, the saved
+                # plan would just be re-discovered, and forcing the operator through a
+                # manual 'ceph config-key rm' for every aborted test is friction with no
+                # safety value. The actual save inside the lock below re-checks state so
+                # a concurrent run that progressed past index 0 in the gap cannot be
+                # silently overwritten.
+                if ($existing_state && ($existing_state->{next_index} // 0) > 0) {
+                    my $key = PVE::Ceph::Services::bulk_restart_state_key($node);
+                    die "resumable bulk-restart state already exists for node '$node'."
+                        . " Pass resume=1 to continue, or remove the state with"
+                        . " 'ceph config-key rm $key' first.\n";
+                }
+
+                $daemons = PVE::Ceph::Services::get_node_daemons($rados, $type, $node);
+                $start_index = 0;
+                $noout_active = ($set_noout && $type eq 'osd') ? 1 : 0;
+            }
 
             my $original_count = scalar(@$daemons);
             my $filter_skipped = 0;
-            if ($only_outdated && @$daemons) {
+            if ($only_outdated && !$resume && @$daemons) {
                 my $local_ver = PVE::Ceph::Services::get_local_ceph_binary_version($type);
                 die "could not determine local ceph-$type binary version, refusing"
                     . " only-outdated filter on node '$node'\n"
@@ -580,20 +629,26 @@ __PACKAGE__->register_method({
 
             my $total = scalar(@$daemons);
             if (!$total) {
-                if ($only_outdated && $original_count > 0) {
+                if ($only_outdated && !$resume && $original_count > 0) {
                     print "all $original_count '$type' daemon(s) on '$node' already on the"
                         . " installed version, nothing to restart\n";
                 } else {
                     print "no '$type' daemons found on node '$node', nothing to do\n";
                 }
+                PVE::Ceph::Services::clear_bulk_restart_state($rados, $node) if $resume;
                 return;
             }
-            print($dry_run ? "[DRY-RUN] " : "");
-            print "planned rolling restart order on '$node':\n";
-            my $i = 0;
-            for my $daemon (@$daemons) {
-                $i++;
-                print "  [$i/$total] $daemon\n";
+            if ($resume && $start_index >= $total) {
+                print "all daemons in saved plan already restarted; clearing state\n";
+                PVE::Ceph::Services::clear_bulk_restart_state($rados, $node);
+                return;
+            }
+
+            my $dry_prefix = $dry_run ? "[DRY-RUN] " : "";
+            print "${dry_prefix}planned rolling restart order on '$node':\n";
+            for (my $i = 0; $i < $total; $i++) {
+                my $marker = $resume && $i < $start_index ? ' (already done)' : '';
+                print "  [" . ($i + 1) . "/$total] $daemons->[$i]$marker\n";
             }
             if ($dry_run) {
                 print "[DRY-RUN] no daemons were restarted\n";
@@ -601,12 +656,38 @@ __PACKAGE__->register_method({
             }
 
             PVE::Ceph::Services::with_bulk_restart_lock(sub {
+                my $save_progress = sub {
+                    my ($next_index) = @_;
+                    PVE::Ceph::Services::save_bulk_restart_state(
+                        $rados,
+                        $node,
+                        {
+                            plan => $daemons,
+                            next_index => $next_index,
+                            noout_active => $noout_active,
+                        },
+                    );
+                };
+
+                # On a fresh run, persist the initial plan inside the lock and re-check
+                # that no other worker raced past us between the pre-lock state probe and
+                # here. With the lock held we cannot lose to a concurrent in-progress run.
+                if (!$resume) {
+                    my $now_state = PVE::Ceph::Services::load_bulk_restart_state($rados, $node);
+                    if ($now_state && ($now_state->{next_index} // 0) > 0) {
+                        my $key = PVE::Ceph::Services::bulk_restart_state_key($node);
+                        die "another bulk-restart on '$node' progressed past index 0"
+                            . " while we waited for the lock. Pass resume=1 to continue"
+                            . " it, or remove its state with 'ceph config-key rm $key'.\n";
+                    }
+                    $save_progress->(0);
+                }
+
                 my $do_restarts = sub {
-                    my $j = 0;
-                    for my $daemon (@$daemons) {
-                        $j++;
+                    for (my $j = $start_index; $j < $total; $j++) {
+                        my $daemon = $daemons->[$j];
                         my $id = $daemon =~ s/^\Q$type\E\.//r;
-                        my $tag = "[$j/$total]";
+                        my $tag = "[" . ($j + 1) . "/$total]";
 
                         # Re-check cluster health every iteration so we abort if the cluster
                         # degrades to HEALTH_ERR partway through (e.g. an unrelated failure).
@@ -628,16 +709,21 @@ __PACKAGE__->register_method({
                         print "$tag waiting up to ${timeout}s for $daemon to come back up\n";
                         PVE::Ceph::Services::wait_for_daemon_up($rados, $type, $id, $timeout);
                         print "$tag $daemon is up\n";
+
+                        # Checkpoint after every successful daemon: a SIGKILL-aborted run
+                        # can resume from $j + 1 by re-issuing with resume=1.
+                        $save_progress->($j + 1);
                     }
                 };
 
-                if ($set_noout) {
+                if ($noout_active) {
                     PVE::Ceph::Services::with_noout($rados, $daemons, $do_restarts);
                 } else {
                     $do_restarts->();
                 }
 
                 print "rolling restart of '$type' daemons on node '$node' finished\n";
+                PVE::Ceph::Services::clear_bulk_restart_state($rados, $node);
             });
         };
 

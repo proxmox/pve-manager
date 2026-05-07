@@ -565,12 +565,12 @@ __PACKAGE__->register_method({
                 # local file lock here because the local-node sub-task would deadlock on
                 # it.
                 #
-                # TODO: the orchestrator itself has no resume; mid-cluster worker death
-                # leaves the operator with a half-restarted cluster that must be picked
-                # up via per-node resume=1 invocations, and a re-issued cluster-wide call
-                # will trip the per-node state-exists guard on whichever node was last
-                # in flight. A wrapper-level checkpoint of node index would close that
-                # gap; not blocking for first cut.
+                # The orchestrator keeps no checkpoint of its own; it rebuilds the plan
+                # from the current cluster state on every invocation. A re-issued call
+                # after an orchestrator death is therefore self-healing: a node whose
+                # per-node checkpoint is still present is resumed (see the resume handling
+                # below), already-finished nodes have no checkpoint and no-op, and not-yet-
+                # started nodes run fresh.
 
                 my $osd_services = PVE::Ceph::Services::get_cluster_service('osd');
                 my @osd_nodes;
@@ -673,13 +673,32 @@ __PACKAGE__->register_method({
                                 }
                             }
 
-                            my $sub_label =
-                                $only_outdated ? "$count outdated OSDs" : "$count OSDs";
-                            print "$tag starting per-node OSD bulk-restart on $host"
-                                . " ($sub_label)\n";
                             my $sub_params = { 'service-type' => 'osd', timeout => $timeout };
                             $sub_params->{force} = 1 if $force;
                             $sub_params->{'only-outdated'} = 1 if $only_outdated;
+
+                            # If a prior orchestrator run died with this node mid-flight, its
+                            # per-node checkpoint is still in the config-key store. Resume that
+                            # node instead of tripping the per-node "state already exists"
+                            # guard; the saved plan (and its noout/only-outdated decision) is
+                            # honored, so force/only-outdated are not re-sent (both are ignored
+                            # on resume anyway).
+                            my $node_state =
+                                PVE::Ceph::Services::load_bulk_restart_state($rados, $host);
+                            my $resuming = $node_state && ($node_state->{next_index} // 0) > 0;
+                            if ($resuming) {
+                                $sub_params = {
+                                    'service-type' => 'osd',
+                                    timeout => $timeout,
+                                    resume => 1,
+                                };
+                            }
+
+                            my $sub_label =
+                                $only_outdated ? "$count outdated OSDs" : "$count OSDs";
+                            print "$tag "
+                                . ($resuming ? "resuming" : "starting")
+                                . " per-node OSD bulk-restart on $host ($sub_label)\n";
                             my $task_upid = $client->post(
                                 "/nodes/$host/ceph/restart-bulk", $sub_params,
                             );
