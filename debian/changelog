@@ -1,3 +1,50 @@
+pve-manager (9.1.10) trixie; urgency=medium
+
+  * ui: access control: tokens: add a button to regenerate the secret of
+    an existing API token.
+
+  * ui: qemu: also use 'x86-64-v2-AES' as default in the dedicated
+    processor edit panel, matching what the create wizard already
+    suggested, so it is harder to accidentally end up on the discouraged
+    backend default 'kvm64' by clearing the field.
+
+  * cert helpers: verify that any newly set certificate and key actually
+    match by loading them into a TLS context before applying them. This
+    avoids confusing failures where pveproxy started up but did not serve
+    HTTPS requests, which manifested as 'broken pipe' errors when other
+    cluster nodes tried to connect.
+
+  * ui: qemu: prepare the wizard and hardware view for non-x86 virtual
+    machines, such as aarch64 as tech preview. Add a new architecture field,
+    plus architecture-aware machine, BIOS, SCSI controller, bus, OS type, CPU
+    model, and processor flag selectors, with per-architecture defaults and
+    ISO config IDs. KVM gets disabled automatically when the selected
+    architecture does not match the host architecture of the target node,
+    reducing available performance in such guests accordingly.
+
+  * api/pvestatd: broadcast the non-x86 host architecture into the pmxcfs
+    static-info hash and expose it as a new 'architecture' property in
+    /cluster/resources, so the web interface can pick architecture-aware
+    defaults and filters per node.
+
+  * ui: datacenter options: rename 'HA Scheduling' to 'Scheduling Mode' to
+    align with the admin guide terminology, replace the remaining 'HA
+    service' label with 'HA resource' on the rebalance-on-start option,
+    constrain the auto rebalancing option to the static and dynamic load
+    scheduler modes that actually support it, and add the missing title
+    to the edit modal.
+
+  * ui: VM OS selector: include Linux Kernel 7.x as recognized option, so
+    that selecting recent Proxmox VE and Proxmox Backup Server hosts as
+    guest OS is no longer excluded from the version range.
+
+  * d/copyright: convert to the machine-readable copyright format, drop
+    the now-superfluous ExtJS notice and update the copyright years.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 07 May 2026 04:13:14 +0200
+
 pve-manager (9.1.9) trixie; urgency=medium
 
   * ui: ha: status: handle the 'fencing' entry when ordering the grid, so it
