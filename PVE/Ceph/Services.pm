@@ -851,6 +851,81 @@ sub with_noout {
     die $err if $err;
 }
 
+# State helpers for bulk-restart resumability via Ceph's config-key mon command
+# (see src/mon/KVMonitor.cc for the server side). State is paxos-replicated on
+# the mons and survives worker death including SIGKILL via 'pvesh task stop',
+# so a follow-up invocation can resume from wherever the previous one stopped.
+# This is the same primitive cephadm uses for its UpgradeState resumability
+# (mgr.set_store under the hood).
+#
+# Keyed by node name: only one bulk-restart can be paused per node at a time,
+# which lines up with the existing per-node lock_file_full serialization.
+
+my $BULK_RESTART_STATE_KEY_PREFIX = 'pve/ceph-bulk-restart/node/';
+
+# Returns the config-key path for $node's bulk-restart state. Exported so
+# callers (and operator-facing error messages) can reference the same path
+# without duplicating the prefix.
+sub bulk_restart_state_key {
+    my ($node) = @_;
+    return "${BULK_RESTART_STATE_KEY_PREFIX}${node}";
+}
+
+# Persists $state (an arbitrary hashref) for $node, JSON-encoded. Adds a
+# 'timestamp' field so callers / operators can spot stale entries.
+sub save_bulk_restart_state {
+    my ($rados, $node, $state) = @_;
+    $state->{timestamp} = time();
+    $rados->mon_command({
+        prefix => 'config-key set',
+        key => bulk_restart_state_key($node),
+        val => encode_json($state),
+    });
+}
+
+# Returns the saved state hashref, or undef if no state exists or it could
+# not be parsed. The "no state" case is normal (no prior run), so this never
+# dies on a missing key.
+#
+# format => 'plain' on the 'config-key get' is load-bearing: without it,
+# mon_cmd's default format => 'json' makes RADOS auto-decode the response data
+# into a hashref, and our own decode_json on the result would die on a non-string
+# input. With format => 'plain', RADOS leaves the response as the raw stored
+# string, which is what save_bulk_restart_state wrote via encode_json.
+sub load_bulk_restart_state {
+    my ($rados, $node) = @_;
+    my $key = bulk_restart_state_key($node);
+
+    my $result =
+        eval { $rados->mon_cmd({ prefix => 'config-key get', key => $key, format => 'plain' }, 1); };
+    return undef if $@;
+    return undef if ($result->{return_code} // -1) != 0;
+    my $state = eval { decode_json($result->{data} // '') };
+    if (my $err = $@) {
+        chomp $err;
+        warn "bulk-restart state for '$node' is corrupt and will be ignored: $err\n";
+        return undef;
+    }
+    return $state;
+}
+
+# Removes the saved state. Dies on failure: the only caller invokes this after
+# a successful run, and a lingering state key would block the next non-resume
+# run via the "state already exists" guard. Surfacing the error as a task
+# failure is more transparent than a silent warning the operator may not
+# notice until the next run.
+sub clear_bulk_restart_state {
+    my ($rados, $node) = @_;
+    my $key = bulk_restart_state_key($node);
+    eval { $rados->mon_command({ prefix => 'config-key rm', key => $key }); };
+    if (my $err = $@) {
+        chomp $err;
+        die "rolling restart finished but failed to clear bulk-restart state for '$node': $err."
+            . " Run 'ceph config-key rm $key' before starting another bulk-restart on this"
+            . " node.\n";
+    }
+}
+
 # Per-node file lock to serialize bulk-restart workers. Uses lock_file_full with a 5s
 # acquisition timeout - concurrent invocations block briefly then fail. The lock is
 # per-node only; cluster-wide protection against two operators on different nodes is
