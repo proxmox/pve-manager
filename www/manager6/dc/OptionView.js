@@ -568,6 +568,15 @@ Ext.define('PVE.dc.OptionView', {
             onlineHelp: 'gui_consent_banner',
         });
 
+        me.rows.location = {
+            required: true,
+            header: gettext('Location'),
+            renderer: Proxmox.Utils.renderLocation,
+            editor: {
+                xtype: 'pmxLocationEditWindow',
+            },
+        };
+
         me.selModel = Ext.create('Ext.selection.RowModel', {});
 
         Ext.apply(me, {
