@@ -186,6 +186,36 @@ $confdesc->{acme} = {
     optional => 1,
 };
 
+my $location_desc = {
+    name => {
+        type => 'string',
+        description => 'The name of the location of this node',
+        typetext => "<name>",
+        optional => 1,
+        maxLength => 128,
+    },
+    latitude => {
+        type => 'number',
+        description => "The latitude of the nodes location in degrees.",
+        minimum => -90,
+        maximum => 90,
+    },
+    longitude => {
+        type => 'number',
+        description => "The longitude of the nodes location in degrees.",
+        minimum => -180,
+        maximum => 180,
+    },
+};
+
+$confdesc->{location} = {
+    type => 'string',
+    format => $location_desc,
+    description =>
+        "The location of the node. Overrides the default from the datacenter config.",
+    optional => 1,
+};
+
 for my $i (0 .. $MAXDOMAINS) {
     $confdesc->{"acmedomain$i"} = {
         type => 'string',
