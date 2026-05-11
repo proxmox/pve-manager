@@ -313,6 +313,14 @@ Ext.define('PVE.dc.Config', {
                         itemId: 'sdnfabrics',
                     },
                     {
+                        xtype: 'pveSDNRouteMaps',
+                        groups: ['sdn'],
+                        title: gettext('Route Maps'),
+                        hidden: true,
+                        iconCls: 'fa fa-map',
+                        itemId: 'sdnroutemaps',
+                    },
+                    {
                         xtype: 'pveSDNPrefixLists',
                         groups: ['sdn'],
                         title: gettext('Prefix Lists'),

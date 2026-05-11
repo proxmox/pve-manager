@@ -309,6 +309,7 @@ JSSRC= 							\
 	sdn/ZoneView.js					\
 	sdn/IpamEdit.js					\
 	sdn/OptionsPanel.js				\
+	sdn/RouteMapPanel.js				\
 	sdn/RouteMapSelector.js				\
 	sdn/PrefixListPanel.js				\
 	sdn/PrefixListSelector.js				\
