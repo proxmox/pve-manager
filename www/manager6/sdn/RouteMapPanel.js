@@ -755,7 +755,7 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
             },
         },
         {
-            xtype: 'proxmoxtextfield',
+            xtype: 'proxmoxintegerfield',
             name: 'order',
             fieldLabel: gettext('Order'),
             bind: {

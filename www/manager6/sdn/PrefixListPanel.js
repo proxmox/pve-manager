@@ -80,12 +80,12 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
             vtype: 'IP64CIDRAddress',
         },
         {
-            xtype: 'proxmoxtextfield',
+            xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix <='),
             name: 'le',
         },
         {
-            xtype: 'proxmoxtextfield',
+            xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix >='),
             name: 'ge',
         },
