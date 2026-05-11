@@ -24,23 +24,6 @@ Ext.define('PVE.sdn.RouteMapSelector', {
         proxy: {
             type: 'proxmox',
             url: '/api2/json/cluster/sdn/route-maps',
-            reader: {
-                transform: {
-                    fn: function (response) {
-                        return Object.values(
-                            response.data.reduce((accumulator, routeMapEntry) => {
-                                let id = routeMapEntry['route-map-id'];
-
-                                accumulator[id] ??= {
-                                    id,
-                                };
-
-                                return accumulator;
-                            }, {}),
-                        );
-                    },
-                },
-            },
         },
     },
     listConfig: {

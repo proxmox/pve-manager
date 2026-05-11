@@ -708,16 +708,16 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
 
     loadUrl: function () {
         let me = this;
-        return `/api2/extjs/cluster/sdn/route-maps/${me.getRouteMapId()}/${me.getOrder()}`;
+        return `/api2/extjs/cluster/sdn/route-maps/entries/${me.getRouteMapId()}/entry/${me.getOrder()}`;
     },
 
     submitUrl: function () {
         let me = this;
 
         if (me.isCreate) {
-            return '/api2/extjs/cluster/sdn/route-maps';
+            return '/api2/extjs/cluster/sdn/route-maps/entries';
         } else {
-            return `/api2/extjs/cluster/sdn/route-maps/${me.getRouteMapId()}/${me.getOrder()}`;
+            return `/api2/extjs/cluster/sdn/route-maps/entries/${me.getRouteMapId()}/entry/${me.getOrder()}`;
         }
     },
 
@@ -818,7 +818,7 @@ Ext.define('PVE.sdn.RouteMapPanel', {
         model: 'PVE.sdn.RouteMapEntry',
         proxy: {
             type: 'proxmox',
-            url: '/api2/extjs/cluster/sdn/route-maps?pending=1',
+            url: '/api2/extjs/cluster/sdn/route-maps/entries?pending=1',
         },
         sorters: [
             {
@@ -887,7 +887,7 @@ Ext.define('PVE.sdn.RouteMapPanel', {
                     }
 
                     Proxmox.Async.api2({
-                        url: `/api2/extjs/cluster/sdn/route-maps/${entry.getRouteMapId()}/${entry.getOrder()}`,
+                        url: `/api2/extjs/cluster/sdn/route-maps/entries/${entry.getRouteMapId()}/entry/${entry.getOrder()}`,
                         method: 'DELETE',
                     })
                         .catch(Proxmox.Utils.alertResponseFailure)
