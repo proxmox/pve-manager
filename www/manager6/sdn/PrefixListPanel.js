@@ -251,6 +251,9 @@ Ext.define('PVE.sdn.PrefixListEntriesView', {
                 let seq = rec.data.seq;
                 return `/cluster/sdn/prefix-lists/${id}/entries/${seq}`;
             },
+            callback: function () {
+                this.up('grid').getStore().load();
+            },
         },
     ],
 
