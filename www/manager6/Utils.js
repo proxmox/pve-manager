@@ -193,13 +193,17 @@ Ext.define('PVE.Utils', {
                 } else {
                     return `<span style="text-decoration: line-through;">${Ext.htmlEncode(value)}</span>`;
                 }
-            } else if (rec.data.pending[key] !== undefined && rec.data.pending[key] !== null) {
+            } else if (
+                rec.data?.pending?.[key] !== undefined &&
+                rec.data?.pending?.[key] !== null
+            ) {
                 if (rec.data.pending[key] === 'deleted') {
                     return ' ';
                 } else {
                     return Ext.htmlEncode(rec.data.pending[key]);
                 }
             }
+
             return Ext.htmlEncode(value);
         },
 
@@ -216,7 +220,7 @@ Ext.define('PVE.Utils', {
 
             let tip = gettext('Pending Changes') + ': <br>';
 
-            for (const [key, keyvalue] of Object.entries(rec.data.pending)) {
+            for (const [key, keyvalue] of Object.entries(rec.data.pending ?? {})) {
                 if (
                     (rec.data[key] !== undefined && rec.data.pending[key] !== rec.data[key]) ||
                     rec.data[key] === undefined
