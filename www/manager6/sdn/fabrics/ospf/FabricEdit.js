@@ -17,5 +17,14 @@ Ext.define('PVE.sdn.Fabric.Ospf.Fabric.Edit', {
             emptyText: '0',
             allowBlank: false,
         },
+        {
+            xtype: 'pveSDNPrefixListSelector',
+            name: 'route_filter',
+            fieldLabel: gettext('Route Filter'),
+            labelWidth: 120,
+            emptyText: gettext('IP Prefixes'),
+            deleteEmpty: true,
+            skipEmptyText: true,
+        },
     ],
 });
