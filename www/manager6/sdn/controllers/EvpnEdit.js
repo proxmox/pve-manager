@@ -63,6 +63,23 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
             },
         ];
 
+        me.advancedItems = [
+            {
+                xtype: 'pveSDNRouteMapSelector',
+                name: 'route-map-in',
+                fieldLabel: gettext('Incoming Route Map'),
+                deleteEmpty: true,
+                skipEmptyText: true,
+            },
+            {
+                xtype: 'pveSDNRouteMapSelector',
+                name: 'route-map-out',
+                fieldLabel: gettext('Outgoing Route Map'),
+                deleteEmpty: true,
+                skipEmptyText: true,
+            },
+        ];
+
         me.callParent();
     },
 });
