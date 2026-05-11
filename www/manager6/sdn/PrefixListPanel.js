@@ -16,6 +16,8 @@ Ext.define('PVE.sdn.PrefixListEntry', {
 Ext.define('PVE.sdn.EditPrefixListWindow', {
     extend: 'Proxmox.window.Edit',
 
+    subject: gettext('Prefix List'),
+
     url: '/cluster/sdn/prefix-lists',
 
     config: {
@@ -43,6 +45,8 @@ Ext.define('PVE.sdn.EditPrefixListWindow', {
 
 Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
     extend: 'Proxmox.window.Edit',
+
+    subject: gettext('Prefix List Entry'),
 
     url: '/cluster/sdn/prefix-lists',
 
