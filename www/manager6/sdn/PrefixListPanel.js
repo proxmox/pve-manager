@@ -78,11 +78,14 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
             fieldLabel: gettext('Prefix'),
             name: 'prefix',
             vtype: 'IP64CIDRAddress',
+            allowBlank: false,
         },
         {
             xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix <='),
             name: 'le',
+            minValue: 0,
+            maxValue: 128,
             cbind: {
                 deleteEmpty: '{!isCreate}',
             },
@@ -91,6 +94,8 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
             xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix >='),
             name: 'ge',
+            minValue: 0,
+            maxValue: 128,
             cbind: {
                 deleteEmpty: '{!isCreate}',
             },
