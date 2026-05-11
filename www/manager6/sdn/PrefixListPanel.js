@@ -83,11 +83,17 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
             xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix <='),
             name: 'le',
+            cbind: {
+                deleteEmpty: '{!isCreate}',
+            },
         },
         {
             xtype: 'proxmoxintegerfield',
             fieldLabel: gettext('Prefix >='),
             name: 'ge',
+            cbind: {
+                deleteEmpty: '{!isCreate}',
+            },
         },
     ],
 
