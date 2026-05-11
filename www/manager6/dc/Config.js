@@ -312,6 +312,14 @@ Ext.define('PVE.dc.Config', {
                         iconCls: 'fa fa-road',
                         itemId: 'sdnfabrics',
                     },
+                    {
+                        xtype: 'pveSDNPrefixLists',
+                        groups: ['sdn'],
+                        title: gettext('Prefix Lists'),
+                        hidden: true,
+                        iconCls: 'fa fa-list-ol',
+                        itemId: 'sdnprefixlists',
+                    },
                 );
             }
 

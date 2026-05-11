@@ -310,6 +310,7 @@ JSSRC= 							\
 	sdn/IpamEdit.js					\
 	sdn/OptionsPanel.js				\
 	sdn/RouteMapSelector.js				\
+	sdn/PrefixListPanel.js				\
 	sdn/PrefixListSelector.js				\
 	sdn/controllers/Base.js				\
 	sdn/controllers/EvpnEdit.js			\
