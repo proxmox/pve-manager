@@ -73,6 +73,20 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
                 checked: false,
                 fieldLabel: 'bgp-multipath-as-path-relax',
             },
+            {
+                xtype: 'pveSDNRouteMapSelector',
+                name: 'route-map-in',
+                fieldLabel: gettext('Incoming Route Map'),
+                deleteEmpty: true,
+                skipEmptyText: true,
+            },
+            {
+                xtype: 'pveSDNRouteMapSelector',
+                name: 'route-map-out',
+                fieldLabel: gettext('Outgoing Route Map'),
+                deleteEmpty: true,
+                skipEmptyText: true,
+            },
         ];
 
         me.callParent();
