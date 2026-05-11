@@ -309,6 +309,7 @@ JSSRC= 							\
 	sdn/ZoneView.js					\
 	sdn/IpamEdit.js					\
 	sdn/OptionsPanel.js				\
+	sdn/RouteMapSelector.js				\
 	sdn/controllers/Base.js				\
 	sdn/controllers/EvpnEdit.js			\
 	sdn/controllers/BgpEdit.js			\
