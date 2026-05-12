@@ -203,47 +203,15 @@ Ext.define('PVE.dc.BackupEdit', {
             return data;
         },
 
-        searchFn: function (record) {
-            let me = this;
-            let searchQuery = me.searchValue;
-
-            if (!searchQuery) {
-                return true;
-            }
-
-            let name = (record.get('name') ?? '').toLowerCase();
-            let vmid = (record.get('vmid') ?? '').toString();
-
-            return name.includes(searchQuery) || vmid.includes(searchQuery);
-        },
-
-        searchChange: function (_, value) {
-            let me = this;
-            let search = (value ?? '').toLowerCase();
-            let vmgrid = me.lookup('vmgrid');
-            let store = vmgrid.getStore();
-
-            me.searchValue = search;
-
-            if (!search) {
-                store.removeFilter(me.searchFilter);
-            } else {
-                store.addFilter(me.searchFilter);
-            }
-        },
-
         resetSearch: function () {
-            let me = this;
-
-            me.searchValue = '';
-            me.lookup('searchTextField').setValue('');
-            me.lookup('vmgrid').getStore().removeFilter(me.searchFilter);
+            this.lookup('searchField').setValue('');
         },
 
         selectionChange: function (_, selected) {
             let me = this;
             let store = me.lookup('vmgrid').getStore();
 
+            // re-apply the review filter to drop just-deselected rows from view
             if (store.getFilters().contains(me.reviewFilter)) {
                 store.removeFilter(me.reviewFilter);
                 store.addFilter(me.reviewFilter);
@@ -263,9 +231,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
         reviewFn: function (record) {
             let me = this;
-            let vmgrid = me.lookup('vmgrid');
-            let selModel = vmgrid.getSelectionModel();
-            return selModel.isSelected(record);
+            return me.lookup('vmgrid').getSelectionModel().isSelected(record);
         },
 
         reviewModeChange: function (_, value) {
@@ -283,18 +249,12 @@ Ext.define('PVE.dc.BackupEdit', {
         init: function (view) {
             let me = this;
 
-            me.searchValue = '';
-            me.searchFilter = new Ext.util.Filter({
-                id: 'search',
-                scope: me,
-                filterFn: me.searchFn,
-            });
-
             me.reviewFilter = new Ext.util.Filter({
-                id: 'review',
+                id: 'vmgrid-review',
                 scope: me,
                 filterFn: me.reviewFn,
             });
+            me.lookup('searchField').setTargetStore(me.lookup('vmgrid').getStore());
 
             if (view.isCreate) {
                 me.lookup('modeSelector').setValue('include');
@@ -457,32 +417,24 @@ Ext.define('PVE.dc.BackupEdit', {
                             listeners: {
                                 selectionChange: 'selectionChange',
                             },
+                            // override to keep selections hidden by the search/review filters
+                            // and to return the joined string the backup API expects.
                             getValue: function () {
                                 let me = this;
-                                let selModel = me.getSelectionModel();
-                                let selection = selModel.getSelection();
+                                let selection = me.getSelectionModel().getSelection();
                                 return selection.map((rec) => rec.get('vmid')).join(',');
                             },
-                            tbar: {
-                                xtype: 'toolbar',
-                                items: [
-                                    {
-                                        xtype: 'proxmoxtextfield',
-                                        reference: 'searchTextField',
-                                        fieldLabel: gettext('Search'),
-                                        emptyText: 'Name, VMID',
-                                        flex: 1,
-                                        margin: '2 4 4 0',
-                                        labelWidth: 92,
-                                        enableKeyEvents: true,
-                                        submitValue: false,
-                                        listeners: {
-                                            buffer: 250,
-                                            change: 'searchChange',
-                                        },
-                                    },
-                                ],
-                            },
+                            tbar: [
+                                '->',
+                                gettext('Search') + ':',
+                                ' ',
+                                {
+                                    xtype: 'pveRecordSearchField',
+                                    reference: 'searchField',
+                                    emptyText: gettext('Name, VMID, Type'),
+                                    searchFields: ['name', 'vmid', 'type'],
+                                },
+                            ],
                             bbar: {
                                 xtype: 'toolbar',
                                 padding: '4 0',
