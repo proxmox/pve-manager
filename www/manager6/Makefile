@@ -344,6 +344,7 @@ JSSRC= 							\
 	sdn/fabrics/ospf/InterfacePanel.js		\
 	sdn/fabrics/ospf/NodeEdit.js			\
 	sdn/fabrics/ospf/FabricEdit.js			\
+	sdn/fabrics/wireguard/InterfacePanel.js		\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\
