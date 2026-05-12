@@ -136,10 +136,10 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             });
     },
 
-    getNodeSelector: function () {
+    getNodeSelectorConfig: function() {
         let me = this;
 
-        return Ext.create('PVE.form.NodeSelector', {
+        return {
             xtype: 'pveNodeSelector',
             reference: 'nodeselector',
             fieldLabel: gettext('Node'),
@@ -193,7 +193,12 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
                     },
                 },
             },
-        });
+        };
+    },
+
+    getNodeSelector: function () {
+        let me = this;
+        return Ext.create('PVE.form.NodeSelector', me.getNodeSelectorConfig());
     },
 
     getInterfacePanel: function (protocol) {
