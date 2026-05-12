@@ -211,7 +211,7 @@ sub get_cluster_mds_state {
         $state->{rank} = $mds->{rank};
         $state->{standby_replay} = $mds->{standby_replay} ? 1 : 0;
         $state->{state} = $mds->{state};
-        $state->{fs_name} = $fsname;
+        $state->{fs_name} = $fsname if defined($fsname);
 
         $mds_state->{ $mds->{name} } = $state;
     };
