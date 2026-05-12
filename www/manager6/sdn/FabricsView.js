@@ -83,6 +83,10 @@ Ext.define('PVE.sdn.Fabric.View', {
             renderer: function (value, metaData, rec) {
                 const interfaces = rec.data.pending?.interfaces || rec.data.interfaces || [];
 
+                if (interfaces === 'deleted') {
+                    return;
+                }
+
                 let names = interfaces.map((iface) => {
                     const properties = Proxmox.Utils.parsePropertyString(iface);
                     return properties.name;
