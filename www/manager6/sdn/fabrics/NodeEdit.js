@@ -30,6 +30,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     additionalItems: [],
 
     addAnotherCallback: undefined,
+    includeWireguardInterfaces: false,
 
     initComponent: function () {
         let me = this;
@@ -127,17 +128,51 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     loadNodeInterfaces: async function () {
         let me = this;
 
-        let req = await Proxmox.Async.api2({
-            url: `/api2/extjs/nodes/${me.nodeId}/network`,
-            method: 'GET',
-        });
+        let requests = [
+            Proxmox.Async.api2({
+                url: `/api2/extjs/nodes/${me.nodeId}/network`,
+                method: 'GET',
+            }),
+        ];
 
-        return req.result.data.map((iface) => ({
+        if (me.includeWireguardInterfaces) {
+            requests.push(
+                Proxmox.Async.api2({
+                    url: `/api2/extjs/cluster/sdn/fabrics/node/`,
+                    method: 'GET',
+                }),
+            );
+        }
+
+        let result = await Promise.all(requests);
+
+        let interfaces = result[0].result.data.map((iface) => ({
             name: iface.iface,
             type: iface.type,
             ip: iface.cidr,
             ipv6: iface.cidr6,
         }));
+
+        if (me.includeWireguardInterfaces) {
+            let wireguardNodes = result[1].result.data.filter((node) => {
+                return (
+                    node.node_id === me.nodeId && node.protocol === 'wireguard' && node.interfaces
+                );
+            });
+
+            for (const node of wireguardNodes) {
+                for (const ifacePropertyString of node.interfaces) {
+                    let iface = PVE.Parser.parsePropertyString(ifacePropertyString);
+
+                    interfaces.push({
+                        name: iface.name,
+                        type: 'wireguard',
+                    });
+                }
+            }
+        }
+
+        return interfaces;
     },
 
     load: function () {
