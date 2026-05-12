@@ -123,7 +123,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     load: function () {
         let me = this;
 
-        me.setLoading('Fetching Node Information');
+        me.setLoading(gettext('Fetching Node Information'));
 
         Promise.all([me.loadNode(me.fabricId, me.nodeId), me.loadNodeInterfaces(me.nodeId)])
             .catch(Proxmox.Utils.alertResponseFailure)
