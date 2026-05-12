@@ -6,6 +6,8 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
 
     nodeInterfaces: {},
 
+    hasIpv6Support: true,
+
     selModel: {
         mode: 'SIMPLE',
         type: 'checkboxmodel',
@@ -105,6 +107,22 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
 
     initComponent: function () {
         let me = this;
+
+        if (me.hasIpv6Support) {
+            me.commonColumns.push({
+                text: gettext('IPv6'),
+                xtype: 'widgetcolumn',
+                dataIndex: 'ip6',
+                flex: 1,
+                widget: {
+                    xtype: 'proxmoxtextfield',
+                    isFormField: false,
+                    bind: {
+                        disabled: '{record.isDisabled}',
+                    },
+                },
+            });
+        }
 
         Ext.apply(me, {
             store: Ext.create('Ext.data.Store', {
