@@ -161,7 +161,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
 
         return {
             xtype: 'pveNodeSelector',
-            reference: 'nodeselector',
+            reference: 'nodeSelector',
             fieldLabel: gettext('Node'),
             labelWidth: 120,
             name: 'node_id',
@@ -225,6 +225,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
         const INTERFACE_PANELS = {
             openfabric: 'PVE.sdn.Fabric.OpenFabric.InterfacePanel',
             ospf: 'PVE.sdn.Fabric.Ospf.InterfacePanel',
+            wireguard: 'PVE.sdn.Fabric.WireGuard.InterfacePanel',
         };
 
         return INTERFACE_PANELS[protocol];
@@ -233,8 +234,11 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     getInterfaceSelector: function () {
         let me = this;
 
-        return Ext.create(me.getInterfacePanel(me.protocol), {
+        let componentName = me.getInterfacePanel(me.protocol);
+
+        return Ext.create(componentName, {
             name: 'interfaces',
+            reference: 'interfaceSelector',
         });
     },
 });
