@@ -4,6 +4,8 @@ Ext.define('PVE.sdn.Fabric.Ospf.Fabric.Edit', {
     subject: 'OSPF',
     onlineHelp: 'pvesdn_ospf_fabric',
 
+    hasIpv6Support: false,
+
     extraRequestParams: {
         protocol: 'ospf',
     },
