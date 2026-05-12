@@ -479,32 +479,10 @@ Ext.define('PVE.dc.BackedGuests', {
                 gettext('Search') + ':',
                 ' ',
                 {
-                    xtype: 'textfield',
-                    width: 200,
-                    emptyText: 'Name, VMID, Type',
-                    enableKeyEvents: true,
-                    listeners: {
-                        buffer: 500,
-                        keyup: function (field) {
-                            let searchValue = field.getValue().toLowerCase();
-                            me.store.clearFilter(true);
-                            me.store.filterBy(function (record) {
-                                let data = record.data;
-                                for (const property of ['name', 'vmid', 'type']) {
-                                    if (data[property] === null) {
-                                        continue;
-                                    }
-                                    let v = data[property].toString();
-                                    if (v !== undefined) {
-                                        if (v.toLowerCase().includes(searchValue)) {
-                                            return true;
-                                        }
-                                    }
-                                }
-                                return false;
-                            });
-                        },
-                    },
+                    xtype: 'pveRecordSearchField',
+                    emptyText: gettext('Name, VMID, Type'),
+                    searchFields: ['name', 'vmid', 'type'],
+                    targetStore: me.store,
                 },
             ],
         });
