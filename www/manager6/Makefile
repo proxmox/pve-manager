@@ -66,6 +66,7 @@ JSSRC= 							\
 	form/PrivilegesSelector.js			\
 	form/QemuBiosSelector.js			\
 	form/QemuMachineSelector.js			\
+	form/RecordSearchField.js			\
 	form/SDNControllerSelector.js			\
 	form/SDNZoneSelector.js				\
 	form/SDNVnetSelector.js				\
