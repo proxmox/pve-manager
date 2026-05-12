@@ -1,3 +1,27 @@
+pve-manager (9.1.11) trixie; urgency=medium
+
+  * ui: sdn: introduce management UI for the new prefix list and route map
+    configuration entities. Adds dedicated panels under Datacenter > SDN for
+    creating, editing, and removing prefix lists and route map entries, with
+    explicit sequence numbers for prefix list entries and full
+    match/set/exit-action coverage for route maps. Adds selector components
+    used in BGP and EVPN controllers for incoming and outgoing route maps, and
+    in OSPF and OpenFabric fabrics as the new route filter, which overrides
+    the default fabric prefix filter for routes installed into the kernel
+    routing table.
+
+  * ui: qemu: wizard: re-add media=cdrom for the optional second VirtIO
+    drivers ISO. The recent OS-type panel split lost the onGetValues hook that
+    appended this on creation, which made adding the secondary ISO fail for
+    Windows guests.
+
+  * ui: add default pgettext() and npgettext() implementations to the index
+    template, avoiding UI breakage when no language file has been loaded yet.
+    These functions are required for the context-aware translations support
+    recently added to the proxmox-i18n tooling.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 12 May 2026 03:47:41 +0200
+
 pve-manager (9.1.10) trixie; urgency=medium
 
   * ui: access control: tokens: add a button to regenerate the secret of
