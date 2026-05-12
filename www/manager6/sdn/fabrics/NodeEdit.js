@@ -11,6 +11,9 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     nodeId: undefined,
     protocol: undefined,
 
+    hasIpv4Support: true,
+    hasIpv6Support: true,
+
     disallowedNodes: [],
 
     baseUrl: '/cluster/sdn/fabrics/node',
@@ -21,17 +24,6 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             name: 'digest',
             hidden: true,
             allowBlank: true,
-        },
-        {
-            xtype: 'proxmoxtextfield',
-            fieldLabel: gettext('IPv4'),
-            labelWidth: 120,
-            name: 'ip',
-            allowBlank: true,
-            skipEmptyText: true,
-            cbind: {
-                deleteEmpty: '{!isCreate}',
-            },
         },
     ],
 
@@ -50,6 +42,34 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             me.url = `${me.baseUrl}/${me.fabricId}/${me.nodeId}`;
         } else {
             me.url = `${me.baseUrl}/${me.fabricId}`;
+        }
+
+        if (me.hasIpv4Support) {
+            me.items.push({
+                xtype: 'proxmoxtextfield',
+                fieldLabel: gettext('IPv4'),
+                labelWidth: 120,
+                name: 'ip',
+                allowBlank: true,
+                skipEmptyText: true,
+                cbind: {
+                    deleteEmpty: '{!isCreate}',
+                },
+            });
+        }
+
+        if (me.hasIpv6Support) {
+            me.items.push({
+                xtype: 'proxmoxtextfield',
+                fieldLabel: gettext('IPv6'),
+                labelWidth: 120,
+                name: 'ip6',
+                allowBlank: true,
+                skipEmptyText: true,
+                cbind: {
+                    deleteEmpty: '{!isCreate}',
+                },
+            });
         }
 
         me.nodeSelector = me.getNodeSelector();
@@ -136,7 +156,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             });
     },
 
-    getNodeSelectorConfig: function() {
+    getNodeSelectorConfig: function () {
         let me = this;
 
         return {
