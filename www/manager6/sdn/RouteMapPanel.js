@@ -396,6 +396,12 @@ Ext.define('PVE.sdn.RouteMapMatchValueField', {
                 xtype: 'proxmoxtextfield',
                 vtype: 'IP6Address',
             },
+            tag: {
+                xtype: 'proxmoxintegerfield',
+                minValue: 0,
+                maxValue: 2 ** 32 - 1,
+                step: 1,
+            },
             metric: {
                 xtype: 'proxmoxintegerfield',
                 minValue: 1,
@@ -442,6 +448,7 @@ const ROUTE_MAP_MATCH_ACTION_LABELS = {
     metric: gettext('Metric'),
     'local-preference': gettext('Local Preference'),
     peer: gettext('Peer'),
+    tag: gettext('Tag'),
 };
 
 Ext.define('PVE.sdn.RouteMapMatchField', {
