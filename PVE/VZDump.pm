@@ -496,6 +496,8 @@ sub send_notification {
     my $policy = $opts->{mailnotification} // 'always';
     my $mode = $opts->{"notification-mode"} // 'auto';
 
+    return if $mode eq 'none';
+
     sanitize_task_list($tasklist);
     my ($error_count, $total_size) = aggregate_task_statistics($tasklist);
 
