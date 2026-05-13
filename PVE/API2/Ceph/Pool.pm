@@ -866,15 +866,15 @@ __PACKAGE__->register_method({
             pgp_num => $res->{pgp_num},
             crush_rule => $res->{crush_rule},
             pg_autoscale_mode => $res->{pg_autoscale_mode},
-            noscrub => "$res->{noscrub}",
-            'nodeep-scrub' => "$res->{'nodeep-scrub'}",
-            nodelete => "$res->{nodelete}",
-            nopgchange => "$res->{nopgchange}",
-            nosizechange => "$res->{nosizechange}",
-            write_fadvise_dontneed => "$res->{write_fadvise_dontneed}",
-            hashpspool => "$res->{hashpspool}",
-            use_gmt_hitset => "$res->{use_gmt_hitset}",
-            fast_read => "$res->{fast_read}",
+            noscrub => $res->{noscrub} ? JSON::true : JSON::false,
+            'nodeep-scrub' => $res->{'nodeep-scrub'} ? JSON::true : JSON::false,
+            nodelete => $res->{nodelete} ? JSON::true : JSON::false,
+            nopgchange => $res->{nopgchange} ? JSON::true : JSON::false,
+            nosizechange => $res->{nosizechange} ? JSON::true : JSON::false,
+            write_fadvise_dontneed => $res->{write_fadvise_dontneed} ? JSON::true : JSON::false,
+            hashpspool => $res->{hashpspool} ? JSON::true : JSON::false,
+            use_gmt_hitset => $res->{use_gmt_hitset} ? JSON::true : JSON::false,
+            fast_read => $res->{fast_read} ? JSON::true : JSON::false,
             target_size => $res->{target_size_bytes},
             target_size_ratio => $res->{target_size_ratio},
         };
@@ -886,7 +886,8 @@ __PACKAGE__->register_method({
             # pg_autoscaler module is not enabled in Nautilus
             # avoid partial read further down, use new rados instance
             my $autoscale_status = eval { $get_autoscale_status->() };
-            $data->{autoscale_status} = $autoscale_status->{$pool};
+            $data->{autoscale_status} = $autoscale_status->{$pool}
+                if $autoscale_status;
 
             foreach my $d (@{ $res->{pools} }) {
                 next if !$d->{stats};
