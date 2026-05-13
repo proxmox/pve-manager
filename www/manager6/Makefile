@@ -211,6 +211,7 @@ JSSRC= 							\
 	lxc/DNS.js					\
 	lxc/FeaturesEdit.js				\
 	lxc/EnvEdit.js				\
+	lxc/IdMapField.js				\
 	lxc/MPEdit.js					\
 	lxc/MPResize.js					\
 	lxc/Network.js					\

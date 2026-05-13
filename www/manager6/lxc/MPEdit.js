@@ -47,6 +47,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
         setMPOpt('acl', values.acl);
         setMPOpt('replicate', values.replicate);
         setMPOpt('keepattrs', values.keepattrs);
+        setMPOpt('idmap', values.idmap);
 
         let res = {};
         res[confid] = PVE.Parser.printLxcMountPoint(me.mp);
@@ -351,6 +352,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
                 hidden: '{isRoot}',
                 disabled: '{isRoot}',
             },
+        },
+    ],
+
+    advancedColumnB: [
+        {
+            xtype: 'pveLxcIdMapField',
         },
     ],
 });
