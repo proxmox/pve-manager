@@ -278,6 +278,15 @@ Ext.define('PVE.dc.BackupEdit', {
             poolMode: (get) => get('selMode') === 'pool',
             disableVMSelection: (get) =>
                 get('selMode') !== 'include' && get('selMode') !== 'exclude',
+            selectionLabel: function (get) {
+                let mode = get('selMode');
+                if (mode === 'include') {
+                    return gettext('Guests to Include');
+                } else if (mode === 'exclude') {
+                    return gettext('Guests to Exclude');
+                }
+                return '';
+            },
         },
     },
 
@@ -425,6 +434,13 @@ Ext.define('PVE.dc.BackupEdit', {
                                 return selection.map((rec) => rec.get('vmid')).join(',');
                             },
                             tbar: [
+                                {
+                                    xtype: 'tbtext',
+                                    bind: {
+                                        text: '{selectionLabel}',
+                                        hidden: '{!selectionLabel}',
+                                    },
+                                },
                                 '->',
                                 gettext('Search') + ':',
                                 ' ',
