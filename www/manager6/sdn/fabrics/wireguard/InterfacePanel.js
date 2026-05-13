@@ -122,8 +122,9 @@ Ext.define('PVE.sdn.Fabric.WireGuard.PeerSelectionPanel', {
 
         me.callParent();
 
-        me.getStore().on('datachanged', function () {
-            me.fireEvent('datachanged');
+        me.getStore().on({
+            datachanged: () => me.fireEvent('datachanged'),
+            update: () => me.fireEvent('update'),
         });
 
         me.on('selectionchange', function (_selectionModel, selected) {
@@ -398,7 +399,14 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
         }
 
         me.getViewModel().set('currentNode', node);
-        me.getViewModel().getStore('interfaces').setData(Object.values(ifaces));
+
+        me.isLoading = true;
+        try {
+            me.getViewModel().getStore('interfaces').setData(Object.values(ifaces));
+        } finally {
+            me.isLoading = false;
+        }
+        me.previousDirty = false;
 
         me.selectFirstInterface();
     },
@@ -429,32 +437,25 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
 
         let store = me.getViewModel().getStore('interfaces');
 
-        me.lookupReference('peerSelector').on('datachanged', function () {
+        let refreshDirty = () => {
+            if (me.isLoading) {
+                return;
+            }
             let dirtyStatus = me.isDirty();
-
             if (dirtyStatus !== me.previousDirty) {
                 me.previousDirty = dirtyStatus;
                 me.fireEvent('dirtychange');
             }
+        };
+
+        me.lookupReference('peerSelector').on({
+            datachanged: refreshDirty,
+            update: refreshDirty,
         });
-
-        store.on('update', function () {
-            let dirtyStatus = me.isDirty();
-
-            if (dirtyStatus !== me.previousDirty) {
-                me.previousDirty = dirtyStatus;
-                me.fireEvent('dirtychange');
-            }
-        });
-
-        store.on('add', function () {
-            me.previousDirty = true;
-            me.fireEvent('dirtychange');
-        });
-
-        store.on('remove', function () {
-            me.previousDirty = true;
-            me.fireEvent('dirtychange');
+        store.on({
+            add: refreshDirty,
+            remove: refreshDirty,
+            update: refreshDirty,
         });
     },
 
