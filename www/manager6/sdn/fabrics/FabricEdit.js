@@ -37,6 +37,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
     ],
 
     additionalItems: [],
+    additionalTabs: [],
 
     initComponent: function () {
         let me = this;
@@ -97,7 +98,26 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
             );
         }
 
-        me.items.push(...me.additionalItems);
+        if (me.additionalTabs.length > 0) {
+            let items = [...me.items, ...me.additionalItems];
+
+            let iPanel = Ext.create('Proxmox.panel.InputPanel', {
+                title: gettext('Fabric'),
+                items,
+            });
+
+            me.bodyPadding = 0;
+
+            me.items = [
+                {
+                    xtype: 'tabpanel',
+                    bodyPadding: 10,
+                    items: [iPanel, ...me.additionalTabs],
+                },
+            ];
+        } else {
+            me.items.push(...me.additionalItems);
+        }
 
         me.callParent();
     },
