@@ -43,13 +43,14 @@ Ext.define('PVE.window.Backup', {
                 ['notification-system', gettext('Use global settings')],
                 // TRANSLATORS: sendmail is a piece of software
                 ['legacy-sendmail', gettext('Use sendmail (legacy)')],
+                ['none', gettext('None')],
             ],
             fieldLabel: gettext('Notification'),
             name: 'notification-mode',
             value: 'notification-system',
             listeners: {
                 change: function (field, value) {
-                    mailtoField.setHidden(value === 'notification-system');
+                    mailtoField.setHidden(value !== 'legacy-sendmail');
                 },
             },
         });
