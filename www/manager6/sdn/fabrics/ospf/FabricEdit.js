@@ -29,4 +29,23 @@ Ext.define('PVE.sdn.Fabric.Ospf.Fabric.Edit', {
             skipEmptyText: true,
         },
     ],
+
+    additionalTabs: [
+        {
+            xtype: 'inputpanel',
+            title: gettext('Route Redistribution'),
+            items: [
+                {
+                    xtype: 'pveSDNRedistributionGrid',
+                    name: 'redistribute',
+                    sources: [
+                        ['bgp', gettext('BGP')],
+                        ['connected', gettext('Connected')],
+                        ['static', gettext('Static')],
+                        ['kernel', gettext('Kernel')],
+                    ],
+                },
+            ],
+        }
+    ],
 });
