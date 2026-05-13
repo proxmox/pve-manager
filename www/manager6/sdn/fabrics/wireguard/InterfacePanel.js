@@ -391,10 +391,30 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             ifaces[treeIface.name] = treeIface;
         }
 
+        let droppedPeers = [];
         for (let peer of node.peers) {
             peer = PVE.Parser.parsePropertyString(peer);
+            if (!ifaces[peer.iface]) {
+                droppedPeers.push(peer);
+                continue;
+            }
             ifaces[peer.iface].peers.push(
                 Ext.create('Pve.sdn.Fabric.WireGuard.InterfacePeer', peer),
+            );
+        }
+        if (droppedPeers.length > 0) {
+            console.warn(
+                `WireGuard: dropping ${droppedPeers.length} peer(s) referencing missing interfaces:`,
+                droppedPeers,
+            );
+            Ext.Msg.alert(
+                gettext('WireGuard'),
+                Ext.String.format(
+                    gettext(
+                        '{0} peer entry(ies) reference an interface that no longer exists on this node and were dropped from the form. Saving will not include them.',
+                    ),
+                    droppedPeers.length,
+                ),
             );
         }
 
