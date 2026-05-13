@@ -77,14 +77,14 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
                 xtype: 'pveSDNRouteMapSelector',
                 name: 'route-map-in',
                 fieldLabel: gettext('Incoming Route Map'),
-                deleteEmpty: true,
+                deleteEmpty: !me.isCreate,
                 skipEmptyText: true,
             },
             {
                 xtype: 'pveSDNRouteMapSelector',
                 name: 'route-map-out',
                 fieldLabel: gettext('Outgoing Route Map'),
-                deleteEmpty: true,
+                deleteEmpty: !me.isCreate,
                 skipEmptyText: true,
             },
         ];
