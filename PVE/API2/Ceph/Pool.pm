@@ -228,6 +228,12 @@ __PACKAGE__->register_method({
                 $d->{percent_used} = $s->{percent_used};
             }
 
+            # Ceph's `osd dump` returns numeric pool id and crush rule id as
+            # JSON strings since at least Octopus; coerce to integers to
+            # match the schema (and to keep the JSON output honest).
+            $d->{pool} = int($d->{pool}) if defined($d->{pool});
+            $d->{crush_rule} = int($d->{crush_rule}) if defined($d->{crush_rule});
+
             # Cephs numerical pool types are barely documented. Found the following in the Ceph
             # codebase: https://github.com/ceph/ceph/blob/ff144995a849407c258bcb763daa3e03cfce5059/src/osd/osd_types.h#L1221-L1233
             if ($e->{type} == 1) {
