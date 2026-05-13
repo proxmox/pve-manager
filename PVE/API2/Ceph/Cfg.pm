@@ -209,7 +209,7 @@ __PACKAGE__->register_method({
             my $n_name = $normalize->($name);
 
             $config->{$n_section}->{$n_name} = $value
-                if defined $requested_keys->{$n_section} && $n_name eq $n_name;
+                if $requested_keys->{$n_section}->{$n_name};
         }
 
         # read ceph.conf after config db as it has priority if settings are present in both
