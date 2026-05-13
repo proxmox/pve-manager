@@ -78,6 +78,43 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
                 deleteEmpty: true,
                 skipEmptyText: true,
             },
+            {
+                xtype: 'proxmoxtextfield',
+                name: 'peer-group-name',
+                fieldLabel: gettext('Peer Group Name'),
+                allowBlank: true,
+                deleteEmpty: !me.isCreate,
+                skipEmptyText: true,
+            },
+            {
+                xtype: 'pveNodeSelector',
+                name: 'nodes',
+                fieldLabel: gettext('Nodes'),
+                multiSelect: true,
+                autoSelect: false,
+                allowBlank: true,
+                deleteEmpty: !me.isCreate,
+                skipEmptyText: true,
+            },
+            {
+                xtype: 'proxmoxKVComboBox',
+                name: 'bgp-mode',
+                value: '',
+                emptyText: 'Automatic',
+                comboItems: [['auto', gettext('Automatic')], ['external', gettext('eBGP')], ['internal', gettext('iBGP')]],
+                fieldLabel: gettext('BGP Mode'),
+                allowBlank: true,
+                deleteEmpty: !me.isCreate,
+            },
+            {
+                xtype: 'proxmoxintegerfield',
+                name: 'ebgp-multihop',
+                minValue: 1,
+                maxValue: 100,
+                fieldLabel: gettext('eBGP Multihop'),
+                allowBlank: true,
+                deleteEmpty: !me.isCreate,
+            },
         ];
 
         me.callParent();
