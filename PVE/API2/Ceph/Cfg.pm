@@ -145,7 +145,7 @@ __PACKAGE__->register_method({
 });
 
 my $SINGLE_CONFIGKEY_RE = qr/[0-9a-z\-_\.]+:[0-9a-zA-Z\-_]+/i;
-my $CONFIGKEYS_RE = qr/^(:?${SINGLE_CONFIGKEY_RE})(:?[;, ]${SINGLE_CONFIGKEY_RE})*$/;
+my $CONFIGKEYS_RE = qr/^(?:${SINGLE_CONFIGKEY_RE})(?:[;, ]${SINGLE_CONFIGKEY_RE})*$/;
 
 __PACKAGE__->register_method({
     name => 'value',
