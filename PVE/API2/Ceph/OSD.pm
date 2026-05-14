@@ -808,7 +808,6 @@ __PACKAGE__->register_method({
                 mem_usage => $osd_pss_memory,
                 osd_data => $metadata->{osd_data},
                 osd_objectstore => $metadata->{osd_objectstore},
-                pid => $pid,
                 version => "$metadata->{ceph_version_short} ($metadata->{ceph_release})",
                 front_addr => $metadata->{front_addr},
                 back_addr => $metadata->{back_addr},
@@ -817,6 +816,8 @@ __PACKAGE__->register_method({
                 encrypted => $probe_osd_encrypted->($metadata->{bluestore_bdev_dev_node}),
             },
         };
+        # systemd emits MainPID=0 when the unit is not running; map that falsy value to absent.
+        $data->{osd}->{pid} = $pid if $pid;
 
         $data->{devices} = [];
 
