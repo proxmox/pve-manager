@@ -61,7 +61,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
 
         if (me.isCreate && me.addAnotherCallback) {
             let addAnotherBtn = Ext.create('Ext.Button', {
-                text: gettext('Create another'),
+                text: gettext('Create Another'),
                 disabled: !me.isCreate,
                 handler: function () {
                     me.apiCallDone = (success, _response, _options) => {
@@ -123,7 +123,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     load: function () {
         let me = this;
 
-        me.setLoading('fetching node information');
+        me.setLoading('Fetching Node Information');
 
         Promise.all([me.loadNode(me.fabricId, me.nodeId), me.loadNodeInterfaces(me.nodeId)])
             .catch(Proxmox.Utils.alertResponseFailure)
