@@ -829,7 +829,9 @@ __PACKAGE__->register_method({
                     dev_node => $metadata->{"${prefix}_${dev}_dev_node"},
                     physical_device => $metadata->{"${prefix}_${dev}_devices"},
                     size => int($metadata->{"${prefix}_${dev}_size"}),
-                    support_discard => int($metadata->{"${prefix}_${dev}_support_discard"}),
+                    support_discard => $metadata->{"${prefix}_${dev}_support_discard"}
+                    ? JSON::true
+                    : JSON::false,
                     type => $metadata->{"${prefix}_${dev}_type"},
                     device => $device,
                 },
