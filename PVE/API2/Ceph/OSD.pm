@@ -106,14 +106,22 @@ __PACKAGE__->register_method({
     # fixme: return a list instead of extjs tree format ?
     returns => {
         type => "object",
-        items => {
-            type => "object",
-            properties => {
-                flags => { type => "string" },
-                root => {
-                    type => "object",
-                    description => "Tree with OSDs in the CRUSH map structure.",
-                },
+        additionalProperties => 1,
+        properties => {
+            flags => {
+                type => "string",
+                optional => 1,
+                description => "Comma-joined list of currently-set OSD flags; absent"
+                    . " when no flags are set on the cluster.",
+            },
+            root => {
+                type => "object",
+                additionalProperties => 1,
+                description =>
+                    "Top-level CRUSH bucket; recursive structure with 'children' lists"
+                    . " holding nested buckets and OSD leaves. Per-node properties (status,"
+                    . " weight, in, usage, latencies, etc.) vary by node type and are not"
+                    . " statically typed here.",
             },
         },
     },
@@ -261,7 +269,6 @@ __PACKAGE__->register_method({
                     . " Fails if the available size is not enough.",
                 optional => 1,
                 type => 'number',
-                default => 'bluestore_block_db_size or 10% of OSD size',
                 requires => 'db_dev',
                 minimum => 1.0,
             },
@@ -280,7 +287,6 @@ __PACKAGE__->register_method({
                     . " Fails if the available size is not enough.",
                 optional => 1,
                 minimum => 0.5,
-                default => 'bluestore_block_wal_size or 1% of OSD size',
                 requires => 'wal_dev',
                 type => 'number',
             },
@@ -298,10 +304,10 @@ __PACKAGE__->register_method({
             'osds-per-device' => {
                 optional => 1,
                 type => 'integer',
-                minimum => '1',
-                description =>
-                    'OSD services per physical device. Only useful for fast NVMe devices"
-		    ." to utilize their performance better.',
+                minimum => 1,
+                description => "OSD services per physical device. Only useful for fast NVMe"
+                    . " devices to utilize their performance better. Mutually exclusive"
+                    . " with 'db_dev' and 'wal_dev'.",
             },
         },
     },
@@ -618,17 +624,18 @@ my $OSD_DEV_RETURN_PROPS = {
         type => 'string',
         description => 'Device node',
     },
-    devices => {
+    physical_device => {
         type => 'string',
-        description => 'Physical disks used',
+        description => "Underlying physical device(s) used by this OSD device (comma- or"
+            . " space-joined when multiple).",
     },
     size => {
         type => 'integer',
-        description => 'Size in bytes',
+        description => 'Size of the OSD device in bytes.',
     },
     support_discard => {
         type => 'boolean',
-        description => 'Discard support of the physical device',
+        description => 'Whether the underlying physical device supports discard/TRIM.',
     },
     type => {
         type => 'string',
@@ -708,7 +715,9 @@ __PACKAGE__->register_method({
                     },
                     mem_usage => {
                         type => 'integer',
-                        description => 'Memory usage of the OSD service.',
+                        description =>
+                            "Proportional set size (PSS) memory usage of the OSD daemon"
+                            . " process in bytes; 0 when the process is not running.",
                     },
                     osd_data => {
                         type => 'string',
@@ -720,7 +729,9 @@ __PACKAGE__->register_method({
                     },
                     pid => {
                         type => 'integer',
-                        description => 'OSD process ID.',
+                        optional => 1,
+                        description => "OSD process ID; absent if the systemd unit for this OSD"
+                            . " is not currently running.",
                     },
                     version => {
                         type => 'string',
@@ -970,7 +981,11 @@ __PACKAGE__->register_method({
                 type => 'integer',
             },
             cleanup => {
-                description => "If set, we remove partition table entries.",
+                description => "If set, also destroy the underlying logical volumes via"
+                    . " 'ceph-volume lvm zap --destroy', remove the volume group's physical"
+                    . " volume with pvremove, and wipe any journal/block.db/block.wal"
+                    . " partitions left over from filestore OSDs. Without this flag the LVs"
+                    . " and partitions are left intact for inspection.",
                 type => 'boolean',
                 optional => 1,
                 default => 0,
