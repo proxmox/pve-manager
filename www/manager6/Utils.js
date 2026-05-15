@@ -274,6 +274,34 @@ Ext.define('PVE.Utils', {
             return '<i class="fa fa-' + iconCls + '"></i> ' + value;
         },
 
+        validateZfsBlocksize: function (value) {
+            if (!value) {
+                return true;
+            }
+
+            let match = value.match(/^([1-9][0-9]*)([km])?$/i);
+            if (!match) {
+                return gettext(
+                    'Invalid format. Use numbers with optional k or m suffix (e.g., 16k).',
+                );
+            }
+
+            let bytes = parseInt(match[1], 10);
+            let suffix = match[2]?.toLowerCase();
+
+            if (suffix === 'k') {
+                bytes *= 1024;
+            } else if (suffix === 'm') {
+                bytes *= 1024 * 1024;
+            }
+
+            if (bytes < 512 || (bytes & (bytes - 1)) !== 0 || bytes > 16 * 1024 * 1024) {
+                return gettext('Value must be a power of 2 between 512 and 16m');
+            }
+
+            return true;
+        },
+
         render_pbs_fingerprint: (fp) => fp.substring(0, 23),
 
         render_backup_encryption: function (v, meta, record) {
