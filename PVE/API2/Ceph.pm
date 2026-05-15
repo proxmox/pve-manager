@@ -105,6 +105,7 @@ __PACKAGE__->register_method({
             { name => 'osd' },
             { name => 'pool' },
             { name => 'restart' },
+            { name => 'restart-bulk' },
             { name => 'rules' },
             { name => 'start' },
             { name => 'status' },
@@ -417,6 +418,230 @@ __PACKAGE__->register_method({
 
         return $rpcenv->fork_worker('srvrestart', $param->{service} || 'ceph',
             $authuser, $worker);
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'restart_bulk',
+    path => 'restart-bulk',
+    method => 'POST',
+    description => "Rolling restart of all Ceph OSDs on this node. Each OSD is restarted only"
+        . " after Ceph reports the previous one is back up and the next one is safe to stop."
+        . " For non-OSD Ceph daemons, use the cluster-wide endpoint at /cluster/ceph/restart-bulk."
+        . " The 'noout' flag is applied only to the OSDs targeted by this run, so unrelated OSDs"
+        . " on other nodes that fail during the restart window still get out-marked normally."
+        . " Aborting the resulting task (for example via 'pvesh task stop') triggers a SIGTERM"
+        . " handler that unsets the per-OSD 'noout' if this endpoint set it.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+        check => ['perm', '/', ['Sys.Modify']],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            'service-type' => {
+                description => 'Ceph daemon type to restart. Only OSDs can be rolling-restarted'
+                    . ' on a per-node basis.',
+                type => 'string',
+                enum => ['osd'],
+            },
+            'set-noout' => {
+                description => "Set the 'noout' flag on each OSD targeted by this run for the"
+                    . " duration of the rolling restart, and unset it on completion. Per-OSD"
+                    . " rather than cluster-wide so that unrelated OSDs failing on other"
+                    . " nodes still trigger backfill normally.",
+                type => 'boolean',
+                optional => 1,
+                default => 1,
+            },
+            timeout => {
+                description => "Per-OSD timeout (in seconds). Bounds both the wait for a"
+                    . " restarted OSD to come back up and the wait for recovery to quiesce"
+                    . " enough that Ceph reports the next OSD safe to stop. Default sized for"
+                    . " busy clusters where multi-TB OSDs with many PGs can need several"
+                    . " minutes to clear peering after a restart; bump higher for very large"
+                    . " or heavily-loaded OSDs.",
+                type => 'integer',
+                minimum => 30,
+                maximum => 1800,
+                optional => 1,
+                default => 600,
+            },
+            'dry-run' => {
+                description => "Log the plan (which OSDs would be restarted, in what order)"
+                    . " without actually doing anything.",
+                type => 'boolean',
+                optional => 1,
+                default => 0,
+            },
+            force => {
+                description => "Proceed past a HEALTH_WARN with non-benign checks like"
+                    . " PG_DEGRADED, SLOW_OPS, or MON_DOWN. HEALTH_ERR is always fatal"
+                    . " regardless. The operator is responsible for confirming the cluster is"
+                    . " stable enough to absorb a rolling restart.",
+                type => 'boolean',
+                optional => 1,
+                default => 0,
+            },
+            'only-outdated' => {
+                description => "Restart only OSDs whose running version differs from the"
+                    . " locally-installed ceph-osd binary. Useful for post-upgrade rolling"
+                    . " restarts that should touch only daemons that need it. Refuses if the"
+                    . " local binary version cannot be determined. Ignored on resume (the"
+                    . " saved plan is used as-is).",
+                type => 'boolean',
+                optional => 1,
+                default => 0,
+            },
+        },
+    },
+    returns => { type => 'string' },
+    code => sub {
+        my ($param) = @_;
+
+        my $rpcenv = PVE::RPCEnvironment::get();
+        my $authuser = $rpcenv->get_user();
+        my $node = $param->{node};
+        my $type = $param->{'service-type'};
+        my $timeout = $param->{timeout} // 600;
+        my $set_noout = $param->{'set-noout'} // 1;
+        my $dry_run = $param->{'dry-run'} // 0;
+        my $force = $param->{force} // 0;
+        my $only_outdated = $param->{'only-outdated'} // 0;
+
+        PVE::Ceph::Tools::check_ceph_inited();
+
+        my $cfg = cfs_read_file('ceph.conf');
+        scalar(keys %$cfg) || die "no ceph configuration\n";
+
+        my $rados; # populated after fork
+        my $worker = sub {
+            my $upid = shift;
+
+            # Use the ResilientRados wrapper for transparent reconnect on dead-connection
+            # failures. A 60s mon-command timeout (rather than the 5s default) gives a
+            # peering storm or mon election room to settle without tripping the internal
+            # kill_worker path; the wrapper picks up whatever single-call failures still
+            # slip through.
+            $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
+
+            # Entry health check: HEALTH_ERR always blocks. HEALTH_WARN blocks unless
+            # every firing check is on a benign-for-rolling-restart allowlist, or the
+            # caller passed force=1. Skipped on dry-run so operators can still inspect
+            # a marginal cluster.
+            if (!$dry_run) {
+                my ($ok, $sev, $blockers) =
+                    PVE::Ceph::Services::check_health_acceptable($rados, $force);
+                if (!$ok) {
+                    if ($sev eq 'HEALTH_ERR') {
+                        die "Ceph cluster is in HEALTH_ERR state, refusing rolling restart"
+                            . " of '$type' daemons:\n  - "
+                            . join("\n  - ", @$blockers) . "\n";
+                    }
+                    die "Ceph cluster has blocking HEALTH_WARN issues, refusing rolling"
+                        . " restart of '$type' daemons (pass force=1 to override):\n  - "
+                        . join("\n  - ", @$blockers) . "\n";
+                }
+                if ($force && @$blockers) {
+                    print "WARNING: proceeding past HEALTH_WARN blockers due to force=1:\n"
+                        . "  - "
+                        . join("\n  - ", @$blockers) . "\n";
+                }
+            }
+
+            my $daemons = PVE::Ceph::Services::get_node_daemons($rados, $type, $node);
+
+            my $original_count = scalar(@$daemons);
+            my $filter_skipped = 0;
+            if ($only_outdated && @$daemons) {
+                my $local_ver = PVE::Ceph::Services::get_local_ceph_binary_version($type);
+                die "could not determine local ceph-$type binary version, refusing"
+                    . " only-outdated filter on node '$node'\n"
+                    if !defined($local_ver);
+                my $kept = {
+                    map { $_ => 1 } @{
+                        PVE::Ceph::Services::filter_outdated_daemons(
+                            $rados, $type, $daemons, $local_ver,
+                        ),
+                    }
+                };
+                my @skipped = grep { !$kept->{$_} } @$daemons;
+                $daemons = [grep { $kept->{$_} } @$daemons]; # preserve order
+                $filter_skipped = scalar(@skipped);
+                if ($filter_skipped > 0) {
+                    print "only-outdated filter: skipping $filter_skipped of $original_count"
+                        . " '$type' daemon(s) on '$node' already on version '$local_ver': "
+                        . join(', ', @skipped) . "\n";
+                    print "  $filter_skipped skipped, " . scalar(@$daemons) . " remain\n";
+                }
+            }
+
+            my $total = scalar(@$daemons);
+            if (!$total) {
+                if ($only_outdated && $original_count > 0) {
+                    print "all $original_count '$type' daemon(s) on '$node' already on the"
+                        . " installed version, nothing to restart\n";
+                } else {
+                    print "no '$type' daemons found on node '$node', nothing to do\n";
+                }
+                return;
+            }
+            print($dry_run ? "[DRY-RUN] " : "");
+            print "planned rolling restart order on '$node':\n";
+            my $i = 0;
+            for my $daemon (@$daemons) {
+                $i++;
+                print "  [$i/$total] $daemon\n";
+            }
+            if ($dry_run) {
+                print "[DRY-RUN] no daemons were restarted\n";
+                return;
+            }
+
+            PVE::Ceph::Services::with_bulk_restart_lock(sub {
+                my $do_restarts = sub {
+                    my $j = 0;
+                    for my $daemon (@$daemons) {
+                        $j++;
+                        my $id = $daemon =~ s/^\Q$type\E\.//r;
+                        my $tag = "[$j/$total]";
+
+                        # Re-check cluster health every iteration so we abort if the cluster
+                        # degrades to HEALTH_ERR partway through (e.g. an unrelated failure).
+                        my $h = $rados->mon_command({ prefix => 'health' });
+                        die "$tag Ceph cluster degraded to HEALTH_ERR mid-restart, aborting\n"
+                            if $h && ($h->{status} // '') eq 'HEALTH_ERR';
+
+                        # Wait (up to $timeout) for recovery from the previous OSD's restart
+                        # to quiesce enough that Ceph reports this one safe to stop, bounded by
+                        # the same per-OSD timeout as the up-wait. A busy cluster that needs
+                        # minutes to clear peering is tolerated rather than aborted early.
+                        my ($safe, $msg) =
+                            PVE::Ceph::Services::wait_for_safe_to_stop($rados, $type, $id, $timeout);
+                        die "$tag Ceph reports '$daemon' is not safe to stop: $msg\n" if !$safe;
+
+                        print "$tag restarting $daemon\n";
+                        PVE::Ceph::Services::ceph_service_cmd('restart', $daemon);
+
+                        print "$tag waiting up to ${timeout}s for $daemon to come back up\n";
+                        PVE::Ceph::Services::wait_for_daemon_up($rados, $type, $id, $timeout);
+                        print "$tag $daemon is up\n";
+                    }
+                };
+
+                if ($set_noout) {
+                    PVE::Ceph::Services::with_noout($rados, $daemons, $do_restarts);
+                } else {
+                    $do_restarts->();
+                }
+
+                print "rolling restart of '$type' daemons on node '$node' finished\n";
+            });
+        };
+
+        return $rpcenv->fork_worker('srvrestart', "$node-$type", $authuser, $worker);
     },
 });
 
