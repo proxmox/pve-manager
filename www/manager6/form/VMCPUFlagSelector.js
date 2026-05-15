@@ -67,7 +67,11 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
         let flags = '';
 
-        store.getData().each(function (rec) {
+        // Get the values directly from the data source. Using store.getData() here
+        // would iterate over the filtered values, potentially overwriting flags that
+        // are set but currently filtered out by the search bar.
+        let source = store.getDataSource();
+        source.each(function (rec) {
             let s = rec.get('state');
             if (s && s !== '=') {
                 let f = rec.get('name');
@@ -290,7 +294,45 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
         me.value = me.originalValue = '';
 
-        me.dockedItems = [{
+        me.dockedItems = [];
+
+        if (!me.restrictToVMFlags) {
+            me.dockedItems.push({
+                xtype: 'toolbar',
+                dock: 'top',
+                items: {
+                    xtype: 'textfield',
+                    emptyText: gettext('Search name or description'),
+                    submitValue: false,
+                    listeners: {
+                        change: {
+                            buffer: 100,
+                            fn: function (field, value) {
+                                let store = field.up('grid').getStore();
+                                if (value) {
+                                    let lv = value.toLowerCase();
+                                    store.addFilter({
+                                        id: 'search-filter',
+                                        filterFn: (rec) => {
+                                            let name = rec.get('name') || '';
+                                            let desc = rec.get('description') || '';
+                                            return (
+                                                name.toLowerCase().includes(lv) ||
+                                                desc.toLowerCase().includes(lv)
+                                            );
+                                        },
+                                    });
+                                } else {
+                                    store.removeFilter('search-filter');
+                                }
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+        me.dockedItems.push({
             xtype: 'toolbar',
             dock: 'bottom',
             padding: '0 5',
@@ -321,7 +363,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                     },
                 },
             ],
-        }];
+        });
 
         me.callParent(arguments);
 
