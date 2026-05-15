@@ -1,3 +1,46 @@
+pve-manager (9.1.13) trixie; urgency=medium
+
+  * api: hardware: pci: use NVML for querying mediated device information on
+    NVIDIA GPUs, exposing details that the standard sysfs mdev interface does
+    not surface.
+
+  * node config: add an optional 'location' property holding a name and a
+    latitude/longitude pair, settable per node. Lets management systems like
+    Proxmox Datacenter Manager query and display a host's geographic position,
+    for example on a world map, with per-node overrides on top of the
+    cluster-wide location from the datacenter options.
+
+  * ui: expose the new 'Location' option in both the datacenter and node
+    option views, using the location edit widget and renderer from the widget
+    toolkit.
+
+  * ui: ha: resources: add an 'Auto-Rebalance' per-resource flag (default on)
+    that controls whether an HA resource may be migrated during automatic
+    rebalancing, with a matching grid column and status entry.
+
+  * fix ui: sdn: evpn and bgp controller: do not send empty 'route-map-in' or
+    'route-map-out' values on create, which previously made creating a BGP or
+    EVPN controller without any route map fail.
+
+  * ceph: switch the default release for fresh installs from Squid (19.2) to
+    Tentacle (20.2) and drop its experimental gating. Existing clusters are
+    unaffected, as the install wizard's cluster-version probe overrides the
+    default with whatever release the cluster already runs; only the
+    pre-selection on a Ceph-less cluster and a 'pveceph install' on a fresh
+    node change in practice.
+
+  * subscription: adapt to multiple server ID candidates: reuse an existing
+    recorded server ID if it still matches one of the candidates, otherwise
+    fall back to the first candidate. Keeps subscription handling working on
+    hosts where the server ID identification can produce more than one value.
+
+  * tighten qemu-server to >= 9.1.11 for the improved mdev support,
+    libpve-rs-perl to >= 0.14.0 for the new subscription server-ID handling,
+    proxmox-widget-toolkit to >= 5.2.1 for the location edit widget and
+    renderer, and libpve-network-perl and libpve-network-api-perl to >= 1.5.1.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 May 2026 12:30:55 +0200
+
 pve-manager (9.1.12) trixie; urgency=medium
 
   * ui: sdn: fabrics: add management UI for the new WireGuard fabric protocol.
