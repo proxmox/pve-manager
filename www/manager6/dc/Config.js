@@ -396,9 +396,24 @@ Ext.define('PVE.dc.Config', {
             caps.mapping['Mapping.Use'] ||
             caps.mapping['Mapping.Modify']
         ) {
+            me.items.push({
+                xtype: 'panel',
+                title: gettext('Guest Resources/Hardware'),
+                iconCls: 'fa fa-sitemap',
+                itemId: 'guestresourcesandhardware',
+                expandedOnInit: true,
+            });
+        }
+
+        if (
+            caps.mapping['Mapping.Audit'] ||
+            caps.mapping['Mapping.Use'] ||
+            caps.mapping['Mapping.Modify']
+        ) {
             me.items.push(
                 {
                     xtype: 'container',
+                    groups: ['guestresourcesandhardware'],
                     onlineHelp: 'resource_mapping',
                     title: gettext('Resource Mappings'),
                     itemId: 'resources',
@@ -432,6 +447,7 @@ Ext.define('PVE.dc.Config', {
                 },
                 {
                     xtype: 'pveDcDirMapView',
+                    groups: ['guestresourcesandhardware'],
                     itemId: 'directories',
                     title: gettext('Directory Mappings'),
                     iconCls: 'fa fa-folder',
@@ -439,9 +455,14 @@ Ext.define('PVE.dc.Config', {
             );
         }
 
-        if (caps.dc['Sys.Audit']) {
+        if (
+            caps.mapping['Mapping.Audit'] ||
+            caps.mapping['Mapping.Use'] ||
+            caps.mapping['Mapping.Modify']
+        ) {
             me.items.push({
                 xtype: 'pveCPUTypeView',
+                groups: ['guestresourcesandhardware'],
                 iconCls: 'fa fa-microchip',
                 title: gettext('Custom CPU models'),
                 itemId: 'cputypes',
