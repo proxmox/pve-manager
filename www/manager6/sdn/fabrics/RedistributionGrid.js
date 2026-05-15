@@ -17,7 +17,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         model: 'PVE.sdn.Fabric.Redistribution',
         listeners: {
             update: 'handleUpdate',
-        }
+        },
     },
 
     tbar: [
@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         {
             text: gettext('Add'),
             handler: 'addRedistribution',
-        }
+        },
     ],
 
     border: false,
@@ -35,7 +35,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
     controller: {
         xclass: 'Ext.app.ViewController',
 
-        addRedistribution: function() {
+        addRedistribution: function () {
             let me = this;
 
             let source = me.getView().getSources()[0][0];
@@ -65,7 +65,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
             me.handleUpdate();
         },
 
-        handleUpdate: function() {
+        handleUpdate: function () {
             let me = this;
             me.getView().checkChange();
         },
@@ -77,16 +77,16 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         },
     },
 
-    initComponent: function() {
+    initComponent: function () {
         let me = this;
 
         if (me.getSources().length === 0) {
-            throw "must define at least one redistribution source!";
+            throw 'must define at least one redistribution source!';
         }
 
         me.columns = [
             {
-                text: gettext("Source"),
+                text: gettext('Source'),
                 xtype: 'widgetcolumn',
                 dataIndex: 'source',
                 flex: 1,
@@ -97,7 +97,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
                 },
             },
             {
-                text: gettext("Route Map"),
+                text: gettext('Route Map'),
                 xtype: 'widgetcolumn',
                 dataIndex: 'route-map',
                 flex: 1,
@@ -108,7 +108,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
             },
             ...me.getAdditionalColumns(),
             {
-                text: gettext("Action"),
+                text: gettext('Action'),
                 xtype: 'actioncolumn',
                 width: 100,
                 items: [
@@ -124,28 +124,31 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         me.callParent();
     },
 
-    isEqual: function(value1, value2) {
+    isEqual: function (value1, value2) {
         return JSON.stringify(value1) === JSON.stringify(value2);
     },
 
-    getValue: function() {
+    getValue: function () {
         let me = this;
 
-        return me.getStore().getData().items.map((record) => {
-            let data = {};
+        return me
+            .getStore()
+            .getData()
+            .items.map((record) => {
+                let data = {};
 
-            for (const [key, value] of Object.entries(record.data)) {
-                if (value === '' || value === undefined || value === null || key === 'id') {
-                    continue;
+                for (const [key, value] of Object.entries(record.data)) {
+                    if (value === '' || value === undefined || value === null || key === 'id') {
+                        continue;
+                    }
+                    data[key] = value;
                 }
-                data[key] = value;
-            }
 
-            return PVE.Parser.printPropertyString(data, undefined);
-        });
+                return PVE.Parser.printPropertyString(data, undefined);
+            });
     },
 
-    setValue: function(value) {
+    setValue: function (value) {
         let me = this;
 
         me.getStore().setData((value ?? []).map((item) => PVE.Parser.parsePropertyString(item)));
@@ -169,7 +172,7 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         };
     },
 
-    getErrors: function(value) {
+    getErrors: function (value) {
         let me = this;
 
         let errors = [];
@@ -185,5 +188,5 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
         }
 
         return errors;
-    }
+    },
 });

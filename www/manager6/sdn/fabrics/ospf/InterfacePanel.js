@@ -23,10 +23,10 @@ Ext.define('PVE.sdn.Fabric.Ospf.NetworkTypeSelector', {
     store: {
         fields: ['name'],
         data: [
-            {name: 'broadcast'},
-            {name: 'non-broadcast'},
-            {name: 'point-to-multipoint'},
-            {name: 'point-to-point'},
+            { name: 'broadcast' },
+            { name: 'non-broadcast' },
+            { name: 'point-to-multipoint' },
+            { name: 'point-to-point' },
         ],
     },
 });

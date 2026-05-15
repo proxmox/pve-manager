@@ -101,7 +101,11 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
                 name: 'bgp-mode',
                 value: '',
                 emptyText: 'Automatic',
-                comboItems: [['auto', gettext('Automatic')], ['external', gettext('eBGP')], ['internal', gettext('iBGP')]],
+                comboItems: [
+                    ['auto', gettext('Automatic')],
+                    ['external', gettext('eBGP')],
+                    ['internal', gettext('iBGP')],
+                ],
                 fieldLabel: gettext('BGP Mode'),
                 allowBlank: true,
                 deleteEmpty: !me.isCreate,

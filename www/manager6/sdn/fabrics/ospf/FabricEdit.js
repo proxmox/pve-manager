@@ -46,6 +46,6 @@ Ext.define('PVE.sdn.Fabric.Ospf.Fabric.Edit', {
                     ],
                 },
             ],
-        }
+        },
     ],
 });
