@@ -18,6 +18,12 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
                 isPveNode: true,
             },
         },
+        formulas: {
+            disableNameField: function(get) {
+                let me = this;
+                return !me.getView().isCreate || get('current.isPveNode');
+            },
+        }
     },
 
     additionalItems: [
@@ -28,9 +34,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             name: 'node_id',
             bind: {
                 hidden: '{current.isPveNode}',
-            },
-            cbind: {
-                disabled: '{!isCreate}',
+                disabled: '{disableNameField}',
             },
             allowBlank: false,
         },
