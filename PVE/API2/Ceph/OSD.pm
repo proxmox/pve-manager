@@ -949,8 +949,12 @@ __PACKAGE__->register_method({
     },
 });
 
-# Check if $osdid belongs to $nodename
+# Check if $osdid belongs to $nodename, by CRUSH ownership.
 # $tree ... rados osd tree (passing the tree makes it easy to test)
+#
+# Note: PVE::Ceph::Services::get_node_daemons uses the systemd/filesystem view
+# instead for the rolling-restart path. CRUSH ownership is the right gate for
+# destroy; systemd unit existence is the right primitive for restart.
 sub osd_belongs_to_node {
     my ($tree, $nodename, $osdid) = @_;
     return 0 if !($tree && $tree->{nodes});
