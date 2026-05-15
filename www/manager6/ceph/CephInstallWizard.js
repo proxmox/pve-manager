@@ -150,7 +150,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     viewModel: {
         data: {
             nodename: '',
-            cephRelease: 'squid', // default
+            cephRelease: 'tentacle', // default
             cephRepo: 'enterprise',
             configuration: true,
             isInstalled: false,
