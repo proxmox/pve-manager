@@ -17,8 +17,12 @@ Ext.define('PVE.form.CPUModelSelector', {
     anyMatch: true,
     forceSelection: true,
     autoSelect: false,
+    triggerAction: 'query',
 
     deleteEmpty: true,
+    config: {
+        showCustomModels: true,
+    },
 
     getSubmitData: function () {
         let me = this,
@@ -134,5 +138,12 @@ Ext.define('PVE.form.CPUModelSelector', {
                 }
             },
         },
+    },
+    initComponent: function () {
+        let me = this;
+        me.callParent();
+        if (!me.showCustomModels) {
+            me.getStore().addFilter({ filterFn: (rec) => !rec.data.custom });
+        }
     },
 });
