@@ -6,22 +6,29 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         field: 'Ext.form.field.Field',
     },
 
+    config: {
+        // Show only the flags that may be set for a specific VM.
+        restrictToVMFlags: true,
+    },
+
     disableSelection: true,
     columnLines: false,
     selectable: false,
-    hideHeaders: true,
 
     scrollable: 'y',
     height: 200,
 
-    unkownFlags: [],
-
     emptyText: gettext('No CPU flags available'),
 
     store: {
-        type: 'store',
-        fields: ['name', { name: 'state', defaultValue: '=' }, 'description'],
-        autoLoad: true,
+        fields: [
+            'name',
+            { name: 'state', defaultValue: '=' },
+            'description',
+            'supported-on',
+            'unknown',
+        ],
+        autoLoad: false,
         proxy: {
             type: 'proxmox',
             url: '/api2/json/nodes/localhost/capabilities/qemu/cpu-flags',
@@ -30,16 +37,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             update: function () {
                 this.commitChanges();
             },
-            refresh: function (store, eOpts) {
-                let me = this;
-                let view = me.view;
-
-                if (store.adjustedForValue !== view.value) {
-                    view.adjustStoreForValue();
-                }
-            },
         },
-        adjustedForValue: undefined,
     },
 
     getValue: function () {
@@ -64,49 +62,114 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             }
         });
 
-        flags += me.unkownFlags.join(';');
-
         return flags;
     },
 
     setArch: function (arch) {
         let me = this;
         me.arch = arch;
-        let params = {};
-        if (arch) {
-            params.arch = arch;
+        // Snapshot pending edits so they survive the upcoming store reload.
+        if (me.getStore().isLoaded()) {
+            me.value = me.getValue();
         }
-        me.store.getProxy().setExtraParams(params);
+        let proxy = me.store.getProxy();
+        if (arch) {
+            proxy.setExtraParam('arch', arch);
+        } else {
+            delete proxy.extraParams.arch;
+        }
         me.store.reload();
     },
 
-    // Adjusts the store for the current value and determines the unkown flags based on what the
-    // store does not know.
+    setKvm: function (kvm) {
+        let me = this;
+        kvm = kvm ?? 1;
+        me.kvm = kvm;
+        // Snapshot pending edits so they survive the upcoming store reload.
+        if (me.getStore().isLoaded()) {
+            me.value = me.getValue();
+        }
+        let proxy = me.store.getProxy();
+        proxy.setExtraParam('accel', kvm === 1 ? 'kvm' : 'tcg');
+        me.store.reload();
+    },
+
+    // Adjusts the store for the current value. Flags not known to the API are added to the store
+    // as 'unknown' records so they stay visible and can be edited.
     adjustStoreForValue: function () {
         let me = this;
         let store = me.getStore();
         let value = me.value;
 
-        me.unkownFlags = [];
+        // Clear any previously added unknown records.
+        let unknownRecords = [];
+        let source = store.getDataSource();
+        source.each((rec) => {
+            if (rec.get('unknown')) {
+                unknownRecords.push(rec);
+            } else {
+                rec.set('state', '=');
+            }
+        });
+        store.remove(unknownRecords);
 
-        store.getData().each((rec) => rec.set('state', '='));
+        let newUnknownFlags = [];
+        let addUnknownFlag = function (flag, sign) {
+            newUnknownFlags.push({
+                name: flag,
+                state: sign,
+                // A TCG-only flag will be flagged as unknown when `accel` is set to `kvm` and vice-versa, hence the very general wording.
+                description: gettext(
+                    'This flag is not available for the selected acceleration type and/or not supported by any node in the cluster. It is very likely to lead to VM startup failure. You can remove it by setting it to "Default".',
+                ),
+                unknown: true,
+            });
+        };
 
         let flags = value ? value.split(';') : [];
         flags.forEach(function (flag) {
             let sign = flag.substr(0, 1);
             flag = flag.substr(1);
 
-            let rec = store.findRecord('name', flag, 0, false, true, true);
+            let rec = source.findBy((r) => r.get('name') === flag);
             if (rec !== null) {
-                rec.set('state', sign);
+                let supported = rec.get('supported-on');
+                // Treat flags that are set in the config but not supported anywhere as unknown
+                if (Array.isArray(supported) && supported.length === 0 && sign !== '=') {
+                    store.remove(rec);
+                    addUnknownFlag(flag, sign);
+                } else {
+                    rec.set('state', sign);
+                    rec.commit();
+                }
             } else {
-                me.unkownFlags.push(flag);
+                addUnknownFlag(flag, sign);
             }
         });
 
-        store.adjustedForValue = value;
-    },
+        // Make sure unknown flags are displayed at the top of the list
+        // so users reconsider them.
+        if (newUnknownFlags.length > 0) {
+            store.insert(0, newUnknownFlags);
+        }
 
+        // Ext.js uses buffered rendering [0] for larger lists like this one.
+        // AbstractView.refresh() [1], which was previously used here for refreshing,
+        // destroys and recreates all row elements but the buffered renderer only
+        // tracks a sliding window of DOM nodes, so the refresh skips rows outside
+        // the buffer, which leads to some elements not being fully rendered.
+        //
+        // Firing the 'refresh' event allows whatever view is currently rendering the
+        // table (i.e. buffered or not) to handle it accordingly.
+        //
+        // [0] https://docs.sencha.com/extjs/7.0.0/classic/Ext.grid.plugin.BufferedRenderer.html
+        // [1] https://docs.sencha.com/extjs/7.0.0/classic/Ext.view.AbstractView.html#method-refresh
+        store.fireEvent('refresh', store);
+    },
+    isDirty: function () {
+        let me = this;
+        return me.originalValue !== me.getValue();
+    },
     setValue: function (value) {
         let me = this;
 
@@ -122,6 +185,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     },
     columns: [
         {
+            text: gettext('State'),
             dataIndex: 'state',
             renderer: function (v) {
                 switch (v) {
@@ -138,6 +202,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             width: 65,
         },
         {
+            text: gettext('Value'),
             xtype: 'widgetcolumn',
             dataIndex: 'state',
             width: 95,
@@ -184,22 +249,44 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             },
         },
         {
+            text: gettext('Flag'),
             dataIndex: 'name',
             width: 100,
         },
         {
+            text: gettext('Description'),
             dataIndex: 'description',
+            sortable: false,
+            cellWrap: true,
+            flex: 3,
+        },
+        {
+            text: gettext('Supported On'),
+            dataIndex: 'supported-on',
             cellWrap: true,
             flex: 1,
+            renderer: (v) => (Array.isArray(v) ? v.join(', ') : ''),
         },
     ],
-
     initComponent: function () {
         let me = this;
 
         me.value = me.originalValue = '';
-        me.store.view = me;
 
         me.callParent(arguments);
+
+        me.initialized = true;
+
+        me.getStore().on('load', function (store, _, success) {
+            if (success) {
+                me.adjustStoreForValue();
+                me.checkDirty();
+            }
+        });
+
+        if (!me.restrictToVMFlags) {
+            me.getStore().getProxy().setUrl('/api2/json/cluster/qemu/cpu-flags');
+            me.getStore().load();
+        }
     },
 });

@@ -87,6 +87,43 @@ Ext.define('PVE.dc.CPUTypeEdit', {
                     emptyText: gettext('None'),
                     maxLength: 12,
                 },
+                {
+                    xtype: 'radiogroup',
+                    fieldLabel: gettext('Acceleration'),
+                    layout: 'hbox',
+                    validateOnChange: false,
+                    items: [
+                        {
+                            boxLabel: 'KVM',
+                            inputValue: 1,
+                            name: 'kvm',
+                            checked: true,
+                            isFormField: false,
+                        },
+                        {
+                            boxLabel: 'TCG',
+                            inputValue: 0,
+                            name: 'kvm',
+                            margin: '0 0 0 10',
+                            isFormField: false,
+                        },
+                    ],
+                    listeners: {
+                        change: function (field, value) {
+                            let panel = field.up('pveCpuTypeEdit');
+                            panel.lookup('cpuFlags').setKvm(value.kvm);
+                        },
+                    },
+                },
+                {
+                    xtype: 'displayfield',
+                    userCls: 'pmx-hint',
+                    value: gettext(
+                        'This setting only filters the flag list shown below.' +
+                            ' Assigning this model to a VM still requires matching the' +
+                            " VM's 'kvm' setting (1 for KVM, 0 for TCG).",
+                    ),
+                },
             ],
             column2: [
                 {
@@ -100,6 +137,16 @@ Ext.define('PVE.dc.CPUTypeEdit', {
                     xtype: 'PhysBitsSelector',
                     fieldLabel: gettext('Phys-Bits'),
                     name: 'phys-bits',
+                },
+            ],
+            columnB: [
+                {
+                    xtype: 'vmcpuflagselector',
+                    fieldLabel: gettext('Extra CPU flags'),
+                    name: 'flags',
+                    reference: 'cpuFlags',
+                    restrictToVMFlags: false,
+                    height: 380,
                 },
             ],
         },

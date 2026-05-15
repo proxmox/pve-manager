@@ -12,12 +12,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             coreCount: 1,
             showCustomModelPermWarning: false,
             userIsRoot: false,
+            kvm: 1,
         },
         formulas: {
             totalCoreCount: (get) => get('socketCount') * get('coreCount'),
             cpuunitsDefault: (get) => (get('cgroupMode') === 1 ? 1024 : 100),
             cpuunitsMin: (get) => (get('cgroupMode') === 1 ? 2 : 1),
             cpuunitsMax: (get) => (get('cgroupMode') === 1 ? 262144 : 10000),
+            accel: (get) => (get('kvm') === 0 ? 'tcg' : 'kvm'),
         },
     },
 
@@ -115,6 +117,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
         me.arch = arch;
         me.lookup('cputype').setArch(arch);
         me.lookup('cpuFlags').setArch(arch);
+    },
+
+    setKvm: function (kvm) {
+        let me = this;
+        kvm = kvm ?? 1;
+        me.kvm = kvm;
+        me.getViewModel().set('kvm', kvm);
+        me.lookup('cpuFlags').setKvm(kvm);
     },
 
     column1: [
@@ -241,6 +251,34 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             name: 'numa',
             uncheckedValue: 0,
         },
+        {
+            xtype: 'proxmoxcheckbox',
+            fieldLabel: gettext('KVM hardware virtualization'),
+            name: 'kvm',
+            reference: 'kvmCheckbox',
+            defaultValue: 1,
+            checked: true,
+            uncheckedValue: 0,
+            listeners: {
+                change: function (field, value) {
+                    let panel = field.up('pveQemuProcessorPanel');
+                    let kvm = value ? 1 : 0;
+                    panel.getViewModel().set('kvm', kvm);
+                    panel.lookup('cpuFlags').setKvm(kvm);
+                },
+            },
+        },
+        {
+            xtype: 'displayfield',
+            userCls: 'pmx-hint',
+            value: gettext(
+                'TCG uses software emulation and is significantly slower than hardware-accelerated KVM.',
+            ),
+            hidden: true,
+            bind: {
+                hidden: '{kvm}',
+            },
+        },
     ],
     advancedColumnB: [
         {
@@ -252,6 +290,9 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             xtype: 'vmcpuflagselector',
             reference: 'cpuFlags',
             name: 'flags',
+            bind: {
+                kvm: '{kvm}',
+            },
         },
     ],
 });
@@ -319,6 +360,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                 }
                 me.setValues(data);
                 ipanel.setArch(arch);
+                ipanel.setKvm(data.kvm);
             },
         });
     },
