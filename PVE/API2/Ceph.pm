@@ -118,7 +118,10 @@ __PACKAGE__->register_method({
     name => 'init',
     path => 'init',
     method => 'POST',
-    description => "Create initial ceph default configuration and setup symlinks.",
+    description => "Create the initial Ceph default configuration and set up symlinks."
+        . " Idempotent on re-call: if a [global] section already exists in"
+        . " ceph.conf, the existing fsid / auth / pool defaults are"
+        . " preserved and most parameters are silently ignored.",
     proxyto => 'node',
     protected => 1,
     permissions => {
