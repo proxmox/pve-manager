@@ -2,8 +2,9 @@ include ../../../../defines.mk
 
 # for node independent, cluster-wide applicable, API endpoints
 # ensure we do not conflict with files shipped by pve-cluster!!
-PERLSOURCE= 	\
-	CPUFlags.pm
+PERLSOURCE= 		\
+	CPUFlags.pm		\
+	CustomCPUModels.pm
 
 all:
 
