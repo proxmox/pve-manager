@@ -81,10 +81,30 @@ Ext.define('PVE.sdn.Fabric.WireGuard.PeerSelectionPanel', {
         },
     ],
 
-    setSelectedPeers: function (selectedPeers) {
+    updateCurrentNode: function() {
+        let me = this;
+        me.updatePeerList();
+    },
+
+    updateAvailablePeers: function() {
+        let me = this;
+        me.updatePeerList();
+    },
+
+    updateSelectedPeers: function() {
+        let me = this;
+        me.updatePeerList();
+    },
+
+    updatePeerList: function () {
         let me = this;
 
         if (!me.isConfiguring) {
+            let currentNode = me.getCurrentNode();
+            if (!currentNode) {
+                return;
+            }
+
             let store = me.getStore();
 
             let selectionModel = me.getSelectionModel();
@@ -93,8 +113,11 @@ Ext.define('PVE.sdn.Fabric.WireGuard.PeerSelectionPanel', {
             selectionModel.select([]);
             store.removeAll();
 
-            for (const availablePeer of me.getAvailablePeers()) {
-                if (availablePeer.node === me.getCurrentNode().node_id) {
+            let availablePeers = me.getAvailablePeers();
+            let selectedPeers = me.getSelectedPeers();
+
+            for (const availablePeer of availablePeers) {
+                if (availablePeer.node === currentNode.node_id) {
                     continue;
                 }
 
