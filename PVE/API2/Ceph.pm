@@ -137,7 +137,7 @@ __PACKAGE__->register_method({
             },
             'cluster-network' => {
                 description => "Declare a separate cluster network, OSDs will route"
-                    . "heartbeat, object replication and recovery traffic over it",
+                    . " heartbeat, object replication and recovery traffic over it",
                 type => 'string',
                 format => 'CIDR',
                 requires => 'network',
