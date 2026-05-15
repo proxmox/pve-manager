@@ -40,6 +40,23 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         },
     },
 
+    supportedFilterFn: function (rec) {
+        // nested-virt is a PVE-only shorthand resolved at VM start to svm or vmx;
+        // keep it visible even on clusters where no node currently reports either.
+        if (rec.get('name') === 'nested-virt') {
+            return true;
+        }
+        let state = rec.get('state');
+        if (state && state !== '=') {
+            return true;
+        }
+        if (rec.get('unknown')) {
+            return true;
+        }
+        let s = rec.get('supported-on');
+        return Array.isArray(s) && s.length > 0;
+    },
+
     getValue: function () {
         let me = this;
         let store = me.getStore();
@@ -273,9 +290,49 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
         me.value = me.originalValue = '';
 
+        me.dockedItems = [{
+            xtype: 'toolbar',
+            dock: 'bottom',
+            padding: '0 5',
+            items: [
+                {
+                    xtype: 'checkbox',
+                    // Default-on for per-VM edit, default-off when curating a
+                    // custom CPU model: the latter is cluster-wide, so we must
+                    // expose flags that no current node reports too (otherwise
+                    // a fresh single-node setup shows an almost-empty list).
+                    checked: me.restrictToVMFlags,
+                    submitValue: false,
+                    isFormField: false,
+                    boxLabel: gettext('Only show flags supported by at least one node'),
+                    listeners: {
+                        change: function (cb, checked) {
+                            let grid = cb.up('grid');
+                            let store = grid.getStore();
+                            if (checked) {
+                                store.addFilter({
+                                    id: 'supported-filter',
+                                    filterFn: grid.supportedFilterFn,
+                                });
+                            } else {
+                                store.removeFilter('supported-filter');
+                            }
+                        },
+                    },
+                },
+            ],
+        }];
+
         me.callParent(arguments);
 
         me.initialized = true;
+
+        if (me.restrictToVMFlags) {
+            me.getStore().addFilter({
+                id: 'supported-filter',
+                filterFn: me.supportedFilterFn,
+            });
+        }
 
         me.getStore().on('load', function (store, _, success) {
             if (success) {
