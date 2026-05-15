@@ -61,6 +61,7 @@ JSSRC= 							\
 	form/PCISelector.js				\
 	form/PCIMapSelector.js				\
 	form/PermPathSelector.js			\
+	form/PhysBitsSelector.js			\
 	form/PoolSelector.js				\
 	form/PreallocationSelector.js			\
 	form/PrivilegesSelector.js			\
@@ -175,6 +176,8 @@ JSSRC= 							\
 	dc/CmdMenu.js					\
 	dc/Config.js					\
 	dc/CorosyncLinkEdit.js				\
+	dc/CPUTypeEdit.js				\
+	dc/CPUTypeView.js				\
 	dc/GroupEdit.js					\
 	dc/GroupView.js					\
 	dc/Guests.js					\

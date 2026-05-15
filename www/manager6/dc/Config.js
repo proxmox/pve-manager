@@ -439,6 +439,15 @@ Ext.define('PVE.dc.Config', {
             );
         }
 
+        if (caps.dc['Sys.Audit']) {
+            me.items.push({
+                xtype: 'pveCPUTypeView',
+                iconCls: 'fa fa-microchip',
+                title: gettext('Custom CPU models'),
+                itemId: 'cputypes',
+            });
+        }
+
         if (
             caps.mapping['Mapping.Audit'] ||
             caps.mapping['Mapping.Use'] ||
