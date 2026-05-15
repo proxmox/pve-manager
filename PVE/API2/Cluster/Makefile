@@ -1,7 +1,8 @@
 include ../../../defines.mk
 
 SUBDIRS=Mapping		\
-	BulkAction
+	BulkAction 		\
+	Qemu
 
 # for node independent, cluster-wide applicable, API endpoints
 # ensure we do not conflict with files shipped by pve-cluster!!
@@ -12,7 +13,8 @@ PERLSOURCE= 			\
 	Jobs.pm				\
 	Mapping.pm			\
 	MetricServer.pm		\
-	Notifications.pm
+	Notifications.pm	\
+	Qemu.pm
 
 all:
 
