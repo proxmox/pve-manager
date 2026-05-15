@@ -71,7 +71,6 @@ __PACKAGE__->register_method({
     path => '',
     method => 'GET',
     description => "Directory index.",
-    permissions => { user => 'all' },
     permissions => {
         check => ['perm', '/', ['Sys.Audit', 'Datastore.Audit'], any => 1],
     },
