@@ -352,6 +352,9 @@ JSSRC= 							\
 	sdn/fabrics/wireguard/InterfacePanel.js		\
 	sdn/fabrics/wireguard/NodeEdit.js		\
 	sdn/fabrics/wireguard/FabricEdit.js		\
+	sdn/fabrics/bgp/InterfacePanel.js		\
+	sdn/fabrics/bgp/NodeEdit.js			\
+	sdn/fabrics/bgp/FabricEdit.js			\
 	storage/ContentView.js				\
 	storage/BackupView.js				\
 	storage/Base.js					\

@@ -34,6 +34,7 @@ Ext.define('PVE.sdn.Fabric.View', {
                         openfabric: 'OpenFabric',
                         ospf: 'OSPF',
                         wireguard: 'WireGuard',
+                        bgp: 'BGP',
                     };
                     const displayValue = PROTOCOL_DISPLAY_NAMES[value];
                     if (rec.data.state === undefined || rec.data.state === null) {
@@ -203,6 +204,10 @@ Ext.define('PVE.sdn.Fabric.View', {
                             text: 'WireGuard',
                             handler: 'addWireGuard',
                         },
+                        {
+                            text: 'BGP',
+                            handler: 'addBgp',
+                        },
                     ],
                 },
                 addNodeButton,
@@ -282,6 +287,7 @@ Ext.define('PVE.sdn.Fabric.View', {
                 openfabric: 'PVE.sdn.Fabric.OpenFabric.Fabric.Edit',
                 ospf: 'PVE.sdn.Fabric.Ospf.Fabric.Edit',
                 wireguard: 'PVE.sdn.Fabric.WireGuard.Fabric.Edit',
+                bgp: 'PVE.sdn.Fabric.Bgp.Fabric.Edit',
             };
 
             return FABRIC_PANELS[protocol];
@@ -292,6 +298,7 @@ Ext.define('PVE.sdn.Fabric.View', {
                 openfabric: 'PVE.sdn.Fabric.OpenFabric.Node.Edit',
                 ospf: 'PVE.sdn.Fabric.Ospf.Node.Edit',
                 wireguard: 'PVE.sdn.Fabric.WireGuard.Node.Edit',
+                bgp: 'PVE.sdn.Fabric.Bgp.Node.Edit',
             };
 
             return NODE_PANELS[protocol];
@@ -310,6 +317,11 @@ Ext.define('PVE.sdn.Fabric.View', {
         addOspf: function () {
             let me = this;
             me.openFabricAddWindow('ospf');
+        },
+
+        addBgp: function () {
+            let me = this;
+            me.openFabricAddWindow('bgp');
         },
 
         openFabricAddWindow: function (protocol) {

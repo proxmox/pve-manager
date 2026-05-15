@@ -261,6 +261,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             openfabric: 'PVE.sdn.Fabric.OpenFabric.InterfacePanel',
             ospf: 'PVE.sdn.Fabric.Ospf.InterfacePanel',
             wireguard: 'PVE.sdn.Fabric.WireGuard.InterfacePanel',
+            bgp: 'PVE.sdn.Fabric.Bgp.InterfacePanel',
         };
 
         return INTERFACE_PANELS[protocol];
