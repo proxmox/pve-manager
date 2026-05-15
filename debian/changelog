@@ -1,3 +1,61 @@
+pve-manager (9.1.12) trixie; urgency=medium
+
+  * ui: sdn: fabrics: add management UI for the new WireGuard fabric protocol.
+    New panels under Datacenter > SDN > Fabrics let users create and edit
+    WireGuard interfaces with their peer references on internal nodes, manage
+    external peer definitions, and review per-node available peers. Public
+    keys, AllowedIPs and skip-route-generation can be edited per peer; private
+    keys are generated on save and discarded synchronously when an interface
+    or node is removed.
+
+  * ui: sdn: fabrics: ospf: add a per-interface network-type selector
+    (Broadcast, NonBroadcast, PointToPoint, PointToMultipoint), exposing the
+    new fabric API field. Previously the network type was inferred implicitly
+    from whether the interface had an IP, leaving users no way to override it.
+
+  * ui: sdn: fabrics: ospf: add a redistribution grid for importing routes
+    from other protocols (connected, kernel, static, ...) into OSPF, with a
+    route-map selector per source.
+
+  * ui: sdn: evpn: zone and controller: expose new advanced fields
+    (peer-group-name, nodes, BGP mode, eBGP multihop on the controller;
+    additional controllers on the zone) to the UI.
+
+  * ui: always load SDN navigation entries. Previously they were hidden behind
+    a tech-preview gate that rejected the dynamic feature probe when any
+    optional SDN module was not yet available on the cluster, which has not
+    been the intended behaviour for a while now.
+
+  * ui: fix parsing of property-strings when values contain an equals sign.
+    The previous logic relied on String.split's `limit` parameter, which
+    silently truncated values rather than stopping the split, so base64-padded
+    values and similar got cut off at the first `=`.
+
+  * network: sdn: trigger WireGuard config generation on apply, which emits
+    per-interface configuration into /etc/wireguard/proxmox and syncs running
+    interfaces via wg(8) syncconf if wireguard-tools is installed.
+
+  * ui: lxc: mountpoint edit: expose the new `idmap` option for mapping
+    user/group IDs on a per-mountpoint basis, and drop a duplicate `mp`
+    assignment in the same panel.
+
+  * ui: ha: add a button on a HA-managed guest's resource grid to
+    disarm/re-arm it without removing the HA configuration, useful for
+    temporarily skipping HA management during maintenance.
+
+  * ui: migrate: display the precondition messages for HA node-affinity rules
+    when they constrain the migration target, so users see why a specific node
+    cannot be picked.
+
+  * ui: sdn: title-case existing button and field labels for consistency with
+    the rest of the UI.
+
+  * tighten libpve-network-perl and libpve-network-api-perl dependencies to
+    1.5.0 and pve-container to 6.1.6 for the new WireGuard fabric, the OSPF
+    redistribute and network-type API surface, and the LXC idmap option.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 May 2026 06:29:26 +0200
+
 pve-manager (9.1.11) trixie; urgency=medium
 
   * ui: sdn: introduce management UI for the new prefix list and route map
