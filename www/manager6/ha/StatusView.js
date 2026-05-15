@@ -106,6 +106,10 @@ Ext.define(
                     name: 'failback',
                     type: 'boolean',
                 },
+                {
+                    name: 'auto-rebalance',
+                    type: 'boolean',
+                },
                 'max_restart',
                 'max_relocate',
                 'type',
