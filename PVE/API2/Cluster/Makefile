@@ -8,11 +8,11 @@ SUBDIRS=Mapping		\
 PERLSOURCE= 			\
 	BackupInfo.pm		\
 	BulkAction.pm		\
+	Ceph.pm				\
+	Jobs.pm				\
+	Mapping.pm			\
 	MetricServer.pm		\
-	Mapping.pm		\
-	Notifications.pm		\
-	Jobs.pm			\
-	Ceph.pm
+	Notifications.pm
 
 all:
 
