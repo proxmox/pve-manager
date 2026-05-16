@@ -17,7 +17,18 @@ __PACKAGE__->register_method({
     method => 'GET',
     description => "List of available CPU flags. Currently only implemented for x86_64,"
         . " returns an empty list for aarch64.",
-    permissions => { check => ['perm', '/nodes', ['Sys.Audit']] },
+    permissions => {
+        check => [
+            'or',
+            ['perm', '/nodes', ['Sys.Audit']],
+            [
+                'perm',
+                '/mapping/cpu',
+                ['Mapping.Audit', 'Mapping.Use', 'Mapping.Modify'],
+                any => 1,
+            ],
+        ],
+    },
     parameters => {
         additionalProperties => 0,
         properties => {
