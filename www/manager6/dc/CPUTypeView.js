@@ -92,7 +92,7 @@ Ext.define('PVE.dc.CPUTypeView', {
             renderer: (val) => Proxmox.Utils.format_boolean(val),
         },
         {
-            header: gettext('HyperV-Vendor'),
+            header: gettext('Hyper-V Vendor'),
             flex: 1,
             dataIndex: 'hv-vendor-id',
         },
