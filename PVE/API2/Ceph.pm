@@ -385,7 +385,8 @@ __PACKAGE__->register_method({
                 type => 'string',
                 optional => 1,
                 default => 'ceph.target',
-                pattern => '(mon|mds|osd|mgr)(\.' . PVE::Ceph::Services::SERVICE_REGEX . ')?',
+                pattern => '(ceph|mon|mds|osd|mgr)(\.'
+                    . PVE::Ceph::Services::SERVICE_REGEX . ')?',
             },
         },
     },
