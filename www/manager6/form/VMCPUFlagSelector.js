@@ -300,35 +300,53 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             me.dockedItems.push({
                 xtype: 'toolbar',
                 dock: 'top',
-                items: {
-                    xtype: 'textfield',
-                    emptyText: gettext('Search name or description'),
-                    submitValue: false,
-                    listeners: {
-                        change: {
-                            buffer: 100,
-                            fn: function (field, value) {
-                                let store = field.up('grid').getStore();
-                                if (value) {
-                                    let lv = value.toLowerCase();
-                                    store.addFilter({
-                                        id: 'search-filter',
-                                        filterFn: (rec) => {
-                                            let name = rec.get('name') || '';
-                                            let desc = rec.get('description') || '';
-                                            return (
-                                                name.toLowerCase().includes(lv) ||
-                                                desc.toLowerCase().includes(lv)
-                                            );
-                                        },
-                                    });
-                                } else {
-                                    store.removeFilter('search-filter');
-                                }
+                items: [
+                    {
+                        xtype: 'textfield',
+                        emptyText: gettext('Search name or description'),
+                        submitValue: false,
+                        width: 240,
+                        listeners: {
+                            change: {
+                                buffer: 100,
+                                fn: function (field, value) {
+                                    let store = field.up('grid').getStore();
+                                    if (value) {
+                                        let lv = value.toLowerCase();
+                                        store.addFilter({
+                                            id: 'search-filter',
+                                            filterFn: (rec) => {
+                                                let name = rec.get('name') || '';
+                                                let desc = rec.get('description') || '';
+                                                return (
+                                                    name.toLowerCase().includes(lv) ||
+                                                    desc.toLowerCase().includes(lv)
+                                                );
+                                            },
+                                        });
+                                    } else {
+                                        store.removeFilter('search-filter');
+                                    }
+                                },
                             },
                         },
                     },
-                },
+                    '->',
+                    { xtype: 'tbtext', text: gettext('Filter Flags for') + ':' },
+                    {
+                        xtype: 'segmentedbutton',
+                        allowMultiple: false,
+                        items: [
+                            { text: 'KVM', value: 1, pressed: true },
+                            { text: 'TCG', value: 0 },
+                        ],
+                        listeners: {
+                            change: function (field, value) {
+                                field.up('grid').setKvm(value);
+                            },
+                        },
+                    },
+                ],
             });
         }
 
