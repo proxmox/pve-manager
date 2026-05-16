@@ -1,6 +1,12 @@
 Ext.define('PVE.data.CPUModel', {
     extend: 'Ext.data.Model',
-    fields: [{ name: 'name' }, { name: 'vendor' }, { name: 'custom' }, { name: 'displayname' }],
+    fields: [
+        { name: 'name' },
+        { name: 'vendor' },
+        { name: 'custom' },
+        { name: 'abstract' },
+        { name: 'displayname' },
+    ],
 });
 
 Ext.define('PVE.form.CPUModelSelector', {
@@ -22,6 +28,9 @@ Ext.define('PVE.form.CPUModelSelector', {
     deleteEmpty: true,
     config: {
         showCustomModels: true,
+        // PVE-internal abstract profiles (x86-64-vN) resolve to qemu64 + flag set
+        // at VM start and are not valid as a custom CPU model's reported-model.
+        showAbstractModels: true,
     },
 
     getSubmitData: function () {
@@ -144,6 +153,9 @@ Ext.define('PVE.form.CPUModelSelector', {
         me.callParent();
         if (!me.showCustomModels) {
             me.getStore().addFilter({ filterFn: (rec) => !rec.data.custom });
+        }
+        if (!me.showAbstractModels) {
+            me.getStore().addFilter({ filterFn: (rec) => !rec.data.abstract });
         }
     },
 });

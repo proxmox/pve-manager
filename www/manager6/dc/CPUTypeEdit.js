@@ -60,6 +60,7 @@ Ext.define('PVE.dc.CPUTypeEdit', {
                     xtype: 'CPUModelSelector',
                     fieldLabel: gettext('Base Model'),
                     showCustomModels: false,
+                    showAbstractModels: false,
                     name: 'reported-model',
                     autoEl: {
                         tag: 'div',
