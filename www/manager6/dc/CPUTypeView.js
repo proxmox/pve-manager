@@ -81,7 +81,7 @@ Ext.define('PVE.dc.CPUTypeView', {
             },
         },
         {
-            header: gettext('Phys-Bits'),
+            header: gettext('Physical Address Bits'),
             flex: 1,
             dataIndex: 'phys-bits',
         },

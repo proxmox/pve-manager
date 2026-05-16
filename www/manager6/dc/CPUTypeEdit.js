@@ -107,7 +107,14 @@ Ext.define('PVE.dc.CPUTypeEdit', {
                 },
                 {
                     xtype: 'PhysBitsSelector',
-                    fieldLabel: gettext('Phys-Bits'),
+                    fieldLabel: gettext('Physical Address Bits'),
+                    autoEl: {
+                        tag: 'div',
+                        'data-qtip': gettext(
+                            'Live migration fails to hosts whose CPU supports fewer bits than' +
+                                ' the configured value.',
+                        ),
+                    },
                     name: 'phys-bits',
                 },
             ],
