@@ -341,7 +341,10 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                     }
 
                     let caps = Ext.state.Manager.get('GuiCap');
-                    if (data.cputype.indexOf('custom-') === 0 && !caps.nodes['Sys.Audit']) {
+                    let canReuseCustom = caps.nodes['Sys.Audit']
+                        || caps.mapping['Mapping.Use']
+                        || caps.mapping['Mapping.Modify'];
+                    if (data.cputype.indexOf('custom-') === 0 && !canReuseCustom) {
                         let vm = ipanel.getViewModel();
                         vm.set('showCustomModelPermWarning', true);
                     }
