@@ -1,3 +1,31 @@
+pve-manager (9.1.14) trixie; urgency=medium
+
+  * fix #5076: ui: dc: add an optional 'audiences' field for OpenID realms,
+    allowing the additional OIDC audiences a token may carry to be accepted.
+
+  * sdn: wireguard: stop disabling the name field when creating an external
+    node, which had blocked external WireGuard node creation entirely.
+
+  * network: drop the apply flag when generating the WireGuard config,
+    avoiding an error when applying a configuration with newly created
+    interfaces.
+
+  * sdn: wireguard: fix rendering the peer list in Chromium-based browsers,
+    which previously only worked in Firefox due to a race between setting
+    available and selected peers.
+
+  * ui: ha: configure the CRS auto-rebalance imbalance threshold and minimum
+    improvement margin in percent (0-100) to match the percent representation
+    already used in the HA panel status. NOTE: previously configured
+    fractional values must be multiplied by 100 to keep the same behavior;
+    this only affects 9.2 alpha testers as the feature is new.
+
+  * ui: ha: add a CRS Settings shortcut button to the HA panel toolbar that
+    opens the existing scheduling settings dialog directly, to improve
+    discoverability without duplicating the settings tree.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 17 May 2026 00:54:47 +0200
+
 pve-manager (9.1.13) trixie; urgency=medium
 
   * api: hardware: pci: use NVML for querying mediated device information on
