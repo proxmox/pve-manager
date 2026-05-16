@@ -86,7 +86,7 @@ Ext.define('PVE.dc.CPUTypeView', {
             dataIndex: 'phys-bits',
         },
         {
-            header: gettext('Hidden'),
+            header: gettext('Hide Hypervisor'),
             flex: 1,
             dataIndex: 'hidden',
             renderer: (val) => Proxmox.Utils.format_boolean(val),

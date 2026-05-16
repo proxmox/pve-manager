@@ -92,7 +92,15 @@ Ext.define('PVE.dc.CPUTypeEdit', {
             column2: [
                 {
                     xtype: 'checkbox',
-                    fieldLabel: gettext('Hidden'),
+                    fieldLabel: gettext('Hide Hypervisor'),
+                    autoEl: {
+                        tag: 'div',
+                        'data-qtip': gettext(
+                            'Hide the KVM hypervisor signature in the guest CPUID,' +
+                                ' for guests that misbehave when detecting that they run' +
+                                ' under KVM such as older NVIDIA GPU drivers.',
+                        ),
+                    },
                     name: 'hidden',
                     inputValue: 1,
                     uncheckedValue: 0,
