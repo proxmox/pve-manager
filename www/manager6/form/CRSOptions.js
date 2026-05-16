@@ -78,10 +78,11 @@ Ext.define('PVE.form.CRSOptions', {
                 {
                     xtype: 'numberfield',
                     name: 'ha-auto-rebalance-threshold',
-                    fieldLabel: gettext('Imbalance Threshold'),
-                    emptyText: '0.3',
-                    minValue: 0.0,
-                    step: 0.01,
+                    fieldLabel: gettext('Imbalance Threshold (%)'),
+                    emptyText: Proxmox.Utils.defaultText + ' (30)',
+                    minValue: 0,
+                    maxValue: 100,
+                    step: 1,
                     bind: {
                         disabled: '{autoRebalancingDisabled}',
                     },
@@ -116,11 +117,11 @@ Ext.define('PVE.form.CRSOptions', {
                 {
                     xtype: 'numberfield',
                     name: 'ha-auto-rebalance-margin',
-                    fieldLabel: gettext('Minimum Imbalance Improvement'),
-                    emptyText: '0.1',
-                    minValue: 0.0,
-                    maxValue: 1.0,
-                    step: 0.01,
+                    fieldLabel: gettext('Minimum Imbalance Improvement (%)'),
+                    emptyText: Proxmox.Utils.defaultText + ' (10)',
+                    minValue: 0,
+                    maxValue: 100,
+                    step: 1,
                     bind: {
                         disabled: '{autoRebalancingDisabled}',
                     },
