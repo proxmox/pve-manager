@@ -423,7 +423,9 @@ __PACKAGE__->register_method({
     name => 'status',
     path => 'status',
     method => 'GET',
-    description => "Get ceph status.",
+    description => "Get the Ceph cluster status (raw 'ceph status' output). The response is"
+        . " cluster-wide and identical to /cluster/ceph/status; this node-level alias exists"
+        . " for operator convenience.",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -513,11 +515,14 @@ __PACKAGE__->register_method({
                 type => 'integer',
                 minimum => 0,
                 optional => 1,
+                description => "Offset of the first log line to return (0-based).",
             },
             limit => {
                 type => 'integer',
                 minimum => 0,
                 optional => 1,
+                description => "Maximum number of log lines to return. Defaults to the"
+                    . " dump_logfile limit (typically 50) when omitted.",
             },
         },
     },
@@ -527,11 +532,11 @@ __PACKAGE__->register_method({
             type => "object",
             properties => {
                 n => {
-                    description => "Line number",
+                    description => "Log-file line number (1-based).",
                     type => 'integer',
                 },
                 t => {
-                    description => "Line text",
+                    description => "Log line text.",
                     type => 'string',
                 },
             },
