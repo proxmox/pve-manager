@@ -19,7 +19,15 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             cpuunitsDefault: (get) => (get('cgroupMode') === 1 ? 1024 : 100),
             cpuunitsMin: (get) => (get('cgroupMode') === 1 ? 2 : 1),
             cpuunitsMax: (get) => (get('cgroupMode') === 1 ? 262144 : 10000),
-            accel: (get) => (get('kvm') === 0 ? 'tcg' : 'kvm'),
+            accel: (get) => (get('kvm') === 0 ? 'TCG' : 'KVM'),
+            accelHint: (get) =>
+                Ext.String.format(
+                    gettext(
+                        "Flag list reflects the VM's current acceleration ({0});" +
+                            ' change in Hardware -> KVM hardware virtualization if needed.',
+                    ),
+                    get('accel'),
+                ),
         },
     },
 
@@ -251,34 +259,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             name: 'numa',
             uncheckedValue: 0,
         },
-        {
-            xtype: 'proxmoxcheckbox',
-            fieldLabel: gettext('KVM hardware virtualization'),
-            name: 'kvm',
-            reference: 'kvmCheckbox',
-            defaultValue: 1,
-            checked: true,
-            uncheckedValue: 0,
-            listeners: {
-                change: function (field, value) {
-                    let panel = field.up('pveQemuProcessorPanel');
-                    let kvm = value ? 1 : 0;
-                    panel.getViewModel().set('kvm', kvm);
-                    panel.lookup('cpuFlags').setKvm(kvm);
-                },
-            },
-        },
-        {
-            xtype: 'displayfield',
-            userCls: 'pmx-hint',
-            value: gettext(
-                'TCG uses software emulation and is significantly slower than hardware-accelerated KVM.',
-            ),
-            hidden: true,
-            bind: {
-                hidden: '{kvm}',
-            },
-        },
     ],
     advancedColumnB: [
         {
@@ -290,8 +270,12 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             xtype: 'vmcpuflagselector',
             reference: 'cpuFlags',
             name: 'flags',
+        },
+        {
+            xtype: 'displayfield',
+            userCls: 'pmx-hint',
             bind: {
-                kvm: '{kvm}',
+                value: '{accelHint}',
             },
         },
     ],
@@ -341,9 +325,10 @@ Ext.define('PVE.qemu.ProcessorEdit', {
                     }
 
                     let caps = Ext.state.Manager.get('GuiCap');
-                    let canReuseCustom = caps.nodes['Sys.Audit']
-                        || caps.mapping['Mapping.Use']
-                        || caps.mapping['Mapping.Modify'];
+                    let canReuseCustom =
+                        caps.nodes['Sys.Audit'] ||
+                        caps.mapping['Mapping.Use'] ||
+                        caps.mapping['Mapping.Modify'];
                     if (data.cputype.indexOf('custom-') === 0 && !canReuseCustom) {
                         let vm = ipanel.getViewModel();
                         vm.set('showCustomModelPermWarning', true);
