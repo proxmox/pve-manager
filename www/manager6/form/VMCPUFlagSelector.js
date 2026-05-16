@@ -332,7 +332,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                         },
                     },
                     '->',
-                    { xtype: 'tbtext', text: gettext('Filter Flags for') + ':' },
+                    { xtype: 'tbtext', text: gettext('Accel') + ':' },
                     {
                         xtype: 'segmentedbutton',
                         allowMultiple: false,
@@ -343,6 +343,58 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                         listeners: {
                             change: function (field, value) {
                                 field.up('grid').setKvm(value);
+                            },
+                        },
+                    },
+                    { xtype: 'tbtext', text: gettext('Nodes') + ':' },
+                    {
+                        xtype: 'combobox',
+                        // Filter widget, not a form field - keep it out of the
+                        // surrounding form's getValues() so the enclosing dialog
+                        // doesn't submit an Ext auto-id as a bogus parameter.
+                        submitValue: false,
+                        isFormField: false,
+                        multiSelect: true,
+                        queryMode: 'local',
+                        valueField: 'name',
+                        displayField: 'name',
+                        width: 200,
+                        emptyText: gettext('Any'),
+                        store: {
+                            fields: ['name'],
+                            proxy: { type: 'memory' },
+                            sorters: 'name',
+                        },
+                        listeners: {
+                            afterrender: function (combo) {
+                                let nodes = [];
+                                PVE.data.ResourceStore.each((rec) => {
+                                    if (rec.get('type') === 'node') {
+                                        nodes.push({ name: rec.get('node') });
+                                    }
+                                });
+                                combo.getStore().loadData(nodes);
+                            },
+                            change: function (field, selected) {
+                                let store = field.up('grid').getStore();
+                                if (selected && selected.length > 0) {
+                                    store.addFilter({
+                                        id: 'nodes-filter',
+                                        filterFn: (rec) => {
+                                            // PVE shorthand, resolved at VM start - keep visible.
+                                            if (rec.get('name') === 'nested-virt') {
+                                                return true;
+                                            }
+                                            let supported = rec.get('supported-on');
+                                            if (!Array.isArray(supported)) {
+                                                return false;
+                                            }
+                                            return selected.every((n) => supported.includes(n));
+                                        },
+                                    });
+                                } else {
+                                    store.removeFilter('nodes-filter');
+                                }
                             },
                         },
                     },
