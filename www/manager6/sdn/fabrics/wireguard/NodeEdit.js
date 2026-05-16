@@ -19,11 +19,11 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             },
         },
         formulas: {
-            disableNameField: function(get) {
+            disableNameField: function (get) {
                 let me = this;
                 return !me.getView().isCreate || get('current.isPveNode');
             },
-        }
+        },
     },
 
     additionalItems: [

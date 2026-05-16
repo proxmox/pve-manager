@@ -81,17 +81,17 @@ Ext.define('PVE.sdn.Fabric.WireGuard.PeerSelectionPanel', {
         },
     ],
 
-    updateCurrentNode: function() {
+    updateCurrentNode: function () {
         let me = this;
         me.updatePeerList();
     },
 
-    updateAvailablePeers: function() {
+    updateAvailablePeers: function () {
         let me = this;
         me.updatePeerList();
     },
 
-    updateSelectedPeers: function() {
+    updateSelectedPeers: function () {
         let me = this;
         me.updatePeerList();
     },

@@ -231,7 +231,9 @@ __PACKAGE__->register_method({
         # none set yet
         $info->{serverid} = $server_id if !defined($info->{serverid});
 
-        if ((grep { my $id = $_->[1]; $id eq $info->{serverid} } $server_id_candidates->@*) < 1) {
+        if (
+            (grep { my $id = $_->[1]; $id eq $info->{serverid} } $server_id_candidates->@*) < 1
+        ) {
             # mismatch, reset
             $info->{serverid} = $server_id;
         }
