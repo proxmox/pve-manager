@@ -52,6 +52,12 @@ Ext.define('PVE.ha.Status', {
             );
         },
 
+        openCRSOptions: function () {
+            Ext.create('PVE.form.CRSOptions', {
+                autoShow: true,
+            });
+        },
+
         handleArmButton: function () {
             let me = this;
             let view = me.getView();
@@ -113,6 +119,13 @@ Ext.define('PVE.ha.Status', {
                     handler: 'handleDisarmButton',
                 },
             ],
+        },
+        '->',
+        {
+            text: gettext('CRS Settings'),
+            iconCls: 'fa fa-cogs',
+            tooltip: gettext('Cluster Resource Scheduling, configured under Datacenter > Options'),
+            handler: 'openCRSOptions',
         },
     ],
 
