@@ -34,11 +34,11 @@ Ext.define('PVE.form.CRSOptions', {
         {
             xtype: 'inputpanel',
             onGetValues: function (values) {
-                if (values === undefined || Object.keys(values).length === 0) {
+                let crs = values ? PVE.Parser.printPropertyString(values) : '';
+                if (crs === '') {
                     return { delete: 'crs' };
-                } else {
-                    return { crs: PVE.Parser.printPropertyString(values) };
                 }
+                return { crs };
             },
             items: [
                 {
