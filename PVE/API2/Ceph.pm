@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use File::Path;
+use JSON;
 use Net::IP;
 use UUID;
 
@@ -641,15 +642,18 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => 'object',
+        additionalProperties => 0,
         properties => {
             safe => {
                 type => 'boolean',
-                description => 'If it is safe to run the command.',
+                description => 'True if Ceph reports the requested action is safe.',
             },
             status => {
                 type => 'string',
                 optional => 1,
-                description => 'Status message given by Ceph.',
+                description => "Human-readable status message from Ceph (typically the"
+                    . " reason an action is not safe); absent when Ceph"
+                    . " returned no message.",
             },
         },
     },
@@ -681,11 +685,6 @@ __PACKAGE__->register_method({
         die "Service does not support this action: ${service}: ${action}\n"
             if !$supported_actions->{$service}->{$action};
 
-        my $result = {
-            safe => 0,
-            status => '',
-        };
-
         my $params = {
             prefix => "${service} $supported_actions->{$service}->{$action}",
             format => 'plain',
@@ -696,11 +695,14 @@ __PACKAGE__->register_method({
             $params->{ids} = [$id];
         }
 
-        $result = $rados->mon_cmd($params, 1);
+        my $raw = $rados->mon_cmd($params, 1);
         die $@ if $@;
 
-        $result->{safe} = $result->{return_code} == 0 ? 1 : 0;
-        $result->{status} = $result->{status_message};
+        my $result = {
+            safe => ($raw->{return_code} // -1) == 0 ? JSON::true : JSON::false,
+        };
+        $result->{status} = $raw->{status_message}
+            if defined($raw->{status_message}) && length($raw->{status_message});
 
         return $result;
     },
