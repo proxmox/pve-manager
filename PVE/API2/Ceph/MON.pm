@@ -237,7 +237,7 @@ __PACKAGE__->register_method({
                         "Short Ceph version string of the monitor daemon (e.g. '19.2.0').",
                 },
                 direxists => {
-                    type => 'string',
+                    type => 'boolean',
                     optional => 1,
                     description => "Set when the monitor's data directory exists on this node.",
                 },
@@ -261,7 +261,7 @@ __PACKAGE__->register_method({
                     description => "Rank of the monitor within the mon map.",
                 },
                 service => {
-                    type => 'integer',
+                    type => 'boolean',
                     optional => 1,
                     description => "Set if a ceph-mon@<id> systemd unit is enabled on the"
                         . " hosting node; absent otherwise.",
