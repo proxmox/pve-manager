@@ -55,6 +55,7 @@ Ext.define('PVE.ha.Status', {
         openCRSOptions: function () {
             Ext.create('PVE.form.CRSOptions', {
                 autoShow: true,
+                autoLoad: true,
             });
         },
 
