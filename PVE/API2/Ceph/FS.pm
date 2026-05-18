@@ -35,18 +35,47 @@ __PACKAGE__->register_method({
         type => 'array',
         items => {
             type => "object",
+            additionalProperties => 1,
             properties => {
                 name => {
                     description => "The ceph filesystem name.",
                     type => 'string',
                 },
                 metadata_pool => {
-                    description => "The name of the metadata pool.",
+                    description => "Name of the metadata pool.",
                     type => 'string',
                 },
+                metadata_pool_id => {
+                    description => "Numeric id of the metadata pool.",
+                    type => 'integer',
+                    optional => 1,
+                },
                 data_pool => {
-                    description => "The name of the data pool.",
+                    description => "Name of the filesystem's first data pool. A CephFS can have"
+                        . " more than one data pool; consumers interested in the full set"
+                        . " should read 'data_pools' instead. Kept for backwards compatibility.",
                     type => 'string',
+                },
+                data_pools => {
+                    description =>
+                        "Names of all data pools assigned to the filesystem; a CephFS"
+                        . " can have multiple data pools (e.g. replicated metadata plus EC"
+                        . " data, or multiple device-class-specific data pools).",
+                    type => 'array',
+                    optional => 1,
+                    items => {
+                        description => "Data pool name.",
+                        type => 'string',
+                    },
+                },
+                data_pool_ids => {
+                    description => "Numeric ids of the data pools.",
+                    type => 'array',
+                    optional => 1,
+                    items => {
+                        description => "Data pool id.",
+                        type => 'integer',
+                    },
                 },
             },
         },
@@ -65,7 +94,12 @@ __PACKAGE__->register_method({
             map { {
                 name => $_->{name},
                 metadata_pool => $_->{metadata_pool},
+                metadata_pool_id => $_->{metadata_pool_id},
+                # FIXME: remove with PVE 10; backwards-compat alias for
+                # consumers that have not switched to data_pools yet.
                 data_pool => $_->{data_pools}->[0],
+                data_pools => $_->{data_pools},
+                data_pool_ids => $_->{data_pool_ids},
             } } @$cephfs_list
         ];
 
