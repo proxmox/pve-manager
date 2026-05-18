@@ -312,6 +312,9 @@ Ext.define('PVE.dc.Config', {
                 {
                     xtype: 'pveSDNRouteMaps',
                     groups: ['sdn'],
+                    // TRANSLATORS: "Route map" refers to an FRR route map, some
+                    // languages may prefer to keep it as-is:
+                    // https://docs.frrouting.org/en/latest/routemap.html
                     title: gettext('Route Maps'),
                     hidden: true,
                     iconCls: 'fa fa-map',

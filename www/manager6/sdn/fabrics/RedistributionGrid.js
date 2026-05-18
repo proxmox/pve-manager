@@ -97,6 +97,9 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
                 },
             },
             {
+                // TRANSLATORS: "Route map" refers to an FRR route map, some
+                // languages may prefer to keep it as-is:
+                // https://docs.frrouting.org/en/latest/routemap.html
                 text: gettext('Route Map'),
                 xtype: 'widgetcolumn',
                 dataIndex: 'route-map',

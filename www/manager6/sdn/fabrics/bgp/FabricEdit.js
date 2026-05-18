@@ -32,8 +32,14 @@ Ext.define('PVE.sdn.Fabric.Bgp.Fabric.Edit', {
         {
             xtype: 'pveSDNRouteMapSelector',
             name: 'route_map_in',
+            // TRANSLATORS: "Route map" refers to an FRR route map, some
+            // languages may prefer to keep it as-is:
+            // https://docs.frrouting.org/en/latest/routemap.html
             fieldLabel: gettext('Incoming Route Map'),
             labelWidth: 120,
+            // TRANSLATORS: "Route map" refers to an FRR route map, some
+            // languages may prefer to keep it as-is:
+            // https://docs.frrouting.org/en/latest/routemap.html
             emptyText: gettext('Route Map'),
             deleteEmpty: true,
             skipEmptyText: true,
@@ -41,8 +47,14 @@ Ext.define('PVE.sdn.Fabric.Bgp.Fabric.Edit', {
         {
             xtype: 'pveSDNRouteMapSelector',
             name: 'route_map_out',
+            // TRANSLATORS: "Route map" refers to an FRR route map, some
+            // languages may prefer to keep it as-is:
+            // https://docs.frrouting.org/en/latest/routemap.html
             fieldLabel: gettext('Outgoing Route Map'),
             labelWidth: 120,
+            // TRANSLATORS: "Route map" refers to an FRR route map, some
+            // languages may prefer to keep it as-is:
+            // https://docs.frrouting.org/en/latest/routemap.html
             emptyText: gettext('Route Map'),
             deleteEmpty: true,
             skipEmptyText: true,

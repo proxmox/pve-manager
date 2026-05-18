@@ -697,6 +697,9 @@ Ext.define('PVE.sdn.RouteMapExitActionField', {
 
 Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
     extend: 'Proxmox.window.Edit',
+    // TRANSLATORS: "Route map" refers to an FRR route map, some languages may
+    // prefer to keep it as-is:
+    // https://docs.frrouting.org/en/latest/routemap.html
     subject: gettext('Route Map Entry'),
 
     initComponent: function () {
@@ -747,6 +750,9 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
         {
             xtype: 'pveSDNRouteMapSelector',
             name: 'route-map-id',
+            // TRANSLATORS: "Route map" refers to an FRR route map, some
+            // languages may prefer to keep it as-is:
+            // https://docs.frrouting.org/en/latest/routemap.html
             fieldLabel: gettext('Route Map ID'),
             editable: true,
             notFoundIsValid: true,
@@ -811,6 +817,9 @@ Ext.define('PVE.sdn.RouteMapPanel', {
     extend: 'Ext.grid.Panel',
     alias: ['widget.pveSDNRouteMaps'],
 
+    // TRANSLATORS: "Route map" refers to an FRR route map, some languages may
+    // prefer to keep it as-is:
+    // https://docs.frrouting.org/en/latest/routemap.html
     emptyText: gettext('No route maps configured.'),
 
     store: {
@@ -878,6 +887,9 @@ Ext.define('PVE.sdn.RouteMapPanel', {
             Ext.Msg.show({
                 title: gettext('Confirm'),
                 icon: Ext.Msg.WARNING,
+                // TRANSLATORS: "Route map" refers to an FRR route map, some
+                // languages may prefer to keep it as-is:
+                // https://docs.frrouting.org/en/latest/routemap.html
                 message: gettext('Remove route map entry?'),
                 buttons: Ext.Msg.YESNO,
                 defaultFocus: 'no',
