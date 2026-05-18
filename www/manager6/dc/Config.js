@@ -320,6 +320,9 @@ Ext.define('PVE.dc.Config', {
                 {
                     xtype: 'pveSDNPrefixLists',
                     groups: ['sdn'],
+                    // TRANSLATORS: Refers to an FRR prefix list, some
+                    // languages may prefer to keep "prefix list" as-is:
+                    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
                     title: gettext('Prefix Lists'),
                     hidden: true,
                     iconCls: 'fa fa-list-ol',

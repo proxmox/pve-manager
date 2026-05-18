@@ -11,6 +11,10 @@ Ext.define('PVE.sdn.PrefixListEntry', {
 Ext.define('PVE.sdn.EditPrefixListWindow', {
     extend: 'Proxmox.window.Edit',
 
+
+    // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
+    // keep "prefix list" as-is:
+    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     subject: gettext('Prefix List'),
 
     url: '/cluster/sdn/prefix-lists',
@@ -42,6 +46,9 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
+    // keep "prefix list" as-is:
+    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     subject: gettext('Prefix List Entry'),
 
     baseUrl: '/cluster/sdn/prefix-lists',
@@ -126,6 +133,9 @@ Ext.define('PVE.sdn.PrefixListView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveSDNPrefixListView'],
 
+    // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
+    // keep "prefix list" as-is:
+    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     emptyText: gettext('No prefix list configured'),
 
     tbar: [
@@ -188,6 +198,9 @@ Ext.define('PVE.sdn.PrefixListEntriesView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveSDNPrefixListEntriesView'],
 
+    // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
+    // keep "prefix list" as-is:
+    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     emptyText: gettext('Prefix List has no entries configured.'),
 
     config: {
@@ -279,6 +292,9 @@ Ext.define('PVE.sdn.PrefixListPanel', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.pveSDNPrefixLists'],
 
+    // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
+    // keep "prefix list" as-is:
+    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     emptyText: gettext('No prefix list configured'),
 
     viewModel: {
@@ -287,7 +303,13 @@ Ext.define('PVE.sdn.PrefixListPanel', {
                 let selection = get('prefixListGrid.selection');
 
                 return selection
+                    // TRANSLATORS: Refers to an FRR prefix list, some
+                    // languages may prefer to keep "prefix list" as-is:
+                    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
                     ? gettext('Prefix List has no entries configured.')
+                    // TRANSLATORS: Refers to an FRR prefix list, some
+                    // languages may prefer to keep "prefix list" as-is:
+                    // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
                     : gettext('no Prefix List selected');
             },
         },
