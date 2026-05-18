@@ -239,6 +239,23 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                                         _e,
                                         rec,
                                     ) {
+                                        let removeRecord = () => {
+                                            let grid = table.up('grid[reference=interfaceGrid]');
+
+                                            let updateSelection = grid.getSelection().includes(rec);
+
+                                            grid.getStore().remove(rec);
+
+                                            if (updateSelection) {
+                                                grid.setSelection(grid.getStore().first());
+                                            }
+                                        };
+
+                                        if (rec.data.isCreate) {
+                                            removeRecord();
+                                            return;
+                                        }
+
                                         Ext.Msg.show({
                                             title: gettext('Confirm'),
                                             icon: Ext.Msg.WARNING,
@@ -254,20 +271,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                                                 if (btn !== 'yes') {
                                                     return;
                                                 }
-
-                                                let grid = table.up(
-                                                    'grid[reference=interfaceGrid]',
-                                                );
-
-                                                let updateSelection = grid
-                                                    .getSelection()
-                                                    .includes(rec);
-
-                                                grid.getStore().remove(rec);
-
-                                                if (updateSelection) {
-                                                    grid.setSelection(grid.getStore().first());
-                                                }
+                                                removeRecord();
                                             },
                                         });
                                     },
