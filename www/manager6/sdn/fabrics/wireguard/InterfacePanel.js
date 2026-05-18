@@ -291,6 +291,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             border: false,
             flex: 1,
             width: 300,
+            hidden: true,
             layout: {
                 type: 'vbox',
                 pack: 'center',
@@ -316,6 +317,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             flex: 1,
             width: 300,
             padding: 4,
+            hidden: true,
             items: [
                 {
                     xtype: 'proxmoxtextfield',

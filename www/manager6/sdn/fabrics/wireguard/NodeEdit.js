@@ -33,6 +33,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             fieldLabel: gettext('Name'),
             labelWidth: 120,
             name: 'node_id',
+            hidden: true,
             bind: {
                 hidden: '{current.isPveNode}',
                 disabled: '{disableNameField}',
@@ -47,6 +48,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             emptyText: gettext('base64-encoded WireGuard public key'),
             regex: /^[A-Za-z0-9+/]{43}=$/,
             regexText: gettext('WireGuard public key must be 44 base64 characters'),
+            hidden: true,
             bind: {
                 hidden: '{current.isPveNode}',
                 disabled: '{current.isPveNode}',
