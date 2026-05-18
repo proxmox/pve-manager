@@ -194,10 +194,7 @@ Ext.define(
                         }
                         let approx = record.data['approximate-size'];
                         if (approx !== undefined) {
-                            return Ext.String.format(
-                                '~{0}',
-                                Proxmox.Utils.format_size(approx),
-                            );
+                            return Ext.String.format('~{0}', Proxmox.Utils.format_size(approx));
                         }
                         return Proxmox.Utils.unknownText;
                     },

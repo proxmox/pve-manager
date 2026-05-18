@@ -11,7 +11,6 @@ Ext.define('PVE.sdn.PrefixListEntry', {
 Ext.define('PVE.sdn.EditPrefixListWindow', {
     extend: 'Proxmox.window.Edit',
 
-
     // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
     // keep "prefix list" as-is:
     // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
@@ -300,17 +299,17 @@ Ext.define('PVE.sdn.PrefixListPanel', {
     viewModel: {
         formulas: {
             entryGridEmptyText: function (get) {
-                let selection = get('prefixListGrid.selection');
-
-                return selection
+                if (get('prefixListGrid.selection')) {
                     // TRANSLATORS: Refers to an FRR prefix list, some
                     // languages may prefer to keep "prefix list" as-is:
                     // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
-                    ? gettext('Prefix list has no entries configured.')
+                    return gettext('Prefix list has no entries configured.');
+                } else {
                     // TRANSLATORS: Refers to an FRR prefix list, some
                     // languages may prefer to keep "prefix list" as-is:
                     // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
-                    : gettext('No prefix list selected');
+                    return gettext('No prefix list selected');
+                }
             },
         },
     },
