@@ -107,7 +107,7 @@ Ext.define('PVE.form.CRSOptions', {
                     xtype: 'numberfield',
                     name: 'ha-auto-rebalance-hold-duration',
                     fieldLabel: gettext('Hold Duration'),
-                    emptyText: '3',
+                    emptyText: Proxmox.Utils.defaultText + ' (3)',
                     minValue: 0,
                     step: 1,
                     bind: {
