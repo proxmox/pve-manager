@@ -4,9 +4,18 @@ Ext.define('PVE.panel.MultiDiskPanel', {
     mixins: ['Proxmox.Mixin.CBind'],
 
     setNodename: function (nodename) {
-        this.items.each((panel) => panel.setNodename(nodename));
-        this.nodename = nodename;
+        let me = this;
+        me.items.each((panel) => panel.setNodename(nodename));
+        me.nodename = nodename;
+
+        if (!me.addedFirstDisk && !!nodename) {
+            let controller = me.getController();
+            controller.onAdd();
+            me.lookup('grid').getSelectionModel().select(0, false);
+        }
     },
+
+    addedFirstDisk: false,
 
     border: false,
     bodyBorder: false,
@@ -21,7 +30,12 @@ Ext.define('PVE.panel.MultiDiskPanel', {
         vmconfig: {},
 
         onAdd: function () {
-            this.addDiskChecked(false);
+            let me = this;
+            let view = me.getView();
+            me.addDiskChecked(false);
+            if (!view.addedFirstDisk) {
+                view.addedFirstDisk = true;
+            }
         },
 
         onImport: function () {
@@ -210,13 +224,6 @@ Ext.define('PVE.panel.MultiDiskPanel', {
             },
             'grid[reference=grid]': {
                 selectionchange: 'onSelectionChange',
-            },
-            '#': {
-                afterrender: function (view) {
-                    let me = this;
-                    me.onAdd();
-                    me.lookup('grid').getSelectionModel().select(0, false);
-                },
             },
         },
     },
