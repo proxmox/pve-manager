@@ -1,3 +1,33 @@
+pve-manager (9.1.16) trixie; urgency=medium
+
+  * fix #6819: storage content view: handle the new 'approximate-size' field
+    returned for inactive qcow2 LVs on LVM by rendering them with a leading
+    '~' marker in the Size column, falling back to 'Unknown' when neither
+    exact nor approximate size is set. Size column sorting remains numeric.
+
+  * pve8to9: accept Proxmox kernels 7.0 and 6.17 as suitable in the
+    upgraded-host checks, matching the default kernel switch in PVE 9.1 (6.17)
+    and the upcoming switch to 7.0. Also fix the X.Y-pve fallback comparison
+    that wrongly rejected 7.0-pve, and reduce noise from per-candidate
+    not-installed probes.
+
+  * ui: sdn: improve UX for the wireguard interface dialogs: skip the
+    delete-confirmation prompt for not-yet-saved entries, avoid a brief
+    flicker when opening dialogs, and improve the empty state of the node-edit
+    dialog when no interfaces have been added yet.
+
+  * ui: sdn fabric: add onlineHelp links to the node-edit dialogs.
+
+  * ui: sdn: route map panel: add 'tag' as a match statement, accepting
+    integer tag values from 0 (matching untagged routes) up to 2^32-1, in line
+    with FRR's 'match tag' clause.
+
+  * d/control: depend on proxmox-enterprise-support-keyring to ensure the
+    Proxmox support keyrings are available (in deactivated state) on PVE
+    installations.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 18 May 2026 21:56:54 +0200
+
 pve-manager (9.1.15) trixie; urgency=medium
 
   * ui: cpu models: add a new Datacenter > Custom CPU Models panel for
