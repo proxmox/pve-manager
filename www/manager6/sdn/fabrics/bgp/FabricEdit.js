@@ -65,6 +65,6 @@ Ext.define('PVE.sdn.Fabric.Bgp.Fabric.Edit', {
                     ],
                 },
             ],
-        }
+        },
     ],
 });
