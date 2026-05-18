@@ -1,3 +1,11 @@
+pve-manager (9.1.17) trixie; urgency=medium
+
+  * network-interface-pinning: write '.link' files with the product-neutral
+    '50-pmx-' prefix and remove legacy '50-pve-' siblings on write, so they no
+    longer collide with installer-written entries.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 19 May 2026 00:56:00 +0200
+
 pve-manager (9.1.16) trixie; urgency=medium
 
   * fix #6819: storage content view: handle the new 'approximate-size' field
