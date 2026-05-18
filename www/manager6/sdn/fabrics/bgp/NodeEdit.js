@@ -1,6 +1,7 @@
 Ext.define('PVE.sdn.Fabric.Bgp.Node.Edit', {
     extend: 'PVE.sdn.Fabric.Node.Edit',
     protocol: 'bgp',
+    onlineHelp: 'pvesdn_bgp_node',
 
     extraRequestParams: {
         protocol: 'bgp',

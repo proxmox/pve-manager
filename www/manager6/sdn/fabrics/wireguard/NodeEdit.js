@@ -1,6 +1,7 @@
 Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
     extend: 'PVE.sdn.Fabric.Node.Edit',
     protocol: 'wireguard',
+    onlineHelp: 'pvesdn_wireguard_node',
 
     extraRequestParams: {
         protocol: 'wireguard',
