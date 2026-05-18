@@ -162,6 +162,8 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
 
     xtype: 'pveSDNFabricWireGuardInterfacePanel',
 
+    minHeight: 200,
+
     layout: {
         type: 'hbox',
         align: 'stretch',
@@ -212,6 +214,10 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     flex: 1,
                     margin: '0 0 10 0',
                     hideHeaders: true,
+                    viewConfig: {
+                        emptyText: gettext('No interfaces configured'),
+                        deferEmptyText: false,
+                    },
                     columns: [
                         {
                             text: gettext('Name'),
@@ -277,6 +283,30 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     xtype: 'button',
                     text: gettext('Add Interface'),
                     handler: 'addInterface',
+                },
+            ],
+        },
+        {
+            xtype: 'panel',
+            border: false,
+            flex: 1,
+            width: 300,
+            layout: {
+                type: 'vbox',
+                pack: 'center',
+                align: 'center',
+            },
+            bind: {
+                hidden: '{selectedInterface}',
+            },
+            items: [
+                {
+                    xtype: 'component',
+                    html: gettext('Select an interface to configure, or add a new one.'),
+                    style: {
+                        'font-style': 'italic',
+                        'text-align': 'center',
+                    },
                 },
             ],
         },
