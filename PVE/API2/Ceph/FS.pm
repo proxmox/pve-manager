@@ -139,7 +139,7 @@ __PACKAGE__->register_method({
         die "no standby Metadata Server (MDS) found!\n"
             if !grep { $_->{state} eq 'up:standby' } values(%$running_mds);
 
-        PVE::Storage::assert_sid_unused($fs_name) if $param->{add_storage};
+        PVE::Storage::assert_sid_unused($fs_name) if $param->{'add-storage'};
 
         my $worker = sub {
             $rados = PVE::RADOS->new();
