@@ -1,3 +1,48 @@
+pve-manager (9.1.15) trixie; urgency=medium
+
+  * ui: cpu models: add a new Datacenter > Custom CPU Models panel for
+    cluster-wide CRUD of custom CPU model definitions: base model, vendor,
+    physical address bits, hide-hypervisor, Hyper-V vendor ID, and per-flag
+    toggles. Access is gated by Mapping.{Audit,Use,Modify} on
+    /mapping/cpu/<name>; assigning a custom model to a VM requires
+    Mapping.Use.
+
+  * ui: cpu flags: add a flag editor grid used by both the new custom CPU
+    model dialog (full view, with free-text search over name and description,
+    an accel kvm/tcg selector, and a per-node multi-select filter) and the VM
+    Processor edit dialog (restricted to the flags that may be set per VM).
+    Flags set in the configuration but unknown to the API or unsupported on
+    the selected acceleration are surfaced at the top of the list with a
+    warning.
+
+  * ui: vm processor edit: list custom CPU models alongside built-ins in the
+    type selector, allow filtering out PVE-internal abstract profiles
+    (x86-64-v2/v3/v4/v2-AES), and align the custom-CPU permission warning
+    with the new Mapping ACL.
+
+  * api: capabilities: advertise the qemu/cpu-flags subroute in the qemu
+    capabilities index so pvesh and other tree-walkers see it.
+
+  * ui: sdn: add support for the new BGP fabric protocol, configuring eBGP
+    unnumbered peering with per-node ASN, optional BFD, prefix-list route
+    filters, route maps, and redistribution. The interface panel omits the IP
+    column since unnumbered interfaces carry no IPs.
+
+  * ui: ha: crs: auto-load the auto-rebalance settings dialog when opened
+    from the HA status panel; previously it opened with blank fields and a
+    Save would have overwritten the live config. Also display the hold-
+    duration default via defaultText to match the other fields.
+
+  * fix #7599: ui: vm create wizard: defer the first disk addition until the
+    initial nodename is set, so adding a second CD-ROM drive for Windows
+    virtio drivers correctly switches the disk controller from IDE to SCSI.
+
+  * fix #3936: ui: storage: zfs: validate the blocksize field at form-edit
+    time, enforcing a power-of-two between 512 bytes and 16 MiB with an
+    optional 'k' or 'm' suffix.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 18 May 2026 12:15:45 +0200
+
 pve-manager (9.1.14) trixie; urgency=medium
 
   * fix #5076: ui: dc: add an optional 'audiences' field for OpenID realms,
