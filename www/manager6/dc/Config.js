@@ -442,34 +442,20 @@ Ext.define('PVE.dc.Config', {
                     title: gettext('Directory Mappings'),
                     iconCls: 'fa fa-folder',
                 },
+                {
+                    xtype: 'pveCPUTypeView',
+                    iconCls: 'fa fa-microchip',
+                    title: gettext('Custom CPU models'),
+                    itemId: 'cputypes',
+                },
+                {
+                    xtype: 'pmxNotificationConfigView',
+                    title: gettext('Notifications'),
+                    itemId: 'notification-targets',
+                    iconCls: 'fa fa-bell-o',
+                    baseUrl: '/cluster/notifications',
+                },
             );
-        }
-
-        if (
-            caps.mapping['Mapping.Audit'] ||
-            caps.mapping['Mapping.Use'] ||
-            caps.mapping['Mapping.Modify']
-        ) {
-            me.items.push({
-                xtype: 'pveCPUTypeView',
-                iconCls: 'fa fa-microchip',
-                title: gettext('Custom CPU models'),
-                itemId: 'cputypes',
-            });
-        }
-
-        if (
-            caps.mapping['Mapping.Audit'] ||
-            caps.mapping['Mapping.Use'] ||
-            caps.mapping['Mapping.Modify']
-        ) {
-            me.items.push({
-                xtype: 'pmxNotificationConfigView',
-                title: gettext('Notifications'),
-                itemId: 'notification-targets',
-                iconCls: 'fa fa-bell-o',
-                baseUrl: '/cluster/notifications',
-            });
         }
 
         if (caps.dc['Sys.Audit']) {
