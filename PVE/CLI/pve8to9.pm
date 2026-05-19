@@ -259,7 +259,7 @@ sub check_pve_packages {
             my $outdated_kernel_meta_pkgs = [];
             for my $kernel_meta_version ('6.2', '6.5', '6.8', '6.11') {
                 my $pkg = "pve-kernel-${kernel_meta_version}";
-                if ($get_pkg->($pkg)) {
+                if ($get_pkg->($pkg, 1)) {
                     push @$outdated_kernel_meta_pkgs, $pkg;
                 }
             }
