@@ -13,6 +13,8 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
     hasIpv4Support: false,
     hasIpv6Support: false,
 
+    defaultEndpointPort: 51820,
+
     viewModel: {
         data: {
             current: {
@@ -58,10 +60,21 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
         {
             xtype: 'proxmoxtextfield',
             fieldLabel: gettext('Endpoint'),
-            emptyText: gettext('Host or host:port that peers connect to'),
+            emptyText: gettext('Host that peers connect to'),
             labelWidth: 120,
             name: 'endpoint',
             allowBlank: false,
+        },
+        {
+            xtype: 'proxmoxintegerfield',
+            fieldLabel: gettext('Endpoint Port'),
+            emptyText: gettext('Default') + ': 51820',
+            labelWidth: 120,
+            name: 'endpoint_port',
+            minValue: 1,
+            maxValue: 65535,
+            allowBlank: true,
+            submitValue: false,
         },
         {
             xtype: 'proxmoxtextfield',
@@ -94,6 +107,45 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             },
         },
     ],
+
+    combineEndpoint: function (endpoint, port) {
+        let me = this;
+
+        port = port || me.defaultEndpointPort;
+
+        if (Proxmox.Utils.IP6_match.test(endpoint)) {
+            endpoint = `[${endpoint}]`;
+        }
+
+        return `${endpoint}:${port}`;
+    },
+
+    splitEndpoint: function (endpoint) {
+        let match = endpoint?.match(/^\[([^\]]+)\]:(\d+)$/) ?? endpoint?.match(/^([^:]+):(\d+)$/);
+        if (!match) {
+            return { endpoint };
+        }
+
+        return {
+            endpoint: match[1],
+            endpoint_port: Number(match[2]),
+        };
+    },
+
+    getValues: function (dirtyOnly) {
+        let me = this;
+
+        let values = me.callParent([dirtyOnly]);
+        let endpointField = me.down('[name=endpoint]');
+        let portField = me.down('[name=endpoint_port]');
+
+        if (!dirtyOnly || values.endpoint || portField.isDirty()) {
+            values.endpoint = me.combineEndpoint(endpointField.getValue(), portField.getValue());
+        }
+        delete values.endpoint_port;
+
+        return values;
+    },
 
     loadAvailablePeers: async function () {
         let me = this;
@@ -141,6 +193,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
             .then(([node, availablePeers]) => {
                 me.interfaceSelector.setAvailablePeers(availablePeers);
 
+                Ext.apply(node, me.splitEndpoint(node.endpoint));
                 node.interfaces = node.interfaces ?? [];
                 node.peers = node.peers ?? [];
                 me.interfaceSelector.setNode(node);
