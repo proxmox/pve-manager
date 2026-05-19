@@ -162,7 +162,7 @@ my $log_systemd_unit_state = sub {
 
 my $versions;
 my $get_pkg = sub {
-    my ($pkg) = @_;
+    my ($pkg, $noerr) = @_;
 
     $versions = eval { PVE::API2::APT->versions({ node => $nodename }) } if !defined($versions);
 
@@ -175,7 +175,7 @@ my $get_pkg = sub {
 
     my $pkgs = [grep { $_->{Package} eq $pkg } @$versions];
     if (!defined $pkgs || $pkgs == 0) {
-        log_fail("unable to determine installed $pkg version.");
+        log_fail("unable to determine installed $pkg version.") if !$noerr;
         return undef;
     } else {
         return $pkgs->[0];
