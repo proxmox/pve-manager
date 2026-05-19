@@ -1,3 +1,60 @@
+pve-manager (9.1.18) trixie; urgency=medium
+
+  * ui: VM CPU flag editor: present the active acceleration as a 'Showing
+    flags for KVM/TCG' label in the flag grid's bottom toolbar, replacing the
+    permanently-visible hint that previously sat below the grid. Also fix
+    scrolling glitches that could leave rows partially rendered, and make the
+    CPU flags section label translatable.
+
+  * custom CPU models: reject create and edit requests that omit the base
+    reported model, which is structurally required.
+
+  * ui: ceph osd: show the dm-crypt encryption status in the OSD details
+    modal; the underlying OSD details endpoint now reports it too.
+
+  * api: ceph fs: expose the CLI handler for destroying a CephFS also a REST
+    endpoint. Currently this still not exposed in the web UI.
+    Also return all data pools and pool IDs in the filesystem listing, and fix
+    a parameter name on the early add-storage check during create.
+
+  * api: ceph: broad return-schema correctness pass across the OSD, pool,
+    monitor, manager, MDS, configuration, and node indexes: emit real JSON
+    booleans for flags previously rendered as strings, declare missing return
+    fields with property descriptions, drop a dead duplicated permissions key,
+    omit the PID when the corresponding systemd unit is not running, accept
+    'ceph' as the cluster-wide target for the restart endpoint, and fix
+    several smaller schema bugs.
+
+  * ui: sdn: vnet edit: mark the tag field as required for zones that need it,
+    disable rather than hide fields that do not apply for the chosen zone
+    type, and explicitly delete fields that are no longer applicable upon
+    submission.
+
+  * ui: sdn: route map and prefix list edit: fix alignment of value cells in
+    the add/edit dialog, use a more consistent style for the match/set grid,
+    make ID and order required, and add online help links.
+
+  * sdn: fabrics: fix populating the WireGuard node 'Allowed IPs' field from
+    existing config.
+
+  * ui: lxc create wizard: fix recent regression with the default rootfs disk
+    being missing on fresh wizard opens.
+
+  * ui: wizard: increase wizard dimensions from 720x540 to 760x570 to give
+    denser panels like the CPU flag list editor more room while keeping the
+    4:3 ratio.
+
+  * ui: datacenter menu: drop the 'guest resource' grouping and clean up the
+    item list.
+
+  * ui: ceph wizard: drop the preview marker for Ceph Tentacle, it's the new
+    stable default.
+
+  * pve8to9: avoid logging a failure when the old kernel metapackages are no
+    longer installed.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 19 May 2026 23:50:34 +0200
+
 pve-manager (9.1.17) trixie; urgency=medium
 
   * network-interface-pinning: write '.link' files with the product-neutral
