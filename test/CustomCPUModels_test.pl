@@ -49,27 +49,34 @@ like(
     'POST without cputype rejected by schema',
 );
 
+eval { validate_params('POST', '', { cputype => 'name' }) };
+like(
+    $@,
+    qr/reported-model.*(?:missing|required|not optional)/i,
+    'POST without reported-model rejected by schema',
+);
+
 # --- create: cputype must be a valid pve-configid (A1) ---
-eval { validate_params('POST', '', { cputype => '4foo' }) };
+eval { validate_params('POST', '', { cputype => '4foo', 'reported-model' => 'qemu64' }) };
 like(
     $@, qr/format/i, 'POST with cputype starting with digit rejected by schema',
 );
 
-eval { validate_params('POST', '', { cputype => 'bad name' }) };
+eval { validate_params('POST', '', { cputype => 'bad name', 'reported-model' => 'qemu64' }) };
 like(
     $@, qr/format/i, 'POST with whitespace in cputype rejected by schema',
 );
 
-eval { validate_params('POST', '', { cputype => 'a' x 50 }) };
+eval { validate_params('POST', '', { cputype => 'a' x 50, 'reported-model' => 'qemu64' }) };
 like(
     $@, qr/40 characters|maxLength|too long/i, 'POST with overly long cputype rejected by schema',
 );
 
 # Valid cputype with optional 'custom-' prefix passes the schema.
-eval { validate_params('POST', '', { cputype => 'custom-foo' }) };
+eval { validate_params('POST', '', { cputype => 'custom-foo', 'reported-model' => 'qemu64' }) };
 is($@, '', 'POST with valid prefixed cputype accepted by schema');
 
-eval { validate_params('POST', '', { cputype => 'my_model' }) };
+eval { validate_params('POST', '', { cputype => 'my_model', 'reported-model' => 'qemu64' }) };
 is($@, '', 'POST with valid unprefixed cputype accepted by schema');
 
 # --- create: empty name after stripping 'custom-' is rejected by runtime check (A1) ---
@@ -81,7 +88,7 @@ is($@, '', 'POST with valid unprefixed cputype accepted by schema');
     $config_mock->mock(
         lock_custom_cpu_model_config => sub { fail('lock reached for empty stripped name'); },
     );
-    eval { invoke_method('POST', '', { cputype => 'custom-' }) };
+    eval { invoke_method('POST', '', { cputype => 'custom-', 'reported-model' => 'qemu64' }) };
     like($@, qr/configid|invalid/i, 'POST with cputype "custom-" rejected after stripping');
 }
 

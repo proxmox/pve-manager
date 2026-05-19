@@ -19,6 +19,9 @@ my $cputype_param = {
     description => "Name for the custom CPU model. The 'custom-' prefix is optional.",
 };
 
+my $reported_model_param =
+    { get_standard_option('pve-qm-custom-cpu-model')->{'reported-model'}->%*, optional => 0 };
+
 # privileges that grant any kind of visibility on a custom CPU model
 my $can_see_mapping_privs = ['Mapping.Modify', 'Mapping.Use', 'Mapping.Audit'];
 
@@ -77,6 +80,7 @@ __PACKAGE__->register_method({
         additionalProperties => 0,
         properties => PVE::QemuServer::CPUConfig::add_cpu_json_properties({
             cputype => $cputype_param,
+            'reported-model' => $reported_model_param,
         }),
     },
     returns => { type => 'null' },
