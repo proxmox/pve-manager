@@ -264,7 +264,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
         {
             xtype: 'label',
             reference: 'cpuFlagsLabel',
-            text: 'Extra CPU Flags:',
+            text: gettext('Extra CPU Flags:'),
         },
         {
             xtype: 'vmcpuflagselector',
