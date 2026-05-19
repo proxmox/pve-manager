@@ -101,18 +101,18 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 
         let tagField = me.down('#sdnVnetTagField');
         if (!zoneType || zoneType === 'simple') {
-            tagField.setVisible(false);
+            tagField.setDisabled(true);
             tagField.setValue('');
         } else {
-            tagField.setVisible(true);
+            tagField.setDisabled(false);
         }
 
         let vlanField = me.down('#sdnVnetVlanAwareField');
         if (!zoneType || zoneType === 'evpn') {
-            vlanField.setVisible(false);
+            vlanField.setDisabled(true);
             vlanField.setValue('');
         } else {
-            vlanField.setVisible(true);
+            vlanField.setDisabled(false);
         }
     },
 });
