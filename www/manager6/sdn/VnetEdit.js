@@ -127,9 +127,13 @@ Ext.define('PVE.sdn.VnetInputPanel', {
         if (!zoneType || zoneType === 'simple') {
             tagField.setDisabled(true);
             tagField.setValue('');
+            tagField.allowBlank = true;
         } else {
             tagField.setDisabled(false);
+            // vlan, vxlan and evpn zones require a tag; qinq and faucet allow tag-less vnets.
+            tagField.allowBlank = zoneType === 'qinq' || zoneType === 'faucet';
         }
+        tagField.validate();
 
         let vlanField = me.down('#sdnVnetVlanAwareField');
         if (!zoneType || zoneType === 'evpn') {
