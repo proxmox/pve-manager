@@ -12,22 +12,12 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             coreCount: 1,
             showCustomModelPermWarning: false,
             userIsRoot: false,
-            kvm: 1,
         },
         formulas: {
             totalCoreCount: (get) => get('socketCount') * get('coreCount'),
             cpuunitsDefault: (get) => (get('cgroupMode') === 1 ? 1024 : 100),
             cpuunitsMin: (get) => (get('cgroupMode') === 1 ? 2 : 1),
             cpuunitsMax: (get) => (get('cgroupMode') === 1 ? 262144 : 10000),
-            accel: (get) => (get('kvm') === 0 ? 'TCG' : 'KVM'),
-            accelHint: (get) =>
-                Ext.String.format(
-                    gettext(
-                        "Flag list reflects the VM's current acceleration ({0});" +
-                            ' change in Hardware -> KVM hardware virtualization if needed.',
-                    ),
-                    get('accel'),
-                ),
         },
     },
 
@@ -131,7 +121,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
         let me = this;
         kvm = kvm ?? 1;
         me.kvm = kvm;
-        me.getViewModel().set('kvm', kvm);
         me.lookup('cpuFlags').setKvm(kvm);
     },
 
@@ -270,13 +259,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             xtype: 'vmcpuflagselector',
             reference: 'cpuFlags',
             name: 'flags',
-        },
-        {
-            xtype: 'displayfield',
-            userCls: 'pmx-hint',
-            bind: {
-                value: '{accelHint}',
-            },
         },
     ],
 });

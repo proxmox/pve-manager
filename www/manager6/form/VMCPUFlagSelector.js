@@ -113,6 +113,12 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         let proxy = me.store.getProxy();
         proxy.setExtraParam('accel', kvm === 1 ? 'kvm' : 'tcg');
         me.store.reload();
+        let hint = me.down('#accelHint');
+        if (hint) {
+            hint.setText(
+                Ext.String.format(gettext('Showing flags for {0}'), kvm === 1 ? 'KVM' : 'TCG'),
+            );
+        }
     },
 
     // Adjusts the store for the current value. Flags not known to the API are added to the store
@@ -430,6 +436,19 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                                 store.removeFilter('supported-filter');
                             }
                         },
+                    },
+                },
+                '->',
+                {
+                    xtype: 'tbtext',
+                    itemId: 'accelHint',
+                    hidden: !me.restrictToVMFlags,
+                    text: gettext('Showing flags for KVM'),
+                    autoEl: {
+                        tag: 'div',
+                        'data-qtip': gettext(
+                            "Some flags depend on the active acceleration; switch via the VM's Options tab.",
+                        ),
                     },
                 },
             ],
