@@ -53,7 +53,6 @@ Ext.define('PVE.ceph.CephVersionSelector', {
             {
                 release: 'tentacle',
                 version: '20.2',
-                preview: true /* TODO: drop after stabilisation */,
             },
         ],
     },
