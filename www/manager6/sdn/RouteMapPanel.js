@@ -230,6 +230,7 @@ Ext.define('PVE.sdn.RouteMapSetField', {
             header: gettext('Value'),
             flex: 1,
             xtype: 'widgetcolumn',
+            tdCls: 'x-textfield-default-cell',
             widget: {
                 xtype: 'pveSdnRouteMapSetValueField',
                 bind: {
@@ -490,6 +491,7 @@ Ext.define('PVE.sdn.RouteMapMatchField', {
             header: gettext('Value'),
             flex: 1,
             xtype: 'widgetcolumn',
+            tdCls: 'x-textfield-default-cell',
             widget: {
                 xtype: 'pveSdnRouteMapMatchValueField',
                 bind: {
