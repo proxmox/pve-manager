@@ -173,6 +173,7 @@ __PACKAGE__->register_method({
         if ($delete) {
             $delete = [PVE::Tools::split_list($delete)];
             die "cannot delete 'cputype'\n" if grep { $_ eq 'cputype' } @$delete;
+            die "cannot delete 'reported-model'\n" if grep { $_ eq 'reported-model' } @$delete;
         }
 
         (my $name = $param->{cputype}) =~ s/^custom-//;
