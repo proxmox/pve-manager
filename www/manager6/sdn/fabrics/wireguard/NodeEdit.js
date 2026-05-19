@@ -79,7 +79,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.Node.Edit', {
                     value = value.join(', ');
                 }
 
-                this.setRawValue(value);
+                return Ext.form.field.Text.prototype.setValue.call(this, value);
             },
             getSubmitValue: function () {
                 let value = this.getValue();
