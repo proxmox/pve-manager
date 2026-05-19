@@ -2,6 +2,8 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.vmcpuflagselector',
 
+    bufferedRenderer: false,
+
     mixins: {
         field: 'Ext.form.field.Field',
     },
