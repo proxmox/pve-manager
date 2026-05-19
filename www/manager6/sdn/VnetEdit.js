@@ -7,6 +7,30 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 
         if (me.isCreate) {
             values.type = 'vnet';
+            return values;
+        }
+
+        // Fields disabled because the selected zone does not support them are excluded from
+        // getSubmitData, so deleteEmpty cannot fire for them. Explicitly stage a delete so a
+        // previously persisted value gets dropped instead of left behind in the config.
+        let addDelete = (key) => {
+            if (values.delete) {
+                if (Ext.isArray(values.delete)) {
+                    values.delete.push(key);
+                } else {
+                    values.delete = [values.delete, key];
+                }
+            } else {
+                values.delete = [key];
+            }
+            delete values[key];
+        };
+
+        if (me.down('#sdnVnetTagField').isDisabled()) {
+            addDelete('tag');
+        }
+        if (me.down('#sdnVnetVlanAwareField').isDisabled()) {
+            addDelete('vlanaware');
         }
 
         return values;
