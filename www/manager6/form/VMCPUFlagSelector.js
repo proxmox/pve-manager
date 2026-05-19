@@ -415,10 +415,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             items: [
                 {
                     xtype: 'checkbox',
-                    // Default-on for per-VM edit, default-off when curating a
-                    // custom CPU model: the latter is cluster-wide, so we must
-                    // expose flags that no current node reports too (otherwise
-                    // a fresh single-node setup shows an almost-empty list).
+                    // Default-off in DC mode: cluster models may use flags no node reports.
                     checked: me.restrictToVMFlags,
                     submitValue: false,
                     isFormField: false,
