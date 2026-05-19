@@ -709,6 +709,8 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
     // https://docs.frrouting.org/en/latest/routemap.html
     subject: gettext('Route Map Entry'),
 
+    onlineHelp: 'pvesdn_config_route_maps',
+
     initComponent: function () {
         let me = this;
         me.method = me.isCreate ? 'POST' : 'PUT';

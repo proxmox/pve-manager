@@ -45,6 +45,8 @@ Ext.define('PVE.sdn.EditPrefixListEntryWindow', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'pvesdn_config_prefix_lists',
+
     // TRANSLATORS: Refers to an FRR prefix list, some languages may prefer to
     // keep "prefix list" as-is:
     // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
