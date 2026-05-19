@@ -241,15 +241,14 @@ Ext.define('PVE.sdn.RouteMapSetField', {
             },
         },
         {
-            width: 20,
-            xtype: 'actioncolumn',
-            items: [
-                {
-                    tooltip: gettext('Delete'),
-                    handler: 'deleteSet',
-                    iconCls: 'fa critical fa-trash-o',
-                },
-            ],
+            width: 40,
+            xtype: 'widgetcolumn',
+            widget: {
+                xtype: 'button',
+                tooltip: gettext('Delete'),
+                handler: 'deleteSet',
+                iconCls: 'fa fa-trash-o',
+            },
         },
     ],
 
@@ -300,10 +299,11 @@ Ext.define('PVE.sdn.RouteMapSetField', {
         };
     },
 
-    tbar: [
+    bbar: [
         {
             xtype: 'button',
             text: gettext('Add'),
+            iconCls: 'fa fa-plus-circle',
             handler: 'addEntry',
         },
     ],
@@ -316,8 +316,9 @@ Ext.define('PVE.sdn.RouteMapSetField', {
                 value: null,
             });
         },
-        deleteSet: function (_table, _rI, _cI, _item, _e, record) {
+        deleteSet: function (btn) {
             let me = this;
+            let record = btn.getWidgetRecord();
             me.getView().getStore().remove(record);
         },
     },
@@ -498,15 +499,14 @@ Ext.define('PVE.sdn.RouteMapMatchField', {
             },
         },
         {
-            width: 20,
-            xtype: 'actioncolumn',
-            items: [
-                {
-                    tooltip: gettext('Delete'),
-                    handler: 'deleteMatch',
-                    iconCls: 'fa critical fa-trash-o',
-                },
-            ],
+            width: 40,
+            xtype: 'widgetcolumn',
+            widget: {
+                xtype: 'button',
+                tooltip: gettext('Delete'),
+                handler: 'deleteMatch',
+                iconCls: 'fa fa-trash-o',
+            },
         },
     ],
 
@@ -558,10 +558,11 @@ Ext.define('PVE.sdn.RouteMapMatchField', {
         };
     },
 
-    tbar: [
+    bbar: [
         {
             xtype: 'button',
             text: gettext('Add'),
+            iconCls: 'fa fa-plus-circle',
             handler: 'addEntry',
         },
     ],
@@ -574,8 +575,9 @@ Ext.define('PVE.sdn.RouteMapMatchField', {
                 value: null,
             });
         },
-        deleteMatch: function (_table, _rI, _cI, _item, _e, record) {
+        deleteMatch: function (btn) {
             let me = this;
+            let record = btn.getWidgetRecord();
             me.getView().getStore().remove(record);
         },
     },
