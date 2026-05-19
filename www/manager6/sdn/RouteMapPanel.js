@@ -834,6 +834,7 @@ Ext.define('PVE.sdn.RouteMapPanel', {
     // prefer to keep it as-is:
     // https://docs.frrouting.org/en/latest/routemap.html
     emptyText: gettext('No route maps configured.'),
+    onlineHelp: 'pvesdn_config_route_maps',
 
     store: {
         autoLoad: true,

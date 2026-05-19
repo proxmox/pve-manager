@@ -297,6 +297,7 @@ Ext.define('PVE.sdn.PrefixListPanel', {
     // keep "prefix list" as-is:
     // https://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
     emptyText: gettext('No prefix list configured'),
+    onlineHelp: 'pvesdn_config_prefix_lists',
 
     viewModel: {
         formulas: {
