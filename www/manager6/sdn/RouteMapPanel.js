@@ -767,6 +767,7 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
             fieldLabel: gettext('Route Map ID'),
             editable: true,
             notFoundIsValid: true,
+            allowBlank: false,
             bind: {
                 disabled: '{routeMapId}',
             },
@@ -775,6 +776,7 @@ Ext.define('PVE.sdn.EditRouteMapEntryWindow', {
             xtype: 'proxmoxintegerfield',
             name: 'order',
             fieldLabel: gettext('Order'),
+            allowBlank: false,
             bind: {
                 disabled: '{order}',
             },
