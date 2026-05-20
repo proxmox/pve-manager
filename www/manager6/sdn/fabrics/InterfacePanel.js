@@ -13,6 +13,8 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
         type: 'checkboxmodel',
     },
 
+    maxHeight: 500,
+
     commonColumns: [
         {
             text: gettext('Status'),
