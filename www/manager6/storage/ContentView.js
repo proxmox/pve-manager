@@ -107,44 +107,11 @@ Ext.define(
                 });
             }
             tbar.push('->', gettext('Search') + ':', ' ', {
-                xtype: 'textfield',
-                width: 200,
-                enableKeyEvents: true,
+                xtype: 'pveRecordSearchField',
                 emptyText:
                     content === 'backup' ? gettext('Name, Format, Notes') : gettext('Name, Format'),
-                listeners: {
-                    keyup: {
-                        buffer: 500,
-                        fn: function (field) {
-                            let needle = field.getValue().toLocaleLowerCase();
-                            store.clearFilter(true);
-                            store.filter([
-                                {
-                                    filterFn: ({ data }) =>
-                                        data.text?.toLocaleLowerCase().includes(needle) ||
-                                        data.notes?.toLocaleLowerCase().includes(needle),
-                                },
-                            ]);
-                        },
-                    },
-                    change: function (field, newValue, oldValue) {
-                        if (newValue !== this.originalValue) {
-                            this.triggers.clear.setVisible(true);
-                        }
-                    },
-                },
-                triggers: {
-                    clear: {
-                        cls: 'pmx-clear-trigger',
-                        weight: -1,
-                        hidden: true,
-                        handler: function () {
-                            this.triggers.clear.setVisible(false);
-                            this.setValue(this.originalValue);
-                            store.clearFilter();
-                        },
-                    },
-                },
+                searchFields: ['text', 'notes'],
+                targetStore: store,
             });
 
             let availableColumns = {
