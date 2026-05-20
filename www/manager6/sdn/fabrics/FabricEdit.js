@@ -61,6 +61,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 labelWidth: 120,
                 name: 'ip_prefix',
                 allowBlank: me.hasIpv6Support,
+                vtype: 'IPCIDRAddress',
                 skipEmptyText: true,
                 deleteEmpty: !me.isCreate,
             });
@@ -82,6 +83,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                     labelWidth: 120,
                     name: 'ip6_prefix',
                     allowBlank: true,
+                    vtype: 'IP6CIDRAddress',
                     skipEmptyText: true,
                     deleteEmpty: !me.isCreate,
                     listeners: {
