@@ -15,9 +15,6 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
 
     store: {
         model: 'PVE.sdn.Fabric.Redistribution',
-        listeners: {
-            update: 'handleUpdate',
-        },
     },
 
     tbar: [
