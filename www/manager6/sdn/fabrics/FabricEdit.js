@@ -67,6 +67,18 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 vtype: 'IPCIDRAddress',
                 skipEmptyText: true,
                 deleteEmpty: !me.isCreate,
+                validator: function (value) {
+                    let ip6Prefix = this.up('window').down('[name=ip6_prefix]')?.getValue();
+                    if (!me.hasIpv6Support || value || ip6Prefix) {
+                        return true;
+                    }
+                    return gettext('Either IPv4 Prefix or IPv6 Prefix is required');
+                },
+                listeners: {
+                    change: function (field) {
+                        field.up('window').down('[name=ip6_prefix]')?.validate();
+                    },
+                },
             });
         }
 
@@ -90,10 +102,19 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                     vtype: 'IP6CIDRAddress',
                     skipEmptyText: true,
                     deleteEmpty: !me.isCreate,
+                    validator: function (value) {
+                        let ipPrefix = this.up('window').down('[name=ip_prefix]')?.getValue();
+                        if (value || ipPrefix) {
+                            return true;
+                        }
+                        return gettext('Either IPv4 Prefix or IPv6 Prefix is required');
+                    },
                     listeners: {
                         change: function (textbox, value) {
-                            let vm = textbox.up('window').getViewModel();
+                            let win = textbox.up('window');
+                            let vm = win.getViewModel();
                             vm.set('showIpv6ForwardingHint', !!value);
+                            win.down('[name=ip_prefix]')?.validate();
                         },
                     },
                 },
