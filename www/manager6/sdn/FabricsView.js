@@ -180,6 +180,7 @@ Ext.define('PVE.sdn.Fabric.View', {
             let selection = me.view.getSelection();
 
             if (selection.length === 0) {
+                addNodeButton.setDisabled(true);
                 return;
             }
 
