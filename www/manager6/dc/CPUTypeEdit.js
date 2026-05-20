@@ -53,6 +53,7 @@ Ext.define('PVE.dc.CPUTypeEdit', {
                         value: '{cputype}',
                     },
                     name: 'cputype',
+                    maxLength: 40,
                     renderer: (val) => val.replace(/^custom-/, ''),
                     allowBlank: false,
                 },
