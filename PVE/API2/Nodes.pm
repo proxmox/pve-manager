@@ -1095,7 +1095,7 @@ sub get_shell_command {
         if (defined($shellcmd) && exists($shell_cmd_map->{$shellcmd})) {
             my $def = $shell_cmd_map->{$shellcmd};
 
-            if ($is_ssh_tunneling && $cmd eq 'login') {
+            if ($is_ssh_tunneling && $shellcmd eq 'login') {
                 # stop-gap to avoid running into a racy bug with nested login, i.e. first from SSH
                 # second would be this command here, likely related to vhangup.
                 $cmd = [];
