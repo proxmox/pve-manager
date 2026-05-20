@@ -1,3 +1,21 @@
+pve-manager (9.2.1) trixie; urgency=medium
+
+  * ui: sdn: fabrics: fix the node edit grid appending a duplicate IPv6 column
+    on each use of 'Add Node' for IPv6-capable fabrics, which was caused by
+    mutating a column list shared across all instances.
+
+  * ui: sdn: fabrics: keep the 'Add Node' button disabled while no fabric is
+    selected, for example right after the selected fabric was deleted.
+
+  * ui: sdn: fabrics: validate the IPv4 and IPv6 prefix fields as CIDR
+    addresses to reject malformed input before submission, and require the
+    IPv4 prefix for fabric types that do not support IPv6.
+
+  * ui: sdn: prefix lists: reload the entries of an already-selected prefix
+    list when refreshing the list, instead of leaving the entries grid empty.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 May 2026 15:49:59 +0200
+
 pve-manager (9.2.0) trixie; urgency=medium
 
   * bump for Proxmox VE 9.2.
