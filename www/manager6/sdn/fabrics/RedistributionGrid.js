@@ -15,19 +15,25 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
 
     store: {
         model: 'PVE.sdn.Fabric.Redistribution',
+        data: [],
     },
 
-    tbar: [
-        '->',
+    bbar: [
         {
             text: gettext('Add'),
             handler: 'addRedistribution',
         },
     ],
 
+    minHeight: 100,
+
     border: false,
 
     columns: [],
+
+    viewConfig: {
+        emptyText: gettext('No entries configured'),
+    },
 
     controller: {
         xclass: 'Ext.app.ViewController',
@@ -44,8 +50,9 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
             me.handleUpdate();
         },
 
-        deleteRedistribution: function (table, rI, cI, item, e, rec) {
+        deleteRedistribution: function (btn) {
             let me = this;
+            let rec = btn.getWidgetRecord();
             me.getView().getStore().remove(rec);
             me.handleUpdate();
         },
@@ -108,16 +115,14 @@ Ext.define('PVE.sdn.Fabric.RedistributionGrid', {
             },
             ...me.getAdditionalColumns(),
             {
-                text: gettext('Action'),
-                xtype: 'actioncolumn',
-                width: 100,
-                items: [
-                    {
-                        tooltip: gettext('Delete'),
-                        handler: 'deleteRedistribution',
-                        iconCls: 'fa critical fa-trash-o',
-                    },
-                ],
+                xtype: 'widgetcolumn',
+                width: 40,
+                widget: {
+                    xtype: 'button',
+                    tooltip: gettext('Delete'),
+                    handler: 'deleteRedistribution',
+                    iconCls: 'fa fa-trash-o',
+                },
             },
         ];
 
