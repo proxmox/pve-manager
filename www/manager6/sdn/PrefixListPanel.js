@@ -325,6 +325,10 @@ Ext.define('PVE.sdn.PrefixListPanel', {
             let entriesGrid = me.lookup('prefixListEntriesGrid');
             entriesGrid.getStore().setData([]);
             Proxmox.Utils.setErrorMask(entriesGrid, false);
+
+            if (me.getViewModel().get('prefixListGrid.selection')) {
+                me.reloadPrefixEntries();
+            }
         },
         reloadPrefixEntries: function () {
             let me = this;
