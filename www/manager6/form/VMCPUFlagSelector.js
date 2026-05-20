@@ -310,47 +310,10 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                 dock: 'top',
                 items: [
                     {
-                        xtype: 'textfield',
+                        xtype: 'pveRecordSearchField',
                         emptyText: gettext('Search name or description'),
-                        submitValue: false,
                         width: 240,
-                        triggers: {
-                            clear: {
-                                cls: 'pmx-clear-trigger',
-                                weight: -1,
-                                hidden: true,
-                                handler: function () {
-                                    this.setValue('');
-                                    this.triggers.clear.setVisible(false);
-                                },
-                            },
-                        },
-                        listeners: {
-                            change: {
-                                buffer: 100,
-                                fn: function (field, value) {
-                                    let store = field.up('grid').getStore();
-                                    if (value) {
-                                        field.triggers.clear.setVisible(true);
-                                        let lv = value.toLowerCase();
-                                        store.addFilter({
-                                            id: 'search-filter',
-                                            filterFn: (rec) => {
-                                                let name = rec.get('name') || '';
-                                                let desc = rec.get('description') || '';
-                                                return (
-                                                    name.toLowerCase().includes(lv) ||
-                                                    desc.toLowerCase().includes(lv)
-                                                );
-                                            },
-                                        });
-                                    } else {
-                                        field.triggers.clear.setVisible(false);
-                                        store.removeFilter('search-filter');
-                                    }
-                                },
-                            },
-                        },
+                        searchFields: ['name', 'description'],
                     },
                     '->',
                     { xtype: 'tbtext', text: gettext('Accel') + ':' },
@@ -485,6 +448,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
         });
 
         if (!me.restrictToVMFlags) {
+            me.down('pveRecordSearchField').setTargetStore(me.getStore());
             me.getStore().getProxy().setUrl('/api2/json/cluster/qemu/cpu-flags');
             me.getStore().load();
         }
