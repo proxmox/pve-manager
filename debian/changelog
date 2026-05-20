@@ -1,3 +1,13 @@
+pve-manager (9.1.19) trixie; urgency=medium
+
+  * ui: sdn: fabrics: wireguard: present the endpoint port as a separate field
+    in the node edit window, defaulting to the standard WireGuard port 51820,
+    rather than expecting a host:port value in a single endpoint field.
+
+  * ui: sdn: fabrics: fix an error when adding a route redistribution rule.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 May 2026 04:42:05 +0200
+
 pve-manager (9.1.18) trixie; urgency=medium
 
   * ui: VM CPU flag editor: present the active acceleration as a 'Showing
