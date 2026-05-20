@@ -60,7 +60,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 fieldLabel: gettext('IPv4 Prefix'),
                 labelWidth: 120,
                 name: 'ip_prefix',
-                allowBlank: true,
+                allowBlank: me.hasIpv6Support,
                 skipEmptyText: true,
                 deleteEmpty: !me.isCreate,
             });
