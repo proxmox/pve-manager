@@ -62,10 +62,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 name: 'ip_prefix',
                 allowBlank: true,
                 skipEmptyText: true,
-                cbind: {
-                    disabled: '{!isCreate}',
-                    deleteEmpty: '{!isCreate}',
-                },
+                deleteEmpty: !me.isCreate,
             });
         }
 
@@ -86,10 +83,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                     name: 'ip6_prefix',
                     allowBlank: true,
                     skipEmptyText: true,
-                    cbind: {
-                        disabled: '{!isCreate}',
-                        deleteEmpty: '{!isCreate}',
-                    },
+                    deleteEmpty: !me.isCreate,
                     listeners: {
                         change: function (textbox, value) {
                             let vm = textbox.up('window').getViewModel();
