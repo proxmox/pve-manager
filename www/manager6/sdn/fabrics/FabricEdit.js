@@ -29,6 +29,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
             fieldLabel: gettext('Name'),
             labelWidth: 120,
             maxLength: 8,
+            allowBlank: false,
             name: 'id',
             cbind: {
                 disabled: '{!isCreate}',
