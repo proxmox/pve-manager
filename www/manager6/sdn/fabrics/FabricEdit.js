@@ -9,6 +9,8 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
     hasIpv4Support: true,
     hasIpv6Support: true,
 
+    disableIpPrefixEdit: false,
+
     baseUrl: '/cluster/sdn/fabrics/fabric',
 
     viewModel: {
@@ -60,6 +62,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 fieldLabel: gettext('IPv4 Prefix'),
                 labelWidth: 120,
                 name: 'ip_prefix',
+                disabled: me.disableIpPrefixEdit,
                 allowBlank: me.hasIpv6Support,
                 vtype: 'IPCIDRAddress',
                 skipEmptyText: true,
@@ -82,6 +85,7 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                     fieldLabel: gettext('IPv6 Prefix'),
                     labelWidth: 120,
                     name: 'ip6_prefix',
+                    disabled: me.disableIpPrefixEdit,
                     allowBlank: true,
                     vtype: 'IP6CIDRAddress',
                     skipEmptyText: true,

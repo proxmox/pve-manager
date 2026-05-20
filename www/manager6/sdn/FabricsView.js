@@ -310,6 +310,10 @@ Ext.define('PVE.sdn.Fabric.View', {
             return prefix === 'deleted' ? undefined : prefix;
         },
 
+        fabricHasConfiguredNodes: function (fabric) {
+            return (fabric.children ?? []).some((node) => node.state !== 'deleted');
+        },
+
         addWireGuard: function () {
             let me = this;
             me.openFabricAddWindow('wireguard');
@@ -406,6 +410,7 @@ Ext.define('PVE.sdn.Fabric.View', {
             let window = Ext.create(component, {
                 autoShow: true,
                 fabricId: fabric.id,
+                disableIpPrefixEdit: me.fabricHasConfiguredNodes(fabric),
             });
 
             window.on('destroy', () => me.reload());
