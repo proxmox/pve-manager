@@ -314,12 +314,24 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                         emptyText: gettext('Search name or description'),
                         submitValue: false,
                         width: 240,
+                        triggers: {
+                            clear: {
+                                cls: 'pmx-clear-trigger',
+                                weight: -1,
+                                hidden: true,
+                                handler: function () {
+                                    this.setValue('');
+                                    this.triggers.clear.setVisible(false);
+                                },
+                            },
+                        },
                         listeners: {
                             change: {
                                 buffer: 100,
                                 fn: function (field, value) {
                                     let store = field.up('grid').getStore();
                                     if (value) {
+                                        field.triggers.clear.setVisible(true);
                                         let lv = value.toLowerCase();
                                         store.addFilter({
                                             id: 'search-filter',
@@ -333,6 +345,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
                                             },
                                         });
                                     } else {
+                                        field.triggers.clear.setVisible(false);
                                         store.removeFilter('search-filter');
                                     }
                                 },
