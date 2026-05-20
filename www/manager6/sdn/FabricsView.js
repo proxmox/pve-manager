@@ -305,6 +305,11 @@ Ext.define('PVE.sdn.Fabric.View', {
             return NODE_PANELS[protocol];
         },
 
+        getFabricPrefix: function (fabric, prefixKey) {
+            let prefix = fabric?.[prefixKey];
+            return prefix === 'deleted' ? undefined : prefix;
+        },
+
         addWireGuard: function () {
             let me = this;
             me.openFabricAddWindow('wireguard');
@@ -370,6 +375,8 @@ Ext.define('PVE.sdn.Fabric.View', {
                 autoShow: true,
                 fabricId: fabric.id,
                 protocol: fabric.protocol,
+                fabricIpPrefix: me.getFabricPrefix(fabric, 'ip_prefix'),
+                fabricIp6Prefix: me.getFabricPrefix(fabric, 'ip6_prefix'),
                 disallowedNodes,
                 addAnotherCallback: () => {
                     let successCallback = () => {
@@ -404,7 +411,7 @@ Ext.define('PVE.sdn.Fabric.View', {
             window.on('destroy', () => me.reload());
         },
 
-        openNodeEditWindow: function (node) {
+        openNodeEditWindow: function (node, fabric) {
             let me = this;
 
             let component = me.getNodeEditPanel(node.protocol);
@@ -414,6 +421,8 @@ Ext.define('PVE.sdn.Fabric.View', {
                 fabricId: node.fabric_id,
                 nodeId: node.node_id,
                 protocol: node.protocol,
+                fabricIpPrefix: me.getFabricPrefix(fabric, 'ip_prefix'),
+                fabricIp6Prefix: me.getFabricPrefix(fabric, 'ip6_prefix'),
             });
 
             window.on('destroy', () => me.reload());
@@ -425,7 +434,7 @@ Ext.define('PVE.sdn.Fabric.View', {
             if (rec.data.type === 'fabric') {
                 me.openFabricEditWindow(rec.data);
             } else if (rec.data.type === 'node') {
-                me.openNodeEditWindow(rec.data);
+                me.openNodeEditWindow(rec.data, rec.parentNode.data);
             } else {
                 console.warn(`unknown type ${rec.data.type}`);
             }

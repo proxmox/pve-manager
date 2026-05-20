@@ -14,6 +14,9 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     hasIpv4Support: true,
     hasIpv6Support: true,
 
+    fabricIpPrefix: undefined,
+    fabricIp6Prefix: undefined,
+
     disallowedNodes: [],
 
     baseUrl: '/cluster/sdn/fabrics/node',
@@ -45,12 +48,13 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             me.url = `${me.baseUrl}/${me.fabricId}`;
         }
 
-        if (me.hasIpv4Support) {
+        if (me.hasIpv4Support && me.fabricIpPrefix) {
             me.items.push({
                 xtype: 'proxmoxtextfield',
                 fieldLabel: gettext('IPv4'),
                 labelWidth: 120,
                 name: 'ip',
+                vtype: 'IPAddress',
                 allowBlank: true,
                 skipEmptyText: true,
                 cbind: {
@@ -59,12 +63,13 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             });
         }
 
-        if (me.hasIpv6Support) {
+        if (me.hasIpv6Support && me.fabricIp6Prefix) {
             me.items.push({
                 xtype: 'proxmoxtextfield',
                 fieldLabel: gettext('IPv6'),
                 labelWidth: 120,
                 name: 'ip6',
+                vtype: 'IP6Address',
                 allowBlank: true,
                 skipEmptyText: true,
                 cbind: {
