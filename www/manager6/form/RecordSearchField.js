@@ -9,6 +9,18 @@ Ext.define('PVE.form.RecordSearchField', {
     enableKeyEvents: true,
     submitValue: false,
 
+    triggers: {
+        clear: {
+            cls: 'pmx-clear-trigger',
+            weight: -1,
+            hidden: true,
+            // setValue() cancels the pending debounce and applies the reset synchronously.
+            handler: function () {
+                this.setValue('');
+            },
+        },
+    },
+
     config: {
         searchFields: [],
         filterId: 'record-search',
@@ -27,7 +39,11 @@ Ext.define('PVE.form.RecordSearchField', {
             filterFn: (rec) => me.matchesRecord(rec),
         });
         me.searchTask = new Ext.util.DelayedTask(me.applySearch, me);
-        me.on('change', () => me.searchTask.delay(500));
+        me.on('change', (field, value) => {
+            me.searchTask.delay(500);
+            // Guard: `change` can fire before the triggers are rendered.
+            me.triggers?.clear?.setVisible(!!value);
+        });
         me.on('destroy', () => me.searchTask.cancel());
         me.callParent();
         if (initialStore) {
