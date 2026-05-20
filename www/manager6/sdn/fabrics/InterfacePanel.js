@@ -110,8 +110,10 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
     initComponent: function () {
         let me = this;
 
+        let columns = [...me.commonColumns];
+
         if (me.hasIpv6Support) {
-            me.commonColumns.push({
+            columns.push({
                 text: gettext('IPv6'),
                 xtype: 'widgetcolumn',
                 dataIndex: 'ip6',
@@ -126,6 +128,10 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
             });
         }
 
+        if (me.additionalColumns.length > 0) {
+            columns.push(...me.additionalColumns);
+        }
+
         Ext.apply(me, {
             store: Ext.create('Ext.data.Store', {
                 model: 'Pve.sdn.Interface',
@@ -134,7 +140,7 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
                     direction: 'ASC',
                 },
             }),
-            columns: me.commonColumns.concat(me.additionalColumns),
+            columns,
         });
 
         me.callParent();
