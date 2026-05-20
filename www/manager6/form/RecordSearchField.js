@@ -40,7 +40,7 @@ Ext.define('PVE.form.RecordSearchField', {
         });
         me.searchTask = new Ext.util.DelayedTask(me.applySearch, me);
         me.on('change', (field, value) => {
-            me.searchTask.delay(500);
+            me.searchTask.delay(300);
             // Guard: `change` can fire before the triggers are rendered.
             me.triggers?.clear?.setVisible(!!value);
         });
