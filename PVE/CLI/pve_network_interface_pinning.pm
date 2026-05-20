@@ -158,7 +158,7 @@ my sub parse_link_file {
     my $data = {};
 
     for my $line (@lines) {
-        next if $line =~ m/^\s*$/;
+        next if $line =~ m/^\s*(?:[#;]|$)/;
 
         if ($line =~ m/^\[(Match|Link)\]$/) {
             $section = $1;
