@@ -55,8 +55,14 @@ sub get_local_services {
 sub broadcast_ceph_services {
     my $services = get_local_services();
 
+    my $nodename = PVE::INotify::nodename();
+    my $json = JSON->new->canonical(1); # canonical for stable string comparison below
+
     for my $type (keys %$services) {
-        my $data = encode_json($services->{$type});
+        my $data = $json->encode($services->{$type});
+        my $old = PVE::Cluster::get_node_kv("ceph-$type", $nodename);
+        my $old_raw = $old->{$nodename} // '';
+        next if length($old_raw) && $old_raw eq $data; # unchanged, skip the (not cheap) broadcast
         PVE::Cluster::broadcast_node_kv("ceph-$type", $data);
     }
 }
