@@ -1,3 +1,23 @@
+pve-manager (9.2.2) trixie; urgency=medium
+
+  * sdn: fabrics: wireguard: drop the separate endpoint-port field added to
+    the node-edit window in 9.1.19. The underlying schema change in
+    proxmox-ve-config has been reverted: the endpoint now stores only the
+    host, and the connect port is derived from the referenced interface's
+    listen_port at config-generation time. The clarified "Host that peers
+    connect to" empty-text on the endpoint field is kept.
+
+  * sdn: fabrics: tighten the fabric and node configuration forms: require at
+    least one prefix, hide node address fields for prefix families that are
+    not configured on the fabric, and disable prefix editing once nodes have
+    been added (since changing the prefix would invalidate existing nodes).
+
+  * ui: VM CPU flag selector: disable column sorting as a stop-gap, since
+    sorting and then editing a flag could leave the radio-button widgets in
+    moved rows showing the wrong selected state.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 21 May 2026 13:20:02 +0200
+
 pve-manager (9.2.1) trixie; urgency=medium
 
   * ui: sdn: fabrics: fix the node edit grid appending a duplicate IPv6 column
