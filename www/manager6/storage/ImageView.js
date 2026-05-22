@@ -73,6 +73,24 @@ Ext.define('PVE.storage.ImageView', {
         ];
         me.useCustomRemoveButton = true;
 
+        me.extraColumns = {
+            guest: {
+                header: gettext('Guest'),
+                flex: 1,
+                dataIndex: 'vmid',
+                renderer: function (vmid) {
+                    if (!vmid) {
+                        return '';
+                    }
+                    let name = PVE.data.ResourceStore.guestName(vmid);
+                    if (name && name !== '-') {
+                        return PVE.Utils.getFormattedGuestIdentifier(vmid, name);
+                    }
+                    return String(vmid);
+                },
+            },
+        };
+
         me.callParent();
     },
 });
