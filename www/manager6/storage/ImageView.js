@@ -89,6 +89,43 @@ Ext.define('PVE.storage.ImageView', {
                     return String(vmid);
                 },
             },
+            guestAction: {
+                xtype: 'actioncolumn',
+                header: '',
+                width: 30,
+                items: [
+                    {
+                        iconCls: 'fa fa-chevron-right',
+                        tooltip: gettext('Go to Guest'),
+                        isActionDisabled: (_view, _ri, _ci, _item, { data }) =>
+                            !data.vmid || !PVE.data.ResourceStore.findVMID(data.vmid),
+                        handler: function (view, _ri, _ci, _item, _e, { data }) {
+                            let index = PVE.data.ResourceStore.findExact(
+                                'vmid',
+                                parseInt(data.vmid, 10),
+                            );
+                            if (index < 0) {
+                                return;
+                            }
+                            let guest = PVE.data.ResourceStore.getAt(index).data;
+                            let isQemu = guest.type === 'qemu';
+                            let sp = Ext.state.Manager.getProvider();
+                            if (isQemu) {
+                                sp.set('kvmtab', { value: 'hardware' });
+                            } else {
+                                sp.set('lxctab', { value: 'resources' });
+                            }
+                            let ws = view.up('pveStdWorkspace');
+                            ws.selectById(guest.id);
+                            let itemId = isQemu ? 'hardware' : 'resources';
+                            let grid = ws.down('#' + itemId);
+                            if (grid) {
+                                grid.pendingVolid = data.volid;
+                            }
+                        },
+                    },
+                ],
+            },
         };
 
         me.callParent();

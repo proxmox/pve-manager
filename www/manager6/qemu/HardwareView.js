@@ -940,5 +940,22 @@ Ext.define('PVE.qemu.HardwareView', {
         me.on('destroy', me.rstore.stopUpdate, me.rstore);
 
         me.mon(me.getStore(), 'datachanged', set_button_status, me);
+
+        me.mon(me.getStore(), 'datachanged', function () {
+            if (!me.pendingVolid) {
+                return;
+            }
+            let volid = me.pendingVolid;
+            delete me.pendingVolid;
+            let index = me
+                .getStore()
+                .findBy(
+                    (r) =>
+                        typeof r.data.value === 'string' && r.data.value.split(',', 1)[0] === volid,
+                );
+            if (index >= 0) {
+                me.getSelectionModel().select(index);
+            }
+        });
     },
 });
