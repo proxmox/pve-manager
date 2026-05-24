@@ -1,3 +1,12 @@
+pve-manager (9.2.3) trixie; urgency=medium
+
+  * ui: storage content: show the owning guest of a volume and add an action
+    to jump to it.
+
+  * api schema: cluster options: declare the actual return schema type.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 24 May 2026 02:05:58 +0200
+
 pve-manager (9.2.2) trixie; urgency=medium
 
   * sdn: fabrics: wireguard: drop the separate endpoint-port field added to
