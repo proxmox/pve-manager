@@ -786,7 +786,19 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => "object",
-        properties => {},
+        # the writable datacenter options plus the read-only 'allowed-tags'; left open
+        # ('additionalProperties' unset) as not all options are returned without 'Sys.Audit'
+        properties => {
+            $dc_schema->{properties}->%*,
+            'allowed-tags' => {
+                type => 'array',
+                description => 'The tags the current user is allowed to set and see.',
+                items => {
+                    type => 'string',
+                    description => 'A tag.',
+                },
+            },
+        },
     },
     code => sub {
         my ($param) = @_;
