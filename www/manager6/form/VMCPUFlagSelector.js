@@ -217,67 +217,37 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     },
     columns: [
         {
-            text: gettext('State'),
-            dataIndex: 'state',
-            renderer: function (v) {
-                switch (v) {
-                    case '=':
-                        return 'Default';
-                    case '-':
-                        return 'Off';
-                    case '+':
-                        return 'On';
-                    default:
-                        return 'Unknown';
-                }
-            },
-            width: 65,
-        },
-        {
             text: gettext('Value'),
             xtype: 'widgetcolumn',
             dataIndex: 'state',
-            width: 95,
+            width: 200,
             onWidgetAttach: function (column, widget, record) {
-                let val = record.get('state') || '=';
-                widget.down('[inputValue=' + val + ']').setValue(true);
+                widget.setValue(record.get('state') || '=');
                 // TODO: disable if selected CPU model and flag are incompatible
             },
             widget: {
-                xtype: 'radiogroup',
-                hideLabel: true,
-                layout: 'hbox',
-                validateOnChange: false,
+                xtype: 'segmentedbutton',
+                allowMultiple: false,
+                defaultUI: 'default-toolbar',
                 value: '=',
+                items: [
+                    { text: gettext('Off'), value: '-', width: 50 },
+                    { text: gettext('Default'), value: '=', width: 90 },
+                    { text: gettext('On'), value: '+', width: 50 },
+                ],
                 listeners: {
                     change: function (f, value) {
-                        let v = Object.values(value)[0];
-                        f.getWidgetRecord().set('state', v);
+                        let rec = f.getWidgetRecord();
+                        if (!rec) {
+                            return;
+                        }
+                        rec.set('state', value);
 
-                        let view = this.up('grid');
-                        view.dirty = view.getValue() !== view.originalValue;
-                        view.checkDirty();
-                        //view.checkChange();
+                        let grid = f.up('grid');
+                        grid.dirty = grid.getValue() !== grid.originalValue;
+                        grid.checkDirty();
                     },
                 },
-                items: [
-                    {
-                        boxLabel: '-',
-                        boxLabelAlign: 'before',
-                        inputValue: '-',
-                        isFormField: false,
-                    },
-                    {
-                        checked: true,
-                        inputValue: '=',
-                        isFormField: false,
-                    },
-                    {
-                        boxLabel: '+',
-                        inputValue: '+',
-                        isFormField: false,
-                    },
-                ],
             },
         },
         {
