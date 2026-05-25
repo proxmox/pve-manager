@@ -4,9 +4,6 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 
     bufferedRenderer: false,
 
-    // FIXME: stop-gap; sorting caused glitches with the inputs of radio widgets in moved rows.
-    sortableColumns: false,
-
     mixins: {
         field: 'Ext.form.field.Field',
     },
