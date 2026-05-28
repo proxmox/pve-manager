@@ -60,7 +60,7 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
             flex: 1,
         },
         {
-            text: gettext('IP'),
+            text: gettext('IPv4'),
             xtype: 'widgetcolumn',
             dataIndex: 'ip',
             flex: 1,
