@@ -34,9 +34,16 @@ Ext.define('PVE.data.PermPathStore', {
         PVE.data.ResourceStore.each(function (record) {
             let path;
             switch (record.get('type')) {
-                case 'node':
-                    path = '/nodes/' + record.get('text');
+                case 'node': {
+                    let nodename = record.get('text');
+                    path = '/nodes/' + nodename;
+                    let certpath = '/nodes/' + nodename + '/certificates';
+                    if (!donePaths[certpath]) {
+                        me.add({ value: certpath });
+                        donePaths[certpath] = 1;
+                    }
                     break;
+                }
                 case 'network':
                     path = '/sdn/' + record.get('network-type') + 's/' + record.get('network');
                     break;
