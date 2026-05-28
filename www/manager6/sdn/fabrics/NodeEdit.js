@@ -155,7 +155,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
             name: iface.iface,
             type: iface.type,
             ip: iface.cidr,
-            ipv6: iface.cidr6,
+            ip6: iface.cidr6,
         }));
 
         if (me.includeWireguardInterfaces) {
