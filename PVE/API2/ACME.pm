@@ -160,7 +160,7 @@ __PACKAGE__->register_method({
     path => 'certificate',
     method => 'POST',
     permissions => {
-        check => ['perm', '/nodes/{node}', ['Sys.Modify']],
+        check => ['perm', '/nodes/{node}/certificates', ['Sys.Modify']],
     },
     description => "Order a new certificate from ACME-compatible CA.",
     protected => 1,
@@ -232,7 +232,7 @@ __PACKAGE__->register_method({
     path => 'certificate',
     method => 'PUT',
     permissions => {
-        check => ['perm', '/nodes/{node}', ['Sys.Modify']],
+        check => ['perm', '/nodes/{node}/certificates', ['Sys.Modify']],
     },
     description => "Renew existing certificate from CA.",
     protected => 1,
@@ -321,7 +321,7 @@ __PACKAGE__->register_method({
     path => 'certificate',
     method => 'DELETE',
     permissions => {
-        check => ['perm', '/nodes/{node}', ['Sys.Modify']],
+        check => ['perm', '/nodes/{node}/certificates', ['Sys.Modify']],
     },
     description => "Revoke existing certificate from CA.",
     protected => 1,
