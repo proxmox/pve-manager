@@ -217,6 +217,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
             text: gettext('Value'),
             xtype: 'widgetcolumn',
             dataIndex: 'state',
+            sortable: true,
             width: 200,
             onWidgetAttach: function (column, widget, record) {
                 widget.setValue(record.get('state') || '=');
