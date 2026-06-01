@@ -1808,6 +1808,9 @@ Ext.define('PVE.Utils', {
         qemu_min_version: function (toCheck, minVersion) {
             let i;
             for (i = 0; i < toCheck.length && i < minVersion.length; i++) {
+                if (toCheck[i] > minVersion[i]) {
+                    return true;
+                }
                 if (toCheck[i] < minVersion[i]) {
                     return false;
                 }
