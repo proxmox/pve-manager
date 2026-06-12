@@ -1272,7 +1272,8 @@ Ext.define('PVE.Utils', {
         calculate_disk_usage: function (data) {
             if (
                 !Ext.isNumeric(data.disk) ||
-                ((data.type === 'qemu' || data.type === 'lxc') && data.uptime === 0) ||
+                data.type === 'qemu' ||
+                (data.type === 'lxc' && data.uptime === 0) ||
                 data.maxdisk === 0
             ) {
                 return -1;
@@ -1297,7 +1298,8 @@ Ext.define('PVE.Utils', {
             if (
                 !Ext.isNumeric(disk) ||
                 maxdisk === 0 ||
-                ((type === 'qemu' || type === 'lxc') && record.data.uptime === 0)
+                type === 'qemu' ||
+                (type === 'lxc' && record.data.uptime === 0)
             ) {
                 return '';
             }
