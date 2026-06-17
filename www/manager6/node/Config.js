@@ -252,6 +252,7 @@ Ext.define('PVE.node.Config', {
                 groups: ['services'],
                 disabled: !caps.nodes['Sys.Syslog'],
                 itemId: 'syslog',
+                structured: true,
                 url: '/api2/extjs/nodes/' + nodename + '/journal',
             });
 
