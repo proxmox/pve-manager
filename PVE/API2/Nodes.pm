@@ -1032,6 +1032,14 @@ __PACKAGE__->register_method({
                 pattern => '^([0-7](\.\.[0-7])?)?$',
                 optional => 1,
             },
+            service => {
+                description => "Only print messages whose syslog identifier matches this"
+                    . " glob, for example 'pve*' or 'postfix/*'.",
+                type => 'string',
+                pattern => '^[A-Za-z0-9_.@:*?!\[\]\/-]+$',
+                maxLength => 128,
+                optional => 1,
+            },
         },
     },
     returns => {
@@ -1055,6 +1063,8 @@ __PACKAGE__->register_method({
         push @$cmd, '-t', PVE::Tools::shellquote($param->{endcursor}) if $param->{endcursor};
         push @$cmd, '-p', PVE::Tools::shellquote($param->{priority})
             if defined($param->{priority}) && $param->{priority} ne '';
+        push @$cmd, '-i', PVE::Tools::shellquote($param->{service})
+            if defined($param->{service});
         push @$cmd, ' | gzip ';
 
         open(my $fh, "-|", join(' ', @$cmd))
