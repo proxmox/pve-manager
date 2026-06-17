@@ -1040,6 +1040,14 @@ __PACKAGE__->register_method({
                 maxLength => 128,
                 optional => 1,
             },
+            identifiers => {
+                description => "Also return a record listing the distinct syslog"
+                    . " identifiers present, for filter completion. Only honored"
+                    . " together with 'structured'.",
+                type => 'boolean',
+                default => 0,
+                optional => 1,
+            },
         },
     },
     returns => {
@@ -1065,6 +1073,7 @@ __PACKAGE__->register_method({
             if defined($param->{priority}) && $param->{priority} ne '';
         push @$cmd, '-i', PVE::Tools::shellquote($param->{service})
             if defined($param->{service});
+        push @$cmd, '-I' if $param->{identifiers} && $param->{structured};
         push @$cmd, ' | gzip ';
 
         open(my $fh, "-|", join(' ', @$cmd))
