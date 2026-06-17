@@ -1015,6 +1015,14 @@ __PACKAGE__->register_method({
                 type => 'string',
                 optional => 1,
             },
+            structured => {
+                description => "Return one JSON object per entry with separate fields"
+                    . " (timestamp, identifier, message, priority, ...) instead of"
+                    . " pre-rendered text lines.",
+                type => 'boolean',
+                default => 0,
+                optional => 1,
+            },
         },
     },
     returns => {
@@ -1029,7 +1037,7 @@ __PACKAGE__->register_method({
         my $rpcenv = PVE::RPCEnvironment::get();
         my $user = $rpcenv->get_user();
 
-        my $cmd = ["/usr/bin/mini-journalreader", "-j"];
+        my $cmd = ["/usr/bin/mini-journalreader", $param->{structured} ? "-J" : "-j"];
         push @$cmd, '-n', $param->{lastentries} if $param->{lastentries};
         push @$cmd, '-b', $param->{since} if $param->{since};
         push @$cmd, '-e', $param->{until} if $param->{until};
