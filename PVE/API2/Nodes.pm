@@ -1040,6 +1040,14 @@ __PACKAGE__->register_method({
                 maxLength => 128,
                 optional => 1,
             },
+            unit => {
+                description => "Only print messages of this systemd unit (the .service"
+                    . " suffix is implied).",
+                type => 'string',
+                pattern => '^[A-Za-z0-9_.@:-]+$',
+                maxLength => 256,
+                optional => 1,
+            },
             identifiers => {
                 description => "Also return a record listing the distinct syslog"
                     . " identifiers present, for filter completion. Only honored"
@@ -1073,6 +1081,10 @@ __PACKAGE__->register_method({
             if defined($param->{priority}) && $param->{priority} ne '';
         push @$cmd, '-i', PVE::Tools::shellquote($param->{service})
             if defined($param->{service});
+        if (defined($param->{unit})) {
+            my $unit = { postfix => 'postfix@-' }->{ $param->{unit} } // $param->{unit};
+            push @$cmd, '-u', PVE::Tools::shellquote($unit);
+        }
         push @$cmd, '-I' if $param->{identifiers} && $param->{structured};
         push @$cmd, ' | gzip ';
 
