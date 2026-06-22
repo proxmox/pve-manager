@@ -175,6 +175,7 @@ Ext.define('PVE.node.Config', {
                     iconCls: 'fa fa-cogs',
                     itemId: 'services',
                     expandedOnInit: true,
+                    useJournalLog: true, // journal endpoint here serves -J + the unit filter
                     restartCommand: 'reload', // avoid disruptions
                     startOnlyServices: {
                         pveproxy: true,
