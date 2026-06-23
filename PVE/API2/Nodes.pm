@@ -951,6 +951,7 @@ __PACKAGE__->register_method({
         if ($param->{service}) {
             my $service_aliases = {
                 'postfix' => 'postfix@-',
+                'sshd' => 'ssh',
             };
 
             $service = $service_aliases->{ $param->{service} } // $param->{service};
@@ -1082,7 +1083,10 @@ __PACKAGE__->register_method({
         push @$cmd, '-i', PVE::Tools::shellquote($param->{service})
             if defined($param->{service});
         if (defined($param->{unit})) {
-            my $unit = { postfix => 'postfix@-' }->{ $param->{unit} } // $param->{unit};
+            # a few service names differ from the unit that actually logs (e.g. sshd is an alias of
+            # ssh.service), so map them to the name the journal records
+            my $unit_aliases = { postfix => 'postfix@-', sshd => 'ssh' };
+            my $unit = $unit_aliases->{ $param->{unit} } // $param->{unit};
             push @$cmd, '-u', PVE::Tools::shellquote($unit);
         }
         push @$cmd, '-I' if $param->{identifiers} && $param->{structured};
