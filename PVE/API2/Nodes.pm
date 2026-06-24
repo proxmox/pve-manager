@@ -1049,10 +1049,24 @@ __PACKAGE__->register_method({
                 maxLength => 256,
                 optional => 1,
             },
+            kernel => {
+                description => "Only print kernel messages.",
+                type => 'boolean',
+                default => 0,
+                optional => 1,
+            },
             identifiers => {
                 description => "Also return a record listing the distinct syslog"
                     . " identifiers present, for filter completion. Only honored"
                     . " together with 'structured'.",
+                type => 'boolean',
+                default => 0,
+                optional => 1,
+            },
+            units => {
+                description => "Also return a record listing the distinct systemd"
+                    . " units present, for filter completion. Only honored together"
+                    . " with 'structured'.",
                 type => 'boolean',
                 default => 0,
                 optional => 1,
@@ -1089,7 +1103,9 @@ __PACKAGE__->register_method({
             my $unit = $unit_aliases->{ $param->{unit} } // $param->{unit};
             push @$cmd, '-u', PVE::Tools::shellquote($unit);
         }
+        push @$cmd, '-k' if $param->{kernel};
         push @$cmd, '-I' if $param->{identifiers} && $param->{structured};
+        push @$cmd, '-U' if $param->{units} && $param->{structured};
         push @$cmd, ' | gzip ';
 
         open(my $fh, "-|", join(' ', @$cmd))
