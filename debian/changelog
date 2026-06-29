@@ -1,3 +1,45 @@
+pve-manager (9.2.4) trixie; urgency=medium
+
+  * fix #4130: external metric server: keep node status updates flowing when a
+    TCP metric server is unreachable. A failed connection previously raised an
+    unhandled exception that aborted the whole node status update, so storage
+    and guest status indicators in the UI eventually turned gray.
+
+  * fix #6348: ui: bulk action: render the resource tags in the selection list
+    using the configured tag style instead of plain text.
+
+  * ui: node: show the system log in a structured journal view that colors
+    entries by syslog priority and adds server-side filters for the minimum
+    priority, a systemd unit, a syslog identifier and kernel-only messages,
+    with autocompletion for the unit and identifier filters.
+
+  * ui: node: open a service's log in that structured journal view, scoped to
+    the service's systemd unit, instead of as plain text.
+
+  * ui: VM CPU flag selector: replace the per-flag radio group and the
+    separate read-only state column with a single Off/Default/On segmented
+    button that both shows and sets the state, and re-enable column sorting.
+
+  * ui: custom CPU model: validate the name in the creation dialog against the
+    allowed config-ID format, rejecting invalid names in the frontend instead
+    of only after the backend refuses them.
+
+  * ui: sdn: fabrics: fix editing a node interface that already has an IPv6
+    address, which did not show up and failed to submit because the field was
+    named 'ipv6' instead of the 'ip6' the schema expects, and label the
+    interface address column 'IPv4' instead of the ambiguous 'IP'.
+
+  * ui: fix the QEMU version comparison behind the dynamic USB port limit,
+    which wrongly required the minor version to also be greater or equal even
+    when the major version was already newer, so the higher USB port count for
+    capable machine and OS types was not offered.
+
+  * ui: stop displaying a misleading 0% disk usage for VMs in the resource
+    views; the field is left empty again, as VM disk usage is not currently
+    queried from the guest agent.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 29 Jun 2026 02:03:43 +0200
+
 pve-manager (9.2.3) trixie; urgency=medium
 
   * ui: storage content: show the owning guest of a volume and add an action
