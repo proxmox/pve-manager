@@ -129,7 +129,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
             xtype: 'proxmoxintegerfield',
             name: 'sockets',
             minValue: 1,
-            maxValue: 4,
             value: '1',
             fieldLabel: gettext('Sockets'),
             allowBlank: false,
