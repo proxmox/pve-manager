@@ -1089,20 +1089,6 @@ __PACKAGE__->register_method({
 
                 eval { PVE::Ceph::Tools::ceph_volume_zap($osdid, $cleanup) };
                 warn $@ if $@;
-
-                if ($cleanup) {
-                    # try to remove pvs, but do not fail if it does not work
-                    for my $osd_part (@{ $osd_list->{$osdid} }) {
-                        for my $dev (@{ $osd_part->{devices} }) {
-                            ($dev) = ($dev =~ m|^(/dev/[-_.a-zA-Z0-9\/]+)$|); #untaint
-
-                            eval {
-                                run_command(['/sbin/pvremove', $dev], errfunc => sub { });
-                            };
-                            warn $@ if $@;
-                        }
-                    }
-                }
             } else {
                 my $partitions_to_remove = [];
                 if ($cleanup) {
