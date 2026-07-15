@@ -178,7 +178,11 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
                     continue;
                 }
 
-                if (['type', 'isDisabled'].includes(key)) {
+                if (
+                    ['type', 'isDisabled'].includes(key) ||
+                    (key === 'ip' && !me.hasIpv4Support) ||
+                    (key === 'ip6' && !me.hasIpv6Support)
+                ) {
                     continue;
                 }
 
