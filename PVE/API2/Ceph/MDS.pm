@@ -151,8 +151,9 @@ __PACKAGE__->register_method({
                 optional => 1,
                 default => 0,
                 description =>
-                    "Determines whether a ceph-mds daemon should poll and replay the log of an active MDS. "
-                    . "Faster switch on MDS failure, but needs more idle resources.",
+                    "Determines whether a ceph-mds daemon should poll and replay the log of an active MDS."
+                    . " Faster switch on MDS failure, but needs more idle resources."
+                    . " Deprecated: the setting was removed in Ceph 14.1.1.",
             },
         },
     },
