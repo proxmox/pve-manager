@@ -1,3 +1,56 @@
+pve-manager (9.2.5) trixie; urgency=medium
+
+  * ceph: add guided rolling-restart for Ceph daemons, available both from the
+    API and the web interface, so operators can safely cycle all OSDs,
+    monitors, managers or metadata servers of a cluster after a configuration
+    or kernel change without hand-rolled scripts. Each step waits for the
+    previous daemon to rejoin and gates on Ceph's own 'ok-to-stop' check to
+    keep data placement and quorum available, aborting if the cluster health
+    degrades mid-run. OSD restarts are scoped per node and guarded by 'noout',
+    while monitor, manager and metadata server restarts run cluster-wide. A
+    dry-run mode logs the plan only, and a bulk OSD restart can be resumed
+    after an interrupted worker (task stop, reboot, network blip) without
+    redoing the already-cycled OSDs.
+
+  * ceph: osd: drop two obsolete cleanup workarounds now handled elsewhere:
+    Ceph itself runs 'pvremove' while zapping an OSD, so our own call could
+    fail on an already-removed physical volume, and the udev trigger worked
+    around a systemd bug fixed long ago.
+
+  * ceph: skip re-broadcasting the Ceph service status to the cluster file
+    system on every pvestatd cycle when nothing changed, avoiding needless
+    pmxcfs writes.
+
+  * fix #6948: ui: ceph: configuration database: automatically show the MASK
+    column once any entry uses a mask, so masked settings such as
+    'osd/class:hdd' are no longer indistinguishable from cluster-wide ones.
+
+  * ui: sdn: fabrics: fix adding and editing BGP unnumbered interfaces, which
+    carry no per-interface IP address. The IPv4 column is now optional and
+    stale 'ip'/'ip6' properties are no longer submitted, which previously made
+    the backend reject the interface as not defined in the schema.
+
+  * api: sdn: avoid a double slash in delete request URIs, which a strict
+    firewall or proxy could reject even though the server normalizes it.
+
+  * fix #7460: ui: sdn: point the BGP and IS-IS controller help buttons to
+    their own documentation sections instead of the EVPN one.
+
+  * ui: VM boot order: hint that OVMF (UEFI) guests need a virtual RNG device
+    for PXE network boot to work.
+
+  * ui: VM vCPU: drop the artificial upper limit on the socket count in the
+    edit dialog, matching the backend which imposes none.
+
+  * postinst: add kernel NBD devices to the global LVM filter on new
+    installations, to avoid clashes with volume groups on NBD-mapped external
+    disks, for example nested Proxmox VE systems or disks accessed by external
+    backup providers.
+
+  * update shipped appliance info index.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 15 Jul 2026 22:52:47 +0200
+
 pve-manager (9.2.4) trixie; urgency=medium
 
   * fix #4130: external metric server: keep node status updates flowing when a
