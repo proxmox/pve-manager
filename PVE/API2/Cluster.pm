@@ -814,7 +814,7 @@ __PACKAGE__->register_method({
         if ($rpcenv->check($authuser, '/', ['Sys.Audit'], 1)) {
             $res = $datacenter_config;
         } else {
-            for my $k (qw(console tag-style)) {
+            for my $k (qw(console tag-style token-policy)) {
                 $res->{$k} = $datacenter_config->{$k} if exists $datacenter_config->{$k};
             }
         }
