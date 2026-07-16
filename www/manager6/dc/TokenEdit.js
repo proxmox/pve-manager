@@ -25,6 +25,20 @@ Ext.define('PVE.dc.TokenEdit', {
             delete values.userid;
             delete values.tokenid;
 
+            // the date field only holds the day, so drop an unchanged day to keep the exact stored
+            // expiration date
+            if (!win.isCreate && win.originalExpire !== undefined) {
+                let originalDayStart = 0;
+                if (win.originalExpire) {
+                    let day = new Date(win.originalExpire * 1000);
+                    Ext.Date.clearTime(day);
+                    originalDayStart = Math.floor(day.getTime() / 1000);
+                }
+                if (Number(values.expire) === originalDayStart) {
+                    delete values.expire;
+                }
+            }
+
             win.url += `${uid}/token/${tid}`;
             return values;
         },
@@ -91,6 +105,20 @@ Ext.define('PVE.dc.TokenEdit', {
             });
         }
     },
+
+    setValues: function (values) {
+        let me = this;
+        // remember the stored expiration date to detect a real change on submission; the
+        // token grid's record carries it as a Date object, the API as epoch seconds
+        if (!me.isCreate && values.expire !== undefined) {
+            me.originalExpire =
+                values.expire instanceof Date
+                    ? Math.floor(values.expire.getTime() / 1000)
+                    : Number(values.expire);
+        }
+        me.callParent([values]);
+    },
+
     apiCallDone: function (success, response, options) {
         let res = response.result.data;
         if (!success || !res.value) {
