@@ -39,6 +39,18 @@ Ext.define('PVE.dc.TokenEdit', {
                 }
             }
 
+            // resolve the lifetime only now, to not lose validity time while the dialog is open
+            let lifetimeField = me.down('field[name=token-lifetime]');
+            if (!lifetimeField.isDisabled() && lifetimeField.getValue()) {
+                values.expire =
+                    Math.floor(PVE.UIOptions.serverNow() / 1000) + lifetimeField.getValue();
+                // the time left until the current expiration date shrinks while the dialog is
+                // open, so cap at that date where the policy forbids extending it
+                if (win.expireCap) {
+                    values.expire = Math.min(values.expire, win.expireCap);
+                }
+            }
+
             win.url += `${uid}/token/${tid}`;
             return values;
         },
@@ -82,6 +94,17 @@ Ext.define('PVE.dc.TokenEdit', {
                 xtype: 'pmxExpireDate',
                 name: 'expire',
             },
+            {
+                // used instead of the date field for sub-day maximum lifetimes
+                xtype: 'numberfield',
+                name: 'token-lifetime',
+                submitValue: false,
+                hidden: true,
+                disabled: true,
+                allowDecimals: false,
+                minValue: 1,
+                fieldLabel: gettext('Lifetime (seconds)'),
+            },
         ],
         columnB: [
             {
@@ -97,13 +120,124 @@ Ext.define('PVE.dc.TokenEdit', {
 
         me.callParent();
 
-        if (!me.isCreate) {
+        // the backend enforces the policy in any case, applying it here guides the user
+        me.policy = PVE.UIOptions.options['token-policy'] || {};
+        if (me.policy['max-lifetime'] !== undefined) {
+            me.maxLifetime = Number(me.policy['max-lifetime']);
+            // computed once, so that the pre-filled default cannot drift past the bound
+            let now = PVE.UIOptions.serverNow();
+            me.maxDate = new Date(now + me.maxLifetime * 1000);
+            // the date field only offers midnights, at best covering an arbitrary part of a sub-day
+            // maximum, and on a 25 hour DST day a one day maximum may contain no midnight at all
+            let nextMidnight = new Date(now);
+            nextMidnight.setHours(24, 0, 0, 0);
+            me.useLifetimeField = me.maxLifetime < 86400 || nextMidnight > me.maxDate;
+        }
+        me.expiryRequired = !!Number(me.policy['require-expiry']) || me.maxDate !== undefined;
+
+        if (me.isCreate) {
+            me.applyPolicyOnCreate();
+        } else {
             me.load({
                 success: function (response, options) {
                     me.setValues(response.result.data);
+                    me.applyPolicyOnEdit();
                 },
             });
         }
+    },
+
+    applyPolicyOnCreate: function () {
+        let me = this;
+
+        let expireField = me.down('field[name=expire]');
+        if (me.useLifetimeField) {
+            expireField.setVisible(false);
+            expireField.setDisabled(true);
+            let lifetimeField = me.down('field[name=token-lifetime]');
+            lifetimeField.setVisible(true);
+            lifetimeField.setDisabled(false);
+            lifetimeField.setMaxValue(me.maxLifetime);
+            lifetimeField.allowBlank = false;
+        } else {
+            if (me.maxDate) {
+                expireField.setMaxValue(me.maxDate);
+                expireField.setValue(me.maxDate);
+            }
+            if (me.expiryRequired) {
+                expireField.allowBlank = false;
+            }
+        }
+
+        if (Number(me.policy['require-privilege-separation'])) {
+            let privilegeSeparationField = me.down('field[name=privsep]');
+            privilegeSeparationField.setValue(true);
+            privilegeSeparationField.setDisabled(true);
+        }
+    },
+
+    applyPolicyOnEdit: function () {
+        let me = this;
+
+        // privilege separation cannot be disabled again, while enabling it for a token that
+        // predates the policy stays possible
+        let privilegeSeparationField = me.down('field[name=privsep]');
+        if (
+            Number(me.policy['require-privilege-separation']) &&
+            privilegeSeparationField.getValue()
+        ) {
+            privilegeSeparationField.setDisabled(true);
+        }
+
+        // the policy may forbid moving the expiration date later or removing it
+        let noExtension = !!Number(me.policy['disallow-expiry-extension']) && !!me.originalExpire;
+        me.applyExpiryBounds(noExtension);
+    },
+
+    // bound a new expiration date by the maximum lifetime and, if extending is forbidden, by the
+    // current one
+    applyExpiryBounds: function (noExtension) {
+        let me = this;
+
+        let expireField = me.down('field[name=expire]');
+        if (me.useLifetimeField) {
+            // keep the current date visible but read-only, an empty lifetime keeps it
+            expireField.setDisabled(true);
+            let maxValue = me.maxLifetime;
+            me.expireCap = noExtension ? me.originalExpire : undefined;
+            if (noExtension) {
+                let remaining = me.originalExpire - Math.floor(PVE.UIOptions.serverNow() / 1000);
+                maxValue = Math.min(maxValue, remaining);
+            }
+            // an already expired token has nothing left to shorten
+            let usable = maxValue >= 1;
+            let lifetimeField = me.down('field[name=token-lifetime]');
+            lifetimeField.setVisible(usable);
+            lifetimeField.setDisabled(!usable);
+            if (usable) {
+                lifetimeField.setMaxValue(maxValue);
+                lifetimeField.setEmptyText(gettext('unchanged'));
+            }
+            return;
+        }
+
+        // removing an existing expiration date is a change the policy rejects; for a token without
+        // one, the field may stay blank, as the unchanged value is not submitted
+        expireField.allowBlank = !(me.originalExpire && (me.expiryRequired || noExtension));
+
+        // bound by the maximum lifetime only if the current date conforms, else the form would be
+        // stuck invalid for tokens that predate the policy, blocking edits the backend allows
+        let current = me.originalExpire ? new Date(me.originalExpire * 1000) : undefined;
+        let bound;
+        if (me.maxDate && (!current || current <= me.maxDate)) {
+            bound = me.maxDate;
+        }
+        if (noExtension && (!bound || current < bound)) {
+            // the date field compares whole days, so the current day stays selectable and is
+            // then dropped from submission as unchanged
+            bound = current;
+        }
+        expireField.setMaxValue(bound);
     },
 
     setValues: function (values) {

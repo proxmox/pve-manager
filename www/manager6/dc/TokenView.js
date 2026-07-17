@@ -61,18 +61,30 @@ Ext.define('PVE.dc.TokenView', {
             return userid === Proxmox.UserName || !!caps.access['User.Modify'];
         };
 
+        let openPending = false;
+        let openTokenEditor = async function (editorConfig, values) {
+            if (openPending) {
+                return; // a slow policy refresh must not spawn duplicate windows
+            }
+            openPending = true;
+            // fetch the current policy first, the dialog adapts its fields to it
+            await PVE.UIOptions.updateTokenPolicy();
+            openPending = false;
+            if (me.destroyed || !me.isVisible(true)) {
+                return; // the user navigated away while the policy was being fetched
+            }
+
+            let win = Ext.create('PVE.dc.TokenEdit', editorConfig);
+            win.setValues(values);
+            win.on('destroy', reload);
+            win.show();
+        };
+
         let run_editor = function (rec) {
             if (!hasTokenCRUDPermissions(rec.data.userid)) {
                 return;
             }
-
-            let win = Ext.create('PVE.dc.TokenEdit', {
-                method: 'PUT',
-                url: urlFromRecord(rec),
-            });
-            win.setValues(rec.data);
-            win.on('destroy', reload);
-            win.show();
+            openTokenEditor({ method: 'PUT', url: urlFromRecord(rec) }, rec.data);
         };
 
         let regenerate_token = function (_btn, _event, rec) {
@@ -99,13 +111,7 @@ Ext.define('PVE.dc.TokenView', {
             {
                 text: gettext('Add'),
                 handler: function (btn, e) {
-                    let data = {};
-                    let win = Ext.create('PVE.dc.TokenEdit', {
-                        isCreate: true,
-                    });
-                    win.setValues(data);
-                    win.on('destroy', reload);
-                    win.show();
+                    openTokenEditor({ isCreate: true }, {});
                 },
             },
             {

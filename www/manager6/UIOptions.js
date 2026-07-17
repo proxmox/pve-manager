@@ -10,7 +10,7 @@ Ext.define('PVE.UIOptions', {
             url: '/cluster/options',
             method: 'GET',
             success: function (response) {
-                for (const option of ['allowed-tags', 'console', 'tag-style']) {
+                for (const option of ['allowed-tags', 'console', 'tag-style', 'token-policy']) {
                     PVE.UIOptions.options[option] = response?.result?.data?.[option];
                 }
 
@@ -19,6 +19,27 @@ Ext.define('PVE.UIOptions', {
                 PVE.UIOptions.fireUIConfigChanged();
             },
         });
+    },
+
+    // milliseconds the server clock is ahead of the local one, estimated from the Date header of
+    // the last policy fetch, as the backend checks token lifetimes against its own clock; the
+    // header's second precision and the response delay bias it toward earlier dates
+    serverTimeOffset: 0,
+
+    serverNow: () => Date.now() + PVE.UIOptions.serverTimeOffset,
+
+    // the token policy can change independently of the tag settings, so refresh only that
+    // without triggering the resource store refresh a full update does; await this to act on
+    // a current policy
+    updateTokenPolicy: async function () {
+        try {
+            let response = await Proxmox.Async.api2({ url: '/cluster/options', method: 'GET' });
+            PVE.UIOptions.options['token-policy'] = response.result?.data?.['token-policy'];
+            let serverTime = Date.parse(response.getResponseHeader('Date'));
+            PVE.UIOptions.serverTimeOffset = isNaN(serverTime) ? 0 : serverTime - Date.now();
+        } catch {
+            // best effort, keep the last known policy, the backend enforces it in any case
+        }
     },
 
     tagList: [],

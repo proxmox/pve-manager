@@ -769,6 +769,7 @@ Ext.define('PVE.dc.OptionView', {
             }
 
             PVE.UIOptions.options['tag-style'] = store.getById('tag-style')?.data?.value;
+            PVE.UIOptions.options['token-policy'] = store.getById('token-policy')?.data?.value;
             PVE.UIOptions.updateTagSettings(PVE.UIOptions.options['tag-style']);
             PVE.UIOptions.fireUIConfigChanged();
         });
