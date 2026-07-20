@@ -207,7 +207,7 @@ Ext.define('PVE.Parser', {
                 if (!p || p.match(/^\s*$/)) {
                     return undefined; // continue
                 }
-                let match = p.match(/^([a-z_]+)=(\S+)$/);
+                let match = p.match(/^([0-9a-z_-]+)=(\S+)$/);
                 if (!match) {
                     if (!p.match(/[=]/)) {
                         res.file = p;

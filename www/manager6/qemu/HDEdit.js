@@ -18,6 +18,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
             isSCSI: false,
             isVirtIO: false,
             isSCSISingle: false,
+            isQcow2: false,
+            qcow2CacheSizeBasedOnDisk: false,
         },
     },
 
@@ -54,6 +56,15 @@ Ext.define('PVE.qemu.HDInputPanel', {
                     vm.set('isSCSISingle', value === 'virtio-scsi-single');
                 },
             },
+            'field[name=diskformat]': {
+                change: 'onDiskFormatChange',
+                // afterrender is needed for setting the initial value
+                afterrender: 'onDiskFormatChange',
+            },
+        },
+
+        onDiskFormatChange: function (field) {
+            this.getViewModel().set('isQcow2', field.getValue() === 'qcow2');
         },
 
         init: function (view) {
@@ -87,6 +98,20 @@ Ext.define('PVE.qemu.HDInputPanel', {
             }
             me.drive.format = values.diskformat;
         }
+
+        if (me.drive?.format === 'qcow2' || me.drive?.file?.endsWith('.qcow2')) {
+            if (values.qcow2CacheSize) {
+                me.drive['qcow2-cache-size'] = values.qcow2CacheSize;
+            } else {
+                delete me.drive['qcow2-cache-size'];
+            }
+        }
+
+        PVE.Utils.propertyStringSet(
+            me.drive,
+            values.qcow2CacheSizeBasedOnDisk,
+            'qcow2-cache-size-based-on-disk',
+        );
 
         PVE.Utils.propertyStringSet(me.drive, !values.backup, 'backup', '0');
         PVE.Utils.propertyStringSet(me.drive, values.noreplicate, 'replicate', 'no');
@@ -156,6 +181,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
         values.iothread = PVE.Parser.parseBoolean(drive.iothread);
         values.readOnly = PVE.Parser.parseBoolean(drive.ro);
         values.aio = drive.aio || '__default__';
+        values.qcow2CacheSizeBasedOnDisk = drive['qcow2-cache-size-based-on-disk'];
+        values.qcow2CacheSize = drive['qcow2-cache-size'];
 
         values.mbps_rd = drive.mbps_rd;
         values.mbps_wr = drive.mbps_wr;
@@ -167,6 +194,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
         values.iops_wr_max = drive.iops_wr_max;
 
         me.setValues(values);
+
+        me.getViewModel().set(
+            'isQcow2',
+            values.diskformat === 'qcow2' || values.hdimage?.endsWith('.qcow2'),
+        );
     },
 
     setNodename: function (nodename) {
@@ -353,6 +385,47 @@ Ext.define('PVE.qemu.HDInputPanel', {
                 clearOnDisable: true,
                 bind: {
                     disabled: '{!isVirtIO && !isSCSI}',
+                },
+            },
+            {
+                xtype: 'numberfield',
+                name: 'qcow2CacheSize',
+                minValue: 1,
+                fieldLabel: gettext('qcow2 cache') + ' (MiB)',
+                emptyText: gettext('Default cache size'),
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Total size of the qcow2 cache in MiB. A larger cache can' +
+                            ' improve I/O performance on large images. Leave empty to' +
+                            ' use the QEMU default (32 MiB L2 cache and 256 KiB' +
+                            ' refcount cache with the default disk settings).',
+                    ),
+                },
+                bind: {
+                    disabled: '{!isQcow2 || qcow2CacheSizeBasedOnDisk}',
+                },
+                listeners: {
+                    disable: (field) => field.setValue(null),
+                },
+            },
+            {
+                xtype: 'proxmoxcheckbox',
+                name: 'qcow2CacheSizeBasedOnDisk',
+                defaultValue: 0,
+                fieldLabel: gettext('qcow2 cache based on disk'),
+                clearOnDisable: true,
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Automatically size the qcow2 cache to cover the whole disk.' +
+                            ' Uses roughly 160 KiB of memory per GiB of disk with' +
+                            ' the default disk settings.',
+                    ),
+                },
+                bind: {
+                    value: '{qcow2CacheSizeBasedOnDisk}',
+                    disabled: '{!isQcow2}',
                 },
             },
         );
