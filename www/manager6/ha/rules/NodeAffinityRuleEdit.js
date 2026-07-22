@@ -97,6 +97,7 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
         update_node_selection = function (string) {
             let nodenames = string.length ? string.split(',') : [];
 
+            store.beginUpdate();
             let nodes = nodenames.map((item) => {
                 let [node, priority] = item.split(':');
 
@@ -111,6 +112,7 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
 
                 return record;
             });
+            store.endUpdate();
 
             if (nodes.length) {
                 sm.select(nodes);
