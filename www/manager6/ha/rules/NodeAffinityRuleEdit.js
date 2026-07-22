@@ -97,7 +97,9 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
         update_node_selection = function (string) {
             sm.deselectAll(true);
 
-            string.split(',').forEach(function (e, idx, array) {
+            let nodenames = string.length ? string.split(',') : [];
+
+            nodenames.forEach(function (e, idx, array) {
                 let [node, priority] = e.split(':');
                 store.each(function (record) {
                     if (record.get('node') === node) {
