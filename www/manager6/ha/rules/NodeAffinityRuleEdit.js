@@ -95,12 +95,10 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
         });
 
         update_node_selection = function (string) {
-            sm.deselectAll(true);
-
             let nodenames = string.length ? string.split(',') : [];
 
-            nodenames.forEach(function (e, idx, array) {
-                let [node, priority] = e.split(':');
+            let nodes = nodenames.map((item) => {
+                let [node, priority] = item.split(':');
 
                 let record = store.findRecord('node', node, 0, false, true, true);
                 if (record) {
@@ -111,8 +109,15 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
                     record = addedRecords[0];
                 }
 
-                sm.select(record, true);
+                return record;
             });
+
+            if (nodes.length) {
+                sm.select(nodes);
+            } else {
+                sm.deselectAll();
+            }
+
             nodegrid.reconfigure(store);
         };
 
