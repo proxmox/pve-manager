@@ -10,6 +10,15 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
         },
     },
 
+    onGetValues: function (values) {
+        let me = this;
+
+        PVE.Utils.delete_if_default(values, 'strict', 0, me.isCreate);
+        PVE.Utils.delete_if_default(values, 'affinity', 'positive', me.isCreate);
+
+        return me.callParent([values]);
+    },
+
     initComponent: function () {
         let me = this;
 
