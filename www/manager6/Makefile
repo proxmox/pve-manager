@@ -151,6 +151,7 @@ JSSRC= 							\
 	window/DirMapEdit.js				\
 	window/GuestImport.js				\
 	ha/Fencing.js					\
+	ha/NodePrioritySelector.js			\
 	ha/ResourceEdit.js				\
 	ha/Resources.js					\
 	ha/RuleEdit.js					\
