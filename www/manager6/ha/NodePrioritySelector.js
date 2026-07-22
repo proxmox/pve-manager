@@ -9,6 +9,16 @@ Ext.define('PVE.forms.NodePrioritySelector', {
     allowBlank: true,
     isFormField: true,
 
+    config: {
+        useNodePriority: null,
+    },
+
+    publishes: ['useNodePriority'],
+
+    viewModel: {
+        showNodePriority: null,
+    },
+
     store: {
         autoLoad: true,
         fields: ['node', 'cpu', 'mem', 'priority'],
@@ -27,7 +37,7 @@ Ext.define('PVE.forms.NodePrioritySelector', {
     columns: [
         {
             header: gettext('Node'),
-            flex: 1,
+            width: 150,
             dataIndex: 'node',
         },
         {
@@ -41,7 +51,7 @@ Ext.define('PVE.forms.NodePrioritySelector', {
             header: gettext('CPU usage'),
             renderer: Proxmox.Utils.render_cpu,
             sortable: true,
-            width: 150,
+            flex: 1,
             dataIndex: 'cpu',
         },
         {
@@ -62,6 +72,14 @@ Ext.define('PVE.forms.NodePrioritySelector', {
                         record.commit();
                     },
                 },
+                bind: {
+                    hidden: '{!showNodePriority}',
+                    disabled: '{!showNodePriority}',
+                },
+            },
+            bind: {
+                hidden: '{!showNodePriority}',
+                disabled: '{!showNodePriority}',
             },
         },
     ],
@@ -78,6 +96,39 @@ Ext.define('PVE.forms.NodePrioritySelector', {
             // to trigger validity and error checks
             this.checkChange();
         },
+    },
+
+    invertCheckboxSelection: function () {
+        let me = this;
+
+        let sm = me.getSelectionModel();
+
+        let allNodeModels = new Set(sm.getStore().getRange());
+        let selectedNodeModels = new Set(sm.getSelection());
+
+        if (!allNodeModels.size || !selectedNodeModels.size) {
+            return;
+        }
+
+        sm.deselectAll();
+        sm.select([...allNodeModels.difference(selectedNodeModels)]);
+    },
+
+    applyUseNodePriority: function (newValue) {
+        let me = this;
+
+        let oldValue = me.getViewModel().get('showNodePriority');
+
+        if (newValue !== oldValue) {
+            me.getViewModel().set('showNodePriority', newValue);
+
+            // Prevent inverting the selection during component initialization
+            if (oldValue != null) {
+                me.invertCheckboxSelection();
+            }
+        }
+
+        return newValue;
     },
 
     getSubmitData: function () {
@@ -97,7 +148,15 @@ Ext.define('PVE.forms.NodePrioritySelector', {
         let sm = me.getSelectionModel();
         let selectedNodeModels = sm.getSelection();
         let nodes = selectedNodeModels
-            .map(({ data }) => data.node + (data.priority ? `:${data.priority}` : ''))
+            .map(({ data }) => {
+                let nodeEntry = data.node;
+
+                if (me.useNodePriority && data.priority) {
+                    nodeEntry += `:${data.priority}`;
+                }
+
+                return nodeEntry;
+            })
             .join(',');
 
         return nodes;

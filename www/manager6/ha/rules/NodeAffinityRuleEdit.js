@@ -1,6 +1,15 @@
 Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
     extend: 'PVE.ha.RuleInputPanel',
 
+    viewModel: {
+        data: {
+            affinity: 'positive',
+        },
+        formulas: {
+            isPositiveNodeAffinity: (get) => get('affinity') === 'positive',
+        },
+    },
+
     initComponent: function () {
         let me = this;
 
@@ -18,6 +27,19 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
                 uncheckedValue: 0,
                 defaultValue: 0,
             },
+            {
+                xtype: 'proxmoxKVComboBox',
+                name: 'affinity',
+                fieldLabel: gettext('Affinity'),
+                allowBlank: false,
+                comboItems: [
+                    ['positive', `${gettext('Prefer Nodes')} (positive)`],
+                    ['negative', `${gettext('Avoid Nodes')} (negative)`],
+                ],
+                bind: {
+                    value: '{affinity}',
+                },
+            },
         ];
 
         me.columnB = [
@@ -25,6 +47,9 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
                 xtype: 'pveNodePrioritySelector',
                 name: 'nodes',
                 allowBlank: false,
+                bind: {
+                    useNodePriority: '{isPositiveNodeAffinity}',
+                },
             },
         ];
 
