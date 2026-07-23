@@ -103,15 +103,15 @@ Ext.define('PVE.forms.NodePrioritySelector', {
 
         let sm = me.getSelectionModel();
 
-        let allNodeModels = new Set(sm.getStore().getRange());
+        let allNodeModels = sm.getStore().getRange();
         let selectedNodeModels = new Set(sm.getSelection());
 
-        if (!allNodeModels.size || !selectedNodeModels.size) {
+        if (!allNodeModels.length || !selectedNodeModels.size) {
             return;
         }
 
         sm.deselectAll();
-        sm.select([...allNodeModels.difference(selectedNodeModels)]);
+        sm.select(allNodeModels.filter((node) => !selectedNodeModels.has(node)));
     },
 
     applyUseNodePriority: function (newValue) {
