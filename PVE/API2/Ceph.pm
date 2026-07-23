@@ -700,7 +700,8 @@ __PACKAGE__->register_method({
                         # the same per-OSD timeout as the up-wait. A busy cluster that needs
                         # minutes to clear peering is tolerated rather than aborted early.
                         my ($safe, $msg) =
-                            PVE::Ceph::Services::wait_for_safe_to_stop($rados, $type, $id, $timeout);
+                            PVE::Ceph::Services::wait_for_safe_to_stop($rados, $type, $id,
+                                $timeout);
                         die "$tag Ceph reports '$daemon' is not safe to stop: $msg\n" if !$safe;
 
                         print "$tag restarting $daemon\n";

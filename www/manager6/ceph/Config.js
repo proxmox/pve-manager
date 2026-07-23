@@ -62,8 +62,8 @@ Ext.define('PVE.node.CephConfigDb', {
 
         me.callParent();
 
-        me.getStore().on('load', function(store) {
-            let hasMask = store.getRange().some(rec => rec.get('mask'));
+        me.getStore().on('load', function (store) {
+            let hasMask = store.getRange().some((rec) => rec.get('mask'));
             if (hasMask) {
                 me.down('[dataIndex=mask]').setVisible(true);
             }

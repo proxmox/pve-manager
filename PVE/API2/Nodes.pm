@@ -1096,6 +1096,7 @@ __PACKAGE__->register_method({
             if defined($param->{priority}) && $param->{priority} ne '';
         push @$cmd, '-i', PVE::Tools::shellquote($param->{service})
             if defined($param->{service});
+
         if (defined($param->{unit})) {
             # a few service names differ from the unit that actually logs (e.g. sshd is an alias of
             # ssh.service), so map them to the name the journal records

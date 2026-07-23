@@ -1015,7 +1015,8 @@ sub release_cluster_bulk_restart_lock {
             my $info = eval { decode_json($existing->{data} // '') };
             if ($info && ref($info) eq 'HASH' && ($info->{upid} // '') ne $upid) {
                 warn "not releasing cluster bulk-restart lock for '$scope': now held by"
-                    . " a different run (upid '" . ($info->{upid} // '?') . "')\n";
+                    . " a different run (upid '"
+                    . ($info->{upid} // '?') . "')\n";
                 return;
             }
         }
