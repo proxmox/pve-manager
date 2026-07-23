@@ -16,7 +16,9 @@ Ext.define('PVE.forms.NodePrioritySelector', {
     publishes: ['useNodePriority'],
 
     viewModel: {
-        showNodePriority: null,
+        data: {
+            showNodePriority: null,
+        },
     },
 
     store: {
