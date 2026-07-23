@@ -119,16 +119,7 @@ Ext.define('PVE.forms.NodePrioritySelector', {
     applyUseNodePriority: function (newValue) {
         let me = this;
 
-        let oldValue = me.getViewModel().get('showNodePriority');
-
-        if (newValue !== oldValue) {
-            me.getViewModel().set('showNodePriority', newValue);
-
-            // Prevent inverting the selection during component initialization
-            if (oldValue != null) {
-                me.invertCheckboxSelection();
-            }
-        }
+        me.getViewModel().set('showNodePriority', newValue);
 
         return newValue;
     },

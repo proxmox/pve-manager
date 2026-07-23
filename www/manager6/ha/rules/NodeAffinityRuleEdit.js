@@ -48,6 +48,11 @@ Ext.define('PVE.ha.rules.NodeAffinityInputPanel', {
                 bind: {
                     value: '{affinity}',
                 },
+                listeners: {
+                    // invert the node selection only on a user-initiated switch;
+                    // 'select' does not fire while loading an existing rule
+                    select: () => me.down('pveNodePrioritySelector').invertCheckboxSelection(),
+                },
             },
         ];
 
