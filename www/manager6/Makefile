@@ -392,6 +392,7 @@ JSSRC= 							\
 	storage/wizard/LunSelect.js			\
 	storage/wizard/NodeIdentities.js		\
 	storage/wizard/IScsi.js				\
+	storage/wizard/FibreChannel.js			\
 	Workspace.js					\
 # end of JSSRC list
 

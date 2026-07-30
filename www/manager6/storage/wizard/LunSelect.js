@@ -23,6 +23,10 @@ Ext.define('PVE.storage.wizard.LunSelect', {
         let grid = me.down('grid');
         me.rstore.stopUpdate();
         let connection = wizard.connection;
+        if (!connection) {
+            me.rstore.startUpdate();
+            return;
+        }
         // The scan names one target per LUN, also for a LUN reached through several. The content
         // listing has the LUNs of the connection, and a LUN that shows up later is listed once the
         // scan names the target of the connection for it.
@@ -88,6 +92,15 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                     'A LUN that is in use cannot be selected. A LUN with data that is no longer needed has to be wiped under Node > SAN first.',
                 ),
             },
+            ...(me.rescanNote
+                ? [
+                      {
+                          xtype: 'component',
+                          margin: '0 0 10 0',
+                          html: `<span class="pmx-hint">${Ext.htmlEncode(gettext('Note:'))}</span> ${me.rescanNote}`,
+                      },
+                  ]
+                : []),
             {
                 xtype: 'grid',
                 flex: 1,
@@ -189,6 +202,13 @@ Ext.define('PVE.storage.wizard.LunSelect', {
         let search = me.down('pveRecordSearchField');
         me.on('activate', function () {
             search.setTargetStore(me.store);
+            if (me.up('window').wizardType === 'fc') {
+                me.down('gridcolumn[dataIndex=iscsi-lun]').hide();
+                me.store.addFilter({
+                    id: 'transport',
+                    filterFn: (rec) => ['fc', 'fcoe'].includes(rec.get('transport')),
+                });
+            }
             me.reload();
         });
         // The setup can update the selected row after this step, which the search must not hide.

@@ -111,16 +111,20 @@ Ext.define('PVE.dc.SANView', {
                 autoShow: true,
                 apiCallDone: (success) => success && reload(),
             });
-        let setupItem = (wizardType, className) => ({
+        let setupItem = (wizardType, className, disabled) => ({
             text: PVE.storage.wizard.SAN.subject(wizardType),
             iconCls: 'fa fa-fw fa-building',
+            disabled,
             handler: () => Ext.create(className, { autoShow: true, reloadCallback: reload }),
         });
         me.tbar = [
             {
                 text: gettext('Guided Setup'),
                 disabled: !canSetup,
-                menu: [setupItem('iscsi', 'PVE.storage.wizard.IScsi')],
+                menu: [
+                    setupItem('iscsi', 'PVE.storage.wizard.IScsi'),
+                    setupItem('fc', 'PVE.storage.wizard.FibreChannel', !canModify),
+                ],
             },
         ];
         me.items = [

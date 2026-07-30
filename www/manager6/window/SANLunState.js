@@ -55,9 +55,13 @@ Ext.define('PVE.window.SANLunState', {
                 margin: '0 0 10 0',
                 html: Ext.htmlEncode(
                     Ext.String.format(
-                        gettext(
-                            'Storage "{0}" was added. Guests on this storage cannot run on a node that stays on "Missing": check its access to the LUN on the array.',
-                        ),
+                        me.fc
+                            ? gettext(
+                                  'Storage "{0}" was added. Guests on this storage cannot run on a node that stays on "Missing": check its access to the LUN on the array and rescan its Fibre Channel hosts.',
+                              )
+                            : gettext(
+                                  'Storage "{0}" was added. Guests on this storage cannot run on a node that stays on "Missing": check its access to the LUN on the array.',
+                              ),
                         me.storage,
                     ),
                 ),

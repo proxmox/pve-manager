@@ -5,7 +5,10 @@ Ext.define('PVE.storage.wizard.SAN', {
 
     statics: {
         subject: (type) =>
-            Ext.String.format(gettext('LVM on {0}'), PVE.Utils.format_storage_type(type)),
+            Ext.String.format(
+                gettext('LVM on {0}'),
+                type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
+            ),
 
         // a validator of a Nodes field, which ExtJS calls with the field as this
         validateNodes: function () {
@@ -21,12 +24,76 @@ Ext.define('PVE.storage.wizard.SAN', {
         },
     },
 
+    stopWithError: function (message) {
+        this.close();
+        Ext.Msg.alert(gettext('Error'), message);
+    },
+
     showError: function (message) {
         if (this.destroyed) {
             return;
         }
         this.down('#submit').enable();
         Ext.Msg.alert(gettext('Error'), message);
+    },
+
+    // Waits for a task with the setup masked and continues with next() once it succeeded. A task
+    // window of its own could be closed while the task runs, which would end the setup there. The
+    // setup cannot be closed during the wait either, for example with the Escape key.
+    // If the state of the task cannot be read for some time, lost() gets the error: the task may
+    // still be running then, so the setup must not start it again.
+    waitForTask: function (upid, message, next, lost) {
+        let me = this;
+        let task = Proxmox.Utils.parse_task_upid(upid);
+        let failures = 0;
+        let keepOpen = () => false;
+        let done = function (error) {
+            if (me.destroyed) {
+                return;
+            }
+            me.un('beforeclose', keepOpen);
+            me.setLoading(false);
+            if (error === undefined) {
+                next();
+            } else {
+                me.showError(error);
+            }
+        };
+        let poll = function () {
+            if (me.destroyed) {
+                return;
+            }
+            Proxmox.Utils.API2Request({
+                url: `/nodes/${task.node}/tasks/${encodeURIComponent(upid)}/status`,
+                method: 'GET',
+                failure: function (response) {
+                    if (me.destroyed) {
+                        return;
+                    }
+                    if (++failures < 5) {
+                        Ext.defer(poll, 2000);
+                        return;
+                    }
+                    me.un('beforeclose', keepOpen);
+                    me.setLoading(false);
+                    lost(response.htmlStatus);
+                },
+                success: function (response) {
+                    failures = 0;
+                    let { status, exitstatus } = response.result.data;
+                    if (status !== 'stopped') {
+                        Ext.defer(poll, 1000);
+                        return;
+                    }
+                    let result = Proxmox.Utils.parse_task_status(exitstatus);
+                    let failed = result === 'error' || result === 'unknown';
+                    done(failed ? Ext.htmlEncode(exitstatus) : undefined);
+                },
+            });
+        };
+        me.on('beforeclose', keepOpen);
+        me.setLoading(message);
+        poll();
     },
 
     volumeSettings: function () {
@@ -36,7 +103,13 @@ Ext.define('PVE.storage.wizard.SAN', {
             storage: value('storage'),
             vgname: value('vgname'),
             'snapshot-as-volume-chain': value('snapshot-as-volume-chain') ? 1 : 0,
-            nodes: me.connection.nodes,
+            nodes:
+                me.wizardType === 'fc'
+                    ? []
+                          .concat(value('nodes') || [])
+                          .filter(Boolean)
+                          .join(',')
+                    : me.connection.nodes,
         };
     },
 
@@ -65,6 +138,7 @@ Ext.define('PVE.storage.wizard.SAN', {
                     wwid,
                     storage: values.storage,
                     nodes: params.nodes,
+                    fc: me.wizardType === 'fc',
                     autoShow: true,
                 });
             },
@@ -72,11 +146,18 @@ Ext.define('PVE.storage.wizard.SAN', {
     },
 
     multipathSummary: function (lun) {
+        let me = this;
         // an explicit entry takes precedence, also for a LUN of the connection storage
         if (lun.multipath === 'manual') {
             return PVE.SANUtils.multipathText('manual');
         }
-        return PVE.SANUtils.multipathText('storage', this.connection.storage);
+        if (me.connection) {
+            return PVE.SANUtils.multipathText('storage', me.connection.storage);
+        }
+        // the Fibre Channel setup adds an entry for a LUN without multipath
+        return lun.multipath === 'none'
+            ? gettext('Explicit entry, added by this setup')
+            : PVE.SANUtils.multipathText(lun.multipath, lun['multipath-storage']);
     },
 
     updateSummary: function () {
@@ -84,7 +165,6 @@ Ext.define('PVE.storage.wizard.SAN', {
         let values = me.volumeSettings();
         let lun = me.down('#luns').getSelection();
         let rows = [
-            [gettext('Connection Storage'), me.connection.storage],
             [gettext('Storage ID'), values.storage],
             [gettext('Volume Group'), values.vgname],
             ['WWID', lun.wwid],
@@ -96,6 +176,9 @@ Ext.define('PVE.storage.wizard.SAN', {
                 Proxmox.Utils.format_boolean(values['snapshot-as-volume-chain']),
             ],
         ];
+        if (me.connection) {
+            rows.unshift([gettext('Connection Storage'), me.connection.storage]);
+        }
         me.down('#summary')
             .getStore()
             .setData(rows.map(([key, value]) => ({ key, value })));
@@ -111,6 +194,10 @@ Ext.define('PVE.storage.wizard.SAN', {
 
     initComponent: function () {
         let me = this;
+        if (!['iscsi', 'fc'].includes(me.wizardType)) {
+            throw 'no SAN storage type specified';
+        }
+        let iscsi = me.wizardType === 'iscsi';
         me.subject = PVE.storage.wizard.SAN.subject(me.wizardType);
         me.title = Proxmox.Utils.dialog_title(me.subject, true, true);
         let common = PVE.panel.StorageBase.commonFields(true);
@@ -130,13 +217,35 @@ Ext.define('PVE.storage.wizard.SAN', {
                 PVE.panel.StorageBase.volumeChainField(true, 'lvm'),
             ],
         };
+        if (!iscsi) {
+            settings.advancedItems = [
+                { ...common.nodes, validator: PVE.storage.wizard.SAN.validateNodes },
+            ];
+        }
         me.items = [
-            { xtype: 'pveStorageWizardIScsiTarget', title: gettext('Target'), itemId: 'target' },
+            ...(iscsi
+                ? [
+                      {
+                          xtype: 'pveStorageWizardIScsiTarget',
+                          title: gettext('Target'),
+                          itemId: 'target',
+                      },
+                  ]
+                : []),
             {
                 xtype: 'pveStorageWizardLunSelect',
                 title: 'LUN',
                 itemId: 'luns',
                 onlineHelp: 'storage_multipath',
+                // the nodes only see a newly mapped Fibre Channel LUN after a rescan
+                rescanNote: iscsi
+                    ? undefined
+                    : Ext.String.format(
+                          gettext(
+                              'After mapping a new LUN on the array, rescan the Fibre Channel hosts of each node (<a href="{0}" target="_blank" rel="noopener noreferrer">documentation</a>).',
+                          ),
+                          Ext.htmlEncode(Proxmox.Utils.get_help_link('storage_multipath')),
+                      ),
             },
             settings,
             {
@@ -171,14 +280,16 @@ Ext.define('PVE.storage.wizard.SAN', {
         me.callParent();
         let tabs = me.down('#wizcontent');
         tabs.on('tabchange', function (tp, tab) {
-            if (tab === me.down('#luns')) {
+            if (iscsi && tab === me.down('#luns')) {
                 me.down('#back').disable();
             }
             me.down('#submit').setText(
                 tab === me.down('#target') ? gettext('Next') : gettext('Finish'),
             );
         });
-        me.down('#submit').setText(gettext('Next'));
+        if (iscsi) {
+            me.down('#submit').setText(gettext('Next'));
+        }
         me.on('destroy', () => me.reloadCallback?.());
     },
 });
