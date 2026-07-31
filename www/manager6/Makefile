@@ -249,6 +249,7 @@ JSSRC= 							\
 	node/CmdMenu.js					\
 	node/Config.js					\
 	node/Directory.js				\
+	node/ISCSITargets.js				\
 	node/LVM.js					\
 	node/LVMThin.js					\
 	node/SANLuns.js					\

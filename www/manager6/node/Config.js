@@ -398,14 +398,23 @@ Ext.define('PVE.node.Config', {
             );
         }
 
-        // the san-luns read accepts either privilege
+        // the san-luns and iscsi reads accept either privilege
         if (caps.nodes['Sys.Audit'] || caps.storage['Datastore.Allocate']) {
-            me.items.push({
-                xtype: 'pveSANLunList',
-                title: 'SAN',
-                itemId: 'san',
-                iconCls: 'fa fa-cubes',
-            });
+            me.items.push(
+                {
+                    xtype: 'pveSANLunList',
+                    title: 'SAN',
+                    itemId: 'san',
+                    iconCls: 'fa fa-cubes',
+                },
+                {
+                    xtype: 'pveISCSITargetTree',
+                    title: 'iSCSI',
+                    itemId: 'san-iscsi',
+                    iconCls: 'fa fa-bullseye',
+                    groups: ['san'],
+                },
+            );
         }
 
         if (caps.nodes['Sys.Audit']) {

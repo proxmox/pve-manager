@@ -114,6 +114,9 @@ Ext.define('PVE.SANUtils', {
             unknown: ['question-circle faded', gettext('Unknown')],
             unavailable: ['exclamation-circle warning', gettext('Multipath unavailable')],
             'no-report': ['question-circle faded', gettext('No current report')],
+            'logged-in': ['check-circle good', gettext('Connected')],
+            recovering: ['exclamation-circle warning', gettext('Reconnecting')],
+            'not-connected': ['times-circle faded', gettext('Not connected')],
         }[value];
         let [icon, label] = display ?? ['question-circle faded', value];
         return `<i class="fa fa-fw fa-${icon}"></i> ${Ext.htmlEncode(label)}`;
