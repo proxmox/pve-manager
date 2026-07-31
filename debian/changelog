@@ -1,3 +1,25 @@
+pve-manager (9.2.6) trixie; urgency=medium
+
+  * fabrics: wireguard: node edit: use network selector for internal nodes,
+    making the semantics of the field more obvious, and entering values less
+    error-prone and manual.
+
+  * api: apt: versions: track proxmox-enterprise-support-keyring version
+
+  * ui: ha: node affinity: refactor and extend UI, allow configuring "positive"
+    or "negative" affinity rules. negative affinity allows declaring nodes on
+    which HA resources must not (strict rule) or should not (non-strict) run on.
+
+  * ui: ha: resource affinity: add hint for affinity type config value, mapping
+    "positive" to "Keep Together", and "negative" to "Keep Separate", like the
+    create/edit dialogue already did before.
+
+  * ui: ceph: pool: set target ratio to 0 when the value is not set, to
+    explicitly clear the value instead of not sending the value to the backend
+    and keeping the previous value set.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 31 Jul 2026 10:57:25 +0200
+
 pve-manager (9.2.5) trixie; urgency=medium
 
   * ceph: add guided rolling-restart for Ceph daemons, available both from the
