@@ -52,6 +52,7 @@ use PVE::API2::Certificates;
 use PVE::API2::Disks;
 use PVE::API2::Firewall::Host;
 use PVE::API2::Hardware;
+use PVE::API2::ISCSI;
 use PVE::API2::LXC::Status;
 use PVE::API2::LXC;
 use PVE::API2::Network;
@@ -163,6 +164,11 @@ __PACKAGE__->register_method({
 });
 
 __PACKAGE__->register_method({
+    subclass => "PVE::API2::ISCSI",
+    path => 'iscsi',
+});
+
+__PACKAGE__->register_method({
     subclass => "PVE::API2::Capabilities",
     path => 'capabilities',
 });
@@ -248,6 +254,7 @@ __PACKAGE__->register_method({
             { name => 'firewall' },
             { name => 'hardware' },
             { name => 'hosts' },
+            { name => 'iscsi' },
             { name => 'journal' },
             { name => 'lxc' },
             { name => 'maintenance' },
