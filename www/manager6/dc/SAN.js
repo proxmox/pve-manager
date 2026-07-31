@@ -50,9 +50,15 @@ Ext.define('PVE.dc.SANView', {
 
     initComponent: function () {
         let me = this;
-        let caps = Ext.state.Manager.get('GuiCap').dc;
+        let allCaps = Ext.state.Manager.get('GuiCap');
+        let caps = allCaps.dc;
         let canModify = !!caps['Sys.Modify'];
         let canEdit = canModify && !!caps['Sys.Audit'];
+        // the setups also read the storage list and the LUNs of the connection storage
+        let storageCaps = allCaps.storage;
+        let canSetup =
+            !!storageCaps['Datastore.Allocate'] &&
+            !!(storageCaps['Datastore.Audit'] || storageCaps['Datastore.AllocateSpace']);
         me.rstore = Ext.create('Proxmox.data.UpdateStore', {
             storeid: 'dc-san-status',
             model: 'pve-san-status',
@@ -105,6 +111,18 @@ Ext.define('PVE.dc.SANView', {
                 autoShow: true,
                 apiCallDone: (success) => success && reload(),
             });
+        let setupItem = (wizardType, className) => ({
+            text: PVE.storage.wizard.SAN.subject(wizardType),
+            iconCls: 'fa fa-fw fa-building',
+            handler: () => Ext.create(className, { autoShow: true, reloadCallback: reload }),
+        });
+        me.tbar = [
+            {
+                text: gettext('Guided Setup'),
+                disabled: !canSetup,
+                menu: [setupItem('iscsi', 'PVE.storage.wizard.IScsi')],
+            },
+        ];
         me.items = [
             {
                 xtype: 'grid',

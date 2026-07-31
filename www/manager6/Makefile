@@ -138,6 +138,7 @@ JSSRC= 							\
 	window/Restore.js				\
 	window/SafeDestroyGuest.js			\
 	window/SafeDestroyStorage.js			\
+	window/SANLunState.js				\
 	window/SANLunWipe.js				\
 	window/Settings.js				\
 	window/Snapshot.js				\
@@ -387,6 +388,10 @@ JSSRC= 							\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
 	storage/ESXIEdit.js				\
+	storage/wizard/Wizard.js			\
+	storage/wizard/LunSelect.js			\
+	storage/wizard/NodeIdentities.js		\
+	storage/wizard/IScsi.js				\
 	Workspace.js					\
 # end of JSSRC list
 
