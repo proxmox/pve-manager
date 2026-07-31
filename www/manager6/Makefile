@@ -250,6 +250,7 @@ JSSRC= 							\
 	node/Directory.js				\
 	node/LVM.js					\
 	node/LVMThin.js					\
+	node/SANLuns.js					\
 	node/StatusView.js				\
 	node/Subscription.js				\
 	node/Summary.js					\

@@ -172,6 +172,26 @@ Ext.define('PVE.dc.SANView', {
                         renderer: Proxmox.Utils.render_timestamp,
                         hidden: true,
                     },
+                    {
+                        xtype: 'actioncolumn',
+                        width: 30,
+                        items: [
+                            {
+                                iconCls: 'fa fa-chevron-right',
+                                tooltip: gettext('Go to Node'),
+                                isActionDisabled: (_view, _ri, _ci, _item, rec) =>
+                                    !PVE.data.ResourceStore.getNodeById(rec.get('node')),
+                                handler: function (view, _ri, _ci, _item, _event, rec) {
+                                    Ext.state.Manager.getProvider().set('nodetab', {
+                                        value: 'san',
+                                    });
+                                    view.up('pveStdWorkspace').selectById(
+                                        `node/${rec.get('node')}`,
+                                    );
+                                },
+                            },
+                        ],
+                    },
                 ],
             },
             {

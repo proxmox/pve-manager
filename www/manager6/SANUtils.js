@@ -1,3 +1,60 @@
+Ext.define('pve-san-lun', {
+    extend: 'Ext.data.Model',
+    idProperty: 'wwid',
+    fields: [
+        'wwid',
+        'name',
+        'devpath',
+        'by-id',
+        'size',
+        'transport',
+        'vendor',
+        'model',
+        'serial',
+        'state',
+        'paths-active',
+        'paths-total',
+        'paths-expected',
+        'path-list',
+        'usage',
+        'vgname',
+        'detail',
+        'used-by-storage',
+        'multipath',
+        'multipath-storage',
+        'iscsi-target',
+        'iscsi-lun',
+        // the texts of the Name and Used By columns, which also sort by them
+        {
+            name: 'display-name',
+            depends: ['name', 'wwid'],
+            calculate: (data) => data.name || data.wwid,
+            sortType: 'asUCString',
+        },
+        {
+            name: 'used-by',
+            depends: ['used-by-storage', 'vgname', 'detail', 'usage'],
+            calculate: (data) => PVE.SANUtils.usageText(data),
+            sortType: 'asUCString',
+        },
+        // what identifies the paths, as text for the search
+        {
+            name: 'path-search',
+            depends: ['path-list'],
+            calculate: (data) =>
+                (data['path-list'] ?? [])
+                    .flatMap((path) => [
+                        path.device,
+                        path['host-wwpn'],
+                        path['target-wwpn'],
+                        path.address,
+                    ])
+                    .filter(Boolean)
+                    .join(' '),
+        },
+    ],
+});
+
 Ext.define('PVE.SANUtils', {
     singleton: true,
 
@@ -20,10 +77,14 @@ Ext.define('PVE.SANUtils', {
         return `${report['paths-active']}/${total}`;
     },
 
-    // How the multipath of a LUN is managed, as plain text.
-    multipathText: function (value, storage) {
+    // How the multipath of a LUN is managed, as plain text. A LUN with one path and no map has no
+    // other path to fail over to.
+    multipathText: function (value, storage, pathsTotal) {
         if (value === 'storage' && storage) {
             return Ext.String.format(gettext('Storage "{0}"'), storage);
+        }
+        if (value === 'none' && Number(pathsTotal) === 1) {
+            return gettext('Single path');
         }
         return (
             {
@@ -56,5 +117,54 @@ Ext.define('PVE.SANUtils', {
         }[value];
         let [icon, label] = display ?? ['question-circle faded', value];
         return `<i class="fa fa-fw fa-${icon}"></i> ${Ext.htmlEncode(label)}`;
+    },
+
+    // The path counts tell why a LUN is degraded while all of its listed paths are usable: the
+    // kernel removes a lost path after a while.
+    renderLunState: function (value, metaData, rec) {
+        let state = PVE.SANUtils.lunState(value, rec.get('paths-total'));
+        let text = PVE.SANUtils.renderState(state);
+        if (['degraded', 'failed'].includes(state) && rec.get('paths-active') !== undefined) {
+            text += ` (${Ext.htmlEncode(PVE.SANUtils.pathCount(rec.data))})`;
+        }
+        return text;
+    },
+
+    renderSanLunMultipath: function (value, metaData, rec) {
+        return Ext.htmlEncode(
+            PVE.SANUtils.multipathText(value, rec.get('multipath-storage'), rec.get('paths-total')),
+        );
+    },
+
+    usageText: function (row) {
+        return (
+            row['used-by-storage'] ||
+            row.vgname ||
+            row.detail ||
+            {
+                unused: gettext('Unused'),
+                lvm: gettext('LVM physical volume'),
+                other: gettext('Other'),
+            }[row.usage] ||
+            ''
+        );
+    },
+
+    renderSanTransport: function (value) {
+        return Ext.htmlEncode(
+            {
+                iscsi: 'iSCSI',
+                iser: 'iSER',
+                fc: 'FC',
+                fcoe: 'FCoE',
+                sas: 'SAS',
+                nvme: 'NVMe',
+                'nvme-tcp': 'NVMe/TCP',
+                'nvme-rdma': 'NVMe/RDMA',
+                'nvme-fc': 'NVMe/FC',
+            }[value] ??
+                value ??
+                '',
+        );
     },
 });

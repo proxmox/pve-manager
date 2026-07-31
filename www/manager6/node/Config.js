@@ -395,6 +395,21 @@ Ext.define('PVE.node.Config', {
                     groups: ['storage'],
                     xtype: 'pveZFSList',
                 },
+            );
+        }
+
+        // the san-luns read accepts either privilege
+        if (caps.nodes['Sys.Audit'] || caps.storage['Datastore.Allocate']) {
+            me.items.push({
+                xtype: 'pveSANLunList',
+                title: 'SAN',
+                itemId: 'san',
+                iconCls: 'fa fa-cubes',
+            });
+        }
+
+        if (caps.nodes['Sys.Audit']) {
+            me.items.push(
                 {
                     xtype: 'pveNodeCephStatus',
                     title: 'Ceph',
