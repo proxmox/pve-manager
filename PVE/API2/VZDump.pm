@@ -40,12 +40,12 @@ __PACKAGE__->register_method({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-        description => "The user needs 'VM.Backup' permissions on any VM, and "
-            . "'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing "
-            . "is used). The 'tmpdir', 'dumpdir', 'script' and 'job-id' parameters are restricted "
-            . "to the 'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require "
-            . "'Datastore.Allocate' on the backup storage. The 'bwlimit', 'performance' and "
-            . "'ionice' parameters require 'Sys.Modify' on '/'.",
+        description => "The user needs 'VM.Backup' permissions on any VM, and"
+            . " 'Datastore.AllocateSpace' on the backup storage (and fleecing storage when fleecing"
+            . " is used). The 'tmpdir', 'dumpdir', 'script' and 'job-id' parameters are restricted"
+            . " to the 'root\@pam' user. The 'maxfiles' and 'prune-backups' settings require 'Datastore.Allocate'"
+            . " on the backup storage. The 'bwlimit', 'performance' and 'ionice' parameters require"
+            . " 'Sys.Modify' on '/'. The 'stop' parameter requires 'Sys.Modify' on '/nodes/{node}'",
         user => 'all',
     },
     protected => 1,
@@ -109,6 +109,7 @@ __PACKAGE__->register_method({
         my $skiplist = [map { @$_ } values $vmids_per_node->%*];
 
         if ($param->{stop}) {
+            $rpcenv->check($user, "/nodes/$nodename", ['Sys.Modify']);
             PVE::VZDump::stop_running_backups();
             return 'OK' if !scalar(@{$local_vmids});
         }
