@@ -10,6 +10,7 @@ use UUID;
 
 use PVE::Ceph::Tools;
 use PVE::Ceph::Services;
+use PVE::Ceph::Releases;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Network;
@@ -104,6 +105,7 @@ __PACKAGE__->register_method({
             { name => 'mon' },
             { name => 'osd' },
             { name => 'pool' },
+            { name => 'releases' },
             { name => 'restart' },
             { name => 'restart-bulk' },
             { name => 'rules' },
@@ -113,6 +115,76 @@ __PACKAGE__->register_method({
         ];
 
         return $result;
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'releases',
+    path => 'releases',
+    method => 'GET',
+    description =>
+        "List all known Ceph releases, marking which ones can be installed on this node.",
+    # installability depends on the target node's architecture, so run there
+    proxyto => 'node',
+    permissions => {
+        check => ['perm', '/', ['Sys.Audit', 'Datastore.Audit'], any => 1],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+        },
+    },
+    returns => {
+        type => 'array',
+        items => {
+            type => 'object',
+            properties => {
+                release => {
+                    type => 'string',
+                    description => "The Ceph release code name, for example 'squid'.",
+                },
+                version => {
+                    type => 'string',
+                    description => "The Ceph release major version, for example '19.2'.",
+                },
+                available => {
+                    type => 'boolean',
+                    description =>
+                        "Whether this release can be installed on this node, that is, it"
+                        . " has packages for the node's architecture and current Proxmox VE release.",
+                },
+                'is-default' => {
+                    type => 'boolean',
+                    description =>
+                        "Whether this is the release recommended for new installations.",
+                },
+                unsupported => {
+                    type => 'boolean',
+                    description =>
+                        "Whether this release is not (yet) supported for production use.",
+                },
+            },
+        },
+    },
+    code => sub {
+        my $all = PVE::Ceph::Releases::get_all_ceph_releases();
+        my $available = PVE::Ceph::Releases::get_all_available_ceph_releases();
+        my $default = PVE::Ceph::Releases::get_default_ceph_release_codename();
+
+        my $res = [];
+        for my $codename (sort keys $all->%*) {
+            my $info = $all->{$codename};
+            push $res->@*,
+                {
+                    release => $codename,
+                    version => $info->{release},
+                    available => $available->{$codename} ? 1 : 0,
+                    'is-default' => $codename eq $default ? 1 : 0,
+                    unsupported => $info->{unsupported} ? 1 : 0,
+                };
+        }
+        return $res;
     },
 });
 
