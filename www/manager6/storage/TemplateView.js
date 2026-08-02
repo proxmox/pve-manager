@@ -70,6 +70,35 @@ Ext.define(
                         dataIndex: 'version',
                     },
                     {
+                        header: gettext('Architecture'),
+                        width: 110,
+                        dataIndex: 'architecture',
+                        renderer: function (value, metaData) {
+                            if (!value) {
+                                return gettext('unknown');
+                            }
+                            let nodeArch = Proxmox.NodeArch;
+                            if (nodeArch && value !== nodeArch) {
+                                let notice = Ext.String.format(
+                                    gettext(
+                                        "Template architecture '{0}' differs from this node's" +
+                                            " '{1}'. It does not run natively here and needs" +
+                                            " user-mode emulation on the host (binfmt_misc with" +
+                                            " qemu-user-static).",
+                                    ),
+                                    value,
+                                    nodeArch,
+                                );
+                                metaData.tdAttr = `data-qtip="${Ext.String.htmlEncode(notice)}"`;
+                                return (
+                                    `<i class="fa fa-info-circle info-blue"></i> ` +
+                                    Ext.String.htmlEncode(value)
+                                );
+                            }
+                            return Ext.String.htmlEncode(value);
+                        },
+                    },
+                    {
                         header: gettext('Description'),
                         flex: 1.5,
                         renderer: Ext.String.htmlEncode,
@@ -92,6 +121,7 @@ Ext.define(
                 'type',
                 'package',
                 'version',
+                'architecture',
                 'headline',
                 'infopage',
                 'description',
