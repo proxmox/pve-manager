@@ -1,3 +1,29 @@
+pve-manager (9.2.7) trixie; urgency=medium
+
+  * ceph: when installing, offer only the Ceph releases that have packages for
+    the node's architecture, from a new per-node API endpoint instead of a
+    hardcoded list, so an arm64 node no longer lists releases without an arm64
+    build.
+
+  * subscription: bind keys to a CPU architecture; arm64 keys carry an
+    explicit marker, and a key that does not match the node's architecture is
+    rejected in the API and CLI and flagged early in the web interface.
+
+  * containers: show the appliance template architecture in "pveam available"
+    and the template selector, and point out when it differs from the node it
+    would run on.
+
+  * fix #7187: add the ethtool output for physical network interfaces to the
+    system report, to help debug link and offloading issues.
+
+  * add tooltips describing the acceleration modes to the VM CPU flag selector.
+
+  * pvesh: support API paths whose parameters are described through composed
+    'allOf' or 'oneOf' schemas, which the HA rules endpoints use as of
+    libpve-common-perl 9.1.21, so that their options keep being accepted.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 02 Aug 2026 21:04:43 +0200
+
 pve-manager (9.2.6) trixie; urgency=medium
 
   * fabrics: wireguard: node edit: use network selector for internal nodes,
