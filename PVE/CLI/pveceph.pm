@@ -257,7 +257,8 @@ EOF
 
         if ($repo eq "manual") {
             my $apt_cache = AptPkg::Cache->new() || die "unable to initialize AptPkg::Cache\n";
-            my @ceph_versions = $apt_cache->{'ceph-common:amd64'}->{'VersionList'}->@*;
+            my $arch = PVE::Tools::get_host_dpkg_arch();
+            my @ceph_versions = $apt_cache->{"ceph-common:$arch"}->{'VersionList'}->@*;
             my $latest_available = $ceph_versions[0]->{'VerStr'};
             my $selected_version =
                 PVE::Ceph::Releases::get_ceph_release_info($cephver)->{'release'};
