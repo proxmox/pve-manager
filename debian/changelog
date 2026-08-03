@@ -1,3 +1,11 @@
+pve-manager (9.2.9) trixie; urgency=medium
+
+  * ui: qemu: default aarch64 VMs to a KVM-usable CPU model instead of one
+    that QEMU rejects at start, and warn when an incompatible ARM CPU model is
+    selected.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 04 Aug 2026 01:41:17 +0200
+
 pve-manager (9.2.8) trixie; urgency=medium
 
   * pveceph: fix installing Ceph on arm64 nodes that use the 'manual'
