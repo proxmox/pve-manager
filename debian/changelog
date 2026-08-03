@@ -1,3 +1,21 @@
+pve-manager (9.2.8) trixie; urgency=medium
+
+  * pveceph: fix installing Ceph on arm64 nodes that use the 'manual'
+    repository option, for example together with Proxmox Offline Mirror, where
+    the version check looked the package up for amd64 and aborted with a bogus
+    version mismatch error.
+
+  * vzdump: require the 'Sys.Modify' privilege on '/nodes/<node>' for the
+    'stop' parameter, which aborts the backup tasks currently running on that
+    node, modeled after what the task API requires for stopping a task one
+    does not own.
+
+  * ui: create the EFI disk through the asynchronous API when adding it in the
+    VM hardware panel, so that warnings from the resulting task become visible
+    and copying the disk to the target storage can report progress.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 03 Aug 2026 23:29:19 +0200
+
 pve-manager (9.2.7) trixie; urgency=medium
 
   * ceph: when installing, offer only the Ceph releases that have packages for
