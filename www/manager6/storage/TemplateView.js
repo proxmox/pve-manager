@@ -83,8 +83,8 @@ Ext.define(
                                     gettext(
                                         "Template architecture '{0}' differs from this node's" +
                                             " '{1}'. It does not run natively here and needs" +
-                                            " user-mode emulation on the host (binfmt_misc with" +
-                                            " qemu-user-static).",
+                                            ' user-mode emulation on the host (binfmt_misc with' +
+                                            ' qemu-user-static).',
                                     ),
                                     value,
                                     nodeArch,
