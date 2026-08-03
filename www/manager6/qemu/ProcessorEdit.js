@@ -121,6 +121,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
         let me = this;
         kvm = kvm ?? 1;
         me.kvm = kvm;
+        me.lookup('cputype').setKvm(kvm);
         me.lookup('cpuFlags').setKvm(kvm);
     },
 
