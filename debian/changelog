@@ -1,3 +1,14 @@
+pve-manager (8.4.20) bookworm; urgency=medium
+
+  * vzdump: require the 'Sys.Modify' privilege on '/nodes/<node>' for the
+    'stop' parameter, which aborts the backup tasks currently running on that
+    node, modeled after what the task API requires for stopping a task one
+    does not own.
+  * pve8to9: avoid logging a failure when the old kernel metapackages are no
+    longer installed.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 04 Aug 2026 13:58:42 +0200
+
 pve-manager (8.4.19) bookworm; urgency=medium
 
   * ui: prepare notice for slowly nearing Proxmox VE 8 End-of-Life after
