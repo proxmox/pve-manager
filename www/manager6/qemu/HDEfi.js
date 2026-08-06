@@ -63,6 +63,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
                 nodename: me.nodename,
                 disabled: me.disabled,
                 hideSize: true,
+                autoSelect: me.insideWizard,
             },
             {
                 xtype: 'proxmoxcheckbox',

@@ -137,6 +137,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             hidden: true,
             hideSize: true,
             usesEFI: true,
+            insideWizard: true,
         },
     ],
 
@@ -185,6 +186,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             },
             disabled: true,
             hidden: true,
+            insideWizard: true,
         },
     ],
 });

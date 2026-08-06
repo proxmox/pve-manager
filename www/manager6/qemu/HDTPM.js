@@ -64,6 +64,7 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
                 nodename: me.nodename,
                 disabled: me.disabled,
                 hideSize: true,
+                autoSelect: me.insideWizard,
             },
             {
                 xtype: 'pveFilteredKVComboBox',
