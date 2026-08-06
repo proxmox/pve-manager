@@ -117,6 +117,11 @@ Ext.define('PVE.form.DiskStorageSelector', {
         // reset on disable
         if (value) {
             hdstorage.setValue();
+        } else if (me.autoSelect && !hdstorage.getValue()) {
+            let rec = hdstorage.getStore().first();
+            if (rec && rec.data) {
+                hdstorage.setValue(rec.data[hdstorage.valueField], true);
+            }
         }
         hdstorage.setDisabled(value);
 
