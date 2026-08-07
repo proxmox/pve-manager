@@ -1,3 +1,23 @@
+pve-manager (9.2.10) trixie; urgency=medium
+
+  * pveperf: make bogomips regular expression case insensitive, other
+    architectures like Loong64 use different capitalization
+
+  * ui: LXC templates: hide foreign architectures by default, `arm64` and
+    `amd64` look very similar and can be easily confused
+
+  * ui: appliance templates: rename the "Package" column to "Name"
+
+  * ui: LXC templates: add a search hint to the "download" dialogue and widen
+    the search input field
+
+  * api: ceph: mds: deprecate `hotstandby` parameter in the API
+    schema, and do not set the `mds_standby_for_name` and `mds_standby_replay`
+    config options any more, they were removed in Ceph 14.1 and setting them
+    has no effect any more
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 07 Aug 2026 12:32:35 +0200
+
 pve-manager (9.2.9) trixie; urgency=medium
 
   * ui: qemu: default aarch64 VMs to a KVM-usable CPU model instead of one
