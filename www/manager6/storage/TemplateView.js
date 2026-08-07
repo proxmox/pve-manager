@@ -59,6 +59,8 @@ Ext.define(
                     gettext('Search'),
                     {
                         xtype: 'pveRecordSearchField',
+                        width: 300,
+                        emptyText: gettext('Name, Description'),
                         searchFields: ['package', 'headline'],
                         targetStore: store,
                     },
