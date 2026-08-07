@@ -86,7 +86,7 @@ Ext.define(
                         dataIndex: 'type',
                     },
                     {
-                        header: gettext('Package'),
+                        header: gettext('Name'),
                         flex: 1,
                         dataIndex: 'package',
                     },
