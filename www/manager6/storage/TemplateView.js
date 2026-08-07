@@ -40,16 +40,42 @@ Ext.define(
 
             Proxmox.Utils.monStoreErrors(me, store);
 
+            // Hide templates that cannot run natively here (foreign arch needs slow emulation);
+            // the toolbar checkbox reveals them. Entries without a known architecture stay shown.
+            var archFilter = new Ext.util.Filter({
+                id: 'template-arch',
+                filterFn: function (rec) {
+                    var nodeArch = Proxmox.NodeArch;
+                    var arch = rec.data.architecture;
+                    return !nodeArch || !arch || arch === nodeArch;
+                },
+            });
+            store.addFilter(archFilter);
+
             Ext.apply(me, {
                 store: store,
                 selModel: sm,
                 tbar: [
-                    '->',
                     gettext('Search'),
                     {
                         xtype: 'pveRecordSearchField',
                         searchFields: ['package', 'headline'],
                         targetStore: store,
+                    },
+                    '->',
+                    {
+                        xtype: 'proxmoxcheckbox',
+                        boxLabel: gettext('Show all architectures'),
+                        value: false,
+                        listeners: {
+                            change: function (checkbox, value) {
+                                if (value) {
+                                    store.removeFilter(archFilter);
+                                } else {
+                                    store.addFilter(archFilter);
+                                }
+                            },
+                        },
                     },
                 ],
                 features: [groupingFeature],
