@@ -148,6 +148,43 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
     onlineHelp: 'storage_lvm',
 
+    onGetValues: function (values) {
+        let me = this;
+
+        let onRemove = {};
+        if (values['on-remove-discard']) {
+            onRemove.discard = 1;
+        }
+        delete values['on-remove-discard'];
+
+        let onRemoveString = PVE.Parser.printPropertyString(onRemove);
+        if (onRemoveString !== '') {
+            values['on-volume-remove'] = onRemoveString;
+        } else if (!me.isCreate) {
+            if (!values.delete) {
+                values.delete = [];
+            }
+            if (Array.isArray(values.delete)) {
+                values.delete.push('on-volume-remove');
+            } else {
+                values.delete = [values.delete, 'on-volume-remove'];
+            }
+        }
+
+        return me.callParent([values]);
+    },
+
+    setValues: function (values) {
+        if (values['on-volume-remove']) {
+            let onRemove = PVE.Parser.parsePropertyString(values['on-volume-remove']);
+            values['on-remove-discard'] = onRemove.discard;
+        }
+
+        delete values['on-volume-remove'];
+
+        return this.callParent([values]);
+    },
+
     column1: [
         {
             xtype: 'pveBaseStorageSelector',
@@ -240,6 +277,18 @@ Ext.define('PVE.storage.LVMInputPanel', {
             name: 'saferemove',
             uncheckedValue: 0,
             fieldLabel: gettext('Wipe Removed Volumes'),
+        },
+        {
+            xtype: 'proxmoxcheckbox',
+            name: 'on-remove-discard',
+            uncheckedValue: 0,
+            fieldLabel: gettext('Discard Removed Volumes'),
+            autoEl: {
+                tag: 'div',
+                'data-qtip': gettext(
+                    'Enable to issue discard (TRIM) requests for logical volumes before removing them.',
+                ),
+            },
         },
     ],
 });

@@ -2224,7 +2224,7 @@ Ext.define('PVE.Utils', {
             hastart: ['HA', gettext('Start')],
             hastop: ['HA', gettext('Stop')],
             imgcopy: ['', gettext('Copy data')],
-            imgdel: ['', gettext('Erase data')],
+            imgdel: ['', gettext('Destroy image')],
             lvmcreate: [gettext('LVM Storage'), gettext('Create')],
             lvmremove: ['Volume Group', gettext('Remove')],
             lvmthincreate: [gettext('LVM-Thin Storage'), gettext('Create')],
