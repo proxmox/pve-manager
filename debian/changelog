@@ -1,3 +1,13 @@
+pve-manager (8.4.21) bookworm; urgency=medium
+
+  * ui: certificates, lxc DNS, VM cloud-init and PCI: encode rendered values
+    with htmlEncode.
+
+  * ui: acme: use improved URL rendering implementation from
+    proxmox-widget-toolkit.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Aug 2026 15:51:18 +0200
+
 pve-manager (8.4.20) bookworm; urgency=medium
 
   * vzdump: require the 'Sys.Modify' privilege on '/nodes/<node>' for the
