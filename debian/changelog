@@ -1,3 +1,13 @@
+pve-manager (9.2.11) trixie; urgency=medium
+
+  * ui: certificates, lxc DNS, VM cloud-init and PCI: encode rendered values
+    with htmlEncode.
+
+  * ui: acme: use improved URL rendering implementation from
+    proxmox-widget-toolkit.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Aug 2026 14:27:06 +0200
+
 pve-manager (9.2.10) trixie; urgency=medium
 
   * pveperf: make bogomips regular expression case insensitive, other
