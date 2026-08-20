@@ -479,10 +479,11 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
             });
         };
 
-        // Surface cluster health on open: the backend refuses to start on a
-        // non-benign HEALTH_WARN (and always on HEALTH_ERR), so warn upfront that
-        // the restart may be rejected rather than letting the operator find out
-        // only on submit.
+        // Warn before submit rather than letting the task error explain it. Only the checks
+
+        // the backend calls blocking, so an upgraded cluster is not warned about a restart
+
+        // that then succeeds.
         Proxmox.Utils.API2Request({
             url: '/cluster/ceph/status',
             method: 'GET',
@@ -490,13 +491,14 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                 if (me.destroyed) {
                     return;
                 }
-                let health = response.result.data?.health || {};
-                if (!health.status || health.status === 'HEALTH_OK') {
+                let checks = response.result.data?.health?.checks || {};
+                let blocking = Object.keys(checks)
+                    .sort()
+                    .filter((k) => checks[k]['blocks-restart']?.osd);
+                if (!blocking.length) {
                     return;
                 }
-                let checks = health.checks || {};
-                let items = Object.keys(checks)
-                    .sort()
+                let items = blocking
                     .map(
                         (k) =>
                             '<li>' +
@@ -504,21 +506,48 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                             '</li>',
                     )
                     .join('');
+                let forceable = blocking.every((k) => checks[k].severity !== 'HEALTH_ERR');
+                me.down('#forceCheck').setHidden(!forceable);
                 let hint = me.down('#healthHint');
                 hint.setValue(
-                    '<i class="fa fa-exclamation-triangle"></i> ' +
-                        Ext.String.format(
-                            gettext(
-                                'Cluster health is {0}. A rolling restart may be refused unless every warning is benign:',
-                            ),
-                            Ext.String.htmlEncode(health.status),
-                        ) +
+                    '<i class="fa fa-exclamation-triangle warning"></i> ' +
+                        (forceable
+                            ? gettext(
+                                  'These block a rolling restart. Enable Force to proceed' +
+                                      ' anyway:',
+                              )
+                            : gettext(
+                                  'These block a rolling restart and Force cannot override' +
+                                      ' them:',
+                              )) +
                         `<ul>${items}</ul>`,
                 );
                 hint.setHidden(false);
             },
-            failure: () => {
-                /* health unknown; skip the hint rather than block the dialog */
+            failure: (response) => {
+                if (me.destroyed) {
+                    return;
+                }
+                // A 403 only means this user may not read the health, the backend still can,
+                // so the restart runs as usual and force stays available. Anything else means
+                // the backend hits the same wall, and force cannot override that.
+                let hint = me.down('#healthHint');
+                if (response.status === 403) {
+                    me.down('#forceCheck').setHidden(false);
+                    return;
+                }
+                hint.setValue(
+                    '<i class="fa fa-exclamation-triangle warning"></i> ' +
+                        Ext.String.format(
+                            gettext(
+                                'The cluster health could not be read ({0}). A restart is likely' +
+                                    ' to be refused for the same reason, so check the cluster' +
+                                    ' status first.',
+                            ),
+                            Ext.String.htmlEncode(response.htmlStatus || response.status),
+                        ),
+                );
+                hint.setHidden(false);
             },
         });
 
@@ -530,13 +559,6 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                     border: false,
                     fieldDefaults: { labelWidth: 100, anchor: '100%' },
                     items: [
-                        {
-                            xtype: 'displayfield',
-                            itemId: 'healthHint',
-                            hideLabel: true,
-                            hidden: true,
-                            userCls: 'pmx-hint',
-                        },
                         {
                             xtype: 'combobox',
                             itemId: 'nodeSelector',
@@ -622,6 +644,23 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                                     ' the Proxmox VE documentation for cleanup steps.',
                             ),
                         },
+                        // last, so that a cluster with blocking checks grows the dialog
+                        // downwards instead of pushing every field further down
+                        {
+                            xtype: 'displayfield',
+                            itemId: 'healthHint',
+                            fieldLabel: gettext('Health Issues'),
+                            hidden: true,
+                        },
+                        {
+                            xtype: 'proxmoxcheckbox',
+                            itemId: 'forceCheck',
+                            fieldLabel: gettext('Force'),
+                            boxLabel: gettext('proceed past the blocking health checks'),
+                            hidden: true,
+                            uncheckedValue: 0,
+                            checked: false,
+                        },
                     ],
                 },
             ],
@@ -645,6 +684,9 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                         let params = { 'service-type': 'osd' };
                         if (onlyOutdated) {
                             params['only-outdated'] = 1;
+                        }
+                        if (me.down('#forceCheck').getValue()) {
+                            params.force = 1;
                         }
                         Proxmox.Utils.API2Request({
                             url,
