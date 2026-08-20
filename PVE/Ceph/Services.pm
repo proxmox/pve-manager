@@ -602,6 +602,10 @@ sub check_health_acceptable {
             next;
         }
 
+        # Ceph leaves muted checks out of the cluster status, so do the same here. Stays below
+        # the OSDMAP_FLAGS branch, as muting that check must not hide a nodown or noup flag.
+        next if $checks->{$name}->{muted};
+
         my $msg = $checks->{$name}->{summary}->{message} // 'no message';
         push @blockers, "$name: $msg";
     }
