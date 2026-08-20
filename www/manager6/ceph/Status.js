@@ -4,6 +4,49 @@ Ext.define('pve-ceph-warnings', {
     idProperty: 'id',
 });
 
+// Ceph reports the same cipher change through several checks, with a detail that lists the
+// affected entities but not what to do about them. Keyed by the exact check, so the unrelated
+// AUTH_INSECURE_GLOBAL_ID_RECLAIM* checks keep ceph's own text.
+const CEPHX_CIPHER_LEAD = gettext(
+    'Ceph Squid 19.2.6 and Ceph Tentacle 20.2.4 report cephx keys that still use the old aes' +
+        ' cipher as insecure, until they are migrated to aes256k. Storage and the daemons keep' +
+        ' working in the meantime.',
+);
+
+const CEPHX_MIGRATE_SERVICE_KEYS = gettext(
+    'Run /usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys on one node to see' +
+        ' what it would do, then again with --apply to migrate the manager, metadata server' +
+        ' and OSD keys, which clears this.',
+);
+
+const CEPHX_CIPHER_HOWTO = {
+    AUTH_INSECURE_SERVICE_KEY_TYPE: CEPHX_MIGRATE_SERVICE_KEYS,
+    AUTH_INSECURE_SERVICE_TICKETS: CEPHX_MIGRATE_SERVICE_KEYS,
+    AUTH_INSECURE_CLIENT_KEY_TYPE: gettext(
+        'Client keys only move when asked for. Pass --rotate-client-keys to the migration' +
+            ' script for the keys that only Ceph reads, which needs no particular kernel.' +
+            ' --rotate-admin-key and --rotate-storage-key NAME cover the keys a storage uses,' +
+            ' and an in-kernel RBD or CephFS client needs kernel 7.0 or newer to read those' +
+            ' once they move. A key an encrypted OSD created before the upgrade uses cannot' +
+            ' move at all, and then muting this check is the way out.',
+    ),
+    AUTH_INSECURE_KEYS_ALLOWED: gettext(
+        'The monitors have to keep accepting the old cipher while any key still uses it. This' +
+            ' clears once every service and client key is migrated and the old cipher is' +
+            ' dropped from auth_allowed_ciphers, which the documentation covers.',
+    ),
+    AUTH_INSECURE_KEYS_CREATABLE: gettext(
+        'The monitors still create keys with the old cipher, which they do as long as they' +
+            ' accept it. Set mon_auth_allow_insecure_key to false to clear this on its own,' +
+            ' once nothing needs a key that older kernel clients can read.',
+    ),
+    AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE: gettext(
+        'The monitors build these from the cipher they hand out service tickets with, so this' +
+            ' clears on its own about three hours after that switched over, which the last' +
+            ' step of the migration does.',
+    ),
+};
+
 Ext.define('PVE.node.CephStatus', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeCephStatus',
@@ -120,6 +163,13 @@ Ext.define('PVE.node.CephStatus', {
                                     severity: check.severity,
                                     muted: !!check.muted,
                                 };
+                                let howto = CEPHX_CIPHER_HOWTO[key];
+                                if (howto) {
+                                    // ahead of ceph's own detail, which would push this out of view
+                                    data.detail =
+                                        `${CEPHX_CIPHER_LEAD} ${howto}` +
+                                        (data.detail ? `\n\n${data.detail}` : '');
+                                }
                                 data.noDetails = data.detail.length === 0;
                                 data.detailsCls = data.detail.length === 0 ? 'pmx-opacity-75' : '';
                                 if (data.detail.length === 0) {
