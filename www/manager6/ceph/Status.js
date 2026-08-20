@@ -1,6 +1,6 @@
 Ext.define('pve-ceph-warnings', {
     extend: 'Ext.data.Model',
-    fields: ['id', 'summary', 'detail', 'severity'],
+    fields: ['id', 'summary', 'detail', 'severity', 'muted'],
     idProperty: 'id',
 });
 
@@ -118,6 +118,7 @@ Ext.define('PVE.node.CephStatus', {
                                         .reduce((acc, v) => `${acc}\n${v.message}`, '')
                                         .trimStart(),
                                     severity: check.severity,
+                                    muted: !!check.muted,
                                 };
                                 data.noDetails = data.detail.length === 0;
                                 data.detailsCls = data.detail.length === 0 ? 'pmx-opacity-75' : '';
@@ -138,7 +139,13 @@ Ext.define('PVE.node.CephStatus', {
                             tooltip: gettext('Severity'),
                             align: 'center',
                             width: 38,
-                            renderer: function (value) {
+                            renderer: function (value, metaData, record) {
+                                if (record.get('muted')) {
+                                    metaData.tdAttr = `data-qtip="${Ext.String.htmlEncode(
+                                        gettext('Muted in Ceph, ignored for the overall status'),
+                                    )}"`;
+                                    return '<i class="fa fa-fw faded fa-bell-slash"></i>';
+                                }
                                 let health = PVE.Utils.map_ceph_health[value];
                                 let icon = PVE.Utils.get_health_icon(health);
                                 return `<i class="fa fa-fw ${icon}"></i>`;
@@ -159,6 +166,9 @@ Ext.define('PVE.node.CephStatus', {
                             renderer: function (value, metaData, record, rI, cI, store, view) {
                                 if (record.get('expanded')) {
                                     metaData.tdCls = 'pmx-column-wrapped';
+                                }
+                                if (record.get('muted')) {
+                                    metaData.tdCls += ' pmx-opacity-75';
                                 }
                                 return Ext.htmlEncode(value);
                             },
