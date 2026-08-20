@@ -511,9 +511,8 @@ sub filter_outdated_daemons {
     return \@outdated;
 }
 
-# Health checks that are safe to ignore on bulk-restart entry: things that do
-# not materially affect rolling-restart safety (the per-step ok-to-stop is still
-# the authoritative gate).
+# Health checks that are safe to ignore during a bulk restart: things that do not materially
+# affect rolling-restart safety (the per-step ok-to-stop check still gates every daemon).
 my %BENIGN_HEALTH_CHECKS = map { $_ => 1 } qw(
     MON_CLOCK_SKEW
     RECENT_CRASH
@@ -657,6 +656,21 @@ sub check_health_acceptable {
     return (0, 'HEALTH_ERR', $blockers, $ignored) if $worst eq 'HEALTH_ERR';
 
     return ($force_warn ? 1 : 0, 'HEALTH_WARN', $blockers, $ignored);
+}
+
+# The blocking HEALTH_ERR checks, for the re-checks between rolling-restart steps: those must
+# abort when the cluster degrades underneath them, but must not trip over what the entry gate
+# already ignored. Warnings are left out because a restart causes them by itself, PG_DEGRADED
+# in particular. A failing health command is left to propagate to the caller.
+sub get_blocking_health_errors {
+    my ($rados) = @_;
+
+    my $health = $rados->mon_command({ prefix => 'health' });
+    return [] if !$health;
+
+    my (undef, undef, undef, $errors) = classify_health_checks($rados, $health);
+
+    return $errors;
 }
 
 # Wraps Ceph's '$type ok-to-stop' mon command and returns ($safe, $message).

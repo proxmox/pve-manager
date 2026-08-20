@@ -648,13 +648,14 @@ __PACKAGE__->register_method({
                             my ($host, $count) = $osd_nodes[$i]->@*;
                             my $tag = "[" . ($i + 1) . "/$node_total]";
 
-                            # Re-check cluster health before each node (an unrelated
-                            # failure mid-run should abort the cluster orchestration
-                            # cleanly).
-                            my $h = $rados->mon_command({ prefix => 'health' });
-                            die "$tag Ceph cluster degraded to HEALTH_ERR mid-restart,"
-                                . " aborting\n"
-                                if $h && ($h->{status} // '') eq 'HEALTH_ERR';
+                            # Re-check health before each node (an unrelated failure
+                            # mid-run should abort the cluster orchestration cleanly).
+                            my $errors =
+                                PVE::Ceph::Services::get_blocking_health_errors($rados);
+                            die "$tag Ceph reports a blocking HEALTH_ERR mid-restart,"
+                                . " aborting:\n  - "
+                                . join("\n  - ", @$errors) . "\n"
+                                if @$errors;
 
                             # Between nodes wait until ok-to-stop passes on a sample OSD; the
                             # previous node's restart leaves PGs re-peering which would otherwise
@@ -788,12 +789,14 @@ __PACKAGE__->register_method({
                             my $daemon = "$type.$name";
                             my $tag = "[$i/$total]";
 
-                            # Re-check cluster health every iteration so we abort if the cluster
-                            # degrades to HEALTH_ERR partway through (e.g. an unrelated OSD failure).
-                            my $h = $rados->mon_command({ prefix => 'health' });
-                            die
-                                "$tag Ceph cluster degraded to HEALTH_ERR mid-restart, aborting\n"
-                                if $h && ($h->{status} // '') eq 'HEALTH_ERR';
+                            # Re-check health every iteration so we abort if a blocking error
+                            # shows up partway through (e.g. an unrelated OSD failure).
+                            my $errors =
+                                PVE::Ceph::Services::get_blocking_health_errors($rados);
+                            die "$tag Ceph reports a blocking HEALTH_ERR mid-restart,"
+                                . " aborting:\n  - "
+                                . join("\n  - ", @$errors) . "\n"
+                                if @$errors;
 
                             my ($safe, $msg) =
                                 PVE::Ceph::Services::is_safe_to_stop($rados, $type, $name);

@@ -767,11 +767,13 @@ __PACKAGE__->register_method({
                         my $id = $daemon =~ s/^\Q$type\E\.//r;
                         my $tag = "[" . ($j + 1) . "/$total]";
 
-                        # Re-check cluster health every iteration so we abort if the cluster
-                        # degrades to HEALTH_ERR partway through (e.g. an unrelated failure).
-                        my $h = $rados->mon_command({ prefix => 'health' });
-                        die "$tag Ceph cluster degraded to HEALTH_ERR mid-restart, aborting\n"
-                            if $h && ($h->{status} // '') eq 'HEALTH_ERR';
+                        # Re-check health every iteration so we abort if a blocking error shows
+                        # up partway through (e.g. an unrelated failure).
+                        my $errors = PVE::Ceph::Services::get_blocking_health_errors($rados);
+                        die "$tag Ceph reports a blocking HEALTH_ERR mid-restart, aborting:\n"
+                            . "  - "
+                            . join("\n  - ", @$errors) . "\n"
+                            if @$errors;
 
                         # Wait (up to $timeout) for recovery from the previous OSD's restart
                         # to quiesce enough that Ceph reports this one safe to stop, bounded by
