@@ -513,6 +513,11 @@ sub filter_outdated_daemons {
 
 # Health checks that are safe to ignore during a bulk restart: things that do not materially
 # affect rolling-restart safety (the per-step ok-to-stop check still gates every daemon).
+#
+# The AUTH_INSECURE_* entries only describe cephx key posture, never availability, and every
+# cluster upgraded to ceph 19.2.6 or 20.2.4 raises them (two as HEALTH_ERR) until its keys are
+# migrated - which needs all monitors restarted first, so blocking on them is circular.
+# AUTH_BAD_CAPS (real corruption) and AUTH_EMERGENCY_CIPHERS_SET (policy override) stay out.
 my %BENIGN_HEALTH_CHECKS = map { $_ => 1 } qw(
     MON_CLOCK_SKEW
     RECENT_CRASH
@@ -524,6 +529,12 @@ my %BENIGN_HEALTH_CHECKS = map { $_ => 1 } qw(
     PG_NOT_SCRUBBED
     PG_NOT_DEEP_SCRUBBED
     LARGE_OMAP_OBJECTS
+    AUTH_INSECURE_KEYS_ALLOWED
+    AUTH_INSECURE_KEYS_CREATABLE
+    AUTH_INSECURE_SERVICE_TICKETS
+    AUTH_INSECURE_CLIENT_KEY_TYPE
+    AUTH_INSECURE_SERVICE_KEY_TYPE
+    AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE
 );
 
 # OSDMAP_FLAGS check is acceptable only if every cluster-wide OSD flag that
