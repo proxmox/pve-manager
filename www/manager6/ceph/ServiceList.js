@@ -299,11 +299,15 @@ Ext.define('PVE.node.CephServiceController', {
         let type = view.type;
         let typeUpper = type.toUpperCase();
 
-        let fireRequest = function () {
+        let fireRequest = function (force) {
+            let params = { 'service-type': type };
+            if (force) {
+                params.force = 1;
+            }
             Proxmox.Utils.API2Request({
                 url: `/cluster/ceph/restart-bulk`,
                 method: 'POST',
-                params: { 'service-type': type },
+                params,
                 waitMsgTarget: view,
                 success: function (response2) {
                     Ext.create('Proxmox.window.TaskProgress', {
@@ -316,16 +320,110 @@ Ext.define('PVE.node.CephServiceController', {
             });
         };
 
-        let confirmWithMessage = function (msg) {
-            Ext.Msg.show({
+        // $unknown is set when the health could not be read: { text, canForce }. A 403 only
+        // means this user may not read it, the backend still can, so the restart runs as usual
+        // and force stays available. Anything else means the backend will hit the same wall,
+        // and force cannot override a health query that fails.
+        let showConfirm = function (msg, blocking, unknown) {
+            let blockers = Object.keys(blocking).sort();
+            let fatal = blockers.some((k) => blocking[k].severity === 'HEALTH_ERR');
+            let health = '';
+            if (blockers.length) {
+                let items = blockers
+                    .map(
+                        (k) =>
+                            '<li>' +
+                            Ext.String.htmlEncode(blocking[k].summary?.message || k) +
+                            '</li>',
+                    )
+                    .join('');
+                health =
+                    '<p>' +
+                    (fatal
+                        ? gettext(
+                              'These health checks block the restart and Force cannot override' +
+                                  ' them:',
+                          )
+                        : gettext(
+                              'These health checks block the restart unless Force is enabled:',
+                          )) +
+                    `<ul>${items}</ul></p>`;
+            } else if (unknown) {
+                health = `<p>${unknown.text}</p>`;
+            }
+
+            let forceUseful = unknown ? unknown.canForce : blockers.length && !fatal;
+            let confirm = Ext.create('Ext.window.MessageBox', { closeAction: 'destroy' });
+            confirm.promptContainer.add({
+                xtype: 'proxmoxcheckbox',
+                name: 'force',
+                hidden: !forceUseful,
+                boxLabel: gettext('Force: proceed past the blocking health checks'),
+                padding: '3 0 0 0',
+            });
+            confirm.show({
                 title: gettext('Confirm Cluster-wide Rolling Restart'),
                 icon: Ext.Msg.WARNING,
-                msg: msg,
+                msg: msg + health,
                 buttons: Ext.Msg.YESNO,
+                defaultFocus: 'no',
                 callback: function (btn) {
+                    let force = confirm.promptContainer
+                        .down('proxmoxcheckbox[name=force]')
+                        .getValue();
+                    confirm.destroy();
                     if (btn === 'yes') {
-                        fireRequest();
+                        fireRequest(force);
                     }
+                },
+            });
+        };
+
+        let confirmWithMessage = function (msg) {
+            Proxmox.Utils.API2Request({
+                url: '/cluster/ceph/status',
+                method: 'GET',
+                waitMsgTarget: view,
+                success: function (response) {
+                    if (view.destroyed) {
+                        return;
+                    }
+                    let checks = response.result.data?.health?.checks || {};
+                    let blocking = {};
+                    for (const [k, v] of Object.entries(checks)) {
+                        if (v['blocks-restart']?.[type]) {
+                            blocking[k] = v;
+                        }
+                    }
+                    showConfirm(msg, blocking, undefined);
+                },
+                failure: function (response) {
+                    if (view.destroyed) {
+                        return;
+                    }
+                    let unknown =
+                        response.status === 403
+                            ? {
+                                  text: gettext(
+                                      'The cluster health was not checked, reading it needs the' +
+                                          ' Sys.Audit privilege. The restart itself is allowed,' +
+                                          ' and if a health check blocks it the task log names' +
+                                          ' the check.',
+                                  ),
+                                  canForce: true,
+                              }
+                            : {
+                                  text: Ext.String.format(
+                                      gettext(
+                                          'The cluster health could not be read ({0}). A restart' +
+                                              ' is likely to be refused for the same reason, so' +
+                                              ' check the cluster status first.',
+                                      ),
+                                      Ext.String.htmlEncode(response.htmlStatus || response.status),
+                                  ),
+                                  canForce: false,
+                              };
+                    showConfirm(msg, {}, unknown);
                 },
             });
         };
