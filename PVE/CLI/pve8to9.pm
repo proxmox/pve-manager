@@ -623,9 +623,39 @@ sub check_ceph {
                 "Ceph health reported as 'HEALTH_WARN' with a single failing check and 'noout' flag set."
             );
         } else {
-            log_warn(
-                "Ceph health reported as '$ceph_health'.\n      Use the PVE dashboard or 'ceph -s'"
-                    . " to determine the specific issues and try to resolve them.");
+            my $checks = $ceph_status->{health}->{checks} // {};
+            my @cephx =
+                grep { /^AUTH_INSECURE_(KEYS|SERVICE|CLIENT|ROTATING)_/ } sort keys %$checks;
+            # 'noout' is set on our own recommendation, so it is not actionable either
+            my $excused = scalar(@cephx) + ($noout && $checks->{OSDMAP_FLAGS} ? 1 : 0);
+
+            # named in both branches: an unrelated warning alongside them is the common
+            # case, and it must not hide what to do about these
+            my $cephx_hint =
+                "Migrate them with"
+                . " '/usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys',"
+                . " which runs as a dry run unless '--apply' is passed.";
+
+            if (@cephx && $excused == scalar(keys %$checks)) {
+                log_info(
+                    "Ceph health reported as '$ceph_health' because cephx keys still use the"
+                        . " old cipher.\n      Ceph 19.2.6 and newer flag keys that are not yet"
+                        . " migrated to aes256k. Storage keeps working and the upgrade is not"
+                        . " affected.\n      $cephx_hint");
+            } else {
+                log_warn(
+                    "Ceph health reported as '$ceph_health'.\n      Use the PVE dashboard or"
+                        . " 'ceph -s' to determine the specific issues and try to resolve them."
+                        . (
+                            @cephx
+                            ? "\n      These come from the cephx key cipher migration and do"
+                            . " not block the upgrade: "
+                            . join(', ', @cephx)
+                            . ".\n      $cephx_hint"
+                            : ""
+                        )
+                );
+            }
         }
     }
 
