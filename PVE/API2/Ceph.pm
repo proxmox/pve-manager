@@ -555,7 +555,9 @@ __PACKAGE__->register_method({
                     . " PG_DEGRADED, SLOW_OPS, or MON_DOWN. A blocking HEALTH_ERR is fatal"
                     . " regardless of this flag. Checks that ceph reports as muted, and checks"
                     . " known to be harmless for a rolling restart, never block and are named"
-                    . " in the task log. The operator is responsible for confirming the"
+                    . " in the task log. The cluster-wide OSD map flags are only ever"
+                    . " evaluated for an OSD restart, since they govern nothing a mon, mgr or"
+                    . " mds restart touches. The operator is responsible for confirming the"
                     . " cluster is stable enough to absorb a rolling restart.",
                 type => 'boolean',
                 optional => 1,
@@ -619,7 +621,7 @@ __PACKAGE__->register_method({
             # recover a stuck run on a marginal cluster.
             if (!$dry_run && !$resume) {
                 my ($ok, $sev, $blockers) =
-                    PVE::Ceph::Services::check_health_acceptable($rados, $force);
+                    PVE::Ceph::Services::check_health_acceptable($rados, $force, $type);
                 if (!$ok) {
                     die "could not evaluate ceph health, refusing rolling restart of"
                         . " '$type' daemons:\n  - "
@@ -769,7 +771,8 @@ __PACKAGE__->register_method({
 
                         # Re-check health every iteration so we abort if a blocking error shows
                         # up partway through (e.g. an unrelated failure).
-                        my $errors = PVE::Ceph::Services::get_blocking_health_errors($rados);
+                        my $errors =
+                            PVE::Ceph::Services::get_blocking_health_errors($rados, $type);
                         die "$tag Ceph reports a blocking HEALTH_ERR mid-restart, aborting:\n"
                             . "  - "
                             . join("\n  - ", @$errors) . "\n"

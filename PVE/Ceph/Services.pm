@@ -535,6 +535,8 @@ my %BENIGN_OSDMAP_FLAGS = map { $_ => 1 } qw(
     noout
     noscrub
     nodeep-scrub
+    nosnaptrim
+    noautoscale
     notieragent
     sortbitwise
     recovery_deletes
@@ -571,7 +573,7 @@ sub osdmap_flags_verdict {
 # undef if nothing blocks. Each check is judged on its own severity, not on the aggregate status,
 # so one we ignore cannot block.
 sub classify_health_checks {
-    my ($rados, $health) = @_;
+    my ($rados, $health, $service_type) = @_;
 
     my $checks = $health->{checks} // {};
 
@@ -610,6 +612,15 @@ sub classify_health_checks {
         }
 
         if ($name eq 'OSDMAP_FLAGS') {
+            # Every flag in the osdmap governs OSD behaviour: up/down/in/out marking, recovery,
+            # scrubbing, client IO. None of it reaches mon quorum, mgr failover or MDS takeover,
+            # and only the OSD branch of daemon_is_up() reads the osdmap at all. An undefined
+            # type means the caller does not know, so judge it then.
+            if (defined($service_type) && $service_type ne 'osd') {
+                push @ignored, $name;
+                next;
+            }
+
             my ($safe, $bad, $err) = osdmap_flags_verdict($rados);
             if ($err) {
                 $add_blocker->(
@@ -644,13 +655,13 @@ sub classify_health_checks {
 # describes the checks that still block, not the cluster, so a HEALTH_ERR cluster whose firing
 # checks are all ignored comes back as HEALTH_OK. $force_warn relaxes only the HEALTH_WARN path.
 sub check_health_acceptable {
-    my ($rados, $force_warn) = @_;
+    my ($rados, $force_warn, $service_type) = @_;
 
     my $health = eval { $rados->mon_command({ prefix => 'health' }) };
     return (0, 'HEALTH_FETCH_FAIL', ["could not get ceph health: " . ($@ || 'no data')], [])
         if $@ || ref($health) ne 'HASH';
 
-    my ($worst, $blockers, $ignored) = classify_health_checks($rados, $health);
+    my ($worst, $blockers, $ignored) = classify_health_checks($rados, $health, $service_type);
 
     return (1, 'HEALTH_OK', [], $ignored) if !defined($worst);
     return (0, 'HEALTH_ERR', $blockers, $ignored) if $worst eq 'HEALTH_ERR';
@@ -663,12 +674,12 @@ sub check_health_acceptable {
 # already ignored. Warnings are left out because a restart causes them by itself, PG_DEGRADED
 # in particular. A failing health command is left to propagate to the caller.
 sub get_blocking_health_errors {
-    my ($rados) = @_;
+    my ($rados, $service_type) = @_;
 
     my $health = $rados->mon_command({ prefix => 'health' });
     return [] if !$health;
 
-    my (undef, undef, undef, $errors) = classify_health_checks($rados, $health);
+    my (undef, undef, undef, $errors) = classify_health_checks($rados, $health, $service_type);
 
     return $errors;
 }
