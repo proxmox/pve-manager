@@ -662,6 +662,50 @@ sub classify_health_checks {
     return ($worst, \@blockers, \@ignored, \@error_blockers, $blocking);
 }
 
+# Maps every health check to the daemon types whose restart it refuses, as
+# { <check> => { osd => 0|1, mon => 0|1, mgr => 0|1, mds => 0|1 } }. The only place that
+# answers this, so no caller needs its own allowlist. OSDMAP_FLAGS depends on which flags
+# are set, so the answer has to come from the classifier and cannot be a static list.
+sub restart_blocking_by_type {
+    my ($rados, $health) = @_;
+
+    my $checks = ref($health) eq 'HASH' ? $health->{checks} : undef;
+    return {} if ref($checks) ne 'HASH';
+
+    # two passes cover all four types, and the mon pass never fetches the osdmap
+    my (undef, undef, undef, undef, $for_osd) = classify_health_checks($rados, $health, 'osd');
+    my (undef, undef, undef, undef, $for_other) = classify_health_checks($rados, $health, 'mon');
+
+    my $res = {};
+    for my $name (keys %$checks) {
+        next if ref($checks->{$name}) ne 'HASH';
+        $res->{$name} = {
+            osd => $for_osd->{$name} ? 1 : 0,
+            mon => $for_other->{$name} ? 1 : 0,
+            mgr => $for_other->{$name} ? 1 : 0,
+            mds => $for_other->{$name} ? 1 : 0,
+        };
+    }
+
+    return $res;
+}
+
+# Marks each check of a 'ceph status' reply with the daemon types it blocks, so the GUI does
+# not need a second copy of this policy.
+sub annotate_restart_blocking {
+    my ($status, $rados) = @_;
+
+    # Not a chained deref, that would autovivify 'health' on a status without any.
+    return $status if ref($status->{health}) ne 'HASH';
+    my $checks = $status->{health}->{checks};
+    return $status if ref($checks) ne 'HASH';
+
+    my $blocking = restart_blocking_by_type($rados, $status->{health});
+    $checks->{$_}->{'blocks-restart'} = $blocking->{$_} for keys %$blocking;
+
+    return $status;
+}
+
 # Returns ($acceptable, $severity, \@blocker_messages, \@ignored_check_names). The severity
 # describes the checks that still block, not the cluster, so a HEALTH_ERR cluster whose firing
 # checks are all ignored comes back as HEALTH_OK. $force_warn relaxes only the HEALTH_WARN path.

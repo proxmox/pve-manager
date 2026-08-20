@@ -333,7 +333,10 @@ __PACKAGE__->register_method({
 
         PVE::Ceph::Tools::check_ceph_inited();
 
-        return PVE::Ceph::Tools::ceph_cluster_status();
+        my $rados = PVE::RADOS->new();
+        my $status = PVE::Ceph::Tools::ceph_cluster_status($rados);
+
+        return PVE::Ceph::Services::annotate_restart_blocking($status, $rados);
     },
 });
 
