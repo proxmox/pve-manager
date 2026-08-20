@@ -620,8 +620,15 @@ __PACKAGE__->register_method({
             # need force=1. Skipped on dry-run/resume so operators can still inspect or
             # recover a stuck run on a marginal cluster.
             if (!$dry_run && !$resume) {
-                my ($ok, $sev, $blockers) =
+                my ($ok, $sev, $blockers, $ignored) =
                     PVE::Ceph::Services::check_health_acceptable($rados, $force, $type);
+
+                # Printed before the refusal too: a cluster the GUI shows as HEALTH_ERR is
+                # exactly where an operator needs to know which errors were stepped over.
+                print "NOTE: not blocking on health check(s) considered safe for a rolling"
+                    . " restart, or muted by an operator:\n  - "
+                    . join("\n  - ", @$ignored) . "\n"
+                    if @$ignored;
                 if (!$ok) {
                     die "could not evaluate ceph health, refusing rolling restart of"
                         . " '$type' daemons:\n  - "
