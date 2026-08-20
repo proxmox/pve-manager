@@ -482,9 +482,11 @@ __PACKAGE__->register_method({
             },
             force => {
                 description => "Proceed past a HEALTH_WARN with non-benign checks like"
-                    . " PG_DEGRADED, SLOW_OPS, or MON_DOWN. HEALTH_ERR is always fatal"
-                    . " regardless. The operator is responsible for confirming the cluster is"
-                    . " stable enough to absorb a rolling restart.",
+                    . " PG_DEGRADED, SLOW_OPS, or MON_DOWN. A blocking HEALTH_ERR is fatal"
+                    . " regardless of this flag. Checks that ceph reports as muted, and checks"
+                    . " known to be harmless for a rolling restart, never block and are named"
+                    . " in the task log. The operator is responsible for confirming the"
+                    . " cluster is stable enough to absorb a rolling restart.",
                 type => 'boolean',
                 optional => 1,
                 default => 0,
@@ -528,17 +530,21 @@ __PACKAGE__->register_method({
             # failures still slip through.
             $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
 
-            # Entry health check: HEALTH_ERR always blocks. HEALTH_WARN blocks unless
-            # every firing check is on a benign-for-rolling-restart allowlist, or the
-            # caller passed force=1. Skipped on dry-run so operators can still inspect
-            # a marginal cluster.
+            # Entry health check: HEALTH_ERR blockers always refuse, HEALTH_WARN blockers
+            # need force=1. Skipped on dry-run so operators can still inspect a marginal
+            # cluster.
             if (!$dry_run) {
                 my ($ok, $sev, $blockers) =
                     PVE::Ceph::Services::check_health_acceptable($rados, $force);
                 if (!$ok) {
+                    die "could not evaluate ceph health, refusing rolling restart of"
+                        . " '$type' daemons:\n  - "
+                        . join("\n  - ", @$blockers) . "\n"
+                        if $sev eq 'HEALTH_FETCH_FAIL';
+
                     if ($sev eq 'HEALTH_ERR') {
-                        die "Ceph cluster is in HEALTH_ERR state, refusing rolling restart"
-                            . " of '$type' daemons:\n  - "
+                        die "Ceph cluster has blocking HEALTH_ERR issues, refusing rolling"
+                            . " restart of '$type' daemons (force cannot override those):\n  - "
                             . join("\n  - ", @$blockers) . "\n";
                     }
                     die "Ceph cluster has blocking HEALTH_WARN issues, refusing rolling"

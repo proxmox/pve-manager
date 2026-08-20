@@ -543,78 +543,120 @@ my %BENIGN_OSDMAP_FLAGS = map { $_ => 1 } qw(
     pglog_hardlimit
 );
 
-# Returns ($acceptable, $severity, \@blocker_messages).
-# - HEALTH_OK            -> (1, 'HEALTH_OK', [])
-# - HEALTH_WARN, only benign checks firing -> (1, 'HEALTH_WARN', [])
-# - HEALTH_WARN with one or more non-benign checks -> ($force_warn?1:0, 'HEALTH_WARN', \@blockers)
-# - HEALTH_ERR -> (0, 'HEALTH_ERR', \@blockers)  (force does NOT override)
-#
-# $force_warn relaxes only the HEALTH_WARN path; HEALTH_ERR is always fatal.
-# Callers can still emit a warning when proceeding past blockers with force=1.
-sub check_health_acceptable {
-    my ($rados, $force_warn) = @_;
+# An unknown or missing severity ranks worst, so an unexpected ceph value fails closed.
+my %HEALTH_SEVERITY_RANK = (
+    HEALTH_OK => 0,
+    HEALTH_WARN => 1,
+    HEALTH_ERR => 2,
+);
 
-    my $health = eval { $rados->mon_command({ prefix => 'health' }) };
-    return (0, 'HEALTH_FETCH_FAIL', ["could not get ceph health: " . ($@ // 'no data')])
-        if $@ || !$health;
+# OSDMAP_FLAGS carries no verdict of its own, only the flags, so judge those: safe exactly when
+# every cluster-wide flag that is set is allowlisted. A failed fetch counts as unsafe, since we
+# cannot tell what is set. Returns ($safe, \@bad_flags, $fetch_error).
+sub osdmap_flags_verdict {
+    my ($rados) = @_;
 
-    my $status = $health->{status} // '';
-    return (1, $status, []) if $status eq 'HEALTH_OK';
+    my $dump = eval { $rados->mon_command({ prefix => 'osd dump', format => 'json' }) };
+    if ($@ || ref($dump) ne 'HASH') {
+        my $err = $@ ? "$@" : 'unexpected response shape';
+        chomp $err;
+        return (0, [], $err);
+    }
+    my @bad = grep { !$BENIGN_OSDMAP_FLAGS{$_} } sort split(/\s*,\s*/, $dump->{flags} // '');
 
-    my @blockers;
+    return (scalar(@bad) ? 0 : 1, \@bad, undef);
+}
+
+# Classifies a 'ceph health' response for rolling restarts, returning ($worst_blocking_severity,
+# \@blockers, \@ignored_names, \@error_blockers, \%blocking_severity_by_name), with the severity
+# undef if nothing blocks. Each check is judged on its own severity, not on the aggregate status,
+# so one we ignore cannot block.
+sub classify_health_checks {
+    my ($rados, $health) = @_;
+
     my $checks = $health->{checks} // {};
 
-    # Lazy: only fetch osd dump if an OSDMAP_FLAGS check is actually firing. A failed
-    # fetch is treated as a blocker rather than silently letting OSDMAP_FLAGS through
-    # the allowlist, since we cannot tell whether the set flags are benign.
-    my $cluster_flags;
-    my $cluster_flags_err;
-    my $get_cluster_flags = sub {
-        return $cluster_flags if defined $cluster_flags;
-        my $dump = eval { $rados->mon_command({ prefix => 'osd dump', format => 'json' }) };
-        if ($@ || ref($dump) ne 'HASH') {
-            $cluster_flags_err = $@ ? "$@" : 'unexpected response shape';
-            chomp $cluster_flags_err;
-            $cluster_flags = {};
-            return $cluster_flags;
+    my $worst;
+    my (@blockers, @error_blockers, @ignored);
+    my $blocking = {};
+
+    my $add_blocker = sub {
+        my ($name, $msg) = @_;
+
+        my $severity = $checks->{$name}->{severity} // '';
+        $severity = 'HEALTH_ERR' if !defined($HEALTH_SEVERITY_RANK{$severity});
+
+        # Ceph reports HEALTH_OK for a mgr-module check whose severity it did not recognize,
+        # and a check ceph itself calls OK is nothing to refuse a rolling restart over.
+        if ($severity eq 'HEALTH_OK') {
+            push @ignored, $name;
+            return;
         }
-        $cluster_flags = { map { $_ => 1 } split(/,/, $dump->{flags} // '') };
-        return $cluster_flags;
+
+        $worst = $severity
+            if !defined($worst)
+            || $HEALTH_SEVERITY_RANK{$severity} > $HEALTH_SEVERITY_RANK{$worst};
+
+        $blocking->{$name} = $severity;
+        push @blockers, "$name: $msg";
+        push @error_blockers, "$name: $msg" if $severity eq 'HEALTH_ERR';
     };
 
     for my $name (sort keys %$checks) {
-        next if $BENIGN_HEALTH_CHECKS{$name};
+        next if ref($checks->{$name}) ne 'HASH';
+
+        if ($BENIGN_HEALTH_CHECKS{$name}) {
+            push @ignored, $name;
+            next;
+        }
 
         if ($name eq 'OSDMAP_FLAGS') {
-            my $flags = $get_cluster_flags->();
-            if ($cluster_flags_err) {
-                push @blockers,
-                    "OSDMAP_FLAGS: could not fetch cluster flags to evaluate"
-                    . " allowlist: $cluster_flags_err";
-                next;
+            my ($safe, $bad, $err) = osdmap_flags_verdict($rados);
+            if ($err) {
+                $add_blocker->(
+                    $name, "could not fetch cluster flags to evaluate allowlist: $err",
+                );
+            } elsif ($safe) {
+                push @ignored, $name;
+            } else {
+                $add_blocker->(
+                    $name,
+                    "cluster-wide flag(s) interfering with rolling restart: "
+                        . join(', ', @$bad),
+                );
             }
-            my @bad = grep { !$BENIGN_OSDMAP_FLAGS{$_} } sort keys %$flags;
-            next if !@bad;
-            push @blockers,
-                "OSDMAP_FLAGS: cluster-wide flag(s) interfering with rolling"
-                . " restart: "
-                . join(', ', @bad);
             next;
         }
 
         # Ceph leaves muted checks out of the cluster status, so do the same here. Stays below
         # the OSDMAP_FLAGS branch, as muting that check must not hide a nodown or noup flag.
-        next if $checks->{$name}->{muted};
+        if ($checks->{$name}->{muted}) {
+            push @ignored, "$name (muted in ceph)";
+            next;
+        }
 
-        my $msg = $checks->{$name}->{summary}->{message} // 'no message';
-        push @blockers, "$name: $msg";
+        $add_blocker->($name, $checks->{$name}->{summary}->{message} // 'no message');
     }
 
-    return (0, 'HEALTH_ERR', \@blockers) if $status eq 'HEALTH_ERR';
+    return ($worst, \@blockers, \@ignored, \@error_blockers, $blocking);
+}
 
-    # HEALTH_WARN
-    return (1, $status, []) if !@blockers;
-    return ($force_warn ? 1 : 0, $status, \@blockers);
+# Returns ($acceptable, $severity, \@blocker_messages, \@ignored_check_names). The severity
+# describes the checks that still block, not the cluster, so a HEALTH_ERR cluster whose firing
+# checks are all ignored comes back as HEALTH_OK. $force_warn relaxes only the HEALTH_WARN path.
+sub check_health_acceptable {
+    my ($rados, $force_warn) = @_;
+
+    my $health = eval { $rados->mon_command({ prefix => 'health' }) };
+    return (0, 'HEALTH_FETCH_FAIL', ["could not get ceph health: " . ($@ || 'no data')], [])
+        if $@ || ref($health) ne 'HASH';
+
+    my ($worst, $blockers, $ignored) = classify_health_checks($rados, $health);
+
+    return (1, 'HEALTH_OK', [], $ignored) if !defined($worst);
+    return (0, 'HEALTH_ERR', $blockers, $ignored) if $worst eq 'HEALTH_ERR';
+
+    return ($force_warn ? 1 : 0, 'HEALTH_WARN', $blockers, $ignored);
 }
 
 # Wraps Ceph's '$type ok-to-stop' mon command and returns ($safe, $message).
