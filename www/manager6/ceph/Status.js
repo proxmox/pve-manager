@@ -1,6 +1,16 @@
 Ext.define('pve-ceph-warnings', {
     extend: 'Ext.data.Model',
-    fields: ['id', 'summary', 'detail', 'severity', 'muted'],
+    fields: [
+        'id',
+        'summary',
+        'detail',
+        'severity',
+        'muted',
+        'canMute',
+        'muteValue',
+        'muteIcon',
+        'muteLabel',
+    ],
     idProperty: 'id',
 });
 
@@ -45,6 +55,41 @@ const CEPHX_CIPHER_HOWTO = {
             ' clears on its own about three hours after that switched over, which the last' +
             ' step of the migration does.',
     ),
+};
+
+// The Mute/Unmute button lives in the detail of the row that reports the check, which is
+// template markup rather than a component, so the grid catches its events and the check is
+// read back off the button.
+let cephHealthMuteAction = function (target) {
+    let code = target.getAttribute('data-code');
+    let panel = Ext.Component.from(target)?.up('pveNodeCephStatus');
+    let reload = () => panel?.store.load();
+
+    if (target.getAttribute('data-mute') === '1') {
+        Ext.create('PVE.ceph.HealthMute', {
+            code: code,
+            autoShow: true,
+            listeners: { close: reload },
+        });
+        return;
+    }
+
+    Ext.Msg.confirm(
+        gettext('Confirm'),
+        Ext.String.format(gettext("Unmute health check '{0}'?"), code),
+        function (btn) {
+            if (btn !== 'yes') {
+                return;
+            }
+            Proxmox.Utils.API2Request({
+                url: `/cluster/ceph/health-mute/${code}`,
+                method: 'PUT',
+                params: { value: 0 },
+                failure: (response) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+                success: reload,
+            });
+        },
+    );
 };
 
 Ext.define('PVE.node.CephStatus', {
@@ -126,6 +171,14 @@ Ext.define('PVE.node.CephStatus', {
                     viewConfig: {
                         enableTextSelection: true,
                         listeners: {
+                            // The button sits in the row body, which is template markup rather
+                            // than a component, so the view catches its clicks and the check is
+                            // read back off the button.
+                            click: {
+                                element: 'el',
+                                delegate: '.pve-ceph-warning-action',
+                                fn: (e, target) => cephHealthMuteAction(target),
+                            },
                             collapsebody: function (rowNode, record) {
                                 record.set('expanded', false);
                                 record.commit();
@@ -149,6 +202,9 @@ Ext.define('PVE.node.CephStatus', {
                     },
                     updateHealth: function (health) {
                         let checks = health.checks || {};
+                        // muting needs Sys.Modify, while this panel only needs an audit
+                        // privilege, so an audit user must not be offered the action
+                        let canMute = !!Ext.state.Manager.get('GuiCap')?.dc['Sys.Modify'];
 
                         let checkRecords = Object.keys(checks)
                             .sort()
@@ -162,7 +218,11 @@ Ext.define('PVE.node.CephStatus', {
                                         .trimStart(),
                                     severity: check.severity,
                                     muted: !!check.muted,
+                                    canMute: canMute,
                                 };
+                                data.muteValue = data.muted ? 0 : 1;
+                                data.muteIcon = data.muted ? 'fa-bell' : 'fa-bell-slash';
+                                data.muteLabel = data.muted ? gettext('Unmute') : gettext('Mute');
                                 let howto = CEPHX_CIPHER_HOWTO[key];
                                 if (howto) {
                                     // ahead of ceph's own detail, which would push this out of view
@@ -272,6 +332,22 @@ Ext.define('PVE.node.CephStatus', {
                                 '<pre class="pve-ceph-warning-detail {detailsCls}">',
                                 '{detail:htmlEncode}',
                                 '</pre>',
+                                '<tpl if="canMute">',
+                                '<div class="pve-ceph-warning-actions">',
+                                // ExtJS' own button markup, so that both themes style it
+                                '<a class="x-btn x-unselectable x-btn-default-toolbar-small',
+                                ' pve-ceph-warning-action" role="button"',
+                                ' data-code="{id:htmlEncode}" data-mute="{muteValue}">',
+                                '<span class="x-btn-wrap x-btn-wrap-default-toolbar-small">',
+                                '<span class="x-btn-button x-btn-button-default-toolbar-small',
+                                ' x-btn-button-center x-btn-text x-btn-icon x-btn-icon-left">',
+                                '<span class="x-btn-icon-el x-btn-icon-el-default-toolbar-small',
+                                ' fa {muteIcon}"></span>',
+                                '<span class="x-btn-inner x-btn-inner-default-toolbar-small">',
+                                '{muteLabel:htmlEncode}',
+                                '</span></span></span></a>',
+                                '</div>',
+                                '</tpl>',
                             ],
                         },
                     ],

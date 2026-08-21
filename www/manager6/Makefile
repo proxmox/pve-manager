@@ -229,6 +229,7 @@ JSSRC= 							\
 	ceph/Config.js					\
 	ceph/Crush.js					\
 	ceph/FS.js					\
+	ceph/HealthMute.js				\
 	ceph/Log.js					\
 	ceph/Monitor.js					\
 	ceph/OSD.js					\
