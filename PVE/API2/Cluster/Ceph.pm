@@ -45,6 +45,7 @@ __PACKAGE__->register_method({
 
         my $result = [
             { name => 'flags' },
+            { name => 'health-mute' },
             { name => 'metadata' },
             { name => 'restart-bulk' },
             { name => 'status' },
@@ -1057,6 +1058,158 @@ __PACKAGE__->register_method({
             prefix => "osd $cmd",
             key => $param->{flag},
         });
+
+        return undef;
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'health_mute_index',
+    path => 'health-mute',
+    method => 'GET',
+    description => "Get the currently muted Ceph health checks.",
+    protected => 1,
+    permissions => {
+        check => ['perm', '/', ['Sys.Audit', 'Datastore.Audit'], any => 1],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {},
+    },
+    returns => {
+        type => 'array',
+        items => {
+            type => 'object',
+            properties => {
+                code => {
+                    description => "The muted health check.",
+                    type => 'string',
+                },
+                summary => {
+                    description => "What the check reports.",
+                    type => 'string',
+                    optional => 1,
+                },
+                ttl => {
+                    description => "When the mute expires. Absent if it does not.",
+                    type => 'string',
+                    optional => 1,
+                },
+                sticky => {
+                    description => "Whether the mute survives the check getting worse.",
+                    type => 'boolean',
+                },
+            },
+        },
+    },
+    code => sub {
+        my ($param) = @_;
+
+        PVE::Ceph::Tools::check_ceph_configured();
+
+        my $rados = PVE::RADOS->new();
+        # 'detail' would only add the per-check entity lists, which can be huge and are not
+        # used here; the mutes come with any json formatted health reply
+        my $health = $rados->mon_command({ prefix => 'health', format => 'json' });
+
+        my $res = [];
+        for my $mute ((ref($health->{mutes}) eq 'ARRAY' ? $health->{mutes} : [])->@*) {
+            next if !defined($mute->{code});
+            push @$res,
+                {
+                    code => $mute->{code},
+                    sticky => $mute->{sticky} ? 1 : 0,
+                    defined($mute->{summary}) ? (summary => $mute->{summary}) : (),
+                    defined($mute->{ttl}) ? (ttl => $mute->{ttl}) : (),
+                };
+        }
+
+        return $res;
+    },
+});
+
+my $CEPH_TTL_UNITS = join(
+    '|', qw(
+        s sec seconds? m min minutes? h hr hours? d days? w wk weeks? mo months? y yr years?
+    ),
+);
+
+__PACKAGE__->register_method({
+    name => 'health_mute',
+    path => 'health-mute/{code}',
+    method => 'PUT',
+    description => "Mute or unmute a Ceph health check. A muted check no longer counts towards"
+        . " the cluster status, but stays visible and keeps being evaluated.",
+    protected => 1,
+    permissions => {
+        check => ['perm', '/', ['Sys.Modify']],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            code => {
+                description => "The health check to mute, as reported by 'ceph health', for"
+                    . " example 'AUTH_INSECURE_CLIENT_KEY_TYPE'.",
+                type => 'string',
+                pattern => '[A-Z][A-Z0-9_]+',
+                maxLength => 64,
+            },
+            value => {
+                description => "Whether to mute (true) or unmute (false) the check.",
+                type => 'boolean',
+            },
+            ttl => {
+                description => "How long the mute lasts, for example '2h', '3d' or '1w'."
+                    . " Without it the mute has no expiry. Only used when muting.",
+                type => 'string',
+                # Ceph accepts a sequence of amount and unit pairs, so '1d12h' and '1d 12h'
+                # are both valid. Spaces and tabs only, as '\s' would also let a newline
+                # through; the web interface trims the value before it gets here.
+                pattern => "\\d+[ \\t]*(?:${CEPH_TTL_UNITS})"
+                    . "(?:[ \\t]*\\d+[ \\t]*(?:${CEPH_TTL_UNITS}))*(?!\\n)",
+                optional => 1,
+            },
+            sticky => {
+                description => "Keep the mute even when the check gets worse. Without this a"
+                    . " mute clears itself as soon as the number of affected items grows,"
+                    . " which brings the check back to attention. Only used when muting.",
+                type => 'boolean',
+                optional => 1,
+                default => 0,
+            },
+        },
+    },
+    returns => { type => 'null' },
+    code => sub {
+        my ($param) = @_;
+
+        PVE::Ceph::Tools::check_ceph_configured();
+
+        my $rados = PVE::RADOS->new();
+
+        if (!$param->{value}) {
+            $rados->mon_command({ prefix => 'health unmute', code => $param->{code} });
+            return undef;
+        }
+
+        my $cmd = { prefix => 'health mute', code => $param->{code} };
+        $cmd->{ttl} = $param->{ttl} if defined($param->{ttl});
+        $cmd->{sticky} = JSON::true if $param->{sticky};
+
+        # Ceph refuses a check that is not currently raised, and a duration that works out to
+        # zero. Both are the caller's mistake rather than a server fault, so map the errno.
+        # mon_command drops it, hence mon_cmd with the raw-result flag.
+        my $res = $rados->mon_cmd($cmd, 1);
+        my $rc = $res->{return_code} // 0;
+        if ($rc == -2) {
+            raise_param_exc({
+                code => "cannot mute '$param->{code}', ceph does not currently report it",
+            });
+        } elsif ($rc == -22) {
+            raise_param_exc({ ttl => "not a usable duration" });
+        } elsif ($rc != 0) {
+            die "could not mute '$param->{code}': " . ($res->{status} // "error $rc") . "\n";
+        }
 
         return undef;
     },
