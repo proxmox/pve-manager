@@ -5,7 +5,7 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-auth test-custom-cpu-models
+check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-auth test-ceph-key-migration test-custom-cpu-models
 
 .PHONY: test-balloon
 test-balloon:
@@ -39,6 +39,10 @@ test-ceph-health:
 .PHONY: test-ceph-auth
 test-ceph-auth:
 	./CephAuth_test.pl
+
+.PHONY: test-ceph-key-migration
+test-ceph-key-migration:
+	./CephKeyMigration_test.pl
 
 .PHONY: test-custom-cpu-models
 test-custom-cpu-models:

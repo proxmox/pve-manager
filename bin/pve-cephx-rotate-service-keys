@@ -1,0 +1,2228 @@
+#!/usr/bin/perl
+
+use v5.36;
+
+use File::Temp;
+use Getopt::Long;
+use JSON;
+use Digest::SHA qw(sha256_hex);
+use MIME::Base64 qw(decode_base64);
+use Term::ANSIColor;
+
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::SSHInfo;
+use PVE::Tools qw(file_get_contents file_set_contents run_command);
+
+use PVE::Cluster;
+use PVE::Storage;
+
+use PVE::Ceph::Services;
+use PVE::Ceph::Tools;
+use PVE::Ceph::KeyMigration qw(
+    $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
+    $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
+    key_cipher key_fingerprint keyring_text short_version version_has_cipher
+    parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
+    mon_key_rotation_wanted client_keys_requested unfinished_entities touched_daemons
+    plan_client_keys build_plan merge_configured_daemons resume_verdict
+);
+
+my $QUORUM_FEATURE = 'cephx_auth_aes256k'; # every quorum monitor must advertise it first
+
+# on pmxcfs, so another node can continue an interrupted run
+my $STATE_FILE = '/etc/pve/priv/cephx-key-migration.json';
+my $STATE_VERSION = 1;
+
+my $LOCK_SCOPE = 'cephx-service-keys';
+
+# a bootstrap keyring only exists where that daemon type was created, so write where found
+my $TOOL_CLIENT_FILES = {
+    'client.crash' => [
+        { path => PVE::Ceph::Tools::get_config('pve_ceph_crash_key_path'), scope => 'cluster' },
+    ],
+    'client.bootstrap-osd' => [
+        {
+            path => PVE::Ceph::Tools::get_config('ceph_bootstrap_osd_keyring'),
+            scope => 'nodes',
+        },
+    ],
+    'client.bootstrap-mds' => [
+        {
+            path => PVE::Ceph::Tools::get_config('ceph_bootstrap_mds_keyring'),
+            scope => 'nodes',
+        },
+    ],
+};
+
+# PVE::Ceph::Tools names only the two that Proxmox VE itself creates. The others follow the same
+# path, and something outside Proxmox VE may well have put a keyring there.
+for my $type (qw(mgr rbd rbd-mirror rgw)) {
+    $TOOL_CLIENT_FILES->{"client.bootstrap-$type"} = [{
+        path => "/var/lib/ceph/bootstrap-$type/"
+            . PVE::Ceph::Tools::get_config('ccname')
+            . ".keyring",
+        scope => 'nodes',
+    }];
+}
+
+my $TYPE_LABEL = {
+    mon => 'monitor',
+    mgr => 'manager',
+    mds => 'metadata server',
+    osd => 'OSD',
+};
+
+STDOUT->autoflush(1);
+
+my $is_tty = (-t STDOUT);
+my $stdin_is_tty = (-t STDIN);
+my $nodename = PVE::INotify::nodename();
+my $ccname = PVE::Ceph::Tools::get_config('ccname');
+my $pve_mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
+
+my $level2color = {
+    pass => 'green',
+    warn => 'yellow',
+    fail => 'bold red',
+};
+
+my $log_line = sub($level, $line) {
+    my $color = $level2color->{$level} // '';
+    print color($color) if $is_tty && $color ne '';
+
+    print uc($level), ": $line\n";
+
+    print color('reset') if $is_tty;
+};
+
+sub log_pass($line) { $log_line->('pass', $line); }
+sub log_info($line) { $log_line->('info', $line); }
+sub log_warn($line) { $log_line->('warn', $line); }
+sub log_fail($line) { $log_line->('fail', $line); }
+
+sub log_text($line) { print "$line\n"; }
+sub log_step($line) { print "  $line\n"; }
+
+sub log_steps($lines) {
+    my $total = scalar(@$lines);
+    my $shown = $total > 10 ? 10 : $total;
+
+    log_step($lines->[$_]) for 0 .. $shown - 1;
+    log_step("and " . ($total - $shown) . " more") if $total > $shown;
+}
+
+sub log_heading($title) {
+    print "\n";
+    print color('bold') if $is_tty;
+    print "$title\n";
+    print color('reset') if $is_tty;
+}
+
+my $ssh_command = {};
+
+# a blackholed SSH would hang a run holding the cluster lock; no overall timeout, as killing a step
+# mid-rotation is worse
+my $SSH_OPTS = [
+    '-o', 'ConnectTimeout=10', '-o', 'ServerAliveInterval=10', '-o', 'ServerAliveCountMax=3',
+];
+
+my sub node_command($node, $cmd) {
+    return [@$cmd] if $node eq $nodename;
+
+    $ssh_command->{$node} //=
+        PVE::SSHInfo::ssh_info_to_command(PVE::SSHInfo::get_ssh_info($node), $SSH_OPTS->@*);
+
+    return [$ssh_command->{$node}->@*, map { PVE::Tools::shellquote($_) } @$cmd];
+}
+
+my sub node_run($node, $cmd, %opts) {
+    my ($out, $err) = ('', '');
+    my %args = (
+        outfunc => sub { $out .= "$_[0]\n" },
+        errfunc => sub { $err .= "$_[0]\n" },
+    );
+    $args{input} = $opts{input} if defined($opts{input});
+
+    eval { run_command(node_command($node, $cmd), %args) };
+    if (my $failure = $@) {
+        chomp $failure;
+        chomp $err;
+        die "command failed on node '$node': $failure" . (length($err) ? "\n$err\n" : "\n");
+    }
+
+    return $out;
+}
+
+# The program travels on stdin, so a key never reaches a command line, and anything after __END__
+# reaches it as DATA.
+my sub node_perl($node, $code, %opts) {
+    my $input = $code;
+    $input .= "__END__\n" . $opts{payload} if defined($opts{payload});
+
+    return node_run($node, ['perl', '-', ($opts{args} // [])->@*], input => $input);
+}
+
+my $WRITE_FILE = <<'PERL_EOF';
+use strict;
+use warnings;
+my ($path) = @ARGV;
+my $content = do { local $/; <DATA> } // '';
+umask(0077);
+open(my $fh, '>', "$path.new") or die "open '$path.new': $!\n";
+print {$fh} $content or die "write '$path.new': $!\n";
+close($fh) or die "close '$path.new': $!\n";
+my $uid = getpwnam('ceph') // die "no 'ceph' user on this node\n";
+my $gid = getgrnam('ceph') // die "no 'ceph' group on this node\n";
+chown($uid, $gid, "$path.new") == 1 or die "chown '$path.new': $!\n";
+rename("$path.new", $path) or die "rename to '$path': $!\n";
+PERL_EOF
+
+my sub write_node_file($node, $path, $content) {
+    node_perl($node, $WRITE_FILE, args => [$path], payload => $content);
+}
+
+# an unreachable node must not read as 'nothing to update here'
+my sub node_file_exists($node, $path) {
+    my $code = qq{print((-f \$ARGV[0]) ? "present\\n" : "absent\\n");\n};
+    my $out = node_perl($node, $code, args => [$path]);
+    chomp($out //= '');
+    if ($out ne 'present' && $out ne 'absent') {
+        die "could not tell whether '$path' exists on node '$node'\n";
+    }
+
+    return $out eq 'present' ? 1 : 0;
+}
+
+# pmxcfs rejects the chown the script above does, and is mounted on every node anyway
+my sub write_cluster_file($path, $content) {
+    file_set_contents($path, $content, 0600);
+
+    return;
+}
+
+# prints verbatim; parse_probe_output() decides what it means, where it can be tested
+my $PROBE_SCRIPT = <<'PERL_EOF';
+use strict;
+use warnings;
+
+use File::Temp;
+use POSIX ();
+
+# ($output, $error): a command that fails must not come back as empty output, or a missing binary
+# and a label that genuinely carries no key would read the same.
+sub command_output {
+    my (@cmd) = @_;
+
+    # A fork by hand, because the list form of open() has nowhere to put standard error, and going
+    # through a shell to redirect it would need every argument quoted for that shell.
+    my $err = File::Temp->new(TEMPLATE => 'cephx-probe-XXXXXX', TMPDIR => 1);
+    my $pid = open(my $fh, '-|');
+    return (undef, "could not fork for '$cmd[0]': $!") if !defined($pid);
+    if (!$pid) {
+        open(STDERR, '>', $err->filename) or POSIX::_exit(127);
+        exec({ $cmd[0] } @cmd) or POSIX::_exit(127);
+    }
+
+    my $out = do { local $/; <$fh> } // '';
+    my $ok = close($fh);
+    my $status = $?;
+
+    my $reason = '';
+    if (open(my $eh, '<', $err->filename)) {
+        $reason = do { local $/; <$eh> } // '';
+        close($eh);
+    }
+    $reason =~ s/\s+/ /g;
+    $reason =~ s/^ | $//g;
+    $reason = length($reason) ? " ($reason)" : '';
+
+    return (undef, "'$cmd[0]' failed: exit status " . ($status >> 8) . $reason) if !$ok;
+    return (undef, "'$cmd[0]' printed nothing$reason") if $out !~ m/\S/;
+
+    return ($out, undef);
+}
+
+my ($cluster, @specs) = @ARGV;
+for my $spec (@specs) {
+    my ($type, $id) = split(/:/, $spec, 2);
+    my $dir = "/var/lib/ceph/$type/$cluster-$id";
+
+    if (-e "$dir/block") {
+        my ($label, $err) =
+            command_output('ceph-bluestore-tool', 'show-label', '--dev', "$dir/block");
+        if (defined($err)) {
+            print "error $spec $err\n";
+        } else {
+            $label =~ s/\n//g;
+            print "label $spec $label\n";
+        }
+    } elsif (-f "$dir/keyring" && open(my $fh, '<', "$dir/keyring")) {
+        my $sections = join('', map { m/^(\[[^\]]*\])/ ? $1 : () } <$fh>);
+        print "keyring $spec $sections\n";
+    } else {
+        print "store $spec missing\n";
+    }
+}
+PERL_EOF
+
+# keeps the key out of the SSH command line; it is in /proc on the OSD's own node either way
+my $OSD_LABEL_WRITE = <<'PERL_EOF';
+use strict;
+use warnings;
+my ($dir) = @ARGV;
+my $key = <DATA> // '';
+chomp $key;
+die "no key arrived\n" if !length($key);
+exec('ceph-bluestore-tool', 'set-label-key', '--dev', "$dir/block", '--key', 'osd_key',
+    '--value', $key) or die "could not run ceph-bluestore-tool: $!\n";
+PERL_EOF
+
+my sub load_state {
+    return {} if !-f $STATE_FILE;
+
+    my $raw = file_get_contents($STATE_FILE);
+    my $state = eval { decode_json($raw) };
+    die "could not parse the migration state in '$STATE_FILE': $@" if $@;
+
+    die "the migration state in '$STATE_FILE' was written by a newer version of this"
+        . " script, refusing to continue\n"
+        if ($state->{version} // 0) > $STATE_VERSION;
+
+    return $state;
+}
+
+my sub save_state($state) {
+    $state->{version} = $STATE_VERSION;
+    $state->{updated} = time();
+    $state->{about} =
+        "Progress and pre-rotation cephx keys of pve-cephx-rotate-service-keys."
+        . " Keep this file until the cluster is confirmed healthy, it is the only record of"
+        . " the keys the daemons used before.";
+
+    file_set_contents($STATE_FILE, JSON->new->canonical->pretty->encode($state));
+}
+
+my sub auth_entry($rados, $entity) {
+    my $res = $rados->mon_command({ prefix => 'auth get', entity => $entity, format => 'json' });
+    die "unexpected answer to 'auth get $entity'\n" if ref($res) ne 'ARRAY' || !@$res;
+    die "'auth get $entity' returned no key\n" if !defined($res->[0]->{key});
+
+    return $res->[0];
+}
+
+my sub collect_cluster_info($rados) {
+    my $info = {};
+
+    my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
+    die "could not read the monitor map\n" if ref($mon_dump) ne 'HASH';
+
+    $info->{fsid} = $mon_dump->{fsid} // '';
+    $info->{service_cipher} = $mon_dump->{auth_service_cipher}->{name} // 'unknown';
+    $info->{preferred_cipher} = $mon_dump->{auth_preferred_cipher}->{name} // 'unknown';
+    $info->{allowed_ciphers} = [map { $_->{name} } @{ $mon_dump->{auth_allowed_ciphers} // [] }];
+    $info->{monmap_mons} = [sort map { $_->{name} } @{ $mon_dump->{mons} // [] }];
+
+    my $quorum = $rados->mon_command({ prefix => 'quorum_status', format => 'json' });
+    die "could not read the monitor quorum status\n" if ref($quorum) ne 'HASH';
+
+    $info->{quorum} = [sort @{ $quorum->{quorum_names} // [] }];
+    $info->{quorum_features} = [@{ $quorum->{features}->{quorum_mon} // [] }];
+
+    my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
+    die "could not read the cluster health\n" if ref($health) ne 'HASH';
+
+    my $checks = $health->{checks} // {};
+
+    my $insecure = {};
+    for my $detail (@{ $checks->{AUTH_INSECURE_SERVICE_KEY_TYPE}->{detail} // [] }) {
+        my $message = $detail->{message} // '';
+        $insecure->{$1} = $2 if $message =~ m/^entity (\S+) using insecure key type: (\S+)$/;
+    }
+    $info->{insecure_entities} = $insecure;
+
+    # A daemon that is down is missing from 'ceph <type> metadata', but its key still has to be
+    # migrated or the service ticket switch at the end refuses. pvestatd broadcasts what every node
+    # has configured, so one that is merely stopped is still found and rotated where it lies.
+    my $configured = {};
+    eval {
+        PVE::Cluster::cfs_update();
+        for my $type (qw(mon mgr mds osd)) {
+            my $by_node = PVE::Ceph::Services::get_cluster_service($type) // {};
+            for my $node (sort keys %$by_node) {
+                my $ids = $by_node->{$node};
+                next if ref($ids) ne 'HASH';
+                for my $id (sort keys %$ids) {
+                    # without a data directory there is nowhere to put a key
+                    next if !$ids->{$id}->{direxists};
+                    $configured->{$type}->{"$id"} = $node;
+                }
+            }
+        }
+    };
+
+    $info->{daemons} = {};
+    for my $type (qw(mon mgr mds osd)) {
+        my $metadata = $rados->mon_command({ prefix => "$type metadata", format => 'json' });
+        die "could not read the '$type metadata' of the cluster\n" if ref($metadata) ne 'ARRAY';
+
+        my $daemons = [];
+        for my $entry (@$metadata) {
+            my $id = $entry->{name} // $entry->{id};
+            next if !defined($id);
+            push @$daemons,
+                {
+                    type => $type,
+                    id => "$id",
+                    entity => $type eq 'mon' ? 'mon.' : "$type.$id",
+                    node => $entry->{hostname},
+                    version => $entry->{ceph_version_short} // $entry->{ceph_version},
+                };
+        }
+
+        merge_configured_daemons($daemons, $type, $configured->{$type});
+
+        my $numeric = !grep { $_->{id} !~ m/^\d+$/ } @$daemons;
+        $info->{daemons}->{$type} = [
+            $numeric
+            ? (sort { $a->{id} <=> $b->{id} } @$daemons)
+            : (sort { $a->{id} cmp $b->{id} } @$daemons)
+        ];
+    }
+
+    # 'auth ls' drops a staged pending key; only the JSON export keeps it apart from the active one
+    my $exported = $rados->mon_command({ prefix => 'auth export', format => 'json' });
+    die "could not export the cephx auth database\n" if ref($exported) ne 'ARRAY';
+
+    $info->{exported} = { map { $_->{entity} => $_ } @$exported };
+
+    # Ceph cannot flag 'mon.' until it is rotated in: it lives in the monitor keyrings, and the
+    # checks only read the auth database
+    $info->{mon_key_in_auth_db} = $info->{exported}->{'mon.'} ? 1 : 0;
+
+    return $info;
+}
+
+# Every file PVE keeps a client key in, as { <entity> => [ { path, format, scope, store, kernel } ]
+# }. 'scope' is 'cluster' or 'nodes', and 'kernel' marks one an in-kernel client reads.
+my sub client_key_files {
+    my $files = {
+        $ADMIN_ENTITY => [
+            {
+                path => PVE::Ceph::Tools::get_config('pve_ckeyring_path'),
+                format => 'keyring',
+                scope => 'cluster',
+            },
+            # left by 'pveceph init'. Nothing reads it, but it is the most privileged key in the
+            # cluster
+            {
+                path => PVE::Ceph::Tools::get_config('ceph_cfgpath') =~
+                    s/\.conf$/.client.admin.keyring/r,
+                format => 'keyring',
+                scope => 'nodes',
+            },
+            # holds 'mon.' too, which 'pveceph mon create' feeds to --mkfs, so merge rather than
+            # overwrite
+            {
+                path => $pve_mon_keyring,
+                format => 'merge',
+                scope => 'cluster',
+            },
+        ],
+    };
+
+    for my $entity (sort keys %$TOOL_CLIENT_FILES) {
+        push $files->{$entity}->@*, { %$_, format => 'keyring' }
+            for $TOOL_CLIENT_FILES->{$entity}->@*;
+    }
+
+    my $cfg = eval { PVE::Storage::config() };
+    die "could not read the storage configuration: $@" if $@;
+
+    for my $storeid (sort keys %{ $cfg->{ids} // {} }) {
+        my $scfg = $cfg->{ids}->{$storeid};
+        my $type = $scfg->{type} // '';
+        next if $type ne 'rbd' && $type ne 'cephfs';
+
+        # a 'monhost' storage points at another cluster, so its key is not ours to rotate
+        next if defined($scfg->{monhost});
+
+        my $secret = $type eq 'cephfs' ? 1 : 0;
+        push $files->{ 'client.' . ($scfg->{username} // 'admin') }->@*, {
+            path => "/etc/pve/priv/ceph/${storeid}." . ($secret ? 'secret' : 'keyring'),
+            format => $secret ? 'secret' : 'keyring',
+            scope => 'cluster',
+            store => $storeid,
+            # a container root disk goes through 'rbd map' whether or not 'krbd' is set
+            kernel => (
+                ($secret && !$scfg->{fuse})
+                    || (!$secret && ($scfg->{krbd} || ($scfg->{content} // {})->{rootdir}))
+            ) ? 1 : 0,
+        };
+    }
+
+    # node-scoped copies last: one can fail on an unreachable node, after the shared ones are
+    # through
+    for my $entity (keys %$files) {
+        my $list = $files->{$entity};
+        $files->{$entity} = [
+            (grep { $_->{scope} ne 'nodes' } @$list), (grep { $_->{scope} eq 'nodes' } @$list),
+        ];
+    }
+
+    return $files;
+}
+
+# Every node, not just those running daemons: any of them can mount a storage whose key changes.
+# No cluster-wide broadcast carries the kernel, and '/nodes/<node>/status' would mean an API ticket
+# and pveproxy for the one command a run that touches no kernel-read client key never issues.
+my sub collect_node_kernels($opts) {
+    PVE::Cluster::cfs_update();
+    my $nodes = PVE::Cluster::get_nodelist() // [];
+    die "could not read the cluster node list\n" if !scalar(@$nodes);
+
+    my $kernels = {};
+    for my $node (sort @$nodes) {
+        my $release = eval { node_run($node, ['uname', '-r']) };
+        if (my $err = $@) {
+            # '--force' rotates whatever the kernels say, so one that cannot be read must not end
+            # the run: it is reported as unknown, which counts as unsupported.
+            die "could not read the kernel release of node '$node': $err" if !$opts->{force};
+            $kernels->{$node} = { release => 'unknown', supported => 0 };
+            next;
+        }
+        chomp($release //= '');
+        $kernels->{$node} = {
+            release => $release,
+            supported => PVE::Ceph::Services::kernel_supports_aes256k($release) ? 1 : 0,
+        };
+    }
+
+    return $kernels;
+}
+
+my sub pve_mon_keyring_key {
+    return undef if !-f $pve_mon_keyring;
+
+    my $content = eval { file_get_contents($pve_mon_keyring) } // '';
+    return $1 if $content =~ m/^\[mon\.\]\s*\n\s*key\s*=\s*(\S+)/m;
+
+    return undef;
+}
+
+my sub mon_key_hint($info, $opts) {
+    return if !mon_key_needs_rotation($info);
+
+    if ($opts->{'rotate-mon-key'}) {
+        my $only = $opts->{only};
+        if ($only && !$only->{mon}) {
+            log_warn("'--rotate-mon-key' was passed, but the scope given with '--only' does not"
+                . " include the monitors, so the shared 'mon.' key was left alone. Drop '--only'"
+                . " or add 'mon' to it to rotate that key.");
+        }
+        return;
+    }
+
+    log_info("The shared 'mon.' key still uses the old cipher. Ceph does not report it, as it lives"
+        . " in the monitor keyrings rather than in the auth database. Pass '--rotate-mon-key' to"
+        . " rotate it too, which restarts one monitor at a time.");
+
+    return;
+}
+
+# the data directory is a tmpfs rebuilt from the label, so write the label first and prime from it.
+# A stopped OSD releases its device slowly, hence the retries
+my sub write_osd_label_key($node, $id, $key) {
+    my $dir = "/var/lib/ceph/osd/$ccname-$id";
+    my $written = 0;
+    my $error;
+    for my $delay (0, 2, 5, 10, 30) {
+        sleep($delay) if $delay;
+        $written = eval {
+            node_perl($node, $OSD_LABEL_WRITE, args => [$dir], payload => "$key\n");
+            1;
+        };
+        last if $written;
+        $error = $@;
+        # an abort has to travel: carrying on would continue without the 'noout'
+        die $error if $error =~ m/aborting (?:on signal|bulk-restart)/;
+    }
+    if (!$written) {
+        die "could not write the key into the bluestore label of 'osd.$id': $error";
+    }
+
+    my $probe = parse_probe_output(
+        node_perl($node, $PROBE_SCRIPT, args => [$ccname, "osd:$id"]),
+    );
+    die "the bluestore label of 'osd.$id' does not hold the key that was just written to it\n"
+        if ($probe->{"osd:$id"}->{'label-key'} // '') ne $key;
+
+    node_run(
+        $node,
+        [
+            'ceph-bluestore-tool',
+            'prime-osd-dir',
+            '--dev',
+            "$dir/block",
+            '--path',
+            $dir,
+            '--no-mon-config',
+        ],
+    );
+    node_run($node, ['chown', '-R', 'ceph:ceph', $dir]);
+
+    return;
+}
+
+# 'ceph versions' names the running build, not the installed one. pvestatd broadcasts the installed
+# build of every node, and dpkg pins each daemon package to 'ceph-base (= <version>)', which pins
+# 'ceph-common' in turn, so the broadcast is that daemon's binary too.
+my sub installed_versions() {
+    PVE::Cluster::cfs_update();
+    my $broadcast = PVE::Ceph::Services::get_ceph_versions() // {};
+
+    return { map { $_ => $broadcast->{$_}->{version}->{str} } keys %$broadcast };
+}
+
+my sub probe_nodes($info, $plan) {
+    my $installed = installed_versions();
+    my $specs = {};
+    for my $daemon (touched_daemons($info, $plan)) {
+        if (!defined($daemon->{node}) || $daemon->{node} eq '') {
+            die "the '$daemon->{type}' daemon '$daemon->{id}' does not report a host name, so"
+                . " there is no way to tell which node to work on\n";
+        }
+        push $specs->{ $daemon->{node} }->@*, "$daemon->{type}:$daemon->{id}";
+    }
+
+    my $by_node = {};
+    for my $node (sort keys %$specs) {
+        log_info("asking node '$node' about its daemon keyrings and bluestore labels");
+
+        my $output =
+            eval { node_perl($node, $PROBE_SCRIPT, args => [$ccname, sort $specs->{$node}->@*]); };
+        die "could not reach node '$node': $@" if $@;
+
+        $by_node->{$node} = parse_probe_output($output);
+    }
+
+    # every daemon is judged on its Ceph version, only the touched ones on their data directory
+    for my $type (qw(mon mgr mds osd)) {
+        $_->{binary} = $installed->{ $_->{node} } for $info->{daemons}->{$type}->@*;
+    }
+    for my $daemon (touched_daemons($info, $plan)) {
+        my $probe = $by_node->{ $daemon->{node} }->{"$daemon->{type}:$daemon->{id}"} // {};
+        $daemon->{store} = $probe->{store};
+        $daemon->{error} = $probe->{error};
+        $daemon->{sections} = $probe->{sections};
+        $daemon->{'label-whoami'} = $probe->{'label-whoami'};
+        $daemon->{'label-fsid'} = $probe->{'label-fsid'};
+    }
+
+    return;
+}
+
+# monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
+my sub preflight_cluster($info, $opts, $recovered_count, $state) {
+    my @unfinished = unfinished_entities($state);
+
+    my $has_feature = grep { $_ eq $QUORUM_FEATURE } $info->{quorum_features}->@*;
+    my $allows_cipher = grep { $_ eq $CIPHER } $info->{allowed_ciphers}->@*;
+    my $insecure = $info->{insecure_entities};
+
+    if (!$has_feature) {
+        if (!$allows_cipher) {
+            log_info("This cluster is not ready for the migration yet: its monitors do not support"
+                . " the '$CIPHER' cipher. Upgrade Ceph on all nodes first.");
+            return 0;
+        }
+        log_fail("Not every monitor in the quorum supports the '$CIPHER' cipher, so they could not"
+            . " agree on a key rotated to it. Upgrade and restart every monitor first.");
+        log_text("Monitors in the quorum: " . join(', ', $info->{quorum}->@*));
+        return -1;
+    }
+
+    if (!$allows_cipher) {
+        log_fail("The monitors support the '$CIPHER' cipher but do not currently allow it. Allow it"
+            . " before any key is rotated to it, with:");
+        log_step("ceph mon set auth_allowed_ciphers "
+            . join(',', $info->{allowed_ciphers}->@*, $CIPHER));
+        return -1;
+    }
+
+    my @not_in_quorum =
+        grep {
+            my $mon = $_;
+            !grep { $_ eq $mon } $info->{quorum}->@*
+        } $info->{monmap_mons}->@*;
+    if (@not_in_quorum) {
+        log_fail("The monitor(s) "
+            . join(', ', @not_in_quorum)
+            . " are in the monitor map but not in the quorum, and one that is down never learns"
+            . " a rotated 'mon.' key. Bring every monitor back into the quorum first.");
+        return -1;
+    }
+
+    if (
+        !mon_keyring_stale($info)
+        && !mon_key_rotation_wanted($info, $opts)
+        && !client_keys_requested($opts)
+        && !%$insecure
+        && $info->{service_cipher} eq $CIPHER
+        && !$opts->{'wipe-rotating-keys'}
+        && !$recovered_count
+        && !@unfinished
+    ) {
+        log_pass("This cluster does not need the migration: every service key already uses the"
+            . " '$CIPHER' cipher and the monitors hand out service tickets with it.");
+        mon_key_hint($info, $opts);
+        return 0;
+    }
+
+    my @unknown = grep { $_ !~ m/^(?:mon\.$|(?:mgr|mds|osd)\.)/ } sort keys %$insecure;
+    if (@unknown) {
+        log_fail("Ceph reports insecure keys for the service entities "
+            . join(', ', @unknown)
+            . ", which belong to no daemon this script handles. Migrate them by hand.");
+        return -1;
+    }
+
+    my $known = {};
+    for my $type (qw(mon mgr mds osd)) {
+        $known->{ $_->{entity} } = 1 for $info->{daemons}->{$type}->@*;
+    }
+    my @orphaned = grep { !$known->{$_} } sort keys %$insecure;
+    if (@orphaned) {
+        log_fail("Ceph reports insecure keys for "
+            . join(', ', @orphaned)
+            . ", but no running daemon claims them, so there is no keyring to update. Start"
+            . " those daemons, or remove the entities with 'ceph auth rm <entity>'.");
+        return -1;
+    }
+
+    # needs_rotation() skips an entity with no auth entry, which would pass it over in silence
+    my @no_auth_entry =
+        grep { !$info->{exported}->{$_} }
+        map { $_->{entity} } map { $info->{daemons}->{$_}->@* } @$DAEMON_TYPES;
+    if (@no_auth_entry) {
+        log_fail("These daemons have no entry in the cephx auth database, so this script would"
+            . " skip them without saying so: "
+            . join(', ', @no_auth_entry)
+            . ". Recreate the entity, or remove the daemon.");
+        return -1;
+    }
+
+    my @staged = grep { $info->{exported}->{$_}->{pending_key} } sort keys $info->{exported}->%*;
+    push @staged, 'mon.' if !$info->{mon_key_in_auth_db} && $info->{mon_entry}->{pending_key};
+
+    # Only a key this script staged is resumed by the daemon step. A record for the entity is not
+    # enough on its own: one left behind by an older run would otherwise wave through a key that
+    # something else staged since.
+    @staged = grep {
+        my $key =
+            $_ eq 'mon.'
+            ? $info->{mon_entry}->{pending_key}
+            : $info->{exported}->{$_}->{pending_key};
+        my $verdict = resume_verdict(
+            $state->{live_swap}->{$_},
+            defined($key) ? key_fingerprint($key) : undef,
+        )->{verdict};
+        $verdict ne 'clear' && $verdict ne 'commit';
+    } @staged;
+
+    # A staged key elsewhere is somebody else's half-finished rotation. Saying so is useful, but
+    # refusing over it would block a migration that never touches that entity.
+
+    my $wanted = { map { $_ => 1 } $TOOL_CLIENT_KEYS->@*, $ADMIN_ENTITY };
+    my @elsewhere = grep { m/^client\./ && !$wanted->{$_} } @staged;
+    @staged = grep { !m/^client\./ || $wanted->{$_} } @staged;
+    if (@elsewhere) {
+        log_warn("A pending key is staged for "
+            . join(', ', @elsewhere)
+            . ", which this run does not touch. Resolve it separately with"
+            . " 'ceph auth commit-pending' or 'ceph auth clear-pending'.");
+    }
+
+    if (@staged) {
+        log_fail("A pending key is staged for "
+            . join(', ', @staged)
+            . ". This script cannot rotate a key while one is staged. Compare the"
+            . " 'pending_key' from 'ceph auth get <entity>' with the key the daemon reads:"
+            . " promote it with 'ceph auth commit-pending <entity>' if they match, drop it with"
+            . " 'ceph auth clear-pending <entity>' if not. For an OSD, follow a commit with"
+            . " 'ceph-bluestore-tool prime-osd-dir'.");
+        return -1;
+    }
+
+    return 1;
+}
+
+# daemon_is_up() calls a failed mon command 'not up', and down is what skips the ok-to-stop gate
+my sub daemon_is_running($rados, $type, $id) {
+    return 1 if PVE::Ceph::Services::daemon_is_up($rados, $type, $id);
+
+    return !eval { $rados->mon_command({ prefix => 'health', format => 'json' }); 1 } ? 1 : 0;
+}
+
+# needs probe_nodes() first: 1 go ahead, -1 fix something first
+my sub preflight_nodes($info, $plan, $opts) {
+    # a cipher switch locks out every daemon that cannot speak it, so judge all of them then
+    my @touched = touched_daemons($info, $plan);
+
+    my @judged =
+        $plan->{service_cipher}
+        ? map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd)
+        : @touched;
+
+    my @outdated;
+    for my $daemon (@judged) {
+        if (!$daemon->{recovered} && !$daemon->{down} && !version_has_cipher($daemon->{version})) {
+            push @outdated,
+                "$daemon->{entity} on node '$daemon->{node}' runs "
+                . short_version($daemon->{version});
+        }
+
+        if (!defined($daemon->{binary})) {
+            push @outdated,
+                "$daemon->{entity} on node '$daemon->{node}' reports no installed Ceph version;"
+                . " check that 'pvestatd' runs there";
+        } elsif (!version_has_cipher($daemon->{binary})) {
+            push @outdated,
+                "$daemon->{entity} on node '$daemon->{node}' would restart into "
+                . short_version($daemon->{binary});
+        }
+    }
+
+    my @unusable;
+    for my $daemon (@touched) {
+        my $type = $daemon->{type};
+        my $store = $daemon->{store} // 'unknown';
+
+        if ($store eq 'probe-error') {
+            push @unusable,
+                "the data directory of $daemon->{entity} on node '$daemon->{node}' could not be"
+                . " read: "
+                . ($daemon->{error} // 'no reason given');
+        } elsif ($store eq 'missing' || $store eq 'unknown') {
+            push @unusable,
+                "$daemon->{entity} has neither a keyring file nor a bluestore device under"
+                . " /var/lib/ceph/$type/$ccname-$daemon->{id} on node '$daemon->{node}'";
+        } elsif ($store eq 'block-without-key') {
+            push @unusable,
+                "the bluestore label of $daemon->{entity} on node '$daemon->{node}' carries"
+                . " no 'osd_key', so a rotated key could not be made to survive a reboot";
+        } elsif ($store eq 'block') {
+            # OSD metadata is only as fresh as the last boot; a disk moved since would take the
+            # write
+            my $whoami = $daemon->{'label-whoami'} // '';
+            my $fsid = $daemon->{'label-fsid'} // '';
+
+            if ($whoami ne '' && $whoami ne $daemon->{id}) {
+                push @unusable,
+                    "the bluestore label under /var/lib/ceph/osd/$ccname-$daemon->{id} on node"
+                    . " '$daemon->{node}' belongs to osd.$whoami, not to $daemon->{entity}";
+            }
+
+            if ($fsid ne '' && $fsid ne $info->{fsid}) {
+                push @unusable,
+                    "the bluestore label of $daemon->{entity} on node '$daemon->{node}' belongs"
+                    . " to cluster '$fsid', not to this one";
+            }
+
+            if ($whoami eq '' || $fsid eq '') {
+                push @unusable,
+                    "the bluestore label of $daemon->{entity} on node '$daemon->{node}' does not"
+                    . " say which OSD or cluster it belongs to";
+            }
+        } elsif ($store eq 'file') {
+            my $sections = $daemon->{sections} // [];
+            if (grep { $_ ne $daemon->{entity} } @$sections) {
+                push @unusable,
+                    "the keyring of $daemon->{entity} on node '$daemon->{node}' holds the"
+                    . " unexpected entities "
+                    . join(', ', @$sections);
+            }
+        }
+    }
+
+    if (@outdated) {
+        log_fail("Not every service daemon runs a Ceph release that understands the '$CIPHER'"
+            . " cipher, so a rotated key would lock it out. Upgrade and restart these first:");
+        log_steps(\@outdated);
+        return -1;
+    }
+
+    if (@unusable) {
+        log_fail("The key of at least one daemon cannot be updated where that daemon reads it from,"
+            . " so rotating it would strand the daemon:");
+        log_steps(\@unusable);
+        return -1;
+    }
+
+    # refusing here would be a circle: a daemon an earlier run left down is why health is bad
+    my $restarts_a_monitor = $plan->{mon_key} && !$plan->{mon_repair_only};
+    my $stops_nothing = !$restarts_a_monitor && !$plan->{service_cipher} ? 1 : 0;
+    for my $daemon ($plan->{daemons}->@*) {
+        last if !$stops_nothing;
+        if (daemon_is_running($info->{rados}, $daemon->{type}, $daemon->{id})) {
+            $stops_nothing = 0;
+        }
+    }
+    if ($stops_nothing) {
+        log_info("Nothing in this plan has to be stopped, so the cluster health does not decide"
+            . " whether this run may go ahead.");
+        return 1;
+    }
+
+    my ($health_ok, $severity, $blockers, $ignored) =
+        PVE::Ceph::Services::check_health_acceptable($info->{rados}, $opts->{force}, undef);
+
+    if (@$ignored) {
+        log_info("These health checks are not a reason to stop, they describe the cephx keys"
+            . " this run migrates, or do not affect a rolling restart: "
+            . join(', ', @$ignored));
+    }
+
+    if (!$health_ok) {
+        log_fail("The cluster is not healthy enough to restart daemons one by one, which"
+            . " makes the migration unsafe. Resolve these issues first"
+            . ($severity eq 'HEALTH_WARN' ? ", or pass '--force' to continue anyway" : "")
+            . ":");
+        log_steps($blockers);
+        return -1;
+    }
+    if ($opts->{force} && @$blockers) {
+        log_warn("Continuing past the health warning(s) "
+            . join(', ', @$blockers)
+            . " because '--force' was passed");
+    }
+
+    return 1;
+}
+
+# a stopped mgr or mds drops out of its map, so a plan entry the maps lost was left behind.
+# Registered as daemons so probe_nodes() covers them
+my sub recover_left_behind($info, $state) {
+    my $live = {};
+    for my $type (@$DAEMON_TYPES) {
+        $live->{ $_->{entity} } = 1 for $info->{daemons}->{$type}->@*;
+    }
+
+    my @recovered;
+    for my $entity (sort keys %{ $state->{plan} // {} }) {
+        next if $live->{$entity} || $state->{done}->{$entity};
+        my $saved = $state->{plan}->{$entity};
+        # may have been edited or written by another version, so do not die on an odd entry
+        next if ref($saved) ne 'HASH';
+        next if !$saved->{type} || !grep { $_ eq $saved->{type} } @$DAEMON_TYPES;
+        next if !defined($saved->{id}) || !$saved->{node};
+        # destroyed since: picking it up would only make the preflight ask for an entity nobody
+        # wants
+        if (!$info->{exported}->{$entity}) {
+            log_warn("'$entity' is recorded in '$STATE_FILE' but has no entry in the cephx auth"
+                . " database, so it was destroyed since that run and is skipped. Remove it from"
+                . " that file once the migration is finished.");
+            next;
+        }
+        my $daemon = {
+            entity => $entity,
+            type => $saved->{type},
+            id => $saved->{id},
+            node => $saved->{node},
+            recovered => 1,
+        };
+        push @{ $info->{daemons}->{ $saved->{type} } }, $daemon;
+        push @recovered, $daemon;
+    }
+
+    return \@recovered;
+}
+
+my sub print_plan($info, $plan, $state, $opts) {
+    log_heading("What this is about");
+
+    if (%{ $info->{insecure_entities} }) {
+        log_text("Ceph 19.2.6 and 20.2.4 report every key still on the old '$LEGACY_CIPHER' cipher"
+            . " as insecure, two of those checks as errors, which is why the cluster is in"
+            . " HEALTH_ERR. Nothing is broken meanwhile.");
+    } else {
+        log_text("Ceph 19.2.6 and 20.2.4 report every key still on the old '$LEGACY_CIPHER' cipher"
+            . " as insecure. Ceph reports none of this cluster's service keys on it, though it"
+            . " cannot see the shared 'mon.' key.");
+    }
+    log_text("");
+    my $clients = $plan->{client_keys} // [];
+    my $asked_for_clients = client_keys_requested($opts);
+    my $untouched = [];
+    if (!scalar(@$clients) && $asked_for_clients) {
+        push @$untouched, "the client keys asked for, which need no rotation";
+    } elsif (!scalar(@$clients)) {
+        push @$untouched, "the client keys, '$ADMIN_ENTITY' among them";
+    } elsif (!grep { $_->{entity} eq $ADMIN_ENTITY } @$clients) {
+        # every storage and the command line fall back to it, so its absence is worth a word
+        if ($opts->{'rotate-admin-key'}) {
+            push @$untouched, "'$ADMIN_ENTITY', which needs no rotation";
+        } else {
+            push @$untouched, "'$ADMIN_ENTITY', which '--rotate-admin-key' covers";
+        }
+    }
+    if (!$plan->{mon_key}) {
+        my $only = $opts->{only};
+        my $why = "";
+        if ($opts->{'rotate-mon-key'} && $only && !$only->{mon}) {
+            $why = ", which the scope given with '--only' leaves out";
+        } elsif ($opts->{'rotate-mon-key'}) {
+            $why = ", which already uses the '$CIPHER' cipher";
+        }
+        push @$untouched, "the shared 'mon.' key$why";
+    }
+
+    if (scalar(@$untouched)) {
+        my $why = "";
+        if (!$asked_for_clients) {
+            $why = " Whether a client key can move depends on the clients that use it, which is"
+                . " why those are only rotated when an option asks for it.";
+        }
+        log_text("Not touched by this run: " . join(', and ', @$untouched) . ".$why");
+    }
+
+    log_heading("Plan");
+
+    my $step = 0;
+
+    if ($plan->{mon_key} && $plan->{mon_repair_only}) {
+        $step++;
+        log_text("Step $step: repair the copy of the shared monitor key in $pve_mon_keyring, which"
+            . " 'pveceph mon create' feeds to 'ceph-mon --mkfs', so a monitor created later still"
+            . " starts with a key the cluster accepts. The key itself is not rotated and no"
+            . " monitor is restarted.");
+    } elsif ($plan->{mon_key}) {
+        $step++;
+        log_text("Step $step: rotate the shared monitor key 'mon.'. Ceph does not flag it, as it"
+            . " lives in the monitor keyrings rather than the auth database, but it is the most"
+            . " privileged key in the cluster. Every keyring is written before any monitor"
+            . " restarts, so the quorum is never more than one monitor short.");
+        log_step("monitors, restarted one at a time: "
+            . join(', ', map { "$_->{id} (node $_->{node})" } $info->{daemons}->{mon}->@*));
+    }
+
+    if ($plan->{daemons}->@*) {
+        $step++;
+        my $counts = {};
+        $counts->{ $_->{type} }++ for $plan->{daemons}->@*;
+        my $summary = join(', ',
+            map { "$counts->{$_} $TYPE_LABEL->{$_} daemon(s)" }
+            grep { $counts->{$_} } @$DAEMON_TYPES);
+
+        log_text("");
+        if ($opts->{'restart-daemons'}) {
+            log_text("Step $step: rotate the key of $summary. '--restart-daemons' asks for the slow"
+                . " path: each daemon is stopped, rotated and started again, with Ceph asked"
+                . " before every stop and a blocking error in between stopping the run. The new"
+                . " key is written where the daemon reads it, which is the keyring file for a"
+                . " manager or metadata server and the bluestore label plus a re-primed data"
+                . " directory for an OSD. The 'noout' flag is set for this run's OSDs, and each is"
+                . " marked down while it is stopped.");
+        } else {
+            log_text("Step $step: rotate the key of $summary. The key is swapped while each daemon"
+                . " keeps running, so nothing is stopped and clients stay connected. One that does"
+                . " not take it that way is stopped, rotated and started again, with the same"
+                . " checks, and the 'noout' flag is set for this run's OSDs either way because"
+                . " that fallback can happen at any point. The new key is written where the daemon"
+                . " reads it: the keyring file in its data directory, and for an OSD the bluestore"
+                . " label that directory is rebuilt from on every boot.");
+            my @down = map { $_->{entity} } grep { $_->{down} } $plan->{daemons}->@*;
+            if (@down) {
+                log_text("  Not running right now, so the key is written where it lies and the"
+                    . " daemon is left stopped: "
+                    . join(', ', @down)
+                    . ".");
+            }
+            if (grep { $_->{type} eq 'mgr' } $plan->{daemons}->@*) {
+                log_text("  Only the active manager can take a key while running, so a standby"
+                    . " always takes that fallback.");
+            }
+            log_text("  A pending key takes its cipher from 'auth_preferred_cipher' and nothing can"
+                . " ask for one explicitly, so this run points that setting at '$CIPHER' and puts"
+                . " it back afterwards. A client key created meanwhile gets it too.");
+        }
+        log_step("in this order: "
+            . join(', ', map { "$_->{entity} (node $_->{node})" } $plan->{daemons}->@*));
+    }
+
+    if (scalar(@{ $plan->{client_keys} // [] })) {
+        $step++;
+        log_text("");
+        log_text("Step $step: rotate the client key(s) you asked for. Each is rotated and written"
+            . " wherever Proxmox VE keeps a copy; copies elsewhere are up to you.");
+        for my $item ($plan->{client_keys}->@*) {
+            my $where =
+                scalar($item->{files}->@*)
+                ? join(', ', map { $_->{path} } $item->{files}->@*)
+                : 'no copy outside the auth database';
+            log_step("$item->{entity} ($item->{reason}): $where");
+        }
+        my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
+        log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
+    }
+
+    if ($plan->{service_cipher}) {
+        $step++;
+        log_text("");
+        log_text("Step $step: tell the monitors to hand out service tickets with the new cipher,"
+            . " which clears the second HEALTH_ERR check. Old clients never decrypt those tickets,"
+            . " so they are unaffected, but every service daemon has to be migrated first.");
+        log_step("ceph mon set auth_service_cipher $CIPHER");
+    }
+
+    if ($opts->{'wipe-rotating-keys'}) {
+        $step++;
+        log_text("");
+        log_text("Step $step: wipe the rotating service keys, as '--wipe-rotating-keys' was passed."
+            . " Upstream advises against it: skipping it only means the last warning clears once"
+            . " the current tickets expire, normally within a few hours.");
+        log_step("ceph auth wipe-rotating-service-keys");
+    }
+
+    log_text("");
+    # go back to the recorded value, not to what the cluster reports now
+    my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
+    my $restore =
+        $opts->{'restart-daemons'} || !scalar($plan->{daemons}->@*)
+        ? "Left untouched"
+        : "Put back to '$goes_back_to' at the end of this run";
+    log_text("$restore: 'auth_preferred_cipher', currently '"
+        . $info->{preferred_cipher}
+        . "', which decides the cipher of every key created without an explicit '--key-type'."
+        . " While it stays '$LEGACY_CIPHER', new client keys stay usable by kernel clients that"
+        . " do not know '$CIPHER'.");
+    if ($info->{preferred_cipher} eq $CIPHER) {
+        log_warn("'auth_preferred_cipher' is already '$CIPHER', so client keys created from now on"
+            . " will not work with kernel clients that do not know that cipher");
+    }
+
+    log_text("");
+    log_text("The key every daemon uses right now is written to $STATE_FILE before anything is"
+        . " rotated, together with the progress of the run.");
+
+    if ($state->{created}) {
+        my $rotated = scalar(keys %{ $state->{rotated} // {} });
+        my $done = scalar(grep { m/^(?:mgr|mds|osd)\./ } keys %{ $state->{done} // {} });
+        my $client_count = scalar(grep { m/^client\./ } keys %{ $state->{done} // {} });
+        log_text("");
+        log_info("An earlier run recorded $rotated key(s) rotated, $done daemon(s) and"
+            . " $client_count client key(s) finished. Anything it left unfinished is part of the"
+            . " plan above.");
+    }
+
+    return;
+}
+
+my sub health_gate($rados, $type, $what) {
+    my $errors = PVE::Ceph::Services::get_blocking_health_errors($rados, $type);
+    if (@$errors) {
+        die "the cluster reports a blocking error, stopping before $what:\n  - "
+            . join("\n  - ", @$errors) . "\n";
+    }
+
+    return;
+}
+
+my sub rotate_entity($rados, $state, $entity) {
+    my $before = auth_entry($rados, $entity);
+
+    # trust the marker only as far as the key backs it: one changed since would read as migrated
+    if ($state->{rotated}->{$entity} && (key_cipher($before->{key}) // -1) == $CIPHER_ID) {
+        log_info("the key of '$entity' was already rotated by an earlier run, reusing it");
+        return $before;
+    }
+    if ($state->{rotated}->{$entity}) {
+        log_warn("an earlier run recorded '$entity' as rotated, but its key uses the '"
+            . ($CIPHER_NAMES->{ key_cipher($before->{key}) // -1 } // 'unreadable')
+            . "' cipher now, so it is rotated again");
+    }
+    if ((key_cipher($before->{key}) // -1) == $CIPHER_ID) {
+        log_info("the key of '$entity' already uses the '$CIPHER' cipher, leaving it alone");
+        return $before;
+    }
+
+    # recorded before the rotation, the only way back for a stranded daemon
+    my $type = key_cipher($before->{key});
+    $state->{previous_keys}->{$entity} = {
+        key => $before->{key},
+        cipher => $CIPHER_NAMES->{ $type // -1 } // "type $type",
+        saved => time(),
+    };
+    save_state($state);
+
+    log_info("rotating the key of '$entity' to the '$CIPHER' cipher");
+    my $reply = $rados->mon_command({
+        prefix => 'auth rotate',
+        entity => $entity,
+        key_type => $CIPHER,
+        format => 'json',
+    });
+
+    # 'auth rotate' answers with the new key. Asking again would add a failure point after a change
+    # that cannot be undone, and for 'client.admin' the credential needed to ask is stale by then.
+    my $entry = ref($reply) eq 'ARRAY' ? $reply->[0] : undef;
+    $entry = auth_entry($rados, $entity) if ref($entry) ne 'HASH' || !$entry->{key};
+
+    $state->{rotated}->{$entity} = time();
+    save_state($state);
+
+    return $entry;
+}
+
+# leaves the other entities alone. Returns 0 if there is no such file
+my sub merge_keyring_file($path, $entry) {
+    return 0 if !-f $path;
+
+    my $temp = File::Temp->new(TEMPLATE => 'cephx-keyring-XXXXXX', TMPDIR => 1);
+    print $temp keyring_text($entry);
+    close($temp) or die "could not write the temporary keyring: $!\n";
+
+    # its progress line names the temporary file, which says nothing here
+    run_command(['ceph-authtool', $path, '--import-keyring', "$temp"], outfunc => sub { });
+
+    return 1;
+}
+
+my sub merge_pve_mon_keyring($entry) {
+    if (!merge_keyring_file($pve_mon_keyring, $entry)) {
+        log_warn("'$pve_mon_keyring' does not exist, creating it with the new 'mon.' key");
+        file_set_contents($pve_mon_keyring, keyring_text($entry), 0600);
+        return;
+    }
+
+    log_pass("the new 'mon.' key is in '$pve_mon_keyring', so a monitor created later starts with a"
+        . " key the cluster accepts");
+
+    return;
+}
+
+my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
+    log_heading("Rotating the shared monitor key");
+
+    # a stale-copy repair is not gated behind the opt-in, so it must not rotate and restart the
+    # quorum unasked. Finishing a started rotation is the exception
+    my $rotate = !$plan->{mon_repair_only};
+    my $entry = $rotate ? rotate_entity($rados, $state, 'mon.') : auth_entry($rados, 'mon.');
+    my $keyring = keyring_text($entry);
+    my $target = key_fingerprint($entry->{key});
+
+    merge_pve_mon_keyring($entry) if ($info->{pve_mon_key} // '') ne $entry->{key};
+
+    # all keyrings first, so a monitor going down in between still finds the new key locally
+    for my $mon ($info->{daemons}->{mon}->@*) {
+        next if $plan->{mon_repair_only};
+        next if ($state->{mon_keyring}->{ $mon->{id} } // '') eq $target;
+
+        my $path = "/var/lib/ceph/mon/$ccname-$mon->{id}/keyring";
+        log_info("writing the new key to '$path' on node '$mon->{node}'");
+        write_node_file($mon->{node}, $path, $keyring);
+
+        $state->{mon_keyring}->{ $mon->{id} } = $target;
+        save_state($state);
+    }
+
+    # only monitors holding the superseded key restart, so a keyring repair leaves the quorum alone
+    for my $mon ($info->{daemons}->{mon}->@*) {
+        next if $plan->{mon_repair_only};
+        next if ($state->{mon_restarted}->{ $mon->{id} } // '') eq $target;
+
+        health_gate($rados, 'mon', "restarting monitor '$mon->{id}'");
+
+        my ($safe, $message) =
+            PVE::Ceph::Services::wait_for_safe_to_stop($rados, 'mon', $mon->{id}, $opts->{timeout});
+        if (!$safe) {
+            die "Ceph does not consider it safe to stop monitor '$mon->{id}': $message\n";
+        }
+
+        log_info("restarting monitor '$mon->{id}' on node '$mon->{node}' so it starts using the new"
+            . " key");
+        node_run($mon->{node}, ['systemctl', 'restart', "ceph-mon\@$mon->{id}"]);
+
+        PVE::Ceph::Services::wait_for_daemon_up($rados, 'mon', $mon->{id}, $opts->{timeout});
+        log_pass("monitor '$mon->{id}' is back in the quorum");
+
+        $state->{mon_restarted}->{ $mon->{id} } = $target;
+        save_state($state);
+    }
+
+    $state->{mon_key_complete} = $target;
+    save_state($state);
+
+    log_pass("the shared monitor key now uses the '$CIPHER' cipher");
+
+    return;
+}
+
+# a pending key takes its cipher from this and nothing can ask for one explicitly. Recorded so a run
+# that dies can put it back
+# undef, never a placeholder: the caller records this as the value to restore, and a failed read
+# recorded as a setting would leave the cluster on the new cipher for every key created later.
+my sub current_preferred_cipher($rados) {
+    my $dump = eval { $rados->mon_command({ prefix => 'mon dump', format => 'json' }) };
+    return undef if $@ || ref($dump) ne 'HASH';
+
+    my $name = ($dump->{auth_preferred_cipher} // {})->{name};
+
+    return defined($name) && exists($CIPHER_IDS->{$name}) ? $name : undef;
+}
+
+my sub claim_preferred_cipher($rados, $state) {
+    # from the cluster, not the collected info: a killed run's setting is restored after that
+    my $current = current_preferred_cipher($rados);
+    if (!defined($current)) {
+        die "could not read 'auth_preferred_cipher', so the value to put back at the end of this"
+            . " run is unknown. Refusing to change it.\n";
+    }
+    return if $current eq $CIPHER;
+
+    if (!defined($state->{preferred_cipher_was})) {
+        $state->{preferred_cipher_was} = $current;
+        save_state($state);
+    }
+
+    log_info("pointing 'auth_preferred_cipher' at '$CIPHER' while keys are swapped, it goes back to"
+        . " '$state->{preferred_cipher_was}' at the end of this run");
+    $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
+
+    return;
+}
+
+my sub release_preferred_cipher($rados, $state) {
+    my $previous = $state->{preferred_cipher_was};
+    return if !defined($previous);
+
+    eval {
+        $rados->mon_command({
+            prefix => 'mon set',
+            name => 'auth_preferred_cipher',
+            value => $previous,
+        });
+    };
+    if (my $err = $@) {
+        chomp $err;
+        log_warn("could not put 'auth_preferred_cipher' back to '$previous' ($err). Set it by hand"
+            . " with 'ceph mon set auth_preferred_cipher $previous', or new client keys keep being"
+            . " created with the '$CIPHER' cipher.");
+        return;
+    }
+
+    delete $state->{preferred_cipher_was};
+    save_state($state);
+    log_info("'auth_preferred_cipher' is back to '$previous'");
+
+    return;
+}
+
+# 'ceph tell' has no librados equivalent; the key goes over stdin, as argv is world-readable
+my sub daemon_tell($entity, $command, $key) {
+    node_run(
+        $nodename,
+        ['ceph', '--cluster', $ccname, 'tell', $entity, $command, '-i', '-'],
+        input => $key,
+    );
+
+    return;
+}
+
+# A standby manager answers 'ceph tell' with ENXIO, so no key can reach it while it runs.
+my sub mgr_is_active($rados, $id) {
+    my $dump = eval { $rados->mon_command({ prefix => 'mgr dump', format => 'json' }) };
+    return ($dump->{active_name} // '') eq $id ? 1 : 0;
+}
+
+# returns 0 when the caller has to fall back to stopping the daemon; 'mon.' has no 'rotate-key'
+# Cleans up after a swap a previous run did not finish. Returns 1 when the daemon has to be
+# restarted, because a file already holds the key the monitors have now promoted.
+my sub resume_live_swap($rados, $state, $daemon) {
+    my $entity = $daemon->{entity};
+    my $swap = $state->{live_swap}->{$entity};
+    return 0 if !$swap;
+
+    my $pending = eval { auth_entry($rados, $entity)->{pending_key} };
+    my $decided =
+        resume_verdict($swap, defined($pending) ? key_fingerprint($pending) : undef);
+    my $written = $decided->{restart};
+
+    if ($decided->{verdict} eq 'foreign') {
+        log_warn("the key staged for '$entity' is not the one this script staged, leaving it"
+            . " alone. Resolve it with 'ceph auth commit-pending' or 'ceph auth clear-pending'."
+        );
+        return 0;
+    }
+
+    my $repaired = 1;
+    if ($decided->{verdict} eq 'commit') {
+        # a file already carries it, and a staged key that is dropped authenticates nowhere
+        log_info("an earlier run had written the key it staged for '$entity' to disk, so the"
+            . " monitors are told to take it");
+        $repaired =
+            eval { $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity }); 1 };
+    } elsif ($decided->{verdict} eq 'clear') {
+        log_info("dropping the key an earlier run staged for '$entity', nothing on disk held it");
+        $repaired =
+            eval { $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity }); 1 };
+    }
+
+    # keeping it is what lets the next run try again rather than refuse over an unowned key
+    if (!$repaired) {
+        log_warn("could not resolve the key an earlier run staged for '$entity' ($@)");
+        return $written ? 1 : 0;
+    }
+
+    delete $state->{live_swap}->{$entity};
+    save_state($state);
+
+    return $written ? 1 : 0;
+}
+
+my sub live_swap_daemon($rados, $state, $daemon) {
+    my ($type, $id, $entity, $node) =
+        ($daemon->{type}, $daemon->{id}, $daemon->{entity}, $daemon->{node});
+
+    my $written = 0;
+    my $failed = sub($reason) {
+        log_info("no live key swap for '$entity' ($reason), stopping it instead");
+
+        # Only while nothing on disk holds it: a cleared key that a file still carries
+        # authenticates nowhere. The record is dropped only once the key it names is gone, or the
+        # next run would find a pending key it cannot account for and refuse to touch anything.
+        if (!$written) {
+            my $cleared = eval {
+                $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
+                1;
+            };
+            delete $state->{live_swap}->{$entity} if $cleared;
+        }
+        save_state($state);
+
+        return 0;
+    };
+
+    # Written before the key is staged, so a run killed between the two leaves a pending key this
+    # script can still recognise as its own instead of refusing to touch it.
+    $state->{live_swap}->{$entity} = { phase => 'staging', at => time() };
+    save_state($state);
+
+    if ($type eq 'mgr' && !mgr_is_active($rados, $id)) {
+        return $failed->("only the active manager takes a key while running");
+    }
+
+    my $entry = eval { auth_entry($rados, $entity) };
+    return $failed->("its auth entry could not be read" . ($@ ? ": $@" : "")) if $@ || !$entry;
+
+    my $pending = eval {
+        my $res = $rados->mon_command({
+            prefix => 'auth get-or-create-pending',
+            entity => $entity,
+            format => 'json',
+        });
+        ref($res) eq 'ARRAY' ? $res->[0]->{pending_key} : undef;
+    };
+    return $failed->("could not stage a pending key" . ($@ ? ": $@" : "")) if $@ || !$pending;
+
+    $state->{live_swap}->{$entity} =
+        { phase => 'staged', at => time(), key => key_fingerprint($pending) };
+    save_state($state);
+
+    # check rather than trust the preferred-cipher setting, or the swap lands on the old cipher
+    my $cipher = key_cipher($pending) // -1;
+    if ($cipher != $CIPHER_ID) {
+        return $failed->("the staged key uses the '"
+            . ($CIPHER_NAMES->{$cipher} // 'unreadable')
+            . "' cipher");
+    }
+
+    $state->{live_swap}->{$entity} =
+        { phase => 'written', at => time(), key => key_fingerprint($pending) };
+    save_state($state);
+
+    my $ok = eval {
+        # the label first: ceph-volume rebuilds the data directory from it on every boot
+        $written = 1;
+        if (($daemon->{store} // '') eq 'block') {
+            log_step("writing the new key into the bluestore label of '$entity'");
+            # stored verbatim, unlike 'rotate-key' below, so no trailing newline
+            daemon_tell($entity, 'rotate-stored-key', $pending);
+        }
+
+        # 'rotate-stored-key' skips the data-directory keyring and nothing re-primes it on a restart
+        my $path = "/var/lib/ceph/$type/$ccname-$id/keyring";
+        log_step("writing the new key to '$path' on node '$node'");
+        write_node_file(
+            $node,
+            $path,
+            keyring_text({ entity => $entity, key => $pending, caps => $entry->{caps} }),
+        );
+
+        log_step("handing the new key to the running '$entity'");
+        daemon_tell($entity, 'rotate-key', $pending);
+
+        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+        1;
+    };
+    return $failed->("the swap did not go through" . ($@ ? ": $@" : "")) if !$ok;
+
+    my $active = eval { auth_entry($rados, $entity)->{key} };
+    return $failed->("the monitors did not take the new key") if ($active // '') ne $pending;
+
+    $state->{previous_keys}->{$entity} = {
+        key => $entry->{key},
+        cipher => $CIPHER_NAMES->{ key_cipher($entry->{key}) // -1 } // 'unreadable',
+        saved => time(),
+    };
+    $state->{rotated}->{$entity} = time();
+    $state->{done}->{$entity} = time();
+    delete $state->{live_swap}->{$entity};
+    save_state($state);
+
+    log_pass("'$entity' uses the '$CIPHER' cipher, without a restart");
+
+    return 1;
+}
+
+# which node mounts what is not knowable here, so every node has to qualify
+my sub check_client_kernels($plan, $opts) {
+    return 1 if !grep { $_->{kernel} } @$plan;
+
+    my $kernels = collect_node_kernels($opts);
+    my @old = sort grep { !$kernels->{$_}->{supported} } keys %$kernels;
+    return 1 if !@old;
+
+    my $detail = join(', ', map { "$_ ($kernels->{$_}->{release})" } @old);
+    my @gated = map { $_->{entity} } grep { $_->{kernel} } @$plan;
+
+    if (!$opts->{force}) {
+        log_fail("The key(s) "
+            . join(', ', @gated)
+            . " are read by an in-kernel Ceph client, and these nodes run a kernel that cannot"
+            . " speak '$CIPHER' yet: $detail. Reboot them into kernel 7.0 or newer first, or"
+            . " pass '--force' to rotate anyway and take storage away from them.");
+        return 0;
+    }
+
+    log_warn("'--force' was given, so "
+        . join(', ', @gated)
+        . " are rotated even though these nodes cannot use the new cipher: $detail. Storage on"
+        . " them stops working until they run a newer kernel.");
+
+    return 1;
+}
+
+my sub migrate_client_key($rados, $state, $item) {
+    my $entity = $item->{entity};
+
+    my $entry = rotate_entity($rados, $state, $entity);
+
+    my $stale = [];
+    for my $file ($item->{files}->@*) {
+        if ($file->{format} eq 'merge') {
+            if (!-f $file->{path}) {
+                log_step("no '$file->{path}', nothing to merge the new key into");
+                next;
+            }
+            log_step("merging the new key into '$file->{path}'");
+            merge_keyring_file($file->{path}, $entry);
+            next;
+        }
+
+        my $content =
+            $file->{format} eq 'secret'
+            ? "$entry->{key}\n"
+            : keyring_text($entry);
+        if ($file->{scope} eq 'cluster') {
+            log_step("writing '$file->{path}'");
+            write_cluster_file($file->{path}, $content);
+            next;
+        }
+
+        PVE::Cluster::cfs_update();
+        for my $node (sort @{ PVE::Cluster::get_nodelist() // [] }) {
+            # every shared copy is written by now, and the rest would keep a key the auth db dropped
+            eval {
+                if (!node_file_exists($node, $file->{path})) {
+                    log_step("no '$file->{path}' on node '$node', nothing to update there");
+                    return;
+                }
+                log_step("writing '$file->{path}' on node '$node'");
+                write_node_file($node, $file->{path}, $content);
+            };
+            if (my $err = $@) {
+                chomp $err;
+                push @$stale, "'$file->{path}' on node '$node' ($err)";
+            }
+        }
+    }
+
+    if (scalar(@$stale)) {
+        die "'$entity' was rotated and every copy on the cluster file system now has the new"
+            . " key, but these node-local copies could not be written and still hold the old"
+            . " one: "
+            . join(', ', @$stale)
+            . ". Run this again once those nodes answer, which finishes just this key.\n";
+    }
+
+    # only for keys something outside Ceph may hold; Ceph's own tools fetch the rest
+    if ($entity eq $ADMIN_ENTITY || grep { defined($_->{store}) } $item->{files}->@*) {
+        log_warn("'$entity' is rotated. Any copy outside Proxmox VE, in a script or on another"
+            . " host, still has the old key and has to be updated by hand.");
+    }
+
+    $state->{done}->{$entity} = time();
+    save_state($state);
+
+    log_pass("'$entity' now uses the '$CIPHER' cipher");
+
+    return;
+}
+
+my sub migrate_daemon($rados, $state, $daemon, $opts) {
+    my ($type, $id, $entity, $node) =
+        ($daemon->{type}, $daemon->{id}, $daemon->{entity}, $daemon->{node});
+    my $unit = "ceph-$type\@$id";
+
+    # a 'done' marker says nothing about this rotation: the key can have been reset, or the id
+    # reused
+    my $unfinished_before = !$state->{done}->{$entity}
+        && ($state->{rotated}->{$entity} || $state->{previous_keys}->{$entity}) ? 1 : 0;
+    my $up = daemon_is_running($rados, $type, $id);
+
+    # a swap an earlier run left open is finished first, and the daemon then has to be restarted
+    # onto whatever that left on disk
+    $unfinished_before = 1 if resume_live_swap($rados, $state, $daemon);
+
+    # the swap needs a daemon that answers, and a half-finished one has to go the slow way
+    if (!$opts->{'restart-daemons'} && !$unfinished_before && $up) {
+        return if live_swap_daemon($rados, $state, $daemon);
+    }
+
+    health_gate($rados, $type, "touching '$entity'") if $up; # nothing to stop otherwise
+
+    # asking about an already down daemon cannot make it safer, and would block its repair
+    if ($up) {
+        my ($safe, $message) =
+            PVE::Ceph::Services::wait_for_safe_to_stop($rados, $type, $id, $opts->{timeout});
+        die "Ceph does not consider it safe to stop '$entity': $message\n" if !$safe;
+
+        log_info("stopping '$entity' on node '$node', it could not authenticate again once its key"
+            . " changed");
+    } elsif ($unfinished_before) {
+        log_info("an earlier run stopped '$entity' and rotated its key, finishing that");
+    } else {
+        log_info("Ceph does not report '$entity' as up, so its key is rotated right away");
+    }
+    node_run($node, ['systemctl', 'stop', $unit]);
+
+    if ($type eq 'osd' && $up) {
+        log_info("marking '$entity' down so it does not linger as up while it is stopped");
+        $rados->mon_command({ prefix => 'osd down', ids => ["$id"] });
+    }
+
+    my $entry = rotate_entity($rados, $state, $entity);
+
+    if (($daemon->{store} // '') eq 'block') {
+        log_info("writing the new key into the bluestore label of '$entity' and rebuilding its data"
+            . " directory from it");
+        write_osd_label_key($node, $id, $entry->{key});
+    } else {
+        my $path = "/var/lib/ceph/$type/$ccname-$id/keyring";
+        log_info("writing the new key to '$path' on node '$node'");
+        write_node_file($node, $path, keyring_text($entry));
+    }
+
+    # Left as it was found: this daemon was already stopped when the run began, and whoever
+    # stopped it did not ask for it back. The key is where it reads it, so starting it is enough.
+    if ($daemon->{down} && !$up) {
+        log_pass("'$entity' uses the '$CIPHER' cipher and stays stopped, as this run found it");
+        $state->{done}->{$entity} = time();
+        save_state($state);
+        return;
+    }
+
+    log_info("starting '$entity' again");
+    # a unit that hit its restart limit will not start until the counter is cleared
+    eval { node_run($node, ['systemctl', 'reset-failed', $unit]) };
+    node_run($node, ['systemctl', 'start', $unit]);
+
+    PVE::Ceph::Services::wait_for_daemon_up($rados, $type, $id, $opts->{timeout});
+
+    # 'auth rotate' keeps a staged pending key; the active key is on disk, so dropping it is safe
+    eval { $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity }) };
+    if (my $err = $@) {
+        chomp $err;
+        log_warn("could not drop the pending key staged for '$entity' ($err). Drop it with 'ceph"
+            . " auth clear-pending $entity', or the next run of this script refuses to start over"
+            . " it.");
+    }
+
+    log_pass("'$entity' is up again and uses the '$CIPHER' cipher");
+
+    $state->{done}->{$entity} = time();
+    save_state($state);
+
+    return;
+}
+
+my sub set_service_cipher($rados, $state) {
+    log_heading("Switching the service tickets to the new cipher");
+
+    # The monitors recompute this on an auth map commit and on their own tick, so right after the
+    # last daemon it can still describe the run that just finished. Dying here would abandon a
+    # migration that did all its work, so give it a moment to catch up first.
+    my $check;
+    for my $wait (0, 5, 10, 15, 30) {
+        sleep($wait) if $wait;
+        my $health =
+            $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
+        $check = $health->{checks}->{AUTH_INSECURE_SERVICE_KEY_TYPE};
+        last if !$check;
+        log_info("Ceph still counts service keys on the old cipher, waiting for it to recount")
+            if $wait != 30;
+    }
+    if ($check) {
+        die "Ceph still reports service keys with an insecure cipher, refusing to switch the"
+            . " service tickets: "
+            . ($check->{summary}->{message} // 'see ceph health detail')
+            . ". Check 'pveceph auth status' and run this again.\n";
+    }
+
+    log_info("telling the monitors to hand out service tickets with the '$CIPHER' cipher");
+    $rados->mon_command({ prefix => 'mon set', name => 'auth_service_cipher', value => $CIPHER });
+
+    my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
+    my $now = $mon_dump->{auth_service_cipher}->{name} // 'unknown';
+    if ($now ne $CIPHER) {
+        die "the monitors still hand out service tickets with the '$now' cipher\n";
+    }
+
+    $state->{service_cipher} = time();
+    save_state($state);
+
+    log_pass("the monitors now hand out service tickets with the '$CIPHER' cipher");
+
+    return;
+}
+
+my sub wipe_rotating_keys($rados, $state) {
+    log_heading("Wiping the rotating service keys");
+
+    log_warn("This briefly invalidates the secrets the service daemons use to validate client"
+        . " authorizers, and is only done because '--wipe-rotating-keys' was passed.");
+    $rados->mon_command({ prefix => 'auth wipe-rotating-service-keys' });
+
+    $state->{rotating_keys_wiped} = time();
+    save_state($state);
+
+    log_pass("the rotating service keys were wiped and are being regenerated with the '$CIPHER'"
+        . " cipher");
+
+    return;
+}
+
+my sub print_closing_notes($rados) {
+    log_heading("What is left");
+
+    my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
+    my $checks = $health->{checks} // {};
+
+    my @remaining = grep { m/^AUTH_/ } sort keys %$checks;
+    if (@remaining) {
+        log_text("Ceph still reports these authentication health checks:");
+        log_step("$_: " . ($checks->{$_}->{summary}->{message} // '')) for @remaining;
+        log_text("");
+        log_text("The monitors recompute these counts periodically, so one can still include a key"
+            . " this run just migrated. Check with 'pveceph auth status' if it looks high.");
+        log_text("");
+    }
+
+    log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE, if still listed, clears on its own once the"
+        . " current rotating service keys expire, normally within a few hours.");
+    log_text("AUTH_INSECURE_CLIENT_KEY_TYPE stays until the client keys are migrated too, and"
+        . " AUTH_INSECURE_KEYS_ALLOWED and AUTH_INSECURE_KEYS_CREATABLE while the monitors have to"
+        . " keep accepting the old cipher. All three are warnings; 'ceph health mute <check>'"
+        . " silences one you cannot act on, and the documentation covers the rest.");
+    log_text("");
+    log_text("The key every daemon used before this run is recorded in $STATE_FILE. Keep it until"
+        . " the cluster is confirmed healthy, then delete it: it is the only copy, and the only"
+        . " way back for a daemon left behind, via 'ceph auth import' and the place that daemon"
+        . " reads its key from.");
+
+    return;
+}
+
+my sub usage {
+    my $types = join('|', @$DAEMON_TYPES);
+
+    return <<"EOF";
+USAGE: $0 [OPTIONS]
+
+Migrates the cephx keys of this cluster to the '$CIPHER' cipher. Runs as a dry run and
+prints what it would do, unless '--apply' is given.
+
+  --apply                     carry the plan out, instead of only printing it
+  --assume-yes, -y            do not ask for confirmation. '--apply' needs this when
+                              standard input is not a terminal
+  --timeout SECONDS           how long to wait for a daemon to come back (default 600)
+  --force                     continue past a health warning this script does not
+                              recognize, and past the kernel check on client
+                              keys. A health error is never overridden
+  --only SCOPE[,SCOPE]...     limit the run to 'mon', a daemon type ($types), or a single
+                              daemon such as 'osd.3'. Comma-separated or given more than
+                              once. A limited run does not switch the service tickets
+                              over, and never limits the client keys
+  --restart-daemons           stop, rotate and start each daemon instead of swapping its
+                              key while it keeps running
+  --rotate-mon-key            also rotate the shared 'mon.' key, which restarts every
+                              monitor, one at a time
+  --rotate-client-keys        also rotate the 'client.bootstrap-*' keys and 'client.crash'
+  --rotate-admin-key          also rotate 'client.admin' and rewrite the copies of it that
+                              Proxmox VE keeps
+  --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
+                              user. May be given more than once
+  --wipe-rotating-keys        discard the rotating service keys at the end instead of
+                              letting them expire
+  --help, -h                  print this and exit
+
+This runs from one node and drives the whole cluster over SSH, so run it once.
+EOF
+}
+
+# under the cluster lock, and even for an empty plan, or a leftover flag would never clear
+my sub clear_leftover_noout($rados, $state) {
+    my $owned = $state->{noout_owned} or return;
+
+    # The note only says an earlier run meant to hold these. If none of them carries the flag any
+    # more, there is nothing to unset, and asking anyway could fail and stop a run over nothing.
+    my $unflagged = eval { PVE::Ceph::Services::unflagged_noout_osds($rados, $owned) } // [];
+    if (scalar(@$unflagged) == scalar(@$owned)) {
+        delete $state->{noout_owned};
+        save_state($state);
+        return;
+    }
+
+    log_info("clearing the 'noout' flag an earlier run left on OSDs " . join(', ', @$owned));
+    eval { $rados->mon_command({ prefix => 'osd unset-group', flags => 'noout', who => $owned }); };
+    if (my $err = $@) {
+        chomp $err;
+        die "could not clear the leftover 'noout' flag on OSDs "
+            . join(', ', @$owned)
+            . ", do it by hand before continuing: $err\n";
+    }
+
+    delete $state->{noout_owned};
+    save_state($state);
+
+    return;
+}
+
+# returns the options, or an exit status for a bad option and for '--help'
+my sub parse_options() {
+    my $opts = {
+        apply => 0,
+        'assume-yes' => 0,
+        force => 0,
+        'wipe-rotating-keys' => 0,
+        'restart-daemons' => 0,
+        'rotate-client-keys' => 0,
+        'rotate-admin-key' => 0,
+        timeout => 600,
+    };
+
+    if (!GetOptions(
+        $opts,
+        'apply',
+        'assume-yes|y',
+        'force',
+        'wipe-rotating-keys',
+        'timeout=i',
+        'only=s@',
+        'rotate-mon-key',
+        'restart-daemons',
+        'rotate-client-keys',
+        'rotate-admin-key',
+        'rotate-storage-key=s@',
+        'help|h',
+    )) {
+        print STDERR usage();
+        return (undef, 1);
+    }
+
+    if ($opts->{help}) {
+        print usage();
+        return (undef, 0);
+    }
+
+    if (defined($opts->{only})) {
+        my $only = { map { $_ => 1 } map { split(/\s*,\s*/, $_) } $opts->{only}->@* };
+        my $types = join('|', @$DAEMON_TYPES);
+        for my $entry (sort keys %$only) {
+            # a single daemon too, so one left behind can be repaired without walking everything
+            # again
+            next if $entry eq 'mon';
+            next if grep { $_ eq $entry } @$DAEMON_TYPES;
+            next if $entry =~ m/^(?:$types)\.[^.]+$/;
+            die "cannot make sense of '$entry' in --only, expected 'mon' or a daemon type ("
+                . join(', ', @$DAEMON_TYPES)
+                . ") or a single daemon such as 'osd.3'\n";
+        }
+        die "'--only' needs at least one daemon type or daemon\n" if !scalar(keys %$only);
+
+        $opts->{only} = $only;
+    }
+
+    die "'--timeout' needs a positive number of seconds\n" if $opts->{timeout} < 1;
+
+    die "this script must run as root\n" if $> != 0;
+
+    return ($opts, undef);
+}
+
+sub main {
+    my ($opts, $early_status) = parse_options();
+    return $early_status if defined($early_status);
+
+    PVE::RPCEnvironment->setup_default_cli_env();
+    PVE::Ceph::Tools::check_ceph_inited();
+
+    if ($opts->{apply}) {
+        log_info("Looking at the cluster. Apart from putting back what an interrupted run left"
+            . " behind, which is reported as it happens, nothing changes before the plan below is"
+            . " confirmed.");
+    } else {
+        log_info("This is a dry run, nothing will be changed. Pass '--apply' to carry the plan"
+            . " out.");
+    }
+
+    my $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
+
+    my $info = collect_cluster_info($rados);
+    $info->{rados} = $rados;
+    $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
+    $info->{pve_mon_key} = pve_mon_keyring_key();
+
+    my $state = load_state();
+
+    # an earlier version kept a copy of every new key here that nothing ever read
+    if (delete $state->{new_keys}) {
+        save_state($state);
+    }
+
+    # an earlier version recorded a failed read as a setting, and putting that back would fail
+    my $recorded = $state->{preferred_cipher_was};
+    if (defined($recorded) && !exists($CIPHER_IDS->{$recorded})) {
+        log_warn("'$STATE_FILE' names '$recorded' as the 'auth_preferred_cipher' to restore, which"
+            . " is not a cipher. Set it by hand with 'ceph mon set auth_preferred_cipher <name>';"
+            . " this run leaves it alone.");
+        delete $state->{preferred_cipher_was};
+        save_state($state);
+    }
+
+    my $upid = "cephx-rotate:$nodename:$$:" . time();
+    if ($state->{fsid} && $info->{fsid} && $state->{fsid} ne $info->{fsid}) {
+        log_fail("The migration state in '$STATE_FILE' belongs to the Ceph cluster"
+            . " '$state->{fsid}', but this cluster is '$info->{fsid}'. Move that file out of the"
+            . " way if it is no longer needed.");
+        return 1;
+    }
+
+    if ($opts->{'wipe-rotating-keys'} && $info->{service_cipher} ne $CIPHER && $opts->{only}) {
+        # the monitors build rotating keys with the cipher they hand out now, so wiping first is
+        # moot
+        die "'--wipe-rotating-keys' would recreate the rotating keys with the"
+            . " '$info->{service_cipher}' cipher, because a run narrowed by '--only' does not"
+            . " switch the service cipher over. Drop '--only' to switch it first.\n";
+    }
+
+    if (my $only = $opts->{only}) {
+        # checkable only once the daemons are known, and a typo would look like a finished migration
+        my $known = { mon => 1 };
+        for my $type (@$DAEMON_TYPES) {
+            $known->{$type} = 1;
+            $known->{ $_->{entity} } = 1 for $info->{daemons}->{$type}->@*;
+        }
+        # one an interrupted run left stopped is gone from ceph's list, and naming it is the retry
+        $known->{$_} = 1 for keys %{ $state->{plan} // {} };
+        my @missing = grep { !$known->{$_} } sort keys %$only;
+        if (@missing) {
+            die "no such daemon type or daemon in this cluster: " . join(', ', @missing) . "\n";
+        }
+    }
+
+    # or every client key created from now on keeps getting the new cipher
+    if (defined($state->{preferred_cipher_was})) {
+        my $what = "An earlier run left 'auth_preferred_cipher' pointed at '$CIPHER', it should"
+            . " be '$state->{preferred_cipher_was}'.";
+        log_warn(
+            $opts->{apply}
+            ? "$what This run puts it back."
+            : "$what Run this with '--apply' to put it back."
+        );
+    }
+
+    # A killed run's marker only says it meant to own the flag. It can have unset it and died
+    # before saving that, so ask the OSD map which of them still carry one rather than assert it.
+    if (my $owned = $state->{noout_owned}) {
+        my $unflagged = eval { PVE::Ceph::Services::unflagged_noout_osds($rados, $owned) } // [];
+        my $missing = { map { $_ => 1 } @$unflagged };
+        my @still = grep { !$missing->{$_} } @$owned;
+
+        if (@still) {
+            my $what =
+                "An earlier run left the 'noout' flag set on OSDs " . join(', ', @still) . ".";
+            log_warn(
+                $opts->{apply}
+                ? "$what This run clears it."
+                : "$what Run this with '--apply' to clear it."
+            );
+        } elsif ($opts->{apply}) {
+            log_info(
+                "an earlier run recorded a 'noout' flag it no longer holds, dropping the note");
+        }
+    }
+
+    # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
+    local $SIG{INT} = local $SIG{TERM} = local $SIG{HUP} = sub {
+        die "aborting on signal, run this again to resume\n";
+    };
+
+    # before the health gate: a leftover 'noout' can be why health looks bad. Under our own lock
+    if ($opts->{apply} && ($state->{noout_owned} || defined($state->{preferred_cipher_was}))) {
+        PVE::Ceph::Services::with_cluster_bulk_restart_lock(
+            $rados,
+            $LOCK_SCOPE,
+            $upid,
+            sub {
+                if (defined($state->{preferred_cipher_was})) {
+                    release_preferred_cipher($rados, $state);
+                }
+                clear_leftover_noout($rados, $state);
+            },
+        );
+    }
+
+    $info->{preferred_cipher} = current_preferred_cipher($rados);
+
+    my $recovered = recover_left_behind($info, $state);
+    for my $daemon (@$recovered) {
+        log_warn("'$daemon->{entity}' on node '$daemon->{node}' was left behind by an earlier run"
+            . " and no longer appears in ceph's own daemon list, picking it up again");
+    }
+
+    my $verdict = preflight_cluster($info, $opts, scalar(@$recovered), $state);
+    return $verdict == 0 ? 0 : 1 if $verdict <= 0;
+
+    my $plan = build_plan($info, $state, $opts, client_key_files());
+    log_warn($_) for $plan->{warnings}->@*;
+
+    # an old-cipher 'mon.' in the auth db blocks the switch, so say so before walking every daemon
+    if ($info->{insecure_entities}->{'mon.'} && !$plan->{mon_key} && !$opts->{only}) {
+        log_fail("Ceph reports the shared 'mon.' key as insecure, which happens once it has been"
+            . " rotated into the auth database. The service ticket switch is refused while that"
+            . " holds, so this run would abort at its last step. Pass '--rotate-mon-key'.");
+        return 1;
+    }
+
+    if (
+        !$plan->{mon_key}
+        && !$plan->{daemons}->@*
+        && !$plan->{service_cipher}
+        && !scalar(@{ $plan->{client_keys} // [] })
+        && !$opts->{'wipe-rotating-keys'}
+    ) {
+        my @unfinished =
+            grep { $_ eq 'mon.' || $info->{exported}->{$_} } unfinished_entities($state);
+        if (@unfinished) {
+            log_warn("An earlier run rotated the key of "
+                . join(', ', @unfinished)
+                . " but did not get it everywhere it belongs, and nothing in this run covers that."
+                . " Pass the same option again to finish it.");
+            return 1;
+        }
+
+        if ($opts->{only}) {
+            log_pass("There is nothing left to migrate in the scope given with '--only'.");
+        } else {
+            log_pass("Every service key this script migrates uses the '$CIPHER' cipher.");
+        }
+        mon_key_hint($info, $opts);
+        return 0;
+    }
+
+    probe_nodes($info, $plan);
+    return 1 if preflight_nodes($info, $plan, $opts) <= 0;
+
+    # before the plan is printed, so a dry run reports the refusal too
+    return 1 if !check_client_kernels($plan->{client_keys} // [], $opts);
+
+    print_plan($info, $plan, $state, $opts);
+
+    if (!$opts->{apply}) {
+        log_heading("Dry run finished");
+        log_text("Nothing was changed. Run this again with '--apply' to carry the plan out.");
+        return 0;
+    }
+
+    if (!$opts->{'assume-yes'}) {
+        print "\nCarry this plan out now? (y/N) ";
+        if (!$stdin_is_tty) {
+            print "\nAssuming 'no' because standard input is not a terminal. Pass '--assume-yes'"
+                . " to continue anyway.\n";
+            return 1;
+        }
+        my $answer = <STDIN>;
+        if (!defined($answer) || $answer !~ m/^\s*y(?:es)?\s*$/i) {
+            log_info("Nothing was changed.");
+            return 0; # declining is a choice, not a failure
+        }
+    }
+
+    $state->{created} //= time();
+    $state->{fsid} = $info->{fsid};
+    # before the first side effect: a stopped mgr or mds drops out of its map and would be invisible
+    for my $daemon ($plan->{daemons}->@*) {
+        $state->{plan}->{ $daemon->{entity} } = {
+            type => $daemon->{type},
+            id => $daemon->{id},
+            node => $daemon->{node},
+        };
+    }
+    save_state($state);
+
+    # a web-interface restart between a rotation and the keyring write would bring the daemon up
+    # with a key the monitors reject
+    my %types = map { $_->{type} => 1 } $plan->{daemons}->@*;
+    $types{mon} = 1 if $plan->{mon_key};
+    my $scopes = [$LOCK_SCOPE, map { "cluster-$_" } sort keys %types];
+
+    eval {
+        PVE::Ceph::Services::with_cluster_bulk_restart_lock(
+            $rados,
+            $scopes,
+            $upid,
+            sub {
+                if (!$opts->{'restart-daemons'} && scalar($plan->{daemons}->@*)) {
+                    claim_preferred_cipher($rados, $state);
+                }
+
+                migrate_mon_key($rados, $state, $info, $opts, $plan) if $plan->{mon_key};
+
+                if ($plan->{daemons}->@*) {
+                    log_heading("Rotating the service daemon keys");
+
+                    # down longer here than a plain restart, so keep the cluster from marking it out
+                    my $osd_ids =
+                        [map { $_->{id} } grep { $_->{type} eq 'osd' } $plan->{daemons}->@*];
+
+                    PVE::Ceph::Services::with_noout(
+                        $rados,
+                        $osd_ids,
+                        sub {
+                            my $total = scalar($plan->{daemons}->@*);
+                            my $index = 0;
+                            for my $daemon ($plan->{daemons}->@*) {
+                                $index++;
+
+                                # this walk can outlive the lock's stale timeout, after which
+                                # another restart claims it
+                                PVE::Ceph::Services::acquire_cluster_bulk_restart_lock(
+                                    $rados, $_, $upid,
+                                ) for @$scopes;
+
+                                log_text("");
+                                log_info("[$index/$total] $TYPE_LABEL->{$daemon->{type}}"
+                                    . " '$daemon->{entity}' on node '$daemon->{node}'");
+                                migrate_daemon($rados, $state, $daemon, $opts);
+                            }
+                        },
+                        # so a later run can unset these even if this process is killed first
+                        sub($owned) {
+                            if (scalar(@$owned)) {
+                                $state->{noout_owned} = $owned;
+                            } else {
+                                delete $state->{noout_owned};
+                            }
+                            save_state($state);
+                        },
+                    );
+                }
+
+                for my $item (@{ $plan->{client_keys} // [] }) {
+                    log_text("");
+                    log_info("client key '$item->{entity}'");
+                    migrate_client_key($rados, $state, $item);
+                }
+
+                # before the switch, or a client key created right after silently gets the new
+                # cipher
+                release_preferred_cipher($rados, $state);
+
+                set_service_cipher($rados, $state) if $plan->{service_cipher};
+                wipe_rotating_keys($rados, $state) if $opts->{'wipe-rotating-keys'};
+            },
+        );
+    };
+    my $failure = $@;
+
+    # check while this run still knows which it touched; probe first, as a failed command reads as
+    # 'not up'
+    my @down;
+    if (eval { $rados->mon_command({ prefix => 'health', format => 'json' }); 1 }) {
+        # one that was already stopped when this run began was left that way on purpose
+        @down = grep {
+            !$_->{down} && !PVE::Ceph::Services::daemon_is_up($rados, $_->{type}, $_->{id})
+        } $plan->{daemons}->@*;
+    }
+    if (@down) {
+        log_text("");
+        for my $daemon (@down) {
+            my $how =
+                $daemon->{type} eq 'osd'
+                ? "write it into the bluestore label with 'ceph-bluestore-tool set-label-key"
+                . " --dev /var/lib/ceph/osd/$ccname-$daemon->{id}/block -k osd_key -v <key>',"
+                . " prime the data directory from that label, then start the daemon. Writing"
+                . " only the keyring file works until the next reboot, which rebuilds that"
+                . " directory from the label"
+                : "write it to /var/lib/ceph/$daemon->{type}/$ccname-$daemon->{id}/keyring on"
+                . " that node, then start the daemon";
+            log_warn("'$daemon->{entity}' on node '$daemon->{node}' is not up again. Read its"
+                . " current key with 'ceph auth get $daemon->{entity}' and $how.");
+        }
+    }
+
+    die $failure if $failure;
+
+    if (@down) {
+        die "the migration left "
+            . scalar(@down)
+            . " daemon(s) down, resolve that before running this again\n";
+    }
+
+    health_gate($rados, undef, "finishing");
+    print_closing_notes($rados);
+
+    log_heading("Done");
+    if ($plan->{scoped}) {
+        log_pass("The keys covered by '--only' now use the '$CIPHER' cipher. Run this without"
+            . " '--only' to migrate the rest and to switch the service cipher over.");
+        mon_key_hint($info, $opts);
+    } else {
+        log_pass("The manager, metadata server and OSD keys of this cluster now use the '$CIPHER'"
+            . " cipher.");
+        mon_key_hint($info, $opts);
+    }
+
+    return 0;
+}
+
+my $status = eval { main() };
+if (my $err = $@) {
+    chomp $err;
+    log_fail($err);
+    $status = 1;
+}
+
+exit($status // 1); # PVE::RADOS's destructor waitpid()s and clobbers $?
