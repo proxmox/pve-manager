@@ -1491,6 +1491,34 @@ sub cluster_lock_key {
     return "${CLUSTER_LOCK_KEY_PREFIX}${scope}";
 }
 
+# Every lock entry a given run holds, so a message about one of them can name the rest: a run
+# takes one per daemon type it touches on top of its own, and a killed one leaves all of them.
+my sub lock_keys_held_by {
+    my ($rados, $upid) = @_;
+
+    # 'json' comes back decoded already, unlike the 'plain' reads below
+    my $keys = eval {
+        my $reply = $rados->mon_cmd({ prefix => 'config-key ls', format => 'json' }, 1);
+        my $data = $reply->{data};
+        ref($data) eq 'ARRAY' ? $data : decode_json($data // '[]');
+    };
+    return [] if $@ || ref($keys) ne 'ARRAY';
+
+    my $held = [];
+    for my $key (sort @$keys) {
+        next if $key !~ m/^\Q$CLUSTER_LOCK_KEY_PREFIX\E/;
+        my $entry = eval {
+            my $reply =
+                $rados->mon_cmd({ prefix => 'config-key get', key => $key, format => 'plain' }, 1);
+            decode_json($reply->{data} // '');
+        };
+        next if $@ || ref($entry) ne 'HASH';
+        push @$held, $key if ($entry->{upid} // '') eq ($upid // '');
+    }
+
+    return $held;
+}
+
 sub acquire_cluster_bulk_restart_lock {
     my ($rados, $scope, $upid) = @_;
     my $key = cluster_lock_key($scope);
@@ -1500,13 +1528,30 @@ sub acquire_cluster_bulk_restart_lock {
     if (!$@ && $existing && ($existing->{return_code} // -1) == 0) {
         my $info = eval { decode_json($existing->{data} // '') };
         if ($info && ref($info) eq 'HASH') {
-            my $age = time() - ($info->{timestamp} // 0);
-            if ($age < $CLUSTER_LOCK_STALE_AFTER) {
+            # Time::HiRes is in scope, and a fractional age reads badly in a message
+            my $age = int(time() - ($info->{timestamp} // 0));
+            # The same upid coming back is the holder renewing, which a run that outlives the
+            # stale timeout has to do. A crashed run cannot renew, as every run builds a new
+            # upid, so its entry is only freed once it goes stale.
+            my $ours = ($info->{upid} // '') eq ($upid // '');
+            if ($age < $CLUSTER_LOCK_STALE_AFTER && !$ours) {
+                # A run killed outright cannot release this, and it is only freed once it goes
+                # stale hours later. One run can hold several of these, so name every entry it
+                # left rather than send the operator round once per scope.
+                my $held = lock_keys_held_by($rados, $info->{upid});
+                my $how =
+                    scalar(@$held) > 1
+                    ? "remove its entries with 'ceph config-key rm "
+                    . join("' and 'ceph config-key rm ", @$held) . "'"
+                    : "remove its entry with 'ceph config-key rm $key'";
                 die "another cluster-wide Ceph '$scope' bulk-restart is in progress"
-                    . " (upid '$info->{upid}' on host '$info->{host}', started ${age}s ago)\n";
+                    . " (upid '$info->{upid}' on host '$info->{host}', started ${age}s ago)."
+                    . " If that run is gone, for example because it was killed, $how and try"
+                    . " again.\n";
             }
             warn "discarding stale cluster bulk-restart lock entry for '$scope'"
-                . " (${age}s old, was upid '$info->{upid}' on host '$info->{host}')\n";
+                . " (${age}s old, was upid '$info->{upid}' on host '$info->{host}')\n"
+                if !$ours;
         }
     }
 
@@ -1519,6 +1564,20 @@ sub acquire_cluster_bulk_restart_lock {
             timestamp => time(),
         }),
     });
+
+    # config-key has no compare-and-swap, so two callers can both find no entry and both
+    # write one. Reading our own write back does not make this a mutex, but it turns the
+    # window from the whole get-to-set gap into the settle interval, and it stops a renewal
+    # from silently stealing an entry that another run took over in the meantime.
+    my $readback =
+        eval { $rados->mon_cmd({ prefix => 'config-key get', key => $key, format => 'plain' }, 1); };
+    if (!$@ && $readback && ($readback->{return_code} // -1) == 0) {
+        my $info = eval { decode_json($readback->{data} // '') };
+        if ($info && ref($info) eq 'HASH' && ($info->{upid} // '') ne $upid) {
+            die "another cluster-wide Ceph '$scope' bulk-restart took the lock at the same"
+                . " time (upid '$info->{upid}' on host '$info->{host}')\n";
+        }
+    }
 }
 
 sub release_cluster_bulk_restart_lock {
@@ -1535,14 +1594,21 @@ sub release_cluster_bulk_restart_lock {
         my $existing = eval {
             $rados->mon_cmd({ prefix => 'config-key get', key => $key, format => 'plain' }, 1);
         };
-        if (!$@ && $existing && ($existing->{return_code} // -1) == 0) {
-            my $info = eval { decode_json($existing->{data} // '') };
-            if ($info && ref($info) eq 'HASH' && ($info->{upid} // '') ne $upid) {
-                warn "not releasing cluster bulk-restart lock for '$scope': now held by"
-                    . " a different run (upid '"
-                    . ($info->{upid} // '?') . "')\n";
-                return;
-            }
+        my $err = $@;
+        if ($err || !$existing || ($existing->{return_code} // -1) != 0) {
+            # fail closed: the stale timeout clears the entry instead
+            chomp $err if $err;
+            warn "not releasing cluster bulk-restart lock for '$scope': could not read its"
+                . " current owner"
+                . ($err ? " ($err)" : "") . "\n";
+            return;
+        }
+        my $info = eval { decode_json($existing->{data} // '') };
+        if ($info && ref($info) eq 'HASH' && ($info->{upid} // '') ne $upid) {
+            warn "not releasing cluster bulk-restart lock for '$scope': now held by"
+                . " a different run (upid '"
+                . ($info->{upid} // '?') . "')\n";
+            return;
         }
     }
 
@@ -1551,13 +1617,36 @@ sub release_cluster_bulk_restart_lock {
 }
 
 # Convenience: acquire, run $code, release (even on die).
+# Takes one scope or, given an arrayref, several at once, for a caller that touches more than
+# one daemon type and has to keep the per-type restarts out at the same time. A scope that
+# cannot be taken releases the ones already held, so a refusal leaves nothing behind.
 sub with_cluster_bulk_restart_lock {
     my ($rados, $scope, $upid, $code) = @_;
-    acquire_cluster_bulk_restart_lock($rados, $scope, $upid);
+
+    my @scopes = ref($scope) eq 'ARRAY' ? $scope->@* : ($scope);
+
+    # a scope cannot be taken twice, and running the body with no lock at all would be worse
+    # than refusing outright
+    @scopes = do {
+        my %seen;
+        grep { defined($_) && !$seen{$_}++ } @scopes;
+    };
+    die "no scope given to lock a cluster-wide Ceph bulk restart\n" if !scalar(@scopes);
+
+    my @held;
+    for my $current (@scopes) {
+        eval { acquire_cluster_bulk_restart_lock($rados, $current, $upid) };
+        if (my $err = $@) {
+            eval { release_cluster_bulk_restart_lock($rados, $_, $upid) } for reverse @held;
+            die $err;
+        }
+        push @held, $current;
+    }
+
     my $wantarray = wantarray;
     my @result = eval { $wantarray ? ($code->()) : scalar($code->()); };
     my $err = $@;
-    release_cluster_bulk_restart_lock($rados, $scope, $upid);
+    eval { release_cluster_bulk_restart_lock($rados, $_, $upid) } for reverse @held;
     die $err if $err;
     return $wantarray ? @result : $result[0];
 }
