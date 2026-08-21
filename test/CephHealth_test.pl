@@ -286,4 +286,85 @@ is_deeply(
     );
 }
 
+# 'noout' ownership: a run must only clear what it set, or an operator's own per-OSD flag is
+# lost. Both callers matter here and they disagree on id format: the API passes 'osd.N', the
+# migration helper passes a bare N.
+{
+
+    package NooutRados;
+
+    sub new {
+        my ($class, @flagged) = @_;
+        return bless { flagged => { map { $_ => 1 } @flagged }, calls => [] }, $class;
+    }
+
+    sub mon_command {
+        my ($self, $cmd) = @_;
+        if ($cmd->{prefix} eq 'osd dump') {
+            return {
+                osds => [
+                    map { {
+                        osd => $_,
+                        state => [$self->{flagged}->{$_} ? ('noout') : (), 'up'],
+                    } } (0 .. 3)
+                ],
+            };
+        }
+        push $self->{calls}->@*, "$cmd->{prefix}:" . join(',', $cmd->{who}->@*);
+        return {};
+    }
+}
+
+my $unflagged = sub {
+    my ($rados, $ids) = @_;
+    return PVE::Ceph::Services::unflagged_noout_osds($rados, $ids);
+};
+
+is_deeply(
+    $unflagged->(NooutRados->new(), [0, 1, 2]),
+    [0, 1, 2],
+    'with no flag set every OSD is ours to set',
+);
+is_deeply(
+    $unflagged->(NooutRados->new(1), [0, 1, 2]),
+    [0, 2],
+    'an OSD that already has noout is left alone',
+);
+is_deeply(
+    $unflagged->(NooutRados->new(1), ['osd.0', 'osd.1', 'osd.2']),
+    [0, 2],
+    'the same holds for the osd.N form the API caller passes',
+);
+is_deeply($unflagged->(NooutRados->new(0, 1, 2), [0, 1, 2]), [], 'nothing to own when all are set');
+
+# and the wrapper must touch only the owned ids, in both directions
+{
+    my $rados = NooutRados->new(1);
+    my $ran = 0;
+    my @owned;
+    PVE::Ceph::Services::with_noout(
+        $rados,
+        ['osd.0', 'osd.1', 'osd.2'],
+        sub { $ran = 1 },
+        sub { push @owned, [$_[0]->@*] },
+    );
+    is($ran, 1, 'the body runs');
+    is_deeply(
+        $rados->{calls},
+        ['osd set-group:0,2', 'osd unset-group:0,2'],
+        'only the unflagged OSDs are set and unset',
+    );
+    is_deeply($owned[0], [0, 2], 'the owned set is reported to the caller');
+    is_deeply($owned[1], [], 'and cleared again after a successful unset');
+}
+
+# an already fully flagged set must not issue either command
+{
+    my $rados = NooutRados->new(0, 1, 2);
+    my $ran = 0;
+    PVE::Ceph::Services::with_noout($rados, [0, 1, 2], sub { $ran = 1 });
+    is($ran, 1, 'the body still runs when nothing is ours');
+    is_deeply($rados->{calls}, [], 'no flag command is issued');
+}
+
 done_testing();

@@ -1335,10 +1335,42 @@ sub wait_for_safe_to_stop {
 # other nodes during the restart window, and leaves any operator-set cluster-wide
 # noout untouched. $we_set_it is recorded BEFORE the mon_command to guarantee a
 # best-effort unset on signal or set-failure; spurious unsets are no-ops on Ceph.
+# Reads the per-OSD 'noout' flag for the given ids. 'osd dump' reports it as a string in each
+# OSD's 'state' array, which is what 'osd set-group' and 'osd unset-group' manipulate, and is
+# separate from the cluster-wide 'flags' field. Callers pass either 'osd.N' or a bare N, so
+# normalise before comparing. Returns the ids that do not carry the flag yet.
+sub unflagged_noout_osds {
+    my ($rados, $osd_ids) = @_;
+
+    my @wanted = map { my $id = $_; $id =~ s/^osd\.//; $id } @$osd_ids;
+
+    my $dump = eval { $rados->mon_command({ prefix => 'osd dump', format => 'json' }) };
+    die "could not read the OSD map to check the 'noout' flags: $@" if $@;
+
+    my $flagged = {};
+    for my $osd ((ref($dump->{osds}) eq 'ARRAY' ? $dump->{osds} : [])->@*) {
+        next if !defined($osd->{osd});
+        my $state = ref($osd->{state}) eq 'ARRAY' ? $osd->{state} : [];
+        $flagged->{ $osd->{osd} } = 1 if grep { $_ eq 'noout' } @$state;
+    }
+
+    return [grep { !$flagged->{$_} } @wanted];
+}
+
+# Sets 'noout' on the given OSDs for the duration of $code, then unsets it again.
+#
+# Only OSDs that do not already carry the flag are touched, so an operator's own 'noout' on a
+# specific OSD survives. This reduces rather than removes the problem: a flag set by someone
+# else while $code runs is still cleared at the end, and no re-read can tell that apart from
+# our own. $on_owned, if given, is called with the owned ids right after they were set, so a
+# caller that can persist them recovers the cleanup after a hard kill, which this scope cannot.
 sub with_noout {
-    my ($rados, $osd_ids, $code) = @_;
+    my ($rados, $osd_ids, $code, $on_owned) = @_;
 
     return $code->() if !$osd_ids || !@$osd_ids;
+
+    my $owned = unflagged_noout_osds($rados, $osd_ids);
+    return $code->() if !@$owned;
 
     my $we_set_it = 0;
     my $cleanup_done = 0;
@@ -1346,18 +1378,22 @@ sub with_noout {
         return if $cleanup_done;
         $cleanup_done = 1;
         return if !$we_set_it;
-        print "unsetting 'noout' flag on " . scalar(@$osd_ids) . " OSDs\n";
+        print "unsetting 'noout' flag on " . scalar(@$owned) . " OSDs\n";
         eval {
             $rados->mon_command({
                 prefix => 'osd unset-group',
                 flags => 'noout',
-                who => $osd_ids,
+                who => $owned,
             });
         };
         if (my $err = $@) {
             chomp $err;
-            warn "failed to unset 'noout' flag: $err\n";
+            warn "failed to unset 'noout' flag on OSDs "
+                . join(', ', @$owned)
+                . ", they stay set until that is done by hand: $err\n";
+            return;
         }
+        $on_owned->([]) if $on_owned;
     };
 
     local $SIG{TERM} = sub { $cleanup->(); die "received SIGTERM, aborting bulk-restart\n"; };
@@ -1365,13 +1401,16 @@ sub with_noout {
     local $SIG{HUP} = sub { $cleanup->(); die "received SIGHUP, aborting bulk-restart\n"; };
 
     eval {
-        print "setting 'noout' flag on " . scalar(@$osd_ids) . " OSDs\n";
+        print "setting 'noout' flag on " . scalar(@$owned) . " OSDs\n";
         $we_set_it = 1; # set BEFORE mon_command to close the signal/failure race
         $rados->mon_command({
             prefix => 'osd set-group',
             flags => 'noout',
-            who => $osd_ids,
+            who => $owned,
         });
+        # tell the caller what we own as soon as it is true, so it can persist it and clean
+        # up after a kill that never reaches the cleanup below
+        $on_owned->($owned) if $on_owned;
         $code->();
     };
     my $err = $@;

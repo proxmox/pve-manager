@@ -653,13 +653,17 @@ __PACKAGE__->register_method({
 
             my $existing_state = PVE::Ceph::Services::load_bulk_restart_state($rados, $node);
 
-            my ($daemons, $start_index, $noout_active);
+            my ($daemons, $start_index, $noout_active, $noout_owned);
             if ($resume) {
                 die "no resumable bulk-restart state found for node '$node'\n"
                     if !$existing_state;
                 $daemons = $existing_state->{plan};
                 $start_index = $existing_state->{next_index} // 0;
                 $noout_active = $existing_state->{noout_active} ? 1 : 0;
+                # The OSDs an interrupted run had flagged. Treat them as ours regardless of
+                # what the OSD map says now, or a hard kill leaves them set forever: they are
+                # already flagged, so a fresh ownership check would claim none of them.
+                $noout_owned = $existing_state->{noout_owned};
                 my $age = time() - ($existing_state->{timestamp} // time());
                 print "resuming bulk-restart on '$node' (state ${age}s old, "
                     . scalar(@$daemons)
@@ -743,8 +747,12 @@ __PACKAGE__->register_method({
             }
 
             PVE::Ceph::Services::with_bulk_restart_lock(sub {
+                # tracked so the noout-ownership callback can persist without rewinding the
+                # restart progress that $do_restarts has already recorded
+                my $saved_index = $start_index;
                 my $save_progress = sub {
                     my ($next_index) = @_;
+                    $saved_index = $next_index;
                     PVE::Ceph::Services::save_bulk_restart_state(
                         $rados,
                         $node,
@@ -752,6 +760,7 @@ __PACKAGE__->register_method({
                             plan => $daemons,
                             next_index => $next_index,
                             noout_active => $noout_active,
+                            noout_owned => $noout_owned,
                         },
                     );
                 };
@@ -808,7 +817,14 @@ __PACKAGE__->register_method({
                 };
 
                 if ($noout_active) {
-                    PVE::Ceph::Services::with_noout($rados, $daemons, $do_restarts);
+                    # Hand the previous run's owned ids back in, so a resumed run unsets exactly
+                    # what was set even though those OSDs now look flagged to a fresh check.
+                    PVE::Ceph::Services::with_noout(
+                        $rados,
+                        $noout_owned && scalar(@$noout_owned) ? $noout_owned : $daemons,
+                        $do_restarts,
+                        sub { $noout_owned = shift; $save_progress->($saved_index); },
+                    );
                 } else {
                     $do_restarts->();
                 }
