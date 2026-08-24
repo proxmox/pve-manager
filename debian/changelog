@@ -1,3 +1,48 @@
+pve-manager (8.4.22) bookworm; urgency=medium
+
+  * ceph: add 'pveceph auth status', a read-only report on which cephx keys
+    still use the old cipher, whether they can be migrated yet, and what is
+    holding that up, including the kernel version of every node.
+
+  * ceph: add a guided helper to migrate the cephx service keys to the
+    aes256k cipher:
+    /usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys
+    Ceph 19.2.6 flags every key that still uses the old 'aes' cipher and
+    reports two of those checks as HEALTH_ERR, so an upgraded cluster stays in
+    error until its keys are migrated. The helper goes through the daemons of
+    the whole cluster one at a time and can be narrowed to a single daemon type
+    or a single daemon. It runs as a dry run unless '--apply' is passed.
+    Running it again resumes: it finishes a daemon it had started, picks up one
+    that was left stopped even after Ceph stopped listing it, and clears a
+    'noout' flag an interrupted run left behind.
+
+    The key of a manager, metadata server or OSD is swapped while the daemon
+    keeps running, so nothing is stopped and clients stay connected. A daemon
+    that does not take the key that way, and a standby manager, which cannot
+    take one while running, fall back to being stopped, rotated and started
+    again, with Ceph asked before each stop.
+
+    Client keys are opt-in: '--rotate-client-keys' covers the bootstrap keys
+    and 'client.crash', '--rotate-admin-key' covers 'client.admin' together
+    with the keyrings Proxmox VE keeps of it and the key file of every Ceph
+    storage that uses it, and '--rotate-storage-key' covers one Ceph storage
+    with its own user. A key that an in-kernel client reads is only rotated
+    once every node runs a kernel that supports the new cipher, which no
+    Bookworm kernel does. A copy held outside Proxmox VE is reported, not
+    updated.
+
+    '--rotate-mon-key' additionally rotates the shared 'mon.' key, which
+    restarts every monitor one at a time. While it swaps keys the helper
+    points 'auth_preferred_cipher' at aes256k, because that is where a
+    pending key takes its cipher from, and puts the old value back at the
+    end.
+
+  * pve8to9: report the cephx key cipher health checks as informational, since
+    Ceph 19.2.6 and newer flag keys that still use the old cipher, which
+    neither breaks storage nor blocks the upgrade.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 24 Aug 2026 11:08:11 +0200
+
 pve-manager (8.4.21) bookworm; urgency=medium
 
   * ui: certificates, lxc DNS, VM cloud-init and PCI: encode rendered values
