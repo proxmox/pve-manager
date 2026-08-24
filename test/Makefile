@@ -5,7 +5,11 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: test-replication test-balloon test-vzdump test-osd
+check: test-replication test-balloon test-vzdump test-osd test-ceph-health
+
+.PHONY: test-ceph-health
+test-ceph-health:
+	./CephHealth_test.pl
 
 .PHONY: test-balloon
 test-balloon:
