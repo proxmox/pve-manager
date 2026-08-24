@@ -37,7 +37,8 @@ HELPERS =			\
 
 MIGRATIONS =			\
 	pve-lvm-disable-autoactivation		\
-	pve-rbd-storage-configure-keyring
+	pve-rbd-storage-configure-keyring	\
+	pve-cephx-rotate-service-keys
 
 SERVICE_MANS = $(addsuffix .8, $(SERVICES))
 
