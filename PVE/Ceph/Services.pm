@@ -660,9 +660,26 @@ my $AES256K_MIN_CEPH_RELEASE = {
     20 => [20, 2, 4],
 };
 
-# Judges a Ceph version, either the full 'ceph version X.Y.Z (<commit>) <name>' string that
-# 'ceph versions' reports or the bare 'X.Y.Z' of the 'ceph_version_short' metadata field.
-# Returns undef when neither can be parsed, so callers can tell that apart from a no.
+# The in-kernel ceph clients (krbd, kernel cephfs) speak aes256k from this kernel major on. A
+# node that merely has 7.0 installed but still runs 6.x cannot take an aes256k client key.
+my $AES256K_MIN_KERNEL_MAJOR = 7;
+
+# The monmap feature (FEATURE_CEPHX_AUTH_AES256K) that every monitor in the quorum has to
+# advertise before any aes256k cipher can be set, so it gates every migration step.
+my $AES256K_MON_FEATURE = 'cephx_auth_aes256k';
+
+my $AES256K_CIPHER = 'aes256k';
+my $CEPHX_MIGRATION_HELPER = '/usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys';
+
+# Health checks that enumerate the entities still on an old cipher, per entity class. Used as
+# the fallback source when 'auth dump-keys' is not available.
+my $INSECURE_KEY_TYPE_CHECKS = {
+    service => 'AUTH_INSECURE_SERVICE_KEY_TYPE',
+    client => 'AUTH_INSECURE_CLIENT_KEY_TYPE',
+};
+
+# Takes the full 'ceph version X.Y.Z (<commit>) <name>' string or the bare 'X.Y.Z' of
+# 'ceph_version_short'. Returns undef when neither parses, so callers can tell that from a no.
 sub ceph_version_supports_aes256k {
     my ($version_string) = @_;
 
@@ -695,6 +712,342 @@ sub ceph_version_supports_aes256k {
         return 0 if $have[$i] < $min->[$i];
     }
     return 1;
+}
+
+# Judges a kernel release as uname reports it, undef if it does not start with a major number.
+sub kernel_supports_aes256k {
+    my ($release) = @_;
+
+    return undef if !defined($release) || $release !~ m/^(\d+)/;
+    return $1 >= $AES256K_MIN_KERNEL_MAJOR ? 1 : 0;
+}
+
+# Ceph wraps ciphers inconsistently: the monmap settings use 'name', the auth dump 'type_str'. A
+# bare string is taken as-is, for a release that does not wrap them at all.
+my sub cipher_name {
+    my ($cipher) = @_;
+
+    return $cipher->{name} // $cipher->{type_str} if ref($cipher) eq 'HASH';
+    return ref($cipher) ? undef : $cipher;
+}
+
+# PVE has no cluster-wide kernel broadcast, so the local node comes from uname() and the others
+# from what their ceph daemons reported on start. A node without one stays unknown, not guessed.
+my sub collect_node_kernels {
+    my ($rados) = @_;
+
+    my $res = { map { $_ => {} } PVE::Cluster::get_nodelist()->@* };
+
+    for my $type (qw(mon mgr mds osd)) {
+        my $metadata =
+            eval { $rados->mon_command({ prefix => "$type metadata", format => 'json' }) };
+        next if $@ || ref($metadata) ne 'ARRAY';
+
+        for my $daemon (@$metadata) {
+            my ($host, $kernel) = $daemon->@{ 'hostname', 'kernel_version' };
+            next if !defined($host) || !defined($kernel);
+            $res->{$host}->{kernel} //= $kernel;
+            $res->{$host}->{source} //= 'ceph daemon metadata';
+        }
+    }
+
+    # uname() beats the daemon metadata, which is only as fresh as the daemon's last start
+    my (undef, undef, $release) = POSIX::uname();
+    $res->{ PVE::INotify::nodename() } = { kernel => $release, source => 'uname' };
+
+    for my $node (keys %$res) {
+        my $supported = kernel_supports_aes256k($res->{$node}->{kernel});
+        $res->{$node}->{'supports-aes256k'} = $supported if defined($supported);
+    }
+
+    return $res;
+}
+
+# Groups every cephx entity by class and cipher. Prefers 'auth dump-keys', which names the cipher
+# per entity and, unlike 'auth ls', leaves the secrets out; falls back to the health check details.
+my sub collect_entity_ciphers {
+    my ($rados, $checks) = @_;
+
+    # 'mon.' lives in the monitor keyring, not the auth database, so it shows up only once rotated
+    my $res = { service => {}, client => {}, complete => 1 };
+
+    # Ceph classifies this as a write command though it changes nothing, so it is the one command
+    # here that needs a reachable leader, and it refuses any format but json.
+    my $dump = eval { $rados->mon_command({ prefix => 'auth dump-keys', format => 'json' }) };
+    my $secrets = ref($dump) eq 'HASH' ? $dump->{data}->{secrets} : undef;
+
+    if (ref($secrets) eq 'ARRAY') {
+        my $pending = 0;
+        for my $secret (@$secrets) {
+            my ($type, $id) = ($secret->{entity} // {})->@{ 'type_str', 'id' };
+            next if !defined($type) || !defined($id);
+
+            my $auth = $secret->{auth} // {};
+            my $cipher = cipher_name($auth->{key}) // 'unknown';
+            my $class = $type eq 'client' ? 'client' : 'service';
+            push $res->{$class}->{$cipher}->@*, "$type.$id";
+
+            $pending++ if (cipher_name($auth->{pending_key}) // 'none') ne 'none';
+        }
+        $res->{source} = 'auth dump-keys';
+        $res->{'pending-keys'} = $pending;
+    } else {
+        for my $class (sort keys %$INSECURE_KEY_TYPE_CHECKS) {
+            my $detail = ($checks->{ $INSECURE_KEY_TYPE_CHECKS->{$class} } // {})->{detail};
+            for my $entry ((ref($detail) eq 'ARRAY' ? $detail : [])->@*) {
+                my $message = $entry->{message} // '';
+                next if $message !~ m/^entity (\S+) using insecure key type: (\S+)$/;
+                push $res->{$class}->{$2}->@*, $1;
+            }
+        }
+        $res->{source} = 'health check detail';
+        $res->{complete} = 0; # these checks only name what is still on an old cipher
+    }
+
+    for my $class (qw(service client)) {
+        for my $cipher (keys $res->{$class}->%*) {
+            $res->{$class}->{$cipher} = [sort $res->{$class}->{$cipher}->@*];
+        }
+    }
+
+    return $res;
+}
+
+my sub count_old_cipher_entities {
+    my ($by_cipher) = @_;
+
+    my $count = 0;
+    for my $cipher (keys %$by_cipher) {
+        next if $cipher eq $AES256K_CIPHER;
+        $count += scalar($by_cipher->{$cipher}->@*);
+    }
+    return $count;
+}
+
+# Turns the collected facts into the three verdicts an operator acts on: is a rolling restart
+# still due, can the service keys move now, can the client keys move at all.
+sub cephx_migration_verdicts {
+    my ($status) = @_;
+
+    my $quorum_ok = $status->{quorum}->{'supports-aes256k'};
+    my $outdated = $status->{'daemons-without-aes256k'};
+    my $nodes = $status->{nodes};
+
+    my $old_service = count_old_cipher_entities($status->{entities}->{service});
+    my $old_client = count_old_cipher_entities($status->{entities}->{client});
+
+    # The fallback source only names what ceph currently reports, so an empty list means "nothing
+    # was reported", not "nothing is left". Otherwise a failed command reads as an all-clear.
+    my $entities_known = $status->{entities}->{complete} ? 1 : 0;
+
+    my $res = [];
+
+    # A pre-cipher release still answers 'versions', 'quorum_status' and 'health', so the missing
+    # monmap cipher settings are the tell. Return early, or empty lists read as 'nothing left'.
+    if (!scalar($status->{monmap}->%*)) {
+        return ["The monitors report no cipher settings, so either this cluster's Ceph release"
+            . " predates the aes256k cipher or 'mon dump' did not answer. Nothing about the key"
+            . " migration can be judged before that is resolved."
+        ];
+    }
+
+    if (!scalar($status->{daemons}->%*)) {
+        push @$res,
+            "Could not read the daemon versions, so whether a rolling restart is still needed"
+            . " is unknown.";
+    } elsif (scalar(@$outdated)) {
+        push @$res,
+            "Rolling restart still needed, these daemons do not support aes256k: "
+            . join('; ', @$outdated) . ".";
+    } elsif (!defined($quorum_ok)) {
+        push @$res,
+            "Every Ceph daemon runs a version with aes256k support, but whether the monitor"
+            . " quorum advertises '$AES256K_MON_FEATURE' could not be read, so whether a"
+            . " rolling restart is still needed is unknown.";
+    } elsif (!$quorum_ok) {
+        push @$res,
+            "Every Ceph daemon runs a version with aes256k support, but the monitor quorum does"
+            . " not advertise '$AES256K_MON_FEATURE' yet, so restart the monitors.";
+    } else {
+        push @$res, "No rolling restart needed, every Ceph daemon supports aes256k.";
+    }
+
+    if (!$old_service && !$entities_known) {
+        push @$res,
+            "Cannot tell which service keys still use an old cipher, as the key list could"
+            . " not be read and the health checks named none. Retry once the monitors answer"
+            . " 'auth dump-keys' again.";
+    } elsif (!$old_service) {
+        push @$res, "No service key left on an old cipher.";
+    } elsif (!defined($quorum_ok)) {
+        push @$res,
+            "Service keys cannot be judged yet, the monitor quorum features could not be"
+            . " read, and only they decide whether Ceph accepts a rotation.";
+    } elsif (!$quorum_ok) {
+        push @$res,
+            "Service keys cannot be migrated yet, the monitor quorum does not support aes256k.";
+    } elsif (scalar(@$outdated)) {
+        push @$res,
+            "Service keys cannot be migrated yet, the daemons above could no longer"
+            . " authenticate with an aes256k key.";
+    } else {
+        push @$res,
+            "Service keys can be migrated now, $old_service of them still use an old cipher."
+            . " Run '$CEPHX_MIGRATION_HELPER' to see what it would do, then again with"
+            . " '--apply'.";
+    }
+
+    my @old_kernel = sort grep {
+        defined($nodes->{$_}->{'supports-aes256k'}) && !$nodes->{$_}->{'supports-aes256k'}
+    } keys %$nodes;
+    my @unknown_kernel = sort grep { !defined($nodes->{$_}->{'supports-aes256k'}) } keys %$nodes;
+
+    if (!$old_client && !$entities_known) {
+        push @$res, "Cannot tell which client keys still use an old cipher, as the key list"
+            . " could not be read and the health checks named none.";
+    } elsif (!$old_client) {
+        push @$res, "No client key left on an old cipher.";
+    } elsif (!defined($quorum_ok)) {
+        push @$res,
+            "Client keys cannot be judged yet, the monitor quorum features could not be read.";
+    } elsif (!$quorum_ok) {
+        push @$res,
+            "Client keys cannot be migrated yet, the monitor quorum does not support aes256k.";
+    } elsif (scalar(@old_kernel)) {
+        push @$res,
+            "Client keys have to stay on the old cipher, the kernel ceph clients only speak"
+            . " aes256k from kernel 7.0 on and these nodes still run an older one: "
+            . join(', ', @old_kernel) . ".";
+        push @$res,
+            "The running kernel is also unknown for these nodes, check them with 'uname -r'"
+            . " before migrating any client key: "
+            . join(', ', @unknown_kernel) . "."
+            if scalar(@unknown_kernel);
+    } elsif (scalar(@unknown_kernel)) {
+        push @$res,
+            "Cannot tell whether the client keys may be migrated, the running kernel is unknown"
+            . " for these nodes as they run no Ceph daemon that would report one: "
+            . join(', ', @unknown_kernel)
+            . ". Check them with 'uname -r' first, a node below"
+            . " kernel 7.0 loses access to every RBD image and CephFS mount it maps itself.";
+    } else {
+        push @$res,
+            "Client keys can be migrated as far as this cluster's own nodes go, but check every"
+            . " consumer outside of it first (librados or librbd on external hosts, guests"
+            . " that map RBD themselves), those are not visible from here. The"
+            . " '--rotate-client-keys', '--rotate-admin-key' and '--rotate-storage-key'"
+            . " options of the migration helper cover them.";
+    }
+
+    my $allowed = $status->{monmap}->{auth_allowed_ciphers};
+    if (ref($allowed) eq 'ARRAY' && grep { $_ ne $AES256K_CIPHER } @$allowed) {
+        push @$res,
+            "The monitors still allow an old cipher, so the AUTH_INSECURE_KEYS_ALLOWED and"
+            . " AUTH_INSECURE_KEYS_CREATABLE checks stay until every key is migrated and"
+            . " the old cipher is dropped from auth_allowed_ciphers.";
+    }
+
+    return $res;
+}
+
+# Strictly read-only. Every mon command is wrapped, since a release from before the cipher answers
+# none of them, and a missing piece is reported as unknown rather than failing the whole report.
+sub get_cephx_auth_status {
+    my ($rados) = @_;
+    $rados = PVE::Ceph::Services::ResilientRados->new(
+        timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'),
+    ) if !$rados;
+
+    my $health = eval { $rados->mon_command({ prefix => 'health', detail => 'detail' }) };
+    $health = {} if ref($health) ne 'HASH';
+    my $checks = ref($health->{checks}) eq 'HASH' ? $health->{checks} : {};
+
+    # ask the same helper the status endpoint uses instead of deciding again here, so this
+    # report and the restart endpoints can never disagree, and both report the same shape
+    my $blocking = restart_blocking_by_type($rados, $health);
+
+    my $res = { checks => {} };
+    for my $name (sort keys %$checks) {
+        next if $name !~ m/^AUTH_/ || ref($checks->{$name}) ne 'HASH';
+        $res->{checks}->{$name} = {
+            severity => $checks->{$name}->{severity} // 'unknown',
+            message => $checks->{$name}->{summary}->{message} // '',
+            muted => $checks->{$name}->{muted} ? 1 : 0,
+            'blocks-restart' => $blocking->{$name},
+        };
+    }
+
+    my $mondump = eval { $rados->mon_command({ prefix => 'mon dump', format => 'json' }) };
+    $mondump = {} if ref($mondump) ne 'HASH';
+
+    $res->{monmap} = {};
+    for my $key (qw(auth_service_cipher auth_preferred_cipher)) {
+        my $name = cipher_name($mondump->{$key});
+        $res->{monmap}->{$key} = $name if defined($name);
+    }
+    if (ref($mondump->{auth_allowed_ciphers}) eq 'ARRAY') {
+        $res->{monmap}->{auth_allowed_ciphers} =
+            [grep { defined($_) } map { cipher_name($_) } $mondump->{auth_allowed_ciphers}->@*];
+    }
+
+    my $versions = eval { $rados->mon_command({ prefix => 'versions', format => 'json' }) };
+    $versions = {} if ref($versions) ne 'HASH';
+
+    $res->{daemons} = {};
+    $res->{'daemons-without-aes256k'} = [];
+    for my $type (qw(mon mgr osd mds)) {
+        next if ref($versions->{$type}) ne 'HASH';
+
+        my $entries = [];
+        for my $version (sort keys $versions->{$type}->%*) {
+            my $count = $versions->{$type}->{$version};
+            my $supported = ceph_version_supports_aes256k($version);
+            # ceph reports the full banner, which is unreadable in a summary line
+            my $short = $version =~ m/^ceph version (\S+)/ ? $1 : $version;
+            push @$entries,
+                {
+                    version => $version,
+                    'version-short' => $short,
+                    count => $count,
+                    defined($supported) ? ('supports-aes256k' => $supported) : (),
+                };
+            # an unparseable version is reported as unknown in 'supports-aes256k' but still listed
+            # here, so it blocks the migration instead of silently passing it
+            push $res->{'daemons-without-aes256k'}->@*, "$type ($count) on $short"
+                if !$supported;
+        }
+        $res->{daemons}->{$type} = $entries;
+    }
+
+    my $quorum = {};
+    my $quorum_status =
+        eval { $rados->mon_command({ prefix => 'quorum_status', format => 'json' }) };
+    if (ref($quorum_status) eq 'HASH') {
+        my $names = $quorum_status->{quorum_names};
+        $quorum->{members} = $names if ref($names) eq 'ARRAY';
+
+        my $features = ($quorum_status->{features} // {})->{quorum_mon};
+        if (ref($features) eq 'ARRAY') {
+            $quorum->{'supports-aes256k'} =
+                (grep { $_ eq $AES256K_MON_FEATURE } @$features) ? 1 : 0;
+            $quorum->{'feature-source'} = 'quorum mon features';
+        }
+    }
+    if (!$quorum->{'feature-source'}) {
+        # Only the quorum feature decides whether Ceph accepts a rotation, the versions are a
+        # proxy. Leave 'supports-aes256k' unset so callers report unknown, the versions are a hint.
+        my $mons = $res->{daemons}->{mon} // [];
+        $quorum->{'versions-support-aes256k'} =
+            (scalar(@$mons) && !grep { !$_->{'supports-aes256k'} } @$mons) ? 1 : 0;
+        $quorum->{'feature-source'} = 'unknown, could not read the quorum features';
+    }
+    $res->{quorum} = $quorum;
+
+    $res->{entities} = collect_entity_ciphers($rados, $checks);
+    $res->{nodes} = collect_node_kernels($rados);
+    $res->{conclusion} = cephx_migration_verdicts($res);
+
+    return $res;
 }
 
 # Wraps Ceph's '$type ok-to-stop' mon command and returns ($safe, $message).
