@@ -8,6 +8,7 @@ use File::stat ();
 use IO::File;
 use File::Basename;
 use Encode qw(decode);
+use URI qw();
 
 use LWP::UserAgent;
 
@@ -336,8 +337,9 @@ __PACKAGE__->register_method({
             # setup proxy for apt
 
             my $aptconf = "// no proxy configured\n";
-            if ($dcconf->{http_proxy}) {
-                $aptconf = "Acquire::http::Proxy \"$dcconf->{http_proxy}\";\n";
+            if (my $http_proxy = $dcconf->{http_proxy}) {
+                my $http_proxy_uri = URI->new($http_proxy);
+                $aptconf = "Acquire::http::Proxy \"${http_proxy_uri}\";\n";
             }
             my $aptcfn = "/etc/apt/apt.conf.d/76pveproxy";
             PVE::Tools::file_set_contents($aptcfn, $aptconf);
