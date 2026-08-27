@@ -19,7 +19,8 @@ our @EXPORT_OK = qw(
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
-    mon_key_rotation_wanted client_keys_requested unfinished_entities touched_daemons
+    mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
+    touched_daemons
     plan_client_keys build_plan merge_configured_daemons resume_verdict
     classify_insecure_clients open_options
 );
@@ -161,14 +162,37 @@ sub client_keys_requested($opts) {
     return scalar(@{ $opts->{'rotate-storage-key'} // [] }) ? 1 : 0;
 }
 
-# rotated but not written everywhere. An OSD left stopped stays in 'osd metadata', so the recovery
-# walk alone misses some
-sub unfinished_entities($state) {
-    my $finished = { %{ $state->{done} // {} } };
-    $finished->{'mon.'} = 1 if $state->{mon_key_complete}; # the monitor step's own marker
+# A completed older rotation must not hide a newer interrupted one. Live-swap state is always open;
+# the other markers use their timestamps to distinguish two rotations of the same entity.
+sub migration_unfinished($state, $entity) {
+    return 1 if $state->{live_swap}->{$entity};
 
-    my $started = { %{ $state->{rotated} // {} }, %{ $state->{previous_keys} // {} } };
-    return sort grep { !$finished->{$_} } keys %$started;
+    my $rotated = $state->{rotated}->{$entity};
+    my $previous = $state->{previous_keys}->{$entity};
+    my $started = defined($rotated) || defined($previous);
+    return 0 if !$started;
+
+    my $done = $state->{done}->{$entity};
+    return 1 if !defined($done);
+
+    my @times = grep { defined($_) && /^\d+(?:\.\d+)?$/ } (
+        $rotated, ref($previous) eq 'HASH' ? $previous->{saved} : undef,
+    );
+    return scalar(grep { $_ > $done } @times) ? 1 : 0;
+}
+
+# Rotated but not written everywhere. An OSD left stopped stays in 'osd metadata', so the recovery
+# walk alone misses some.
+sub unfinished_entities($state) {
+    my $started = {
+        %{ $state->{rotated} // {} },
+        %{ $state->{previous_keys} // {} },
+        %{ $state->{live_swap} // {} },
+    };
+
+    return sort grep {
+        $_ eq 'mon.' && $state->{mon_key_complete} ? 0 : migration_unfinished($state, $_)
+    } keys %$started;
 }
 
 # The daemons this run writes to. Only these are asked about their data directory, so a run
@@ -320,12 +344,7 @@ sub plan_client_keys($info, $state, $opts, $files) {
         }
         # 'rotated' without 'done' means copies are missing; with 'done' the kernel check below
         # would refuse a key nobody is changing
-        if (
-            !needs_rotation($info, $entity)
-            && (!$state->{rotated}->{$entity} || $state->{done}->{$entity})
-        ) {
-            next;
-        }
+        next if !needs_rotation($info, $entity) && !migration_unfinished($state, $entity);
 
         my $mine = $files->{$entity} // [];
         push @$plan,
@@ -369,10 +388,12 @@ sub build_plan($info, $state, $opts, $files) {
 
         for my $daemon (@$daemons) {
             next if $only && !$only->{$type} && !$only->{ $daemon->{entity} };
-            # not the marker alone: a reused OSD id gets a fresh key that needs migrating like any
-            # other
+            my $unfinished = migration_unfinished($state, $daemon->{entity});
+            # Not the marker alone: a reused OSD id gets a fresh key that needs migrating like any
+            # other.
             if (
-                $state->{done}->{ $daemon->{entity} }
+                !$unfinished
+                && $state->{done}->{ $daemon->{entity} }
                 && !needs_rotation($info, $daemon->{entity})
             ) {
                 next;
@@ -384,7 +405,8 @@ sub build_plan($info, $state, $opts, $files) {
             # 'previous_keys' is written before the rotation and 'rotated' after, so one without the
             # other means the auth db moved on and the daemon did not
             if (
-                !needs_rotation($info, $daemon->{entity})
+                !$unfinished
+                && !needs_rotation($info, $daemon->{entity})
                 && !$state->{rotated}->{ $daemon->{entity} }
                 && !$state->{previous_keys}->{ $daemon->{entity} }
             ) {

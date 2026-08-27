@@ -24,7 +24,8 @@ use PVE::Ceph::KeyMigration qw(
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
-    mon_key_rotation_wanted client_keys_requested unfinished_entities touched_daemons
+    mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
+    touched_daemons
     plan_client_keys build_plan merge_configured_daemons resume_verdict
     open_options
 );
@@ -1132,7 +1133,11 @@ my sub rotate_entity($rados, $state, $entity) {
         return $before;
     }
 
-    # recorded before the rotation, the only way back for a stranded daemon
+    # markers of an older rotation must not hide this one on resume
+    delete $state->{done}->{$entity};
+    delete $state->{rotated}->{$entity};
+    delete $state->{mon_key_complete} if $entity eq 'mon.';
+
     my $type = key_cipher($before->{key});
     $state->{previous_keys}->{$entity} = {
         key => $before->{key},
@@ -1575,8 +1580,7 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
 
     # a 'done' marker says nothing about this rotation: the key can have been reset, or the id
     # reused
-    my $unfinished_before = !$state->{done}->{$entity}
-        && ($state->{rotated}->{$entity} || $state->{previous_keys}->{$entity}) ? 1 : 0;
+    my $unfinished_before = migration_unfinished($state, $entity);
     my $up = daemon_is_running($rados, $type, $id);
 
     # a swap an earlier run left open is finished first, and the daemon then has to be restarted

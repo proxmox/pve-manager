@@ -10,7 +10,8 @@ use Test::More;
 use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output needs_rotation mon_keyring_stale
-    mon_key_rotation_wanted unfinished_entities touched_daemons plan_client_keys build_plan
+    mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
+    plan_client_keys build_plan
     merge_configured_daemons resume_verdict classify_insecure_clients open_options
 );
 
@@ -179,19 +180,35 @@ is(
         rotated => { 'osd.1' => 1, 'osd.2' => 1, 'mon.' => 1 },
         done => { 'osd.1' => 1 },
         previous_keys => { 'client.admin' => {} },
+        live_swap => { 'mgr.a' => { phase => 'staged' } },
     };
     is_deeply(
         [unfinished_entities($state)],
-        ['client.admin', 'mon.', 'osd.2'],
-        'a key recorded as rotated, or whose old key was saved, but never finished',
+        ['client.admin', 'mgr.a', 'mon.', 'osd.2'],
+        'a rotated key, saved old key, or live-swap journal without completion is unfinished',
     );
     $state->{mon_key_complete} = 'fingerprint';
     is_deeply(
         [unfinished_entities($state)],
-        ['client.admin', 'osd.2'],
+        ['client.admin', 'mgr.a', 'osd.2'],
         'the monitor step carries its own completion marker',
     );
     is_deeply([unfinished_entities({})], [], 'a fresh state has nothing outstanding');
+
+    my $repeated = {
+        done => { 'client.admin' => 100 },
+        rotated => { 'client.admin' => 200 },
+        previous_keys => { 'client.admin' => { saved => 200 } },
+    };
+    ok(
+        migration_unfinished($repeated, 'client.admin'),
+        'an older done marker does not hide a newer interrupted rotation',
+    );
+    $repeated->{done}->{'client.admin'} = 200;
+    ok(
+        !migration_unfinished($repeated, 'client.admin'),
+        'the matching completion marker finishes the newer rotation',
+    );
 }
 
 # --- which daemons a run writes to -------------------------------------------------------------
@@ -298,6 +315,29 @@ my sub cluster {
         ['mgr.a', 'osd.1'],
         'a daemon an earlier run rotated but did not finish is planned again',
     );
+
+    $state = {
+        done => { 'mgr.a' => 1 },
+        live_swap => { 'mgr.a' => { phase => 'written', key => key_fingerprint($NEW) } },
+    };
+    $plan = build_plan($info, $state, {}, {});
+    is_deeply(
+        [sort map { $_->{entity} } $plan->{daemons}->@*],
+        ['mgr.a', 'osd.1'],
+        'a live-swap journal is resumed even when stale completion state says the key is done',
+    );
+
+    $state = {
+        done => { 'mgr.a' => 100 },
+        rotated => { 'mgr.a' => 200 },
+        previous_keys => { 'mgr.a' => { saved => 200 } },
+    };
+    $plan = build_plan($info, $state, {}, {});
+    is_deeply(
+        [sort map { $_->{entity} } $plan->{daemons}->@*],
+        ['mgr.a', 'osd.1'],
+        'a newer interrupted rotation is planned despite an older completion marker',
+    );
 }
 {
     my $info = {
@@ -341,6 +381,19 @@ my sub cluster {
         1,
         'a key an in-kernel client reads is marked, which is what gates it on the node kernels',
     );
+
+    my $repeated = {
+        done => { 'client.admin' => 100 },
+        rotated => { 'client.admin' => 200 },
+        previous_keys => { 'client.admin' => { saved => 200 } },
+    };
+    my ($resume) = plan_client_keys(
+        { exported => { 'client.admin' => { key => $NEW } } },
+        $repeated,
+        { 'rotate-admin-key' => 1 },
+        $files,
+    );
+    is(scalar(@$resume), 1, 'a newer unfinished client rotation is planned despite an older done');
 
     my ($none, $warnings) =
         plan_client_keys({ exported => {} }, {}, { 'rotate-admin-key' => 1 }, $files);
