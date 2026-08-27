@@ -2216,7 +2216,7 @@ sub main {
                                 migrate_daemon($rados, $state, $daemon, $opts);
                             }
                         },
-                        # so a later run can unset these even if this process is killed first
+                        # before 'noout' is set, so a later run can reconcile it after a hard kill
                         sub($owned) {
                             if (scalar(@$owned)) {
                                 $state->{noout_owned} = $owned;

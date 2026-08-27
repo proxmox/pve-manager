@@ -1362,8 +1362,8 @@ sub unflagged_noout_osds {
 # Only OSDs that do not already carry the flag are touched, so an operator's own 'noout' on a
 # specific OSD survives. This reduces rather than removes the problem: a flag set by someone
 # else while $code runs is still cleared at the end, and no re-read can tell that apart from
-# our own. $on_owned, if given, is called with the owned ids right after they were set, so a
-# caller that can persist them recovers the cleanup after a hard kill, which this scope cannot.
+# our own. $on_owned, if given, is called with the intended owned ids before they are set. A
+# caller can persist that intent before the mon command, then reconcile it after a hard kill.
 sub with_noout {
     my ($rados, $osd_ids, $code, $on_owned) = @_;
 
@@ -1401,6 +1401,9 @@ sub with_noout {
     local $SIG{HUP} = sub { $cleanup->(); die "received SIGHUP, aborting bulk-restart\n"; };
 
     eval {
+        # Persist the intent first. If the process dies before the mon command, the next run sees
+        # that these OSDs are still unflagged and drops the harmless record.
+        $on_owned->($owned) if $on_owned;
         print "setting 'noout' flag on " . scalar(@$owned) . " OSDs\n";
         $we_set_it = 1; # set BEFORE mon_command to close the signal/failure race
         $rados->mon_command({
@@ -1408,9 +1411,6 @@ sub with_noout {
             flags => 'noout',
             who => $owned,
         });
-        # tell the caller what we own as soon as it is true, so it can persist it and clean
-        # up after a kill that never reaches the cleanup below
-        $on_owned->($owned) if $on_owned;
         $code->();
     };
     my $err = $@;

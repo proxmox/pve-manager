@@ -295,7 +295,7 @@ is_deeply(
 
     sub new {
         my ($class, @flagged) = @_;
-        return bless { flagged => { map { $_ => 1 } @flagged }, calls => [] }, $class;
+        return bless { flagged => { map { $_ => 1 } @flagged }, calls => [], events => [] }, $class;
     }
 
     sub mon_command {
@@ -310,7 +310,9 @@ is_deeply(
                 ],
             };
         }
-        push $self->{calls}->@*, "$cmd->{prefix}:" . join(',', $cmd->{who}->@*);
+        my $call = "$cmd->{prefix}:" . join(',', $cmd->{who}->@*);
+        push $self->{calls}->@*, $call;
+        push $self->{events}->@*, $call;
         return {};
     }
 }
@@ -346,7 +348,10 @@ is_deeply($unflagged->(NooutRados->new(0, 1, 2), [0, 1, 2]), [], 'nothing to own
         $rados,
         ['osd.0', 'osd.1', 'osd.2'],
         sub { $ran = 1 },
-        sub { push @owned, [$_[0]->@*] },
+        sub {
+            push @owned, [$_[0]->@*];
+            push $rados->{events}->@*, scalar($_[0]->@*) ? 'persist:0,2' : 'clear';
+        },
     );
     is($ran, 1, 'the body runs');
     is_deeply(
@@ -356,6 +361,11 @@ is_deeply($unflagged->(NooutRados->new(0, 1, 2), [0, 1, 2]), [], 'nothing to own
     );
     is_deeply($owned[0], [0, 2], 'the owned set is reported to the caller');
     is_deeply($owned[1], [], 'and cleared again after a successful unset');
+    is_deeply(
+        $rados->{events},
+        ['persist:0,2', 'osd set-group:0,2', 'osd unset-group:0,2', 'clear'],
+        'the recovery intent is persisted before noout is set',
+    );
 }
 
 # an already fully flagged set must not issue either command
