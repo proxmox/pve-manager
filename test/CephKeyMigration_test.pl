@@ -11,7 +11,7 @@ use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output needs_rotation mon_keyring_stale
     mon_key_rotation_wanted unfinished_entities touched_daemons plan_client_keys build_plan
-    merge_configured_daemons resume_verdict
+    merge_configured_daemons resume_verdict classify_insecure_clients open_options
 );
 
 # Real keys from a Ceph 19.2.6 cluster, not keys built the way key_cipher() reads them: the point
@@ -522,6 +522,193 @@ my sub cluster {
         ['osd.1', 'osd.2'],
         'and only managers are ordered this way',
     );
+}
+
+# Each bucket routes to a different option and the lockbox one to none at all, so the count Ceph
+# reports says nothing about what to do next.
+{
+    my $check = sub {
+        return {
+            AUTH_INSECURE_CLIENT_KEY_TYPE => {
+                detail => [map { { message => "entity $_ using insecure key type: aes" } } @_],
+            },
+        };
+    };
+
+    my $res = classify_insecure_clients(
+        $check->(
+            'client.osd-lockbox.6f0d1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b',
+            'client.bootstrap-osd',
+            'client.admin',
+            'client.rbd-store',
+            'client.rgw.node1',
+        ),
+        { 'client.rbd-store' => ['ceph-vm'] },
+    );
+
+    is_deeply(
+        $res->{lockbox},
+        ['client.osd-lockbox.6f0d1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b'],
+        'a lockbox key is kept apart, it can never be rotated',
+    );
+    is_deeply(
+        $res->{tool},
+        ['client.bootstrap-osd'],
+        'a bootstrap key maps to --rotate-client-keys',
+    );
+    is_deeply($res->{admin}, ['client.admin'], 'the admin key maps to --rotate-admin-key');
+    is_deeply($res->{storage}, ['client.rbd-store'], 'a storage user maps to --rotate-storage-key');
+    is_deeply(
+        $res->{other},
+        ['client.rgw.node1'],
+        'a key nothing here owns is reported, not offered',
+    );
+
+    my $none = classify_insecure_clients({});
+    is_deeply([map { $none->{$_}->@* } sort keys %$none], [], 'no check at all yields nothing');
+
+    my $storage_unknown = classify_insecure_clients($check->('client.rbd-store'));
+    is_deeply(
+        $storage_unknown->{other},
+        ['client.rbd-store'],
+        'a storage user is only offered when a storage still references it',
+    );
+
+    my $garbage = classify_insecure_clients({
+        AUTH_INSECURE_CLIENT_KEY_TYPE =>
+            { detail => [{ message => 'entity client.admin has bad caps' }, {}] },
+    });
+    is_deeply($garbage->{admin}, [], 'a detail line of another shape is not mistaken for a key');
+}
+
+# Suppressing every option because one of them was passed would hide the keys still to do.
+{
+    my $checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [
+                map { { message => "entity $_ using insecure key type: aes" } }
+                    ('client.admin', 'client.bootstrap-osd', 'client.store-a', 'client.store-b'),
+            ],
+        },
+    };
+    my $stores = { 'client.store-a' => ['rbd-vm'], 'client.store-b' => ['cephfs-iso', 'rbd-ct'] };
+
+    my $all = open_options($checks, {}, $stores);
+    is(scalar($all->{next}->@*), 4, 'every key that an option covers is offered');
+
+    my $one = open_options($checks, { 'rotate-storage-key' => ['rbd-vm'] }, $stores);
+    is_deeply(
+        [grep { m/rotate-client-keys|rotate-admin-key/ } $one->{next}->@*],
+        [
+            "--rotate-client-keys: the bootstrap keys and 'client.crash'",
+            "--rotate-admin-key: 'client.admin' and the copies of it that Proxmox VE keeps",
+        ],
+        'rotating one storage key does not hide the other options',
+    );
+    ok(
+        !grep({ m/rotate-storage-key rbd-vm/ } $one->{next}->@*),
+        'but the storage this run rotated is not offered again',
+    );
+    ok(
+        (
+            grep { m/^--rotate-storage-key cephfs-iso: .* shared by cephfs-iso, rbd-ct$/ }
+                $one->{next}->@*
+        ),
+        'a key behind several storages names one of them, so the option can be copied as printed',
+    );
+
+    my $wipe = { AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {} };
+    ok(
+        scalar(open_options($wipe, { only => { 'osd.3' => 1 } }, {}, $CIPHER)->{next}->@*),
+        "'--only' allows --wipe-rotating-keys once the service cipher is switched",
+    );
+    ok(
+        !scalar(open_options($wipe, { only => { 'osd.3' => 1 } }, {}, $LEGACY_CIPHER)->{next}->@*),
+        'and it is not offered while the switch is still pending, as that run refuses it',
+    );
+}
+
+# Ceph reports a lockbox key like any other client key, but no option may move it.
+{
+    my $checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [
+                map { { message => "entity $_ using insecure key type: aes" } }
+                    ('client.osd-lockbox.6f0d1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b', 'client.rgw.node1'),
+            ],
+        },
+    };
+    my $res = open_options($checks, {}, {});
+    is_deeply($res->{next}, [], 'nothing is offered for keys no option covers');
+    is(scalar($res->{stuck}->@*), 2, 'both are reported as untouched');
+    is($res->{lockbox}, 1, 'and the lockbox warning is triggered');
+    is(open_options({}, {}, {})->{lockbox}, 0, 'a cluster without one does not get that warning');
+}
+
+# Reading an absent check must not add it to the caller's health map
+{
+    my $checks = { AUTH_INSECURE_KEYS_ALLOWED => { severity => 'HEALTH_WARN' } };
+    open_options($checks, {}, {});
+    is_deeply(
+        [sort keys %$checks],
+        ['AUTH_INSECURE_KEYS_ALLOWED'],
+        'classifying does not autovivify the check it looks for',
+    );
+}
+
+# The hedge belongs to the client key options, not to whatever else is left in the list.
+{
+    my $rotating = {
+        AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {},
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [{ message => 'entity client.admin using insecure key type: aes' }],
+        },
+    };
+    is(open_options($rotating, {}, {})->{hedge}, 1, 'the hedge comes with the admin key option');
+    is(
+        open_options($rotating, { 'rotate-admin-key' => 1 }, {})->{hedge},
+        0,
+        'and goes away with it, so it cannot land on --wipe-rotating-keys alone',
+    );
+    my $lockbox = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail =>
+                [{ message => 'entity client.osd-lockbox.abc using insecure key type: aes' }],
+        },
+    };
+    is(open_options($lockbox, {}, {})->{hedge}, 0, 'a key no option covers does not raise it');
+}
+
+# 'client.admin' backs any storage that names no user, and --rotate-storage-key refuses it.
+{
+    my $checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [{ message => 'entity client.admin using insecure key type: aes' }],
+        },
+    };
+    my $res = classify_insecure_clients($checks, { 'client.admin' => ['cephfs', 'cp'] });
+    is_deeply($res->{admin}, ['client.admin'], 'the admin entity stays out of the storage bucket');
+    is_deeply($res->{storage}, [], 'even when storages reference it');
+    is_deeply(
+        open_options($checks, {}, { 'client.admin' => ['cephfs', 'cp'] })->{next},
+        ["--rotate-admin-key: 'client.admin' and the copies of it that Proxmox VE keeps"],
+        'so the option offered is the one that accepts it',
+    );
+}
+
+# The detail line is matched whole; one that merely starts the same way is not a key
+{
+    my $loose = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [
+                { message => 'entity client.a using insecure key type: aes and more text' },
+                { message => 'prefixed entity client.b using insecure key type: aes' },
+            ],
+        },
+    };
+    my $res = classify_insecure_clients($loose);
+    is_deeply([map { $res->{$_}->@* } sort keys %$res], [],
+        'a message of another shape is ignored');
 }
 
 done_testing();

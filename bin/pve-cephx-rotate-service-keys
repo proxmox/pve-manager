@@ -26,6 +26,7 @@ use PVE::Ceph::KeyMigration qw(
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested unfinished_entities touched_daemons
     plan_client_keys build_plan merge_configured_daemons resume_verdict
+    open_options
 );
 
 my $QUORUM_FEATURE = 'cephx_auth_aes256k'; # every quorum monitor must advertise it first
@@ -323,6 +324,10 @@ my sub collect_cluster_info($rados) {
     $info->{allowed_ciphers} = [map { $_->{name} } @{ $mon_dump->{auth_allowed_ciphers} // [] }];
     $info->{monmap_mons} = [sort map { $_->{name} } @{ $mon_dump->{mons} // [] }];
 
+    # a fallback restart can hand the active role to another manager mid-run, so the swap re-checks
+    my $mgr_dump = eval { $rados->mon_command({ prefix => 'mgr dump', format => 'json' }) };
+    my $active_mgr = ref($mgr_dump) eq 'HASH' ? ($mgr_dump->{active_name} // '') : '';
+
     my $quorum = $rados->mon_command({ prefix => 'quorum_status', format => 'json' });
     die "could not read the monitor quorum status\n" if ref($quorum) ne 'HASH';
 
@@ -333,6 +338,7 @@ my sub collect_cluster_info($rados) {
     die "could not read the cluster health\n" if ref($health) ne 'HASH';
 
     my $checks = $health->{checks} // {};
+    $info->{health_checks} = $checks;
 
     my $insecure = {};
     for my $detail (@{ $checks->{AUTH_INSECURE_SERVICE_KEY_TYPE}->{detail} // [] }) {
@@ -377,6 +383,7 @@ my sub collect_cluster_info($rados) {
                     entity => $type eq 'mon' ? 'mon.' : "$type.$id",
                     node => $entry->{hostname},
                     version => $entry->{ceph_version_short} // $entry->{ceph_version},
+                    active => ($type eq 'mgr' && "$id" eq $active_mgr) ? 1 : 0,
                 };
         }
 
@@ -1723,28 +1730,95 @@ my sub wipe_rotating_keys($rados, $state) {
     return;
 }
 
-my sub print_closing_notes($rados) {
+# a storage that names no user backs onto 'client.admin', which --rotate-admin-key covers
+my sub storage_entities($files) {
+    my $res = {};
+    for my $entity (keys %$files) {
+        my $stores = [grep { defined($_) } map { $_->{store} } $files->{$entity}->@*];
+        $res->{$entity} = $stores if scalar(@$stores);
+    }
+    return $res;
+}
+
+my sub print_open_options($checks, $opts, $storage_entities, $service_cipher) {
+    my $open = open_options($checks, $opts, $storage_entities, $service_cipher);
+
+    if (scalar($open->{next}->@*)) {
+        log_text("");
+        log_text("Options that address what is still reported, combinable in one '--apply' run:");
+        log_step($_) for $open->{next}->@*;
+        log_text("'pveceph auth status' reports what reads each client key, and whether it can"
+                . " take the new cipher.")
+            if $open->{hedge};
+    }
+
+    return if !scalar($open->{stuck}->@*);
+
+    log_text("");
+    log_text("Left to whoever manages the client that reads them; 'man pveceph' covers what each"
+        . " needs:");
+    log_step($_) for $open->{stuck}->@*;
+    log_text("Never rotate a 'client.osd-lockbox' key. Its only persistent copy is an LVM tag"
+            . " on the OSD it unlocks, so rotating it leaves that OSD unable to start. Recreating"
+            . " the OSD is the only way over.")
+        if $open->{lockbox};
+
+    return;
+}
+
+my sub print_closing_notes(
+    $rados, $opts, $storage_entities, $switched, $service_cipher, $rotated_keys,
+) {
     log_heading("What is left");
 
     my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
     my $checks = $health->{checks} // {};
 
-    my @remaining = grep { m/^AUTH_/ } sort keys %$checks;
-    if (@remaining) {
-        log_text("Ceph still reports these authentication health checks:");
-        log_step("$_: " . ($checks->{$_}->{summary}->{message} // '')) for @remaining;
-        log_text("");
-        log_text("The monitors recompute these counts periodically, so one can still include a key"
-            . " this run just migrated. Check with 'pveceph auth status' if it looks high.");
+    # Any check Ceph raises as an error settles this, AUTH_BAD_CAPS included. The ticket one lags
+    # the monitors' tick, so set_service_cipher's 'mon dump' read is the better proof.
+    my $switch_proved = { AUTH_INSECURE_SERVICE_TICKETS => 1 };
+    my @errors = grep {
+        m/^AUTH_/
+            && ($checks->{$_}->{severity} // '') eq 'HEALTH_ERR'
+            && !($switched && $switch_proved->{$_})
+    } sort keys %$checks;
+    if (!scalar(@errors)) {
+        if ($switched && $rotated_keys) {
+            log_text("This run migrated the service keys and switched their tickets over, clearing"
+                . " both errors. Ceph may still list them until the monitors recompute.");
+        } elsif ($switched) {
+            log_text("This run switched the service tickets to the '$CIPHER' cipher. Ceph may"
+                . " still list that check until the monitors recompute.");
+        } else {
+            log_text("No authentication check is an error: the service keys and the tickets they"
+                . " hand out are migrated.");
+        }
+        log_text("Everything left below is a warning, and clearing it is optional.");
         log_text("");
     }
 
-    log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE, if still listed, clears on its own once the"
-        . " current rotating service keys expire, normally within a few hours.");
-    log_text("AUTH_INSECURE_CLIENT_KEY_TYPE stays until the client keys are migrated too, and"
-        . " AUTH_INSECURE_KEYS_ALLOWED and AUTH_INSECURE_KEYS_CREATABLE while the monitors have to"
-        . " keep accepting the old cipher. All three are warnings; 'ceph health mute <check>'"
-        . " silences one you cannot act on, and the documentation covers the rest.");
+    my @remaining = grep { m/^AUTH_/ } sort keys %$checks;
+    if (@remaining) {
+        log_text("Ceph still reports these authentication health checks:");
+        for my $check (@remaining) {
+            my $message = $checks->{$check}->{summary}->{message} // '';
+            $message .= " (cleared by this run, not recomputed yet)"
+                if $switched && $switch_proved->{$check};
+            log_step("$check: $message");
+        }
+        log_text("");
+        log_text("The monitors recompute these on their own tick, so a count can still include a"
+            . " key this run migrated; 'pveceph auth status' in a few minutes has the current one."
+        );
+        log_text("");
+    }
+
+    log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours. The"
+        . " other warnings stay until every client key is migrated and the old cipher is dropped;"
+        . " 'ceph health mute <check>' silences one you cannot act on.");
+
+    print_open_options($checks, $opts, $storage_entities, $service_cipher);
+
     log_text("");
     log_warn("Keep $STATE_FILE until Ceph health and daemon access are verified: it holds the only"
         . " copy of the keys used before this run, the way back for a daemon left behind"
@@ -2009,17 +2083,26 @@ sub main {
             . " and no longer appears in ceph's own daemon list, picking it up again");
     }
 
-    my $verdict = preflight_cluster($info, $opts, scalar(@$recovered), $state);
-    return $verdict == 0 ? 0 : 1 if $verdict <= 0;
+    my $client_files = client_key_files();
 
-    my $plan = build_plan($info, $state, $opts, client_key_files());
+    my $verdict = preflight_cluster($info, $opts, scalar(@$recovered), $state);
+    if ($verdict <= 0) {
+        print_open_options(
+            $info->{health_checks},
+            $opts,
+            storage_entities($client_files),
+            $info->{service_cipher},
+        ) if $verdict == 0;
+        return $verdict == 0 ? 0 : 1;
+    }
+
+    my $plan = build_plan($info, $state, $opts, $client_files);
     log_warn($_) for $plan->{warnings}->@*;
 
     # an old-cipher 'mon.' in the auth db blocks the switch, so say so before walking every daemon
     if ($info->{insecure_entities}->{'mon.'} && !$plan->{mon_key} && !$opts->{only}) {
-        log_fail("Pass '--rotate-mon-key'. The shared 'mon.' key is already rotated into the auth"
-            . " database and Ceph reports it as insecure; the service ticket switch is refused"
-            . " while that holds, so this run would abort at its last step.");
+        log_fail("The shared 'mon.' key sits in the auth database on the old cipher, which blocks"
+            . " the service ticket switch at the end. Pass '--rotate-mon-key'.");
         return 1;
     }
 
@@ -2033,10 +2116,22 @@ sub main {
         my @unfinished =
             grep { $_ eq 'mon.' || $info->{exported}->{$_} } unfinished_entities($state);
         if (@unfinished) {
-            log_warn("An earlier run rotated the key of "
-                . join(', ', @unfinished)
-                . " unfinished, and nothing in this run covers it. Pass the option that rotates"
-                . " it again.");
+            my $stores = storage_entities($client_files);
+            my @hints = map {
+                my $entity = $_;
+                my $option =
+                    $entity eq 'mon.' ? "'--rotate-mon-key'"
+                    : $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
+                    : (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? "'--rotate-client-keys'"
+                    : $entity =~ m/^client\.osd-lockbox\./ ? "'--rotate-lockbox-keys'"
+                    : $stores->{$entity} ? "'--rotate-storage-key $stores->{$entity}->[0]'"
+                    : "a run not narrowed by '--only'";
+                "$entity ($option)";
+            } @unfinished;
+            log_warn("An earlier run left these rotations unfinished, and nothing in this run"
+                . " covers them. Finish each with the option named: "
+                . join(', ', @hints)
+                . ".");
             return 1;
         }
 
@@ -2046,6 +2141,12 @@ sub main {
             log_pass("Every service key this script migrates uses the '$CIPHER' cipher.");
         }
         mon_key_hint($info, $opts);
+        print_open_options(
+            $info->{health_checks},
+            $opts,
+            storage_entities($client_files),
+            $info->{service_cipher},
+        );
         return 0;
     }
 
@@ -2058,6 +2159,13 @@ sub main {
     print_plan($info, $plan, $state, $opts);
 
     if (!$opts->{apply}) {
+        print_open_options(
+            $info->{health_checks},
+            $opts,
+            storage_entities($client_files),
+            $info->{service_cipher},
+        );
+
         log_heading("Dry run finished");
         log_text("Nothing on the cluster was changed. Run this again with '--apply' to carry"
             . " the plan out.");
@@ -2200,7 +2308,14 @@ sub main {
     }
 
     health_gate($rados, undef, "finishing");
-    print_closing_notes($rados);
+    print_closing_notes(
+        $rados,
+        $opts,
+        storage_entities($client_files),
+        $plan->{service_cipher},
+        $plan->{service_cipher} ? $CIPHER : $info->{service_cipher},
+        scalar($plan->{daemons}->@*) ? 1 : 0,
+    );
 
     log_heading("Done");
     if ($plan->{scoped}) {

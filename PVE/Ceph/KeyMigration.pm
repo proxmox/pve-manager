@@ -21,6 +21,7 @@ our @EXPORT_OK = qw(
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested unfinished_entities touched_daemons
     plan_client_keys build_plan merge_configured_daemons resume_verdict
+    classify_insecure_clients open_options
 );
 
 our $CIPHER = 'aes256k';
@@ -218,6 +219,69 @@ sub touched_daemons($info, $plan) {
     push @touched, $info->{daemons}->{mon}->@* if $plan->{mon_key} && !$plan->{mon_repair_only};
 
     return @touched;
+}
+
+# A lockbox key looks ordinary, but its only persistent copy is an LVM tag on the OSD it unlocks,
+# so rotating the auth entry just breaks that OSD's next activation.
+sub classify_insecure_clients($checks, $storage_entities = {}) {
+    my $found = {};
+    my $check = $checks->{AUTH_INSECURE_CLIENT_KEY_TYPE}; # a rvalue deref here would autovivify it
+    for my $detail (((defined($check) ? $check->{detail} : undef) // [])->@*) {
+        my $message = $detail->{message} // '';
+        $found->{$1} = 1 if $message =~ m/^entity (\S+) using insecure key type: \S+$/;
+    }
+
+    my $res = { lockbox => [], tool => [], admin => [], storage => [], other => [] };
+    for my $entity (sort keys %$found) {
+        my $bucket =
+            $entity =~ m/^client\.osd-lockbox\./ ? 'lockbox'
+            : $entity eq $ADMIN_ENTITY ? 'admin'
+            : (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? 'tool'
+            : $storage_entities->{$entity} ? 'storage'
+            : 'other';
+        push $res->{$bucket}->@*, $entity;
+    }
+    return $res;
+}
+
+# Only the options that can still change something. 'stuck' holds the keys none of them reach, for
+# the caller to report rather than offer.
+sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
+    my $clients = classify_insecure_clients($checks, $storage_entities);
+    my $done = $opts->{'rotate-storage-key'} // [];
+
+    my ($next, $hedge) = ([], 0);
+    push @$next, "--rotate-client-keys: the bootstrap keys and 'client.crash'"
+        if scalar($clients->{tool}->@*) && !$opts->{'rotate-client-keys'};
+    if (scalar($clients->{admin}->@*) && !$opts->{'rotate-admin-key'}) {
+        push @$next,
+            "--rotate-admin-key: '$ADMIN_ENTITY' and the copies of it that Proxmox VE keeps";
+        $hedge = 1;
+    }
+    for my $entity ($clients->{storage}->@*) {
+        my $stores = $storage_entities->{$entity};
+        next if grep {
+            my $store = $_;
+            grep { $_ eq $store } @$done
+        } @$stores;
+        my $shared = scalar(@$stores) > 1 ? ", shared by " . join(', ', @$stores) : '';
+        push @$next, "--rotate-storage-key $stores->[0]: the '$entity' key$shared";
+        $hedge = 1;
+    }
+    # a run narrowed by '--only' is refused this until the cipher is switched
+    push @$next,
+        "--wipe-rotating-keys: discard the rotating service keys instead of letting them"
+        . " expire"
+        if $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
+        && !$opts->{'wipe-rotating-keys'}
+        && !($opts->{only} && $service_cipher ne $CIPHER);
+
+    return {
+        next => $next,
+        stuck => [$clients->{lockbox}->@*, $clients->{other}->@*],
+        lockbox => scalar($clients->{lockbox}->@*) ? 1 : 0,
+        hedge => $hedge,
+    };
 }
 
 # as { entity, files, kernel, reason }. Opt-in: only the operator knows what reads a client key
