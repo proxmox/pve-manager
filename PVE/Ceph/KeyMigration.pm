@@ -296,7 +296,14 @@ sub build_plan($info, $state, $opts, $files) {
 
     for my $type (@$DAEMON_TYPES) {
         next if $only && !$only->{$type} && !grep { m/^\Q$type\E\./ } keys %$only;
-        for my $daemon ($info->{daemons}->{$type}->@*) {
+
+        # Restarting a standby costs no failover, so the active manager goes last: a fallback
+        # restart there fails over onto one already migrated.
+        my $daemons = [$info->{daemons}->{$type}->@*];
+        $daemons = [sort { ($a->{active} // 0) <=> ($b->{active} // 0) } @$daemons]
+            if $type eq 'mgr';
+
+        for my $daemon (@$daemons) {
             next if $only && !$only->{$type} && !$only->{ $daemon->{entity} };
             # not the marker alone: a reused OSD id gets a fresh key that needs migrating like any
             # other

@@ -471,4 +471,57 @@ my sub cluster {
     }
 }
 
+# --- manager order -------------------------------------------------------------------------
+# Standbys go first: restarting one costs nothing, and the active manager's fallback restart
+# then fails over onto a migrated one.
+{
+    my $mgr = sub {
+        my ($id, $active) = @_;
+        return {
+            type => 'mgr',
+            id => $id,
+            entity => "mgr.$id",
+            node => $id,
+            active => $active,
+        };
+    };
+    my $info = {
+        exported => { map { ("mgr.$_" => { key => $OLD }) } qw(a b c) },
+        daemons => {
+            mon => [],
+            mds => [],
+            osd => [],
+            mgr => [$mgr->('a', 0), $mgr->('b', 1), $mgr->('c', 0)],
+        },
+        service_cipher => $CIPHER,
+        pve_mon_key => $NEW,
+    };
+    my $plan = build_plan($info, {}, {}, {});
+    is_deeply(
+        [map { $_->{entity} } $plan->{daemons}->@*],
+        ['mgr.a', 'mgr.c', 'mgr.b'],
+        'the active manager is planned last, behind both standbys',
+    );
+
+    $info->{daemons}->{mgr} = [$mgr->('a', 1), $mgr->('b', 0)];
+    is_deeply(
+        [map { $_->{entity} } build_plan($info, {}, {}, {})->{daemons}->@*],
+        ['mgr.b', 'mgr.a'],
+        'wherever it sits in the list to begin with',
+    );
+
+    # nothing else is reordered: an OSD walk stays in the order discovery produced
+    $info->{daemons}->{mgr} = [];
+    $info->{daemons}->{osd} = [
+        { type => 'osd', id => '1', entity => 'osd.1', node => 'n' },
+        { type => 'osd', id => '2', entity => 'osd.2', node => 'n' },
+    ];
+    $info->{exported} = { 'osd.1' => { key => $OLD }, 'osd.2' => { key => $OLD } };
+    is_deeply(
+        [map { $_->{entity} } build_plan($info, {}, {}, {})->{daemons}->@*],
+        ['osd.1', 'osd.2'],
+        'and only managers are ordered this way',
+    );
+}
+
 done_testing();
