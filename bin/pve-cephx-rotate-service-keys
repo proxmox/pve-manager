@@ -296,9 +296,9 @@ my sub save_state($state) {
     $state->{version} = $STATE_VERSION;
     $state->{updated} = time();
     $state->{about} =
-        "Progress and pre-rotation cephx keys of pve-cephx-rotate-service-keys."
-        . " Keep this file until the cluster is confirmed healthy, it is the only record of"
-        . " the keys the daemons used before.";
+        "Migration progress and pre-rotation cephx keys of"
+        . " pve-cephx-rotate-service-keys. Protect this credential file and keep it until Ceph"
+        . " health and daemon access have been verified.";
 
     file_set_contents($STATE_FILE, JSON->new->canonical->pretty->encode($state));
 }
@@ -596,8 +596,10 @@ my sub probe_nodes($info, $plan) {
     }
 
     my $by_node = {};
+    log_info("collecting daemon keyrings and bluestore labels from "
+        . scalar(keys %$specs)
+        . " node(s)");
     for my $node (sort keys %$specs) {
-        log_info("asking node '$node' about its daemon keyrings and bluestore labels");
 
         my $output =
             eval { node_perl($node, $PROBE_SCRIPT, args => [$ccname, sort $specs->{$node}->@*]); };
@@ -673,8 +675,8 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         && !$recovered_count
         && !@unfinished
     ) {
-        log_pass("This cluster does not need the migration: every service key already uses the"
-            . " '$CIPHER' cipher and the monitors hand out service tickets with it.");
+        log_pass("Nothing left for this run: every service key uses '$CIPHER', and so do the"
+            . " service tickets.");
         mon_key_hint($info, $opts);
         return 0;
     }
@@ -700,15 +702,14 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         return -1;
     }
 
-    # needs_rotation() skips an entity with no auth entry, which would pass it over in silence
+    # needs_rotation() skips an entity with no auth entry, so reject it explicitly
     my @no_auth_entry =
         grep { !$info->{exported}->{$_} }
         map { $_->{entity} } map { $info->{daemons}->{$_}->@* } @$DAEMON_TYPES;
     if (@no_auth_entry) {
-        log_fail("These daemons have no entry in the cephx auth database, so this script would"
-            . " skip them without saying so: "
+        log_fail("These daemons have no cephx auth entry and cannot be migrated: "
             . join(', ', @no_auth_entry)
-            . ". Recreate the entity, or remove the daemon.");
+            . ". Recreate each auth entry or remove the corresponding daemon.");
         return -1;
     }
 
@@ -878,9 +879,7 @@ my sub preflight_nodes($info, $plan, $opts) {
         PVE::Ceph::Services::check_health_acceptable($info->{rados}, $opts->{force}, undef);
 
     if (@$ignored) {
-        log_info("These health checks are not a reason to stop, they describe the cephx keys"
-            . " this run migrates, or do not affect a rolling restart: "
-            . join(', ', @$ignored));
+        log_info("These health checks do not block this run: " . join(', ', sort @$ignored));
     }
 
     if (!$health_ok) {
@@ -939,16 +938,21 @@ my sub recover_left_behind($info, $state) {
 }
 
 my sub print_plan($info, $plan, $state, $opts) {
-    log_heading("What this is about");
+    my $insecure_service_keys = %{ $info->{insecure_entities} } ? 1 : 0;
+    log_heading($insecure_service_keys ? "Why HEALTH_ERR" : "Where this cluster stands");
 
-    if (%{ $info->{insecure_entities} }) {
-        log_text("Ceph 19.2.6 and 20.2.4 report every key still on the old '$LEGACY_CIPHER' cipher"
-            . " as insecure, two of those checks as errors, which is why the cluster is in"
-            . " HEALTH_ERR. Nothing is broken meanwhile.");
+    if ($insecure_service_keys) {
+        log_text("Ceph 19.2.6 and 20.2.4 flag every key still on the old '$LEGACY_CIPHER' cipher"
+            . " as insecure; two of those checks are errors, hence HEALTH_ERR.");
+        if (grep { $_ eq $LEGACY_CIPHER } $info->{allowed_ciphers}->@*) {
+            log_text("The keys still work while '$LEGACY_CIPHER' stays allowed.");
+        } else {
+            log_text("This cluster no longer allows '$LEGACY_CIPHER', so keys still on it may"
+                . " fail to authenticate.");
+        }
     } else {
-        log_text("Ceph 19.2.6 and 20.2.4 report every key still on the old '$LEGACY_CIPHER' cipher"
-            . " as insecure. Ceph reports none of this cluster's service keys on it, though it"
-            . " cannot see the shared 'mon.' key.");
+        log_text("Ceph reports no service key on the old '$LEGACY_CIPHER' cipher. That check reads"
+            . " the auth database only, so it cannot see the shared 'mon.' key.");
     }
     log_text("");
     my $clients = $plan->{client_keys} // [];
@@ -980,8 +984,10 @@ my sub print_plan($info, $plan, $state, $opts) {
     if (scalar(@$untouched)) {
         my $why = "";
         if (!$asked_for_clients) {
-            $why = " Whether a client key can move depends on the clients that use it, which is"
-                . " why those are only rotated when an option asks for it.";
+            $why =
+                " Rotate them with '--rotate-client-keys', '--rotate-admin-key' or"
+                . " '--rotate-storage-key'; what reads a key decides whether it can take the"
+                . " new cipher.";
         }
         log_text("Not touched by this run: " . join(', and ', @$untouched) . ".$why");
     }
@@ -1010,51 +1016,47 @@ my sub print_plan($info, $plan, $state, $opts) {
         $step++;
         my $counts = {};
         $counts->{ $_->{type} }++ for $plan->{daemons}->@*;
-        my $summary = join(', ',
-            map { "$counts->{$_} $TYPE_LABEL->{$_} daemon(s)" }
-            grep { $counts->{$_} } @$DAEMON_TYPES);
+        my @parts = map { "$counts->{$_} $TYPE_LABEL->{$_}" } grep { $counts->{$_} } @$DAEMON_TYPES;
+        my $last = pop(@parts);
+        my $total = scalar($plan->{daemons}->@*);
+        my $summary =
+            (scalar(@parts) ? join(', ', @parts) . " and " : '')
+            . "$last "
+            . ($total == 1 ? 'key' : 'keys');
 
         log_text("");
         if ($opts->{'restart-daemons'}) {
-            log_text("Step $step: rotate the key of $summary. '--restart-daemons' asks for the slow"
-                . " path: each daemon is stopped, rotated and started again, with Ceph asked"
-                . " before every stop and a blocking error in between stopping the run. The new"
-                . " key is written where the daemon reads it, which is the keyring file for a"
-                . " manager or metadata server and the bluestore label plus a re-primed data"
-                . " directory for an OSD. The 'noout' flag is set for this run's OSDs, and each is"
-                . " marked down while it is stopped.");
+            log_text("Step $step: rotate $summary. '--restart-daemons' takes the slow"
+                . " path: each daemon is stopped, rotated and started again.");
+            log_step("Each stop is cleared with Ceph first, and a blocking error in between"
+                . " halts the run.");
+            log_step("'noout' is set on this run's OSDs, and each is marked down while stopped.");
         } else {
-            log_text("Step $step: rotate the key of $summary. The key is swapped while each daemon"
-                . " keeps running, so nothing is stopped and clients stay connected. One that does"
-                . " not take it that way is stopped, rotated and started again, with the same"
-                . " checks, and the 'noout' flag is set for this run's OSDs either way because"
-                . " that fallback can happen at any point. The new key is written where the daemon"
-                . " reads it: the keyring file in its data directory, and for an OSD the bluestore"
-                . " label that directory is rebuilt from on every boot.");
+            log_text(
+                "Step $step: rotate $summary, handing each daemon its new key while it" . " runs.");
+            log_step("A daemon that cannot take it that way is stopped, rotated and started again,"
+                . " with the same checks.");
+            log_step("A standby manager cannot take a key while running and is restarted.")
+                if grep { $_->{type} eq 'mgr' } $plan->{daemons}->@*;
             my @down = map { $_->{entity} } grep { $_->{down} } $plan->{daemons}->@*;
             if (@down) {
-                log_text("  Not running right now, so the key is written where it lies and the"
-                    . " daemon is left stopped: "
+                log_text("  Not running right now, so the key is written to disk and the daemon"
+                    . " left stopped: "
                     . join(', ', @down)
                     . ".");
             }
-            if (grep { $_->{type} eq 'mgr' } $plan->{daemons}->@*) {
-                log_text("  Only the active manager can take a key while running, so a standby"
-                    . " always takes that fallback.");
-            }
-            log_text("  A pending key takes its cipher from 'auth_preferred_cipher' and nothing can"
-                . " ask for one explicitly, so this run points that setting at '$CIPHER' and puts"
-                . " it back afterwards. A client key created meanwhile gets it too.");
+            log_step("'noout' is set on this run's OSDs, as that stop can happen at any point.")
+                if grep { $_->{type} eq 'osd' } $plan->{daemons}->@*;
         }
-        log_step("in this order: "
-            . join(', ', map { "$_->{entity} (node $_->{node})" } $plan->{daemons}->@*));
+        log_step("in this order:");
+        log_steps([map { "$_->{entity} on $_->{node}" } $plan->{daemons}->@*]);
     }
 
     if (scalar(@{ $plan->{client_keys} // [] })) {
         $step++;
         log_text("");
-        log_text("Step $step: rotate the client key(s) you asked for. Each is rotated and written"
-            . " wherever Proxmox VE keeps a copy; copies elsewhere are up to you.");
+        log_text("Step $step: rotate the client keys asked for and rewrite every copy Proxmox VE"
+            . " keeps; copies elsewhere are up to you.");
         for my $item ($plan->{client_keys}->@*) {
             my $where =
                 scalar($item->{files}->@*)
@@ -1069,9 +1071,8 @@ my sub print_plan($info, $plan, $state, $opts) {
     if ($plan->{service_cipher}) {
         $step++;
         log_text("");
-        log_text("Step $step: tell the monitors to hand out service tickets with the new cipher,"
-            . " which clears the second HEALTH_ERR check. Old clients never decrypt those tickets,"
-            . " so they are unaffected, but every service daemon has to be migrated first.");
+        log_text("Step $step: switch the service tickets to the new cipher, which clears the second"
+            . " error. Clients are unaffected: they never decrypt those tickets.");
         log_step("ceph mon set auth_service_cipher $CIPHER");
     }
 
@@ -1079,40 +1080,34 @@ my sub print_plan($info, $plan, $state, $opts) {
         $step++;
         log_text("");
         log_text("Step $step: wipe the rotating service keys, as '--wipe-rotating-keys' was passed."
-            . " Upstream advises against it: skipping it only means the last warning clears once"
-            . " the current tickets expire, normally within a few hours.");
+            . " Not recommended: left alone, the last warning clears within a few hours.");
         log_step("ceph auth wipe-rotating-service-keys");
     }
 
     log_text("");
     # go back to the recorded value, not to what the cluster reports now
     my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
+    my $now = $info->{preferred_cipher} // 'unreadable';
     my $restore =
-        $opts->{'restart-daemons'} || !scalar($plan->{daemons}->@*)
-        ? "Left untouched"
-        : "Put back to '$goes_back_to' at the end of this run";
-    log_text("$restore: 'auth_preferred_cipher', currently '"
-        . $info->{preferred_cipher}
-        . "', which decides the cipher of every key created without an explicit '--key-type'."
-        . " While it stays '$LEGACY_CIPHER', new client keys stay usable by kernel clients that"
-        . " do not know '$CIPHER'.");
+        $opts->{'restart-daemons'} || !scalar($plan->{daemons}->@*) ? "is left untouched"
+        : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
+        : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
+    log_text("'auth_preferred_cipher' (currently '"
+        . $now
+        . "') $restore. It decides the cipher of keys created later; on '$LEGACY_CIPHER', new"
+        . " client keys stay usable by kernel clients that do not know '$CIPHER'.");
     if ($info->{preferred_cipher} eq $CIPHER) {
         log_warn("'auth_preferred_cipher' is already '$CIPHER', so client keys created from now on"
             . " will not work with kernel clients that do not know that cipher");
     }
 
     log_text("");
-    log_text("The key every daemon uses right now is written to $STATE_FILE before anything is"
-        . " rotated, together with the progress of the run.");
+    log_text("$STATE_FILE records migration progress and the pre-rotation key for every key this"
+        . " run changes.");
 
-    if ($state->{created}) {
-        my $rotated = scalar(keys %{ $state->{rotated} // {} });
-        my $done = scalar(grep { m/^(?:mgr|mds|osd)\./ } keys %{ $state->{done} // {} });
-        my $client_count = scalar(grep { m/^client\./ } keys %{ $state->{done} // {} });
+    if (my @unfinished = unfinished_entities($state)) {
         log_text("");
-        log_info("An earlier run recorded $rotated key(s) rotated, $done daemon(s) and"
-            . " $client_count client key(s) finished. Anything it left unfinished is part of the"
-            . " plan above.");
+        log_info("The plan resumes these unfinished key rotations: " . join(', ', @unfinished));
     }
 
     return;
@@ -1202,7 +1197,11 @@ my sub merge_pve_mon_keyring($entry) {
 }
 
 my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
-    log_heading("Rotating the shared monitor key");
+    log_heading(
+        $plan->{mon_repair_only}
+        ? "Repairing the stored copy of the shared monitor key"
+        : "Rotating the shared monitor key"
+    );
 
     # a stale-copy repair is not gated behind the opt-in, so it must not rotate and restart the
     # quorum unasked. Finishing a started rotation is the exception
@@ -1250,6 +1249,12 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
         save_state($state);
     }
 
+    if ($plan->{mon_repair_only}) {
+        log_pass("'$pve_mon_keyring' now holds the 'mon.' key the cluster uses, the key itself was"
+            . " not rotated");
+        return;
+    }
+
     $state->{mon_key_complete} = $target;
     save_state($state);
 
@@ -1285,8 +1290,6 @@ my sub claim_preferred_cipher($rados, $state) {
         save_state($state);
     }
 
-    log_info("pointing 'auth_preferred_cipher' at '$CIPHER' while keys are swapped, it goes back to"
-        . " '$state->{preferred_cipher_was}' at the end of this run");
     $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
 
     return;
@@ -1445,21 +1448,18 @@ my sub live_swap_daemon($rados, $state, $daemon) {
         # the label first: ceph-volume rebuilds the data directory from it on every boot
         $written = 1;
         if (($daemon->{store} // '') eq 'block') {
-            log_step("writing the new key into the bluestore label of '$entity'");
             # stored verbatim, unlike 'rotate-key' below, so no trailing newline
             daemon_tell($entity, 'rotate-stored-key', $pending);
         }
 
         # 'rotate-stored-key' skips the data-directory keyring and nothing re-primes it on a restart
         my $path = "/var/lib/ceph/$type/$ccname-$id/keyring";
-        log_step("writing the new key to '$path' on node '$node'");
         write_node_file(
             $node,
             $path,
             keyring_text({ entity => $entity, key => $pending, caps => $entry->{caps} }),
         );
 
-        log_step("handing the new key to the running '$entity'");
         daemon_tell($entity, 'rotate-key', $pending);
 
         $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
@@ -1500,8 +1500,8 @@ my sub check_client_kernels($plan, $opts) {
         log_fail("The key(s) "
             . join(', ', @gated)
             . " are read by an in-kernel Ceph client, and these nodes run a kernel that cannot"
-            . " speak '$CIPHER' yet: $detail. Reboot them into kernel 7.0 or newer first, or"
-            . " pass '--force' to rotate anyway and take storage away from them.");
+            . " speak '$CIPHER' yet: $detail. Reboot them into kernel 7.0 or newer first, or pass"
+            . " '--force' to rotate anyway, which cuts those nodes off from the storage.");
         return 0;
     }
 
@@ -1637,7 +1637,8 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
     # Left as it was found: this daemon was already stopped when the run began, and whoever
     # stopped it did not ask for it back. The key is where it reads it, so starting it is enough.
     if ($daemon->{down} && !$up) {
-        log_pass("'$entity' uses the '$CIPHER' cipher and stays stopped, as this run found it");
+        log_pass("'$entity' uses the '$CIPHER' cipher and stays stopped, as it was before this"
+            . " run");
         $state->{done}->{$entity} = time();
         save_state($state);
         return;
@@ -1680,7 +1681,7 @@ my sub set_service_cipher($rados, $state) {
             $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
         $check = $health->{checks}->{AUTH_INSECURE_SERVICE_KEY_TYPE};
         last if !$check;
-        log_info("Ceph still counts service keys on the old cipher, waiting for it to recount")
+        log_info("Ceph still counts service keys on the old cipher, waiting for the recount")
             if $wait != 30;
     }
     if ($check) {
@@ -1690,7 +1691,6 @@ my sub set_service_cipher($rados, $state) {
             . ". Check 'pveceph auth status' and run this again.\n";
     }
 
-    log_info("telling the monitors to hand out service tickets with the '$CIPHER' cipher");
     $rados->mon_command({ prefix => 'mon set', name => 'auth_service_cipher', value => $CIPHER });
 
     my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
@@ -1746,10 +1746,9 @@ my sub print_closing_notes($rados) {
         . " keep accepting the old cipher. All three are warnings; 'ceph health mute <check>'"
         . " silences one you cannot act on, and the documentation covers the rest.");
     log_text("");
-    log_text("The key every daemon used before this run is recorded in $STATE_FILE. Keep it until"
-        . " the cluster is confirmed healthy, then delete it: it is the only copy, and the only"
-        . " way back for a daemon left behind, via 'ceph auth import' and the place that daemon"
-        . " reads its key from.");
+    log_warn("Keep $STATE_FILE until Ceph health and daemon access are verified: it holds the only"
+        . " copy of the keys used before this run, the way back for a daemon left behind"
+        . " ('ceph auth import'). Protect it like a keyring, and delete it afterwards.");
 
     return;
 }
@@ -1889,9 +1888,7 @@ sub main {
     PVE::Ceph::Tools::check_ceph_inited();
 
     if ($opts->{apply}) {
-        log_info("Looking at the cluster. Apart from putting back what an interrupted run left"
-            . " behind, which is reported as it happens, nothing changes before the plan below is"
-            . " confirmed.");
+        log_info("Collecting cluster info.");
     } else {
         log_info("This is a dry run, nothing will be changed. Pass '--apply' to carry the plan"
             . " out.");
@@ -2020,9 +2017,9 @@ sub main {
 
     # an old-cipher 'mon.' in the auth db blocks the switch, so say so before walking every daemon
     if ($info->{insecure_entities}->{'mon.'} && !$plan->{mon_key} && !$opts->{only}) {
-        log_fail("Ceph reports the shared 'mon.' key as insecure, which happens once it has been"
-            . " rotated into the auth database. The service ticket switch is refused while that"
-            . " holds, so this run would abort at its last step. Pass '--rotate-mon-key'.");
+        log_fail("Pass '--rotate-mon-key'. The shared 'mon.' key is already rotated into the auth"
+            . " database and Ceph reports it as insecure; the service ticket switch is refused"
+            . " while that holds, so this run would abort at its last step.");
         return 1;
     }
 
@@ -2038,8 +2035,8 @@ sub main {
         if (@unfinished) {
             log_warn("An earlier run rotated the key of "
                 . join(', ', @unfinished)
-                . " but did not get it everywhere it belongs, and nothing in this run covers that."
-                . " Pass the same option again to finish it.");
+                . " unfinished, and nothing in this run covers it. Pass the option that rotates"
+                . " it again.");
             return 1;
         }
 
@@ -2062,7 +2059,8 @@ sub main {
 
     if (!$opts->{apply}) {
         log_heading("Dry run finished");
-        log_text("Nothing was changed. Run this again with '--apply' to carry the plan out.");
+        log_text("Nothing on the cluster was changed. Run this again with '--apply' to carry"
+            . " the plan out.");
         return 0;
     }
 
@@ -2075,7 +2073,7 @@ sub main {
         }
         my $answer = <STDIN>;
         if (!defined($answer) || $answer !~ m/^\s*y(?:es)?\s*$/i) {
-            log_info("Nothing was changed.");
+            log_info("The plan was not carried out.");
             return 0; # declining is a choice, not a failure
         }
     }
