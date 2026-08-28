@@ -2094,14 +2094,14 @@ sub main {
         save_state($state) if $dropped_legacy || $dropped_recovery;
     }
 
-    # an earlier version recorded a failed read as a setting, and putting that back would fail
+    # an older version could record a failed read as a setting; keep the evidence and refuse
     my $recorded = $state->{preferred_cipher_was};
     if (defined($recorded) && !exists($CIPHER_IDS->{$recorded})) {
-        log_warn("'$STATE_FILE' names '$recorded' as the 'auth_preferred_cipher' to restore, which"
-            . " is not a cipher. Set it by hand with 'ceph mon set auth_preferred_cipher <name>';"
-            . " this run leaves it alone.");
-        delete $state->{preferred_cipher_was};
-        save_state($state);
+        log_fail("'$STATE_FILE' names '$recorded' as the 'auth_preferred_cipher' to restore, which"
+            . " is not a valid cipher. Restore a known value with 'ceph mon set"
+            . " auth_preferred_cipher <name>', then correct or remove that field from the state"
+            . " file.");
+        return 1;
     }
 
     my $upid = "cephx-rotate:$nodename:$$:" . time();
