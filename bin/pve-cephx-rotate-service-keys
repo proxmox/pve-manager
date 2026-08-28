@@ -525,9 +525,8 @@ my sub client_key_files {
     return $files;
 }
 
-# Every node, not just those running daemons: any of them can mount a storage whose key changes.
-# No cluster-wide broadcast carries the kernel, and '/nodes/<node>/status' would mean an API ticket
-# and pveproxy for the one command a run that touches no kernel-read client key never issues.
+# What mounts a storage cannot be known here, so every cluster node has to support a key an
+# in-kernel client reads. Nothing cluster-wide broadcasts the kernel, hence SSH.
 my sub collect_node_kernels($opts) {
     PVE::Cluster::cfs_update();
     my $nodes = PVE::Cluster::get_nodelist() // [];
@@ -537,14 +536,13 @@ my sub collect_node_kernels($opts) {
     for my $node (sort @$nodes) {
         my $release = eval { node_run($node, ['uname', '-r']) };
         if (my $err = $@) {
-            # '--force' rotates whatever the kernels say, so one that cannot be read must not end
-            # the run: it is reported as unknown, which counts as unsupported.
-            die "could not read the kernel release of node '$node': $err" if !$opts->{force};
-            $kernels->{$node} = { release => 'unknown', supported => 0 };
+            chomp $err;
+            $kernels->{$node} = { error => $err, known => 0, release => 'unknown' };
             next;
         }
         chomp($release //= '');
         $kernels->{$node} = {
+            known => 1,
             release => $release,
             supported => PVE::Ceph::Services::kernel_supports_aes256k($release) ? 1 : 0,
         };
@@ -835,26 +833,32 @@ my sub daemon_is_running($rados, $type, $id) {
 
 # needs probe_nodes() first: 1 go ahead, -1 fix something first
 my sub preflight_nodes($info, $plan, $opts) {
-    # a cipher switch locks out every daemon that cannot speak it, so judge all of them then
+    # Switching the cipher or wiping old rotating keys requires support from every service daemon.
     my @touched = touched_daemons($info, $plan);
 
     my @judged =
-        $plan->{service_cipher}
+        $plan->{service_cipher} || $opts->{'wipe-rotating-keys'}
         ? map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd)
         : @touched;
 
-    my @outdated;
+    my (@outdated, @unknown_versions);
     for my $daemon (@judged) {
-        if (!$daemon->{recovered} && !$daemon->{down} && !version_has_cipher($daemon->{version})) {
-            push @outdated,
-                "$daemon->{entity} on node '$daemon->{node}' runs "
-                . short_version($daemon->{version});
+        if (!$daemon->{recovered} && !$daemon->{down}) {
+            if (!defined($daemon->{version}) || $daemon->{version} eq '') {
+                push @unknown_versions,
+                    "could not verify the running Ceph version of $daemon->{entity} on node"
+                    . " '$daemon->{node}'";
+            } elsif (!version_has_cipher($daemon->{version})) {
+                push @outdated,
+                    "$daemon->{entity} on node '$daemon->{node}' runs "
+                    . short_version($daemon->{version});
+            }
         }
 
-        if (!defined($daemon->{binary})) {
-            push @outdated,
-                "$daemon->{entity} on node '$daemon->{node}' reports no installed Ceph version;"
-                . " check that 'pvestatd' runs there";
+        if (!defined($daemon->{binary}) || $daemon->{binary} eq '') {
+            push @unknown_versions,
+                "could not verify the installed Ceph version of $daemon->{entity} on node"
+                . " '$daemon->{node}'; check that 'pvestatd' runs there";
         } elsif (!version_has_cipher($daemon->{binary})) {
             push @outdated,
                 "$daemon->{entity} on node '$daemon->{node}' would restart into "
@@ -913,9 +917,18 @@ my sub preflight_nodes($info, $plan, $opts) {
         }
     }
 
+    if (@unknown_versions) {
+        log_fail("Could not verify '$CIPHER' support for every service daemon:");
+        log_steps(\@unknown_versions);
+        return -1;
+    }
+
     if (@outdated) {
-        log_fail("Not every service daemon runs a Ceph release that understands the '$CIPHER'"
-            . " cipher, so a rotated key would lock it out. Upgrade and restart these first:");
+        my $effect =
+            $opts->{'wipe-rotating-keys'}
+            ? "Wiping the old rotating keys requires every daemon to support '$CIPHER'."
+            : "Rotating a key would lock an incompatible daemon out.";
+        log_fail("$effect Upgrade and restart these daemons first:");
         log_steps(\@outdated);
         return -1;
     }
@@ -1547,30 +1560,46 @@ my sub live_swap_daemon($rados, $state, $daemon) {
     return 1;
 }
 
-# which node mounts what is not knowable here, so every node has to qualify
 my sub check_client_kernels($plan, $opts) {
     return 1 if !grep { $_->{kernel} } @$plan;
 
     my $kernels = collect_node_kernels($opts);
-    my @old = sort grep { !$kernels->{$_}->{supported} } keys %$kernels;
-    return 1 if !@old;
+    my @unknown = sort grep { !$kernels->{$_}->{known} } keys %$kernels;
+    my @old = sort grep {
+        $kernels->{$_}->{known} && !$kernels->{$_}->{supported}
+    } keys %$kernels;
+    return 1 if !@unknown && !@old;
 
-    my $detail = join(', ', map { "$_ ($kernels->{$_}->{release})" } @old);
     my @gated = map { $_->{entity} } grep { $_->{kernel} } @$plan;
+    my $keys = join(', ', @gated);
 
     if (!$opts->{force}) {
-        log_fail("The key(s) "
-            . join(', ', @gated)
-            . " are read by an in-kernel Ceph client, and these nodes run a kernel that cannot"
-            . " speak '$CIPHER' yet: $detail. Reboot them into kernel 7.0 or newer first, or pass"
-            . " '--force' to rotate anyway, which cuts those nodes off from the storage.");
+        if (@unknown) {
+            log_fail("Could not verify kernel '$CIPHER' support on nodes "
+                . join(', ', @unknown)
+                . ". The affected keys are: $keys.");
+            log_steps([map { "$_: $kernels->{$_}->{error}" } @unknown]);
+        }
+        if (@old) {
+            my $detail = join(', ', map { "$_ ($kernels->{$_}->{release})" } @old);
+            log_fail("These nodes run kernels that do not support '$CIPHER': $detail. The affected"
+                . " keys are: $keys. Reboot the nodes into kernel 7.0 or newer first.");
+        }
+        log_text("Pass '--force' only after checking every external and future consumer. Affected"
+            . " nodes may lose access to these storages.");
         return 0;
     }
 
-    log_warn("'--force' was given, so "
-        . join(', ', @gated)
-        . " are rotated even though these nodes cannot use the new cipher: $detail. Storage on"
-        . " them stops working until they run a newer kernel.");
+    if (@unknown) {
+        log_warn("'--force' bypasses unresolved kernel compatibility on nodes "
+            . join(', ', @unknown)
+            . ". They may lose access to storages using: $keys.");
+    }
+    if (@old) {
+        my $detail = join(', ', map { "$_ ($kernels->{$_}->{release})" } @old);
+        log_warn("'--force' rotates $keys although these nodes have incompatible kernels: $detail."
+            . " They may lose access to the affected storages.");
+    }
 
     return 1;
 }
@@ -1915,9 +1944,9 @@ and client keys require their rotation options. Without '--apply', this only pri
   --assume-yes, -y            do not ask for confirmation. '--apply' needs this when
                               standard input is not a terminal
   --timeout SECONDS           how long to wait for a daemon to come back (default 600)
-  --force                     continue past a health warning this script does not
-                              recognize, and past the kernel check on client
-                              keys. A health error is never overridden
+  --force                     continue past blocking HEALTH_WARN checks and unresolved
+                              kernel compatibility checks. HEALTH_ERR and failed health
+                              queries are never overridden
   --only SCOPE[,SCOPE]...     limit the run to 'mon', a daemon type ($types), or a single
                               daemon such as 'osd.3'. Comma-separated or given more than
                               once. A limited run does not switch the service tickets
