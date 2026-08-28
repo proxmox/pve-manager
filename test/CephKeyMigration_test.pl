@@ -764,4 +764,36 @@ my sub cluster {
         'a message of another shape is ignored');
 }
 
+# A durable copy can exist from the moment the first write starts: an OSD's bluestore label is
+# written before the data-directory keyring, and the label is what the data directory is rebuilt
+# from at boot. Dropping the staged key then would leave that OSD unable to start.
+{
+    my $fp = key_fingerprint($NEW);
+    is(
+        resume_verdict({ phase => 'writing', key => $fp }, $fp)->{verdict},
+        'commit',
+        'a run killed while writing durable copies commits rather than drops the key',
+    );
+    is(
+        resume_verdict({ phase => 'writing', key => $fp }, $fp)->{restart},
+        1,
+        'and restarts the daemon, which may still hold the old key in memory',
+    );
+    is(
+        resume_verdict({ phase => 'staged', key => $fp }, $fp)->{verdict},
+        'clear',
+        'while nothing written yet is still safe to drop',
+    );
+    is(
+        resume_verdict({ phase => 'writing', key => $fp }, undef)->{restart},
+        1,
+        'a committed key with no pending entry left still needs the restart',
+    );
+    is(
+        resume_verdict({ phase => 'committed', key => $fp }, undef)->{restart},
+        1,
+        'the journal keeps requiring repair after promotion until the slow path finishes',
+    );
+}
+
 done_testing();

@@ -1332,85 +1332,74 @@ my sub mgr_is_active($rados, $id) {
     return ($dump->{active_name} // '') eq $id ? 1 : 0;
 }
 
-# returns 0 when the caller has to fall back to stopping the daemon; 'mon.' has no 'rotate-key'
-# Cleans up after a swap a previous run did not finish. Returns 1 when the daemon has to be
-# restarted, because a file already holds the key the monitors have now promoted.
-my sub resume_live_swap($rados, $state, $daemon) {
+# Returns 1 when a durable copy may hold the pending key and the daemon must use the slow path.
+# Pending keys are committed only after that path has stopped the daemon safely.
+my sub resume_live_swap($rados, $state, $daemon, $commit = 0) {
     my $entity = $daemon->{entity};
     my $swap = $state->{live_swap}->{$entity};
     return 0 if !$swap;
 
-    my $pending = eval { auth_entry($rados, $entity)->{pending_key} };
+    my $pending = auth_entry($rados, $entity)->{pending_key};
     my $decided =
         resume_verdict($swap, defined($pending) ? key_fingerprint($pending) : undef);
     my $written = $decided->{restart};
 
     if ($decided->{verdict} eq 'foreign') {
-        log_warn("the key staged for '$entity' is not the one this script staged, leaving it"
-            . " alone. Resolve it with 'ceph auth commit-pending' or 'ceph auth clear-pending'."
-        );
-        return 0;
+        die "the pending key for '$entity' does not match this run's journal. Resolve it with"
+            . " 'ceph auth commit-pending' or 'ceph auth clear-pending'.\n";
     }
 
-    my $repaired = 1;
-    if ($decided->{verdict} eq 'commit') {
-        # a file already carries it, and a staged key that is dropped authenticates nowhere
-        log_info("an earlier run had written the key it staged for '$entity' to disk, so the"
-            . " monitors are told to take it");
-        $repaired =
-            eval { $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity }); 1 };
+    if ($decided->{verdict} eq 'commit' && !$commit) {
+        log_info("an earlier run may have written the pending key for '$entity'; it will be"
+            . " committed after the daemon is safe to stop");
+        return 1;
+    } elsif ($decided->{verdict} eq 'commit') {
+        log_info("an earlier run wrote the pending key for '$entity' to disk; committing it now");
+        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
     } elsif ($decided->{verdict} eq 'clear') {
-        log_info("dropping the key an earlier run staged for '$entity', nothing on disk held it");
-        $repaired =
-            eval { $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity }); 1 };
+        log_info("dropping the pending key for '$entity' because no durable copy holds it");
+        $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
     }
 
-    # keeping it is what lets the next run try again rather than refuse over an unowned key
-    if (!$repaired) {
-        log_warn("could not resolve the key an earlier run staged for '$entity' ($@)");
-        return $written ? 1 : 0;
+    if ($written) {
+        # the journal stays until the slow path rewrote every copy, so a kill in between resumes
+        $state->{live_swap}->{$entity}->{phase} = 'committed';
+        $state->{live_swap}->{$entity}->{at} = time();
+    } else {
+        delete $state->{live_swap}->{$entity};
     }
-
-    delete $state->{live_swap}->{$entity};
     save_state($state);
 
     return $written ? 1 : 0;
 }
 
+# cephadm rotates and redeploys; this avoids the restart, so it keeps its own journal
 my sub live_swap_daemon($rados, $state, $daemon) {
     my ($type, $id, $entity, $node) =
         ($daemon->{type}, $daemon->{id}, $daemon->{entity}, $daemon->{node});
 
-    my $written = 0;
     my $failed = sub($reason) {
+        chomp $reason;
         log_info("no live key swap for '$entity' ($reason), stopping it instead");
-
-        # Only while nothing on disk holds it: a cleared key that a file still carries
-        # authenticates nowhere. The record is dropped only once the key it names is gone, or the
-        # next run would find a pending key it cannot account for and refuse to touch anything.
-        if (!$written) {
-            my $cleared = eval {
-                $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
-                1;
-            };
-            delete $state->{live_swap}->{$entity} if $cleared;
-        }
-        save_state($state);
-
         return 0;
     };
 
-    # Written before the key is staged, so a run killed between the two leaves a pending key this
-    # script can still recognise as its own instead of refusing to touch it.
-    $state->{live_swap}->{$entity} = { phase => 'staging', at => time() };
-    save_state($state);
-
     if ($type eq 'mgr' && !mgr_is_active($rados, $id)) {
-        return $failed->("only the active manager takes a key while running");
+        return $failed->("only the active manager accepts this script's live key swap");
     }
 
     my $entry = eval { auth_entry($rados, $entity) };
     return $failed->("its auth entry could not be read" . ($@ ? ": $@" : "")) if $@ || !$entry;
+
+    delete $state->{done}->{$entity};
+    delete $state->{rotated}->{$entity};
+    $state->{previous_keys}->{$entity} = {
+        key => $entry->{key},
+        cipher => $CIPHER_NAMES->{ key_cipher($entry->{key}) // -1 } // 'unreadable',
+        saved => time(),
+    };
+    $state->{live_swap}->{$entity} = { phase => 'staging', at => time() };
+    save_state($state);
 
     my $pending = eval {
         my $res = $rados->mon_command({
@@ -1422,59 +1411,64 @@ my sub live_swap_daemon($rados, $state, $daemon) {
     };
     return $failed->("could not stage a pending key" . ($@ ? ": $@" : "")) if $@ || !$pending;
 
-    $state->{live_swap}->{$entity} =
-        { phase => 'staged', at => time(), key => key_fingerprint($pending) };
+    my $fingerprint = key_fingerprint($pending);
+    $state->{live_swap}->{$entity} = { phase => 'staged', at => time(), key => $fingerprint };
     save_state($state);
 
-    # check rather than trust the preferred-cipher setting, or the swap lands on the old cipher
     my $cipher = key_cipher($pending) // -1;
     if ($cipher != $CIPHER_ID) {
-        return $failed->("the staged key uses the '"
+        return $failed->("the pending key uses the '"
             . ($CIPHER_NAMES->{$cipher} // 'unreadable')
             . "' cipher");
     }
 
-    $state->{live_swap}->{$entity} =
-        { phase => 'written', at => time(), key => key_fingerprint($pending) };
+    # before the first durable write: a run killed after the label write must not drop its key
+    $state->{live_swap}->{$entity} = { phase => 'writing', at => time(), key => $fingerprint };
     save_state($state);
 
-    my $ok = eval {
-        # the label first: ceph-volume rebuilds the data directory from it on every boot
-        $written = 1;
+    my $durable = eval {
+        # the label first: ceph-volume rebuilds the data directory from it
         if (($daemon->{store} // '') eq 'block') {
-            # stored verbatim, unlike 'rotate-key' below, so no trailing newline
             daemon_tell($entity, 'rotate-stored-key', $pending);
         }
 
-        # 'rotate-stored-key' skips the data-directory keyring and nothing re-primes it on a restart
+        # rotate-stored-key does not update the data-directory keyring.
         my $path = "/var/lib/ceph/$type/$ccname-$id/keyring";
         write_node_file(
             $node,
             $path,
             keyring_text({ entity => $entity, key => $pending, caps => $entry->{caps} }),
         );
+        1;
+    };
+    return $failed->("could not write every durable key copy" . ($@ ? ": $@" : ""))
+        if !$durable;
 
+    $state->{live_swap}->{$entity} = {
+        phase => 'written',
+        at => time(),
+        key => $fingerprint,
+    };
+    save_state($state);
+
+    my $committed = eval {
         daemon_tell($entity, 'rotate-key', $pending);
-
         $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
         1;
     };
-    return $failed->("the swap did not go through" . ($@ ? ": $@" : "")) if !$ok;
+    return $failed->("could not load and commit the pending key" . ($@ ? ": $@" : ""))
+        if !$committed;
 
     my $active = eval { auth_entry($rados, $entity)->{key} };
-    return $failed->("the monitors did not take the new key") if ($active // '') ne $pending;
+    return $failed->("could not verify the committed key" . ($@ ? ": $@" : ""))
+        if $@ || ($active // '') ne $pending;
 
-    $state->{previous_keys}->{$entity} = {
-        key => $entry->{key},
-        cipher => $CIPHER_NAMES->{ key_cipher($entry->{key}) // -1 } // 'unreadable',
-        saved => time(),
-    };
     $state->{rotated}->{$entity} = time();
     $state->{done}->{$entity} = time();
     delete $state->{live_swap}->{$entity};
     save_state($state);
 
-    log_pass("'$entity' uses the '$CIPHER' cipher, without a restart");
+    log_pass("'$entity' uses the '$CIPHER' cipher without a restart");
 
     return 1;
 }
@@ -1583,13 +1577,13 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
     my $unfinished_before = migration_unfinished($state, $entity);
     my $up = daemon_is_running($rados, $type, $id);
 
-    # a swap an earlier run left open is finished first, and the daemon then has to be restarted
-    # onto whatever that left on disk
     $unfinished_before = 1 if resume_live_swap($rados, $state, $daemon);
 
     # the swap needs a daemon that answers, and a half-finished one has to go the slow way
     if (!$opts->{'restart-daemons'} && !$unfinished_before && $up) {
         return if live_swap_daemon($rados, $state, $daemon);
+        my $restart = resume_live_swap($rados, $state, $daemon);
+        $unfinished_before = 1 if $restart || migration_unfinished($state, $entity);
     }
 
     health_gate($rados, $type, "touching '$entity'") if $up; # nothing to stop otherwise
@@ -1602,11 +1596,14 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
 
         log_info("stopping '$entity' on node '$node' before its key changes");
     } elsif ($unfinished_before) {
-        log_info("an earlier run stopped '$entity' and rotated its key, finishing that");
+        log_info("an earlier run left the key update for '$entity' unfinished; resuming it");
     } else {
         log_info("Ceph does not report '$entity' as up, so its key is rotated right away");
     }
     node_run($node, ['systemctl', 'stop', $unit]);
+
+    # commit rather than clear now that the daemon is stopped: a partial live write may hold the key
+    resume_live_swap($rados, $state, $daemon, 1) if $state->{live_swap}->{$entity};
 
     if ($type eq 'osd' && $up) {
         log_info("marking '$entity' down");
@@ -1629,6 +1626,7 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
         log_pass("'$entity' uses the '$CIPHER' cipher and stays stopped, as it was before this"
             . " run");
         $state->{done}->{$entity} = time();
+        delete $state->{live_swap}->{$entity};
         save_state($state);
         return;
     }
@@ -1652,6 +1650,7 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
     log_pass("'$entity' is up again and uses the '$CIPHER' cipher");
 
     $state->{done}->{$entity} = time();
+    delete $state->{live_swap}->{$entity};
     save_state($state);
 
     return;

@@ -220,22 +220,26 @@ sub merge_configured_daemons($daemons, $type, $configured) {
 # What a run has to do about a live swap an earlier one did not finish, given its journal entry and
 # the key staged right now. Split out from the doing so every interruption point can be tested:
 #   verdict  'none'    nothing was journalled, or nothing is staged
-#            'clear'   drop the staged key, no copy on disk holds it
+#            'clear'   drop the staged key, no copy on disk can hold it yet
 #            'commit'  a copy on disk holds it, so the monitors have to take it rather than lose it
 #            'foreign' something else staged this key, so leave it alone
 #   restart  the daemon may hold a key the monitors have moved past, so it cannot stay running
 sub resume_verdict($swap, $staged_fingerprint) {
     return { verdict => 'none', restart => 0 } if !$swap;
 
-    my $written = ($swap->{phase} // '') eq 'written' ? 1 : 0;
-    return { verdict => 'none', restart => $written } if !defined($staged_fingerprint);
+    # From 'writing' on, a durable copy may already hold the pending key: an OSD's bluestore label
+    # is written first, and its data directory is rebuilt from that label at every boot. Dropping
+    # the key then would leave the OSD with one no monitor accepts, so commit and let the caller
+    # rewrite every copy.
+    my $durable = ($swap->{phase} // '') =~ m/^(?:writing|written|committed)$/ ? 1 : 0;
+    return { verdict => 'none', restart => $durable } if !defined($staged_fingerprint);
 
     # A journal entry from before fingerprints were recorded cannot prove ownership, and the run
     # that wrote it is the only one that could have staged a key for an entity it was working on.
     my $mine = !defined($swap->{key}) || $swap->{key} eq $staged_fingerprint;
     return { verdict => 'foreign', restart => 0 } if !$mine;
 
-    return { verdict => $written ? 'commit' : 'clear', restart => $written };
+    return { verdict => $durable ? 'commit' : 'clear', restart => $durable };
 }
 
 sub touched_daemons($info, $plan) {
