@@ -2423,6 +2423,9 @@ EOF
             sleep(5);
         }
 
+        # the child must not inherit the run's handlers, or its release reads as an abort. Set
+        # here rather than in the child, which may be released before its first statement.
+        local @SIG{qw(INT TERM HUP)} = ('DEFAULT') x 3;
         my $pid = fork() // die "could not fork the lock heartbeat: $!\n";
         if (!$pid) {
             my $parent = getppid();
