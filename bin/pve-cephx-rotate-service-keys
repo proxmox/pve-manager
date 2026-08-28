@@ -2915,6 +2915,10 @@ sub main {
     };
     my $failure = $@;
 
+    # or every client key created before the next apply run gets the new cipher
+    release_preferred_cipher($rados, $state)
+        if $failure && defined($state->{preferred_cipher_was});
+
     # check while this run still knows which it touched; probe first, as a failed command reads as
     # 'not up'
     my @down;
