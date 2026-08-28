@@ -21,8 +21,8 @@ our @EXPORT_OK = qw(
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     touched_daemons
-    plan_client_keys build_plan merge_configured_daemons resume_verdict
-    classify_insecure_clients open_options
+    plan_client_keys plan_lockbox_keys build_plan merge_configured_daemons resume_verdict
+    classify_insecure_clients open_options parse_lockbox_output
 );
 
 our $CIPHER = 'aes256k';
@@ -121,6 +121,18 @@ sub parse_probe_output($output) {
     return $probes;
 }
 
+# One line per fact, each prefixed with the fsid it is about, so one probe answers for every
+# encrypted OSD of a node: { <fsid> => { path, count, secret, error } }
+sub parse_lockbox_output($output) {
+    my $facts = {};
+    for my $line (split(/\n/, $output // '')) {
+        next if $line !~ m/^(\S+) (path|count|secret|error)=(.*)$/;
+        $facts->{$1}->{$2} = $3;
+    }
+
+    return $facts;
+}
+
 sub needs_rotation($info, $entity) {
     my $entry = $info->{exported}->{$entity};
 
@@ -182,7 +194,8 @@ sub migration_unfinished($state, $entity) {
 }
 
 # Rotated but not written everywhere. An OSD left stopped stays in 'osd metadata', so the recovery
-# walk alone misses some.
+# walk alone misses some. A lockbox key with a journal entry is finished from that journal before
+# any plan is built, so it is not listed as something the plan has to pick up.
 sub unfinished_entities($state) {
     my $started = {
         %{ $state->{rotated} // {} },
@@ -191,7 +204,9 @@ sub unfinished_entities($state) {
     };
 
     return sort grep {
-        $_ eq 'mon.' && $state->{mon_key_complete} ? 0 : migration_unfinished($state, $_)
+        $_ eq 'mon.' && $state->{mon_key_complete} ? 0
+            : $state->{lockbox}->{$_} ? 0
+            : migration_unfinished($state, $_)
     } keys %$started;
 }
 
@@ -296,6 +311,14 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
         push @$next, "--rotate-storage-key $stores->[0]: the '$entity' key$shared";
         $hedge = 1;
     }
+    # the monitors recount a moment behind, so a run that passed the option is not offered it
+    # again, nor warned off doing by hand what it just did
+    my $lockbox_open = scalar($clients->{lockbox}->@*) && !$opts->{'rotate-lockbox-keys'} ? 1 : 0;
+    push @$next,
+        "--rotate-lockbox-keys: the lockbox key of every encrypted OSD, in the auth"
+        . " database and in the LVM tag it is rebuilt from"
+        if $lockbox_open;
+
     # a run narrowed by '--only' is refused this until the cipher is switched
     push @$next,
         "--wipe-rotating-keys: discard the rotating service keys instead of letting them"
@@ -306,8 +329,8 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
 
     return {
         next => $next,
-        stuck => [$clients->{lockbox}->@*, $clients->{other}->@*],
-        lockbox => scalar($clients->{lockbox}->@*) ? 1 : 0,
+        stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
+        lockbox => $lockbox_open,
         hedge => $hedge,
     };
 }
@@ -363,9 +386,47 @@ sub plan_client_keys($info, $state, $opts, $files) {
     return ($plan, $warnings);
 }
 
+# An encrypted OSD's lockbox key has two persistent copies that must agree: the auth entry, and a
+# 'ceph.cephx_lockbox_secret' LVM tag on that OSD's block device. ceph-volume rebuilds the keyring
+# from the tag at every activation and uses it to fetch the LUKS passphrase, so a key is only
+# migrated once both hold it. Nothing reads the keyring while the OSD runs.
+sub plan_lockbox_keys($info, $opts) {
+    return [] if !$opts->{'rotate-lockbox-keys'};
+
+    my $wanted = [];
+    for my $entity (sort keys $info->{lockbox}->%*) {
+        my $osd = $info->{lockbox}->{$entity};
+        # no OSD, no tag to write: the caller names it instead
+        next if $osd->{orphaned};
+        # matching ciphers are not enough: two different keys both on the new cipher leave the
+        # OSD unable to unlock, which is what a half finished run leaves behind
+        next
+            if ($osd->{cipher} // '') eq $CIPHER
+            && ($osd->{tag_cipher} // '') eq $CIPHER
+            && $osd->{tag_matches};
+
+        push @$wanted,
+            {
+                entity => $entity,
+                fsid => $osd->{fsid},
+                node => $osd->{node},
+                id => $osd->{id},
+                device => $osd->{device},
+                missing => $osd->{missing},
+            };
+    }
+    return $wanted;
+}
+
 sub build_plan($info, $state, $opts, $files) {
     my $only = $opts->{only};
-    my $plan = { mon_key => 0, daemons => [], service_cipher => 0, scoped => $only ? 1 : 0 };
+    my $plan = {
+        mon_key => 0,
+        daemons => [],
+        service_cipher => 0,
+        lockbox_keys => [],
+        scoped => $only ? 1 : 0,
+    };
 
     # Rotating 'mon.' restarts the quorum, hence opt-in. A repair or a resume restarts nothing.
     # Completion markers name their target key, so a marker from an older rotation is not enough.
@@ -433,6 +494,13 @@ sub build_plan($info, $state, $opts, $files) {
 
     # the switch locks out every key still on the old one, so only a full run may do it
     $plan->{service_cipher} = 1 if !$only && $info->{service_cipher} ne $CIPHER;
+
+    $plan->{lockbox_keys} = plan_lockbox_keys($info, $opts);
+
+    # a pending key takes its cipher from 'auth_preferred_cipher', so any path that stages one
+    # needs that setting pointed at the new cipher for the run
+    $plan->{stages_pending_keys} = (!$opts->{'restart-daemons'} && scalar($plan->{daemons}->@*))
+        || scalar($plan->{lockbox_keys}->@*) ? 1 : 0;
 
     return $plan;
 }

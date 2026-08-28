@@ -13,6 +13,7 @@ use PVE::Ceph::KeyMigration qw(
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
     plan_client_keys build_plan
     merge_configured_daemons resume_verdict classify_insecure_clients open_options
+    plan_lockbox_keys parse_lockbox_output
 );
 
 # Real keys from a Ceph 19.2.6 cluster, not keys built the way key_cipher() reads them: the point
@@ -194,6 +195,14 @@ is(
         'the monitor step carries its own completion marker',
     );
     is_deeply([unfinished_entities({})], [], 'a fresh state has nothing outstanding');
+
+    $state->{previous_keys}->{'client.osd-lockbox.abc'} = { saved => 1 };
+    $state->{lockbox}->{'client.osd-lockbox.abc'} = { phase => 'staged' };
+    is_deeply(
+        [unfinished_entities($state)],
+        ['client.admin', 'mgr.a', 'osd.2'],
+        'a journalled lockbox key is finished from its journal, not listed for the plan',
+    );
 
     my $repeated = {
         done => { 'client.admin' => 100 },
@@ -593,8 +602,8 @@ my sub cluster {
     );
 }
 
-# Each bucket routes to a different option and the lockbox one to none at all, so the count Ceph
-# reports says nothing about what to do next.
+# Each bucket routes to a different option or to operator-managed work, so the count Ceph reports
+# says nothing about what to do next.
 {
     my $check = sub {
         return {
@@ -618,7 +627,7 @@ my sub cluster {
     is_deeply(
         $res->{lockbox},
         ['client.osd-lockbox.6f0d1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b'],
-        'a lockbox key is kept apart, it can never be rotated',
+        'a lockbox key is kept apart for the option that also updates its LVM tag',
     );
     is_deeply(
         $res->{tool},
@@ -697,7 +706,8 @@ my sub cluster {
     );
 }
 
-# Ceph reports a lockbox key like any other client key, but no option may move it.
+# A lockbox key needs its LVM tag written as well, so it is only offered through the option that
+# writes both. A key nothing here covers is reported instead.
 {
     my $checks = {
         AUTH_INSECURE_CLIENT_KEY_TYPE => {
@@ -708,9 +718,29 @@ my sub cluster {
         },
     };
     my $res = open_options($checks, {}, {});
-    is_deeply($res->{next}, [], 'nothing is offered for keys no option covers');
-    is(scalar($res->{stuck}->@*), 2, 'both are reported as untouched');
+    is_deeply(
+        $res->{next},
+        [
+            "--rotate-lockbox-keys: the lockbox key of every encrypted OSD, in the auth database"
+                . " and in the LVM tag it is rebuilt from",
+        ],
+        'a legacy lockbox key is offered through the option that writes both copies',
+    );
+    is_deeply(
+        $res->{stuck},
+        ['client.rgw.node1'],
+        'only the key no option covers is reported as stuck',
+    );
     is($res->{lockbox}, 1, 'and the lockbox warning is triggered');
+
+    my $asked = open_options($checks, { 'rotate-lockbox-keys' => 1 }, {});
+    is_deeply($asked->{next}, [], 'the option is not re-offered to a run that already passed it');
+    is_deeply(
+        $asked->{stuck},
+        ['client.rgw.node1'],
+        'and only the key no option covers is left reported',
+    );
+    is($asked->{lockbox}, 0, 'nor is that run warned off doing by hand what it just did');
     is(open_options({}, {}, {})->{lockbox}, 0, 'a cluster without one does not get that warning');
 }
 
@@ -745,7 +775,7 @@ my sub cluster {
                 [{ message => 'entity client.osd-lockbox.abc using insecure key type: aes' }],
         },
     };
-    is(open_options($lockbox, {}, {})->{hedge}, 0, 'a key no option covers does not raise it');
+    is(open_options($lockbox, {}, {})->{hedge}, 0, 'a lockbox key does not raise it');
 }
 
 # 'client.admin' backs any storage that names no user, and --rotate-storage-key refuses it.
@@ -810,6 +840,121 @@ my sub cluster {
         1,
         'the journal keeps requiring repair after promotion until the slow path finishes',
     );
+}
+
+# An encrypted OSD's lockbox key is only migrated once the auth entry and the LVM tag its keyring
+# is rebuilt from at activation both hold the new one.
+{
+    my $info = {
+        lockbox => {
+            'client.osd-lockbox.aaa' => {
+                fsid => 'aaa',
+                cipher => 'aes',
+                tag_cipher => 'aes',
+                tag_matches => 1,
+                node => 'due',
+                id => 0,
+                device => '/dev/vg/osd-block-aaa',
+            },
+            'client.osd-lockbox.bbb' => {
+                fsid => 'bbb',
+                cipher => $CIPHER,
+                tag_cipher => $CIPHER,
+                tag_matches => 1,
+                node => 'tre',
+                id => 1,
+                device => '/dev/vg/osd-block-bbb',
+            },
+            'client.osd-lockbox.ccc' => {
+                fsid => 'ccc',
+                cipher => $CIPHER,
+                tag_cipher => 'aes',
+                tag_matches => 0,
+                node => 'uno',
+                id => 2,
+                device => '/dev/vg/osd-block-ccc',
+            },
+            # both copies decode as the new cipher but hold different keys, which is what a run
+            # interrupted between the tag write and the commit leaves behind
+            'client.osd-lockbox.ddd' => {
+                fsid => 'ddd',
+                cipher => $CIPHER,
+                tag_cipher => $CIPHER,
+                tag_matches => 0,
+                node => 'due',
+                id => 3,
+                device => '/dev/vg/osd-block-ddd',
+            },
+            'client.osd-lockbox.eee' => {
+                fsid => 'eee',
+                cipher => 'aes',
+                tag_cipher => undef,
+                tag_matches => 0,
+                node => 'tre',
+                id => 4,
+                missing => 'no block device carries that fsid',
+            },
+            # left behind by a destroyed OSD: no device anywhere to write a tag to
+            'client.osd-lockbox.fff' => { fsid => 'fff', cipher => 'aes', orphaned => 1 },
+        },
+    };
+
+    is_deeply(plan_lockbox_keys($info, {}), [], 'nothing is planned without the option');
+
+    my $planned = plan_lockbox_keys($info, { 'rotate-lockbox-keys' => 1 });
+    is_deeply(
+        [sort map { $_->{fsid} } @$planned],
+        ['aaa', 'ccc', 'ddd', 'eee'],
+        'a legacy key is planned, and so is any OSD whose two copies disagree',
+    );
+    ok(
+        !grep({ $_->{fsid} eq 'bbb' } @$planned),
+        'only an OSD whose tag holds the very key the auth entry holds is left alone',
+    );
+    ok(
+        (grep { $_->{fsid} eq 'ddd' } @$planned),
+        'two different keys that both decode as the new cipher are not mistaken for done',
+    );
+    is(
+        (grep { $_->{fsid} eq 'eee' } @$planned)[0]->{missing},
+        'no block device carries that fsid',
+        'an entry that could not be located carries its error, so preflight can refuse it',
+    );
+    is(
+        (grep { $_->{fsid} eq 'aaa' } @$planned)[0]->{node},
+        'due',
+        'each entry carries the node its tag lives on',
+    );
+    ok(
+        !grep({ $_->{fsid} eq 'fff' } @$planned),
+        'an entry no OSD in the map claims is left out, so the rest can still be rotated',
+    );
+    is_deeply(
+        plan_lockbox_keys({ lockbox => {} }, { 'rotate-lockbox-keys' => 1 }),
+        [],
+        'a cluster with no encrypted OSD plans nothing',
+    );
+}
+
+# One probe per node answers for every encrypted OSD there, each line naming its fsid.
+{
+    my $facts = parse_lockbox_output(
+        "aaa path=/dev/vg/osd-block-aaa\naaa count=1\naaa secret=$OLD\n"
+            . "bbb path=/dev/vg/osd-block-bbb\nbbb count=0\nbbb secret=\n"
+            . "ccc error=no block device carries 'ceph.osd_fsid=ccc' with 'ceph.type=block'\n"
+            . "garbage line\n",
+    );
+    is_deeply(
+        $facts,
+        {
+            aaa => { path => '/dev/vg/osd-block-aaa', count => '1', secret => $OLD },
+            bbb => { path => '/dev/vg/osd-block-bbb', count => '0', secret => '' },
+            ccc =>
+                { error => "no block device carries 'ceph.osd_fsid=ccc' with 'ceph.type=block'" },
+        },
+        'each fact lands with the OSD it is about, an error stands in for the facts',
+    );
+    is_deeply(parse_lockbox_output(''), {}, 'no output, no facts');
 }
 
 done_testing();

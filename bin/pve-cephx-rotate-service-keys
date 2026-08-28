@@ -28,8 +28,8 @@ use PVE::Ceph::KeyMigration qw(
     parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     touched_daemons
-    plan_client_keys build_plan merge_configured_daemons resume_verdict
-    open_options
+    plan_client_keys plan_lockbox_keys build_plan merge_configured_daemons resume_verdict
+    open_options parse_lockbox_output
 );
 
 my $QUORUM_FEATURE = 'cephx_auth_aes256k'; # every quorum monitor must advertise it first
@@ -367,7 +367,202 @@ my sub verify_fresh_admin_connection {
     return $entry;
 }
 
-my sub collect_cluster_info($rados) {
+# reads, or for exactly one OSD replaces, the 'ceph.cephx_lockbox_secret' tag, on the OSD's node
+my $LOCKBOX_TAG_SCRIPT = <<'PERL';
+use strict;
+use warnings;
+
+# ceph-volume copies the shared tags onto the DB and WAL LVs too, and activation reads the lockbox
+# secret from the block LV alone, so anything else would look updated while the OSD stayed stranded.
+my @fsids = @ARGV;
+# only a write call sends a payload, so DATA is not always opened
+my $write = defined(fileno(DATA)) ? do { local $/; <DATA> } : '';
+$write = '' if !defined($write);
+chomp($write);
+die "a write needs exactly one fsid\n" if length($write) && scalar(@fsids) != 1;
+
+my @lvs;
+for my $line (split(/\n/, `lvs --noheadings -o lv_path,lv_tags 2>/dev/null`)) {
+    my ($lv, $tags) = $line =~ m/^\s*(\S+)\s+(.*)$/ or next;
+    push @lvs, [$lv, $tags];
+}
+
+sub block_lv {
+    my ($fsid) = @_;
+    my @block = grep {
+        $_->[1] =~ m/(?:^|,)\s*ceph\.osd_fsid=\Q$fsid\E\s*(?:,|$)/
+            && $_->[1] =~ m/(?:^|,)\s*ceph\.type=block\s*(?:,|$)/
+    } @lvs;
+    die "no block device carries 'ceph.osd_fsid=$fsid' with 'ceph.type=block'\n" if !@block;
+    die "several block devices carry 'ceph.osd_fsid=$fsid': "
+        . join(', ', map { $_->[0] } @block) . "\n"
+        if scalar(@block) > 1;
+    return $block[0]->@*;
+}
+
+sub secrets_in {
+    my ($tags) = @_;
+    return $tags =~ m/(?:^|,)\s*ceph\.cephx_lockbox_secret=([^,\s]*)/g;
+}
+
+for my $fsid (@fsids) {
+    my ($path, $tags) = eval { block_lv($fsid) };
+    if (my $err = $@) {
+        die $err if length($write);
+        chomp $err;
+        print "$fsid error=$err\n";
+        next;
+    }
+    my @secrets = secrets_in($tags);
+
+    if (length($write)) {
+        # one metadata update: a delete and a separate add would leave no tag at all in between,
+        # and the OSD is then unable to unlock at its next activation. The command goes to liblvm
+        # over stdin so the key does not appear in this node's process arguments.
+        my @cmd = ('lvchange');
+        push @cmd, '--deltag', "ceph.cephx_lockbox_secret=$_" for @secrets;
+        push @cmd, '--addtag', "ceph.cephx_lockbox_secret=$write", $path;
+        die "an LVM argument contains whitespace\n" if grep { m/\s/ } @cmd;
+
+        my $python = <<'PYTHON';
+import ctypes
+import ctypes.util
+import sys
+
+command = sys.stdin.buffer.read()
+if not command or b'\0' in command:
+    raise SystemExit(3)
+name = ctypes.util.find_library('lvm2cmd')
+if not name:
+    raise SystemExit(4)
+lib = ctypes.CDLL(name)
+lib.lvm2_init.restype = ctypes.c_void_p
+lib.lvm2_log_level.argtypes = (ctypes.c_void_p, ctypes.c_int)
+lib.lvm2_run.argtypes = (ctypes.c_void_p, ctypes.c_char_p)
+lib.lvm2_run.restype = ctypes.c_int
+lib.lvm2_exit.argtypes = (ctypes.c_void_p,)
+handle = lib.lvm2_init()
+if not handle:
+    raise SystemExit(4)
+try:
+    lib.lvm2_log_level(handle, 3)  # errors only, and those go to stderr for the caller
+    status = lib.lvm2_run(handle, command)
+finally:
+    lib.lvm2_exit(handle)
+raise SystemExit(0 if status == 1 else status)
+PYTHON
+        my $pid = open(my $lvm, '|-', 'python3', '-c', $python);
+        die "could not start the LVM command helper: $!\n" if !defined($pid);
+        print {$lvm} join(' ', @cmd) or die "could not send the LVM command: $!\n";
+        close($lvm) or die "could not replace the lockbox tag on '$path'\n";
+
+        my $after = `lvs --noheadings -o lv_tags $path 2>/dev/null`;
+        my @now = secrets_in($after);
+        die "'$path' carries " . scalar(@now) . " lockbox tags after the update\n"
+            if scalar(@now) != 1;
+        die "the lockbox tag on '$path' does not hold the requested key\n" if $now[0] ne $write;
+        @secrets = @now;
+    }
+
+    print "$fsid path=$path\n";
+    print "$fsid count=" . scalar(@secrets) . "\n";
+    print "$fsid secret=" . (scalar(@secrets) == 1 ? $secrets[0] : '') . "\n";
+}
+PERL
+
+# The lockbox key lives in the auth database and in an LVM tag on the OSD's block device. Reading
+# the tags costs an SSH round trip per node, so only a run that acts on them asks.
+my sub collect_lockbox($rados, $info, $probe) {
+    my $found = {};
+    for my $entity (sort keys $info->{exported}->%*) {
+        my ($fsid) = $entity =~ m/^client\.osd-lockbox\.(\S+)$/ or next;
+        $found->{$entity} = {
+            fsid => $fsid,
+            cipher => $CIPHER_NAMES->{ key_cipher($info->{exported}->{$entity}->{key}) // -1 },
+        };
+    }
+    return $found if !%$found;
+
+    my $dump = eval { $rados->mon_command({ prefix => 'osd dump', format => 'json' }) };
+    if ($@ || ref($dump) ne 'HASH' || ref($dump->{osds}) ne 'ARRAY') {
+        my $error = $@ || "'osd dump' returned no OSD list";
+        chomp($error);
+        $_->{missing} = "could not map the key to an OSD: $error" for values %$found;
+        return $found;
+    }
+    my $by_fsid = {};
+    for my $osd (($dump->{osds} // [])->@*) {
+        $by_fsid->{ $osd->{uuid} } = $osd->{osd} if defined($osd->{uuid});
+    }
+
+    my $by_node = {};
+    for my $entity (sort keys %$found) {
+        my $entry = $found->{$entity};
+        my $id = $by_fsid->{ $entry->{fsid} };
+        # a destroyed OSD leaves its lockbox entry behind, and there is nowhere to write for it
+        if (!defined($id)) {
+            $entry->{orphaned} = 1;
+            next;
+        }
+        $entry->{id} = $id;
+        my $daemon = (grep { $_->{id} eq "$id" } ($info->{daemons}->{osd} // [])->@*)[0];
+        if (!$daemon) {
+            $entry->{missing} = "'osd.$id' is not in this cluster's daemon inventory";
+            next;
+        }
+        $entry->{node} = $daemon->{node};
+        push $by_node->{ $daemon->{node} }->@*, $entity;
+    }
+    return $found if !$probe;
+
+    for my $node (sort keys %$by_node) {
+        my @entities = $by_node->{$node}->@*;
+        my $out = eval {
+            node_perl(
+                $node,
+                $LOCKBOX_TAG_SCRIPT,
+                args => [map { $found->{$_}->{fsid} } @entities],
+            );
+        };
+        if ($@) {
+            my $err = $@;
+            chomp($err);
+            $found->{$_}->{missing} = $err for @entities;
+            next;
+        }
+        my $facts = parse_lockbox_output($out);
+        for my $entity (@entities) {
+            my $entry = $found->{$entity};
+            my $fact = $facts->{ $entry->{fsid} } // {};
+            if (defined($fact->{error})) {
+                $entry->{missing} = $fact->{error};
+                next;
+            }
+            $entry->{device} = $fact->{path};
+            my $count = $fact->{count};
+            if (!defined($count) || $count !~ m/^\d+$/) {
+                $entry->{missing} = "node '$node' did not report the lockbox tags of this OSD";
+                next;
+            }
+            $entry->{tag_count} = $count;
+            if ($count > 1) {
+                $entry->{missing} =
+                    "'$entry->{device}' carries $count lockbox tags, so the active one is"
+                    . " ambiguous";
+                next;
+            }
+            my $tag = $fact->{secret};
+            $entry->{tag_cipher} =
+                length($tag // '') ? $CIPHER_NAMES->{ key_cipher($tag) // -1 } : undef;
+            $entry->{tag_matches} =
+                length($tag // '') && $tag eq ($info->{exported}->{$entity}->{key} // '') ? 1 : 0;
+        }
+    }
+
+    return $found;
+}
+
+my sub collect_cluster_info($rados, $opts, $state) {
     my $info = {};
 
     my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
@@ -460,6 +655,11 @@ my sub collect_cluster_info($rados) {
     # Ceph cannot flag 'mon.' until it is rotated in: it lives in the monitor keyrings, and the
     # checks only read the auth database
     $info->{mon_key_in_auth_db} = $info->{exported}->{'mon.'} ? 1 : 0;
+
+    # last, as it needs the auth export and the daemon inventory
+    my $acts_on_tags =
+        $opts->{'rotate-lockbox-keys'} || scalar(keys %{ $state->{lockbox} // {} }) ? 1 : 0;
+    $info->{lockbox} = collect_lockbox($rados, $info, $acts_on_tags);
 
     return $info;
 }
@@ -741,10 +941,28 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         return -1;
     }
 
+    if ($opts->{'rotate-lockbox-keys'}) {
+        my @orphaned = sort grep { $info->{lockbox}->{$_}->{orphaned} } keys $info->{lockbox}->%*;
+        log_warn("No OSD in this cluster carries the fsid of "
+                . join(', ', @orphaned)
+                . ", so these lockbox keys are left alone. An entry a destroyed OSD left behind"
+                . " can be removed with 'ceph auth rm <entity>'.")
+            if @orphaned;
+    }
+
+    # a key staged for an OSD whose block device cannot be located could never be written
+    if (my @broken = grep { $_->{missing} } plan_lockbox_keys($info, $opts)->@*) {
+        log_fail("The lockbox key of these encrypted OSDs cannot be located, so"
+            . " '--rotate-lockbox-keys' would stage a key it could not write:");
+        log_steps([map { "$_->{entity}: $_->{missing}" } @broken]);
+        return -1;
+    }
+
     if (
         !mon_keyring_stale($info)
         && !mon_key_rotation_wanted($info, $opts)
         && !client_keys_requested($opts)
+        && !scalar(plan_lockbox_keys($info, $opts)->@*)
         && !%$insecure
         && $info->{service_cipher} eq $CIPHER
         && !$opts->{'wipe-rotating-keys'}
@@ -805,9 +1023,13 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         $verdict ne 'clear' && $verdict ne 'commit';
     } @staged;
 
+    # a journalled lockbox key is finished by an apply run before this, and a dry run said so
+    @staged = grep { !$state->{lockbox}->{$_} } @staged;
+
     # a staged key elsewhere is somebody else's half-finished rotation: worth a word, not a refusal
 
     my $wanted = { map { $_ => 1 } $TOOL_CLIENT_KEYS->@*, $ADMIN_ENTITY };
+    $wanted->{ $_->{entity} } = 1 for plan_lockbox_keys($info, $opts)->@*;
     my @elsewhere = grep { m/^client\./ && !$wanted->{$_} } @staged;
     @staged = grep { !m/^client\./ || $wanted->{$_} } @staged;
     if (@elsewhere) {
@@ -842,11 +1064,18 @@ my sub daemon_is_running($rados, $type, $id) {
 my sub preflight_nodes($info, $plan, $opts) {
     # Switching the cipher or wiping old rotating keys requires support from every service daemon.
     my @touched = touched_daemons($info, $plan);
+    my @all = map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd);
 
-    my @judged =
-        $plan->{service_cipher} || $opts->{'wipe-rotating-keys'}
-        ? map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd)
-        : @touched;
+    my @judged;
+    if ($plan->{service_cipher} || $opts->{'wipe-rotating-keys'}) {
+        @judged = @all;
+    } else {
+        # ceph-volume reads a lockbox key with the packages of the OSD's own node at activation
+        my $lockbox_nodes = { map { $_->{node} => 1 } $plan->{lockbox_keys}->@* };
+        my $seen = {};
+        @judged =
+            grep { !$seen->{"$_"}++ } (@touched, grep { $lockbox_nodes->{ $_->{node} } } @all);
+    }
 
     my (@outdated, @unknown_versions);
     for my $daemon (@judged) {
@@ -1151,6 +1380,18 @@ my sub print_plan($info, $plan, $state, $opts) {
         log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
     }
 
+    if (scalar($plan->{lockbox_keys}->@*)) {
+        $step++;
+        log_text("");
+        log_text("Step $step: rotate the lockbox key of "
+            . scalar($plan->{lockbox_keys}->@*)
+            . " encrypted OSD(s), in the auth database and in the LVM tag on the OSD's device. No"
+            . " OSD is stopped.");
+        log_steps([
+            map { "$_->{entity} on node $_->{node} ($_->{device})" } $plan->{lockbox_keys}->@*
+        ]);
+    }
+
     if ($plan->{service_cipher}) {
         $step++;
         log_text("");
@@ -1172,7 +1413,7 @@ my sub print_plan($info, $plan, $state, $opts) {
     my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
     my $now = $info->{preferred_cipher} // 'unreadable';
     my $restore =
-        $opts->{'restart-daemons'} || !scalar($plan->{daemons}->@*) ? "is left untouched"
+        !$plan->{stages_pending_keys} ? "is left untouched"
         : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
         : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
     log_text("'auth_preferred_cipher' (currently '"
@@ -1613,6 +1854,187 @@ my sub check_client_kernels($plan, $opts) {
     return 1;
 }
 
+# The auth entry and the LVM tag must agree, and the tag is what activation reads, so the tag
+# decides whether a staged key is committed or dropped. Nothing reads it while the OSD runs.
+my sub resume_lockbox_keys($rados, $state, $info) {
+    my $journal = $state->{lockbox} // {};
+    return 0 if !%$journal;
+
+    my $changed = 0;
+    for my $entity (sort keys %$journal) {
+        my $swap = $journal->{$entity};
+        my $current = $info->{lockbox}->{$entity} // {};
+        my $node = $current->{node} // $swap->{node};
+        my $fsid = $current->{fsid} // $swap->{fsid};
+        die "the current OSD map gives '$entity' a different fsid than its migration journal\n"
+            if defined($current->{fsid})
+            && defined($swap->{fsid})
+            && $current->{fsid} ne $swap->{fsid};
+        die "the current node of '$entity' cannot be determined from the OSD map or its journal\n"
+            if !defined($node) || !length($node);
+
+        die "'$entity' is journalled as half rotated but has no auth entry any more. Restore it"
+            . " from the LVM tag on node '$node' before running this again, or that OSD cannot"
+            . " unlock.\n"
+            if !$info->{exported}->{$entity};
+
+        my $read = sub {
+            my $out = node_perl($node, $LOCKBOX_TAG_SCRIPT, args => [$fsid]);
+            my $fact = parse_lockbox_output($out)->{$fsid} // {};
+            die "$fact->{error}\n" if defined($fact->{error});
+            my $count = $fact->{count} // 0;
+            # none is repairable by writing the active key back; several is ambiguous, and
+            # guessing which one activation would read could strand the OSD for good
+            die "the block device of '$entity' on node '$node' carries $count lockbox tags, so"
+                . " which one activation would use cannot be told\n"
+                if $count > 1;
+            return $count == 1 ? $fact->{secret} : undef;
+        };
+
+        my $tag = eval { $read->() };
+        die "could not read the lockbox tag of '$entity' on node '$node' to finish an earlier"
+            . " run: $@"
+            if $@;
+
+        my $pending = $info->{exported}->{$entity}->{pending_key};
+        if (defined($pending) && length($pending)) {
+            # a kill between the mon command and saving its fingerprint leaves a key nobody owns
+            die "the migration journal for '$entity' has no fingerprint for its pending key."
+                . " Compare 'ceph auth get $entity' with the block-LV tag, then use"
+                . " 'ceph auth commit-pending' or 'ceph auth clear-pending' before running this"
+                . " again.\n"
+                if !defined($swap->{key});
+            die "the key staged for '$entity' is not the one an earlier run of this script"
+                . " staged. Resolve it with 'ceph auth commit-pending' or"
+                . " 'ceph auth clear-pending' before running this again.\n"
+                if $swap->{key} ne key_fingerprint($pending);
+
+            if (defined($tag) && $tag eq $pending) {
+                log_info("an earlier run wrote the staged lockbox key of '$entity' to its LVM tag,"
+                    . " committing it");
+                $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+            } else {
+                log_info("dropping the lockbox key an earlier run staged for '$entity', its LVM"
+                    . " tag does not hold it");
+                $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
+            }
+            $changed = 1;
+        }
+
+        # read both back, whatever happened above, and only stop once they agree
+        my $active = auth_entry($rados, $entity)->{key} // '';
+        $tag = eval { $read->() };
+        die "could not re-read the lockbox tag of '$entity' on node '$node': $@" if $@;
+
+        if (!defined($tag) || $tag ne $active) {
+            log_warn("the lockbox tag of '$entity' on node '$node' does not hold its current key,"
+                . " so that OSD could not unlock. Writing the key from the auth database.");
+            node_perl($node, $LOCKBOX_TAG_SCRIPT, args => [$fsid], payload => $active);
+            $tag = eval { $read->() };
+            die "could not confirm the lockbox tag of '$entity' on node '$node': $@" if $@;
+            die "the lockbox tag of '$entity' on node '$node' still does not hold its key\n"
+                if !defined($tag) || $tag ne $active;
+            $changed = 1;
+        }
+
+        delete $state->{lockbox}->{$entity};
+        $state->{done}->{$entity} = time();
+        save_state($state);
+    }
+
+    return $changed;
+}
+
+my sub migrate_lockbox_key($rados, $state, $item) {
+    my ($entity, $node, $fsid) = $item->@{ 'entity', 'node', 'fsid' };
+
+    my $entry = auth_entry($rados, $entity);
+    die "a pending key already exists for '$entity'. Resolve it with"
+        . " 'ceph auth commit-pending' or 'ceph auth clear-pending' before rotating it.\n"
+        if defined($entry->{pending_key}) && length($entry->{pending_key});
+    $state->{previous_keys}->{$entity} = {
+        key => $entry->{key},
+        cipher => $CIPHER_NAMES->{ key_cipher($entry->{key}) // -1 } // 'unreadable',
+        saved => time(),
+    };
+    save_state($state);
+
+    # journalled before the monitors are asked, or a kill in between leaves a key nothing claims
+    $state->{lockbox}->{$entity} =
+        { phase => 'staging', at => time(), node => $node, fsid => $fsid };
+    save_state($state);
+
+    my $pending = eval {
+        my $res = $rados->mon_command({
+            prefix => 'auth get-or-create-pending',
+            entity => $entity,
+            format => 'json',
+        });
+        ref($res) eq 'ARRAY' ? $res->[0]->{pending_key} : undef;
+    };
+    die "could not stage a pending key for '$entity'" . ($@ ? ": $@" : "\n") if $@ || !$pending;
+
+    $state->{lockbox}->{$entity} = {
+        $state->{lockbox}->{$entity}->%*,
+        phase => 'staged',
+        key => key_fingerprint($pending),
+    };
+    save_state($state);
+
+    my $cipher = key_cipher($pending) // -1;
+    if ($cipher != $CIPHER_ID) {
+        # owned by this run, so drop it rather than leave it for the next one to refuse over
+        my $cleared = eval {
+            $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
+            my $after = auth_entry($rados, $entity);
+            !defined($after->{pending_key}) || !length($after->{pending_key});
+        };
+        my $clear_error = $@;
+        if ($cleared) {
+            # nothing changed, so nothing is left to finish
+            delete $state->{lockbox}->{$entity};
+            delete $state->{previous_keys}->{$entity};
+            save_state($state);
+        }
+        die "the pending key for '$entity' uses the '"
+            . ($CIPHER_NAMES->{$cipher} // 'unreadable')
+            . "' cipher, so 'auth_preferred_cipher' did not take"
+            . (
+                $cleared
+                ? "\n"
+                : "; clearing it failed: " . ($clear_error || "it is still staged\n")
+            );
+    }
+
+    $state->{lockbox}->{$entity} = { $state->{lockbox}->{$entity}->%*, phase => 'writing' };
+    save_state($state);
+
+    log_step("writing the lockbox tag on '$item->{device}' on node '$node'");
+    my $out = node_perl($node, $LOCKBOX_TAG_SCRIPT, args => [$fsid], payload => $pending);
+    my $written = parse_lockbox_output($out)->{$fsid}->{secret};
+    die "the lockbox tag on node '$node' did not take the new key\n"
+        if !defined($written) || $written ne $pending;
+
+    $state->{lockbox}->{$entity} = { $state->{lockbox}->{$entity}->%*, phase => 'written' };
+    save_state($state);
+
+    $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+
+    my $now = auth_entry($rados, $entity);
+    die "'$entity' still uses the '"
+        . ($CIPHER_NAMES->{ key_cipher($now->{key}) // -1 } // 'unreadable')
+        . "' cipher after the commit\n"
+        if ($now->{key} // '') ne $pending;
+
+    delete $state->{lockbox}->{$entity};
+    $state->{done}->{$entity} = time();
+    save_state($state);
+
+    log_pass("'$entity' now uses the '$CIPHER' cipher, in the auth database and on"
+        . " '$item->{device}'");
+    return;
+}
+
 my sub migrate_client_key($rados, $state, $item) {
     my $entity = $item->{entity};
 
@@ -1865,16 +2287,20 @@ my sub print_open_options($checks, $opts, $storage_entities, $service_cipher) {
             if $open->{hedge};
     }
 
+    if ($open->{lockbox}) {
+        log_text("");
+        log_text("Never rotate a 'client.osd-lockbox' key by hand: the OSD unlocks with the copy in"
+            . " an LVM tag on its device, and an auth entry changed alone leaves it unable to"
+            . " start. '--rotate-lockbox-keys' writes both copies, and repairs one already rotated"
+            . " by hand.");
+    }
+
     return if !scalar($open->{stuck}->@*);
 
     log_text("");
     log_text("Left to whoever manages the client that reads them; 'man pveceph' covers what each"
         . " needs:");
     log_step($_) for $open->{stuck}->@*;
-    log_text("Never rotate a 'client.osd-lockbox' key. Its only persistent copy is an LVM tag"
-            . " on the OSD it unlocks, so rotating it leaves that OSD unable to start. Recreating"
-            . " the OSD is the only way over.")
-        if $open->{lockbox};
 
     return;
 }
@@ -1965,6 +2391,10 @@ and client keys require their rotation options. Without '--apply', this only pri
   --rotate-mon-key            also rotate the shared 'mon.' key, which restarts every
                               monitor, one at a time
   --rotate-client-keys        also rotate the 'client.bootstrap-*' keys and 'client.crash'
+  --rotate-lockbox-keys       also rotate the 'client.osd-lockbox.*' key of every encrypted
+                              OSD, in the auth database and in the LVM tag its keyring is
+                              rebuilt from at activation. Both are written in one run, so
+                              the OSD keeps unlocking
   --rotate-admin-key          also rotate 'client.admin' and rewrite the copies of it that
                               Proxmox VE keeps
   --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
@@ -2062,6 +2492,7 @@ my sub parse_options() {
         'restart-daemons' => 0,
         'rotate-client-keys' => 0,
         'rotate-admin-key' => 0,
+        'rotate-lockbox-keys' => 0,
         timeout => 600,
     };
 
@@ -2077,6 +2508,7 @@ my sub parse_options() {
         'restart-daemons',
         'rotate-client-keys',
         'rotate-admin-key',
+        'rotate-lockbox-keys',
         'rotate-storage-key=s@',
         'help|h',
     )) {
@@ -2157,7 +2589,7 @@ sub main {
 
     my $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
 
-    my $info = collect_cluster_info($rados);
+    my $info = collect_cluster_info($rados, $opts, $state);
     $info->{rados} = $rados;
     $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
     $info->{pve_mon_key} = pve_mon_keyring_key();
@@ -2241,8 +2673,28 @@ sub main {
         }
     }
 
-    # before the health gate: a leftover 'noout' can be why health looks bad. Under our own lock
-    if ($opts->{apply} && ($state->{noout_owned} || defined($state->{preferred_cipher_was}))) {
+    # its own journal, finished before the plan is built rather than by an option
+    if (my @journalled = sort keys %{ $state->{lockbox} // {} }) {
+        my $what =
+            "An earlier run left the lockbox key rotation of "
+            . join(', ', @journalled)
+            . " unfinished.";
+        log_warn(
+            $opts->{apply}
+            ? "$what This run finishes it from the journal first."
+            : "$what Run this with '--apply' to finish it from the journal."
+        );
+    }
+
+    # before the health gate: a leftover 'noout' can be why health looks bad. The lockbox resume
+    # changes auth and LVM state, so it runs under the lock too
+    my $lockbox_changed = 0;
+    if (
+        $opts->{apply}
+        && ($state->{noout_owned}
+            || defined($state->{preferred_cipher_was})
+            || scalar(keys %{ $state->{lockbox} // {} }))
+    ) {
         PVE::Ceph::Services::with_cluster_bulk_restart_lock(
             $rados,
             $LOCK_SCOPE,
@@ -2252,11 +2704,15 @@ sub main {
                     release_preferred_cipher($rados, $state);
                 }
                 clear_leftover_noout($rados, $state);
+                $lockbox_changed = resume_lockbox_keys($rados, $state, $info);
             },
         );
     }
 
     $info->{preferred_cipher} = current_preferred_cipher($rados);
+
+    # Resume mutates the auth database and tags, so anything collected before it is stale.
+    $info = collect_cluster_info($rados, $opts, $state) if $lockbox_changed;
 
     my $recovered = recover_left_behind($info, $state);
     for my $daemon (@$recovered) {
@@ -2292,6 +2748,7 @@ sub main {
         && !$plan->{daemons}->@*
         && !$plan->{service_cipher}
         && !scalar(@{ $plan->{client_keys} // [] })
+        && !scalar(@{ $plan->{lockbox_keys} // [] })
         && !$opts->{'wipe-rotating-keys'}
     ) {
         my @unfinished =
@@ -2391,9 +2848,7 @@ sub main {
             $scopes,
             $upid,
             sub {
-                if (!$opts->{'restart-daemons'} && scalar($plan->{daemons}->@*)) {
-                    claim_preferred_cipher($rados, $state);
-                }
+                claim_preferred_cipher($rados, $state) if $plan->{stages_pending_keys};
 
                 migrate_mon_key($rados, $state, $info, $opts, $plan) if $plan->{mon_key};
 
@@ -2441,6 +2896,12 @@ sub main {
                     log_text("");
                     log_info("client key '$item->{entity}'");
                     migrate_client_key($rados, $state, $item);
+                }
+
+                for my $item (@{ $plan->{lockbox_keys} // [] }) {
+                    log_text("");
+                    log_info("lockbox key of 'osd.$item->{id}' on node '$item->{node}'");
+                    migrate_lockbox_key($rados, $state, $item);
                 }
 
                 # before the switch, or a client key created right after silently gets the new
@@ -2512,11 +2973,25 @@ sub main {
     return 0;
 }
 
-my $status = eval { main() };
-if (my $err = $@) {
-    chomp $err;
-    log_fail($err);
-    $status = 1;
+# Keep the orchestration directly testable without running main().
+sub lockbox_test_hooks {
+    return {
+        script => $LOCKBOX_TAG_SCRIPT,
+        collect => \&collect_lockbox,
+        resume => \&resume_lockbox_keys,
+        migrate => \&migrate_lockbox_key,
+    };
 }
 
-exit($status // 1); # PVE::RADOS's destructor waitpid()s and clobbers $?
+if (!caller) {
+    my $status = eval { main() };
+    if (my $err = $@) {
+        chomp $err;
+        log_fail($err);
+        $status = 1;
+    }
+
+    exit($status // 1); # PVE::RADOS's destructor waitpid()s and clobbers $?
+}
+
+1;
