@@ -3,7 +3,9 @@
 use v5.36;
 
 use File::Temp;
+use Fcntl qw(:flock);
 use Getopt::Long;
+use POSIX ();
 use JSON;
 use Digest::SHA qw(sha256_hex);
 use MIME::Base64 qw(decode_base64);
@@ -37,6 +39,11 @@ my $STATE_FILE = '/etc/pve/priv/cephx-key-migration.json';
 my $STATE_VERSION = 1;
 
 my $LOCK_SCOPE = 'cephx-service-keys';
+
+# On the cluster file system, so a run on any node excludes the rest. pmxcfs frees the directory
+# only on request and after two minutes without a refresh, hence the heartbeat.
+my $CLUSTER_LOCK_DIR = '/etc/pve/priv/lock/cephx-key-migration';
+my $CLUSTER_LOCK_WAIT = 150; # long enough for the lock of a dead run to expire
 
 # a bootstrap keyring only exists where that daemon type was created, so write where found
 my $TOOL_CLIENT_FILES = {
@@ -1180,6 +1187,8 @@ my sub print_plan($info, $plan, $state, $opts) {
     log_text("");
     log_text("$STATE_FILE records migration progress and the pre-rotation key for every key this"
         . " run changes.");
+    log_warn("Do not start a rolling restart from the web interface until this run finishes:"
+        . " the lock guarding against that is advisory.");
 
     if (my @unfinished = unfinished_entities($state)) {
         log_text("");
@@ -1964,8 +1973,56 @@ and client keys require their rotation options. Without '--apply', this only pri
                               letting them expire
   --help, -h                  print this and exit
 
-This runs from one node and drives the whole cluster over SSH, so run it once.
+This runs from one node and drives the whole cluster over SSH, so run it once. A second apply
+run on any node waits for one in progress and gives up after a few minutes. Do not start a
+rolling restart from the web interface until it finishes: the lock guarding against that is
+advisory.
 EOF
+}
+
+{
+    # held until main() returns or dies; the heartbeat child ends with the run, and pmxcfs drops
+    # the directory two minutes later
+    package PVE::Ceph::KeyMigration::ClusterLock;
+
+    sub take($class, $dir, $wait) {
+        mkdir('/etc/pve/priv/lock');
+        my $deadline = time() + $wait;
+        my $told = 0;
+        while (!mkdir($dir)) {
+            die "could not take the cluster lock '$dir': $!. Is the cluster quorate?\n"
+                if !$!{EEXIST};
+            die "another key migration run holds the cluster lock, or one died less than two"
+                . " minutes ago. Wait for it to finish, or try again later.\n"
+                if time() >= $deadline;
+            main::log_info("another run holds the cluster lock, waiting for it to finish or,"
+                    . " if it died, for the lock to expire")
+                if !$told++;
+            utime(0, 0, $dir); # asks pmxcfs to drop the lock if it is stale
+            sleep(5);
+        }
+
+        my $pid = fork() // die "could not fork the lock heartbeat: $!\n";
+        if (!$pid) {
+            my $parent = getppid();
+            while (getppid() == $parent) {
+                sleep(30);
+                utime(time(), time(), $dir);
+            }
+            POSIX::_exit(0);
+        }
+
+        return bless { dir => $dir, pid => $pid, owner => $$ }, $class;
+    }
+
+    # the RADOS connection lives in a forked child, which must not release the lock on its exit
+    sub DESTROY($self) {
+        return if $$ != $self->{owner};
+        kill('TERM', $self->{pid});
+        waitpid($self->{pid}, 0);
+        rmdir($self->{dir});
+        return;
+    }
 }
 
 # under the cluster lock, and even for an empty plan, or a leftover flag would never clear
@@ -2063,6 +2120,25 @@ sub main {
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
 
+    # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
+    local $SIG{INT} = local $SIG{TERM} = local $SIG{HUP} = sub {
+        die "aborting on signal, run this again to resume\n";
+    };
+
+    my ($operation_lock, $cluster_lock);
+    if ($opts->{apply}) {
+        # the file the rolling restart in the web interface locks too; across nodes only the
+        # advisory config-key lock keeps that one off
+        my $lockfile = '/var/lock/pve-ceph-bulk-restart.lck';
+        open($operation_lock, '>>', $lockfile) or die "could not open '$lockfile': $!\n";
+        flock($operation_lock, LOCK_EX | LOCK_NB)
+            or die "another Ceph key migration or bulk restart is active on this node\n";
+
+        $cluster_lock =
+            PVE::Ceph::KeyMigration::ClusterLock->take($CLUSTER_LOCK_DIR, $CLUSTER_LOCK_WAIT);
+    }
+
+    # once the cluster lock is held: a run that waited for another one needs that run's final state
     my $state = load_state();
     if ($opts->{apply}) {
         repair_admin_keyring($state);
@@ -2164,11 +2240,6 @@ sub main {
                 "an earlier run recorded a 'noout' flag it no longer holds, dropping the note");
         }
     }
-
-    # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
-    local $SIG{INT} = local $SIG{TERM} = local $SIG{HUP} = sub {
-        die "aborting on signal, run this again to resume\n";
-    };
 
     # before the health gate: a leftover 'noout' can be why health looks bad. Under our own lock
     if ($opts->{apply} && ($state->{noout_owned} || defined($state->{preferred_cipher_was}))) {
