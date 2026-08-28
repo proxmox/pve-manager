@@ -416,11 +416,21 @@ for my $fsid (@fsids) {
     my @secrets = secrets_in($tags);
 
     if (length($write)) {
+        # the command reaches liblvm as one string, so only base64 may go into it
+        die "the key to write is not base64\n" if $write !~ m{^[A-Za-z0-9+/]+={0,2}$};
+        die "an existing lockbox tag is not base64\n"
+            if grep { !m{^[A-Za-z0-9+/]*={0,2}$} } @secrets;
+    }
+
+    # LVM applies a delete and an add of the same tag as a removal, so a tag that holds the key
+    # stays and only the others go
+    my @stale = grep { $_ ne $write } @secrets;
+    if (length($write) && (scalar(@stale) || !grep { $_ eq $write } @secrets)) {
         # one metadata update: a delete and a separate add would leave no tag at all in between,
         # and the OSD is then unable to unlock at its next activation. The command goes to liblvm
         # over stdin so the key does not appear in this node's process arguments.
         my @cmd = ('lvchange');
-        push @cmd, '--deltag', "ceph.cephx_lockbox_secret=$_" for @secrets;
+        push @cmd, '--deltag', "ceph.cephx_lockbox_secret=$_" for @stale;
         push @cmd, '--addtag', "ceph.cephx_lockbox_secret=$write", $path;
         die "an LVM argument contains whitespace\n" if grep { m/\s/ } @cmd;
 
@@ -552,6 +562,11 @@ my sub collect_lockbox($rados, $info, $probe) {
                 next;
             }
             my $tag = $fact->{secret};
+            # the node-side script hands the tag to liblvm inside one command string
+            if ($count == 1 && ($tag // '') !~ m{^[A-Za-z0-9+/]*={0,2}$}) {
+                $entry->{missing} = "'$entry->{device}' carries a malformed lockbox tag";
+                next;
+            }
             $entry->{tag_cipher} =
                 length($tag // '') ? $CIPHER_NAMES->{ key_cipher($tag) // -1 } : undef;
             $entry->{tag_matches} =

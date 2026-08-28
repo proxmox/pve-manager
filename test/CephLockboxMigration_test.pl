@@ -10,6 +10,7 @@ use Test::More;
 
 use PVE::Ceph::KeyMigration qw(key_fingerprint plan_lockbox_keys);
 use PVE::INotify;
+use PVE::Tools;
 
 our $NEW = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7IlI=';
 our $OTHER = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7ImI=';
@@ -144,7 +145,7 @@ for my $row (@rows) {
     next if $lv ne $path;
     my %delete = map { $_ => 1 } @delete;
     my @tags = grep { !$delete{$_} } split(/,/, $tags // '');
-    push @tags, $add;
+    push @tags, $add if !grep { $_ eq $add } @tags;
     $row = "$lv\t" . join(',', @tags);
 }
 open(my $out, '>', $ENV{LOCKBOX_LVS_DB}) or die $!;
@@ -243,6 +244,43 @@ my @saved;
     like($commands[0], qr/--deltag .* --addtag /, 'the single LVM call carries both changes');
     unlike(read_file($argv_log), qr/\Q$NEW\E/, 'the lockbox key is absent from process arguments');
     ok($state->{done}->{$ENTITY}, 'successful migration records completion');
+
+    # LVM applies '--deltag X --addtag X' as a removal, so a key the tag already holds stays put,
+    # and only base64 may reach the command string liblvm parses
+    my $node_script = sub {
+        my ($payload, @args) = @_;
+        my $out = '';
+        PVE::Tools::run_command(
+            ['perl', '-', @args],
+            input => $HOOKS->{script} . "__END__\n$payload",
+            outfunc => sub { $out .= "$_[0]\n" },
+            errfunc => sub { },
+        );
+        return $out;
+    };
+    unlink($lvm_log, $argv_log);
+    like(
+        $node_script->("$NEW\n", $FSID),
+        qr/^\Q$FSID\E secret=\Q$NEW\E$/m,
+        'writing the key the tag holds keeps it',
+    );
+    ok(!-f $lvm_log, 'without touching LVM');
+    set_rows(['/dev/vg/osd-block', base_tags('block', $OLD) . ",ceph.cephx_lockbox_secret=$NEW"]);
+    like(
+        $node_script->("$NEW\n", $FSID),
+        qr/^\Q$FSID\E secret=\Q$NEW\E$/m,
+        'a second tag next to the one that holds the key is removed',
+    );
+    my ($repair) = grep { length } split(/\n/, read_file($lvm_log));
+    like(
+        $repair,
+        qr/--deltag ceph\.cephx_lockbox_secret=\Q$OLD\E --addtag/,
+        'by deleting the other',
+    );
+    unlike($repair, qr/--deltag ceph\.cephx_lockbox_secret=\Q$NEW\E/, 'and not the key itself');
+    eval { $node_script->("not base64!\n", $FSID) };
+    like($@, qr/exit code/, 'a value that is not base64 is refused before LVM sees it');
+    is(tag_for('/dev/vg/osd-block'), $NEW, 'and the tag is untouched');
 
     set_rows(['/dev/vg/osd-block', base_tags('block', undef)]);
     $rados = LockboxTestRados->new(
@@ -344,6 +382,15 @@ my @saved;
         $info->{lockbox}->{$ENTITY}->{missing},
         qr/several block devices/,
         'discovery refuses an ambiguous block-LV mapping',
+    );
+
+    set_rows(['/dev/vg/osd-block', base_tags('block', 'bad;quit')]);
+    $info = info_for($rados->{auth}->{$ENTITY});
+    $info->{lockbox} = $HOOKS->{collect}->($rados, $info, 1);
+    like(
+        $info->{lockbox}->{$ENTITY}->{missing},
+        qr/malformed lockbox tag/,
+        'discovery refuses a tag that liblvm could parse as command syntax, before staging',
     );
 
     # two encrypted OSDs on one node are asked about in one go, and one that no OSD in the map
