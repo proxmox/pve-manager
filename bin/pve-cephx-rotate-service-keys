@@ -562,6 +562,14 @@ my sub pve_mon_keyring_key {
     return undef;
 }
 
+my sub mon_rotation_unfinished($info, $state) {
+    return 0 if !$state->{rotated}->{'mon.'} && !$state->{previous_keys}->{'mon.'};
+
+    my $target = $info->{mon_entry}->{key};
+    return 1 if !defined($target);
+    return ($state->{mon_key_complete} // '') ne key_fingerprint($target) ? 1 : 0;
+}
+
 my sub mon_key_hint($info, $opts) {
     return if !mon_key_needs_rotation($info);
 
@@ -575,9 +583,19 @@ my sub mon_key_hint($info, $opts) {
         return;
     }
 
-    log_info("The shared 'mon.' key still uses the old cipher. Ceph does not report it, as it lives"
-        . " in the monitor keyrings rather than in the auth database. Pass '--rotate-mon-key' to"
-        . " rotate it too, which restarts one monitor at a time.");
+    my $detail;
+    if ($info->{mon_key_in_auth_db}) {
+        $detail = "Ceph reports the shared 'mon.' key in the auth database as insecure.";
+    } elsif (!defined($info->{pve_mon_key})) {
+        $detail = "The cipher of the stored 'mon.' key could not be verified.";
+    } elsif ((key_cipher($info->{pve_mon_key}) // -1) == $CIPHER_ID) {
+        return;
+    } else {
+        $detail = "The stored 'mon.' key uses the '$LEGACY_CIPHER' cipher. Ceph health checks do"
+            . " not inspect external monitor keyring files.";
+    }
+
+    log_info("$detail Pass '--rotate-mon-key' to rotate it, which restarts one monitor at a time.");
 
     return;
 }
@@ -678,6 +696,8 @@ my sub probe_nodes($info, $plan) {
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
 my sub preflight_cluster($info, $opts, $recovered_count, $state) {
     my @unfinished = unfinished_entities($state);
+    push @unfinished, 'mon.'
+        if mon_rotation_unfinished($info, $state) && !grep { $_ eq 'mon.' } @unfinished;
 
     my $has_feature = grep { $_ eq $QUORUM_FEATURE } $info->{quorum_features}->@*;
     my $allows_cipher = grep { $_ eq $CIPHER } $info->{allowed_ciphers}->@*;
@@ -708,11 +728,11 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
             my $mon = $_;
             !grep { $_ eq $mon } $info->{quorum}->@*
         } $info->{monmap_mons}->@*;
-    if (@not_in_quorum) {
-        log_fail("The monitor(s) "
-            . join(', ', @not_in_quorum)
-            . " are in the monitor map but not in the quorum, and one that is down never learns"
-            . " a rotated 'mon.' key. Bring every monitor back into the quorum first.");
+    my $resumes_mon_rotation = mon_rotation_unfinished($info, $state);
+    if (@not_in_quorum && (mon_key_rotation_wanted($info, $opts) || $resumes_mon_rotation)) {
+        log_fail("Rotating the monitor key needs every monitor in the quorum, as each is restarted"
+            . " in turn. Bring back: "
+            . join(', ', @not_in_quorum));
         return -1;
     }
 
@@ -1044,10 +1064,13 @@ my sub print_plan($info, $plan, $state, $opts) {
             . " 'pveceph mon create' hands to new monitors. Nothing is rotated or restarted.");
     } elsif ($plan->{mon_key}) {
         $step++;
-        log_text("Step $step: rotate the shared monitor key 'mon.'. Ceph does not flag it, as it"
-            . " lives in the monitor keyrings rather than the auth database, but it is the most"
-            . " privileged key in the cluster. Every keyring is written before any monitor"
-            . " restarts, so the quorum is never more than one monitor short.");
+        my $reported =
+            $info->{mon_key_in_auth_db}
+            ? "Ceph lists it in its health checks."
+            : "Ceph's health checks cannot see it.";
+        log_text("Step $step: rotate the shared 'mon.' key, the most privileged one in the cluster."
+            . " $reported Every keyring is written first, then the monitors restart one at a"
+            . " time.");
         log_step("monitors, restarted one at a time: "
             . join(', ', map { "$_->{id} (node $_->{node})" } $info->{daemons}->{mon}->@*));
     }

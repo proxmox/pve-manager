@@ -367,9 +367,16 @@ sub build_plan($info, $state, $opts, $files) {
     my $only = $opts->{only};
     my $plan = { mon_key => 0, daemons => [], service_cipher => 0, scoped => $only ? 1 : 0 };
 
-    # rotating 'mon.' restarts the quorum, hence opt-in. A repair or a resume restarts nothing
+    # Rotating 'mon.' restarts the quorum, hence opt-in. A repair or a resume restarts nothing.
+    # Completion markers name their target key, so a marker from an older rotation is not enough.
+    # 'previous_keys' is saved before 'auth rotate' and 'rotated' after it, so either marks a
+    # rotation the monitors still have to be carried through.
     my $mon_wanted = !$only || $only->{mon};
-    my $resume_mon = $state->{rotated}->{'mon.'} && !$state->{mon_key_complete};
+    my $mon_target = $info->{mon_entry}->{key};
+    my $mon_started = $state->{rotated}->{'mon.'} || $state->{previous_keys}->{'mon.'};
+    my $resume_mon = $mon_started
+        && (!defined($mon_target)
+            || ($state->{mon_key_complete} // '') ne key_fingerprint($mon_target));
     if (
         $resume_mon
         || ($mon_wanted && mon_keyring_stale($info))

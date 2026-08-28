@@ -354,6 +354,22 @@ my sub cluster {
         1,
         'but only as a repair, so it rotates nothing and restarts no monitor',
     );
+
+    $info->{pve_mon_key} = $NEW;
+    my $state = {
+        rotated => { 'mon.' => 200 },
+        mon_key_complete => key_fingerprint($OLD),
+    };
+    $plan = build_plan($info, $state, {}, {});
+    is($plan->{mon_key}, 1, 'a completion marker for an older monitor key resumes the rotation');
+    ok(!$plan->{mon_repair_only}, 'the resumed monitor rotation updates and restarts monitors');
+
+    # killed between saving the old key and recording the rotation: the auth database may already
+    # hold the new key while every monitor still runs on the old one
+    $state = { previous_keys => { 'mon.' => { saved => 200 } } };
+    $plan = build_plan($info, $state, {}, {});
+    is($plan->{mon_key}, 1, 'a saved old key without the rotated marker resumes the rotation too');
+    ok(!$plan->{mon_repair_only}, 'and carries it through to the monitors rather than repairing');
 }
 
 # --- client keys ---------------------------------------------------------------------------------
