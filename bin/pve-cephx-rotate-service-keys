@@ -82,6 +82,7 @@ my $stdin_is_tty = (-t STDIN);
 my $nodename = PVE::INotify::nodename();
 my $ccname = PVE::Ceph::Tools::get_config('ccname');
 my $pve_mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
+my $admin_keyring = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
 
 my $level2color = {
     pass => 'green',
@@ -312,6 +313,53 @@ my sub auth_entry($rados, $entity) {
     return $res->[0];
 }
 
+# the monitor identity keeps working while a client.admin rotation invalidates the default keyring
+my sub monitor_command($args) {
+    return node_run(
+        $nodename,
+        [
+            'ceph', '--cluster', $ccname, '--name', 'mon.', '--keyring', $pve_mon_keyring,
+            @$args,
+        ],
+    );
+}
+
+my sub monitor_auth_entry($entity) {
+    my $raw = monitor_command(['auth', 'get', $entity, '--format', 'json']);
+    my $res = eval { decode_json($raw) };
+    die "the independent 'mon.' credential returned invalid JSON for '$entity': $@" if $@;
+    die "the independent 'mon.' credential returned no key for '$entity'\n"
+        if ref($res) ne 'ARRAY' || !@$res || !defined($res->[0]->{key});
+
+    return $res->[0];
+}
+
+my sub admin_rotation_unfinished($state) {
+    return migration_unfinished($state, $ADMIN_ENTITY);
+}
+
+my sub repair_admin_keyring($state) {
+    return if !admin_rotation_unfinished($state);
+
+    my $fsid = monitor_command(['fsid']);
+    chomp($fsid);
+    if ($state->{fsid} && $fsid ne $state->{fsid}) {
+        die "the unfinished admin-key rotation belongs to Ceph cluster '$state->{fsid}', but the"
+            . " independent monitor credential reached '$fsid'\n";
+    }
+
+    my $entry = monitor_auth_entry($ADMIN_ENTITY);
+    write_cluster_file($admin_keyring, keyring_text($entry));
+    log_info("restored '$admin_keyring' from the independent 'mon.' credential so the unfinished"
+        . " '$ADMIN_ENTITY' rotation can resume");
+}
+
+my sub verify_fresh_admin_connection {
+    my $fresh = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
+    my $entry = auth_entry($fresh, $ADMIN_ENTITY);
+    return $entry;
+}
+
 my sub collect_cluster_info($rados) {
     my $info = {};
 
@@ -415,7 +463,7 @@ my sub client_key_files {
     my $files = {
         $ADMIN_ENTITY => [
             {
-                path => PVE::Ceph::Tools::get_config('pve_ckeyring_path'),
+                path => $admin_keyring,
                 format => 'keyring',
                 scope => 'cluster',
             },
@@ -1157,7 +1205,10 @@ my sub rotate_entity($rados, $state, $entity) {
     # 'auth rotate' answers with the new key. Asking again would add a failure point after a change
     # that cannot be undone, and for 'client.admin' the credential needed to ask is stale by then.
     my $entry = ref($reply) eq 'ARRAY' ? $reply->[0] : undef;
-    $entry = auth_entry($rados, $entity) if ref($entry) ne 'HASH' || !$entry->{key};
+    if (ref($entry) ne 'HASH' || !$entry->{key}) {
+        $entry =
+            $entity eq $ADMIN_ENTITY ? monitor_auth_entry($entity) : auth_entry($rados, $entity);
+    }
 
     $state->{rotated}->{$entity} = time();
     save_state($state);
@@ -1504,6 +1555,20 @@ my sub check_client_kernels($plan, $opts) {
 my sub migrate_client_key($rados, $state, $item) {
     my $entity = $item->{entity};
 
+    if ($entity eq $ADMIN_ENTITY) {
+        my $recovery = monitor_auth_entry($entity);
+        my $current = auth_entry($rados, $entity);
+        die "the independent 'mon.' credential returned a different '$entity' key\n"
+            if $recovery->{key} ne $current->{key};
+        $state->{admin_recovery} = {
+            entity => 'mon.',
+            keyring => $pve_mon_keyring,
+            verified => time(),
+        };
+        save_state($state);
+        log_info("verified the independent 'mon.' credential before rotating '$entity'");
+    }
+
     my $entry = rotate_entity($rados, $state, $entity);
 
     my $stale = [];
@@ -1552,6 +1617,14 @@ my sub migrate_client_key($rados, $state, $item) {
             . " one: "
             . join(', ', @$stale)
             . ". Run this again once those nodes answer, which finishes just this key.\n";
+    }
+
+    if ($entity eq $ADMIN_ENTITY) {
+        my $fresh = verify_fresh_admin_connection();
+        die "a fresh '$entity' connection did not read the rotated key\n"
+            if $fresh->{key} ne $entry->{key};
+        delete $state->{admin_recovery};
+        log_pass("a fresh '$entity' connection succeeds with the updated keyring");
     }
 
     # only for keys something outside Ceph may hold; Ceph's own tools fetch the rest
@@ -1938,6 +2011,15 @@ sub main {
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
 
+    my $state = load_state();
+    if ($opts->{apply}) {
+        repair_admin_keyring($state);
+    } elsif (admin_rotation_unfinished($state)) {
+        log_fail("An earlier '$ADMIN_ENTITY' rotation is unfinished. Run this with '--apply' to"
+            . " restore the admin keyring from the independent 'mon.' credential first.");
+        return 1;
+    }
+
     if ($opts->{apply}) {
         log_info("Collecting cluster info.");
     } else {
@@ -1952,11 +2034,12 @@ sub main {
     $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
     $info->{pve_mon_key} = pve_mon_keyring_key();
 
-    my $state = load_state();
-
-    # an earlier version kept a copy of every new key here that nothing ever read
-    if (delete $state->{new_keys}) {
-        save_state($state);
+    if ($opts->{apply}) {
+        # Remove state fields written by older versions but never consumed.
+        my $dropped_legacy = delete($state->{new_keys}) ? 1 : 0;
+        my $dropped_recovery =
+            !admin_rotation_unfinished($state) && delete($state->{admin_recovery}) ? 1 : 0;
+        save_state($state) if $dropped_legacy || $dropped_recovery;
     }
 
     # an earlier version recorded a failed read as a setting, and putting that back would fail
