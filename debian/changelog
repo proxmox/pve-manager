@@ -1,3 +1,14 @@
+pve-manager (9.2.14) trixie; urgency=medium
+
+  * ceph: cephx key migration:
+    - stop reporting an abort that never happened at the end of every apply
+      run, which the lock heartbeat printed when the run released it
+    - never remove the lockbox tag of an encrypted OSD when asked to write the
+      key it already holds, and refuse a value that is not a key, so a mistake
+      cannot leave that OSD unable to unlock
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 28 Aug 2026 21:52:48 +0200
+
 pve-manager (9.2.13) trixie; urgency=medium
 
   * partially fix #1989: ui: qemu: allow configuring the qcow2 cache size when
