@@ -1,3 +1,49 @@
+pve-manager (9.2.13) trixie; urgency=medium
+
+  * partially fix #1989: ui: qemu: allow configuring the qcow2 cache size when
+    creating or editing a disk, either directly or derived from the disk size,
+    which can improve performance considerably for some guests
+
+  * api: apt: accept the HTTP proxy as a URI, so that a password can contain
+    special characters
+
+  * ceph: cephx key migration:
+    - add '--rotate-lockbox-keys' to migrate the 'client.osd-lockbox' key of
+      an encrypted OSD. That key lives in the authentication database and in
+      an LVM tag on the OSD's block device that ceph-volume rebuilds the
+      keyring from, so rotating only the entry left the OSD unable to unlock,
+      and recreating it was the only way onto the new cipher. Both copies are
+      now written in one run, with no OSD stopped
+    - list the options that are still open when a run finishes, so that ending
+      the migration does not mean looking up which key groups are left
+    - recover the admin keyring through the 'mon.' credential when a run was
+      interrupted while rotating 'client.admin', which left the cluster
+      without a usable admin key before
+    - commit rather than drop a pending key when a live key swap was
+      interrupted after the key reached the bluestore label, as the OSD data
+      directory is rebuilt from that label at boot
+    - plan a newer interrupted rotation of an entity even if an older run
+      finished one, for example after a key reset by hand or a reused OSD id
+    - require every monitor in quorum only for a monitor key rotation, so a
+      cluster with one monitor down can still migrate its daemon keys
+    - report daemons and nodes whose Ceph version or kernel could not be
+      verified apart from those known to be outdated
+    - restore 'auth_preferred_cipher' also when a run fails, and refuse to
+      continue over an unknown recorded value instead of dropping it
+    - hold a second apply run on any node back through a lock on the cluster
+      file system, and take the node's bulk restart lock as well, so that a
+      rolling restart from the web interface cannot start there meanwhile
+    - record which OSDs a run sets 'noout' on before setting it, so that a
+      hard kill in between cannot leave the flag without a record to clean
+      up from
+    - rotate the standby managers before the active one, so that a failover
+      lands on a manager that already carries the new key
+    - report whether an authentication check is still an error from what the
+      run itself confirmed, as the monitors recompute on their own tick
+    - cut the output of a run down to what decides whether to proceed
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 28 Aug 2026 19:06:41 +0200
+
 pve-manager (9.2.12) trixie; urgency=medium
 
   * fix #7136: ui: tree: harmonize folder view resource ordering
