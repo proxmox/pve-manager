@@ -2194,15 +2194,6 @@ my sub migrate_daemon($rados, $state, $daemon, $opts) {
 
     PVE::Ceph::Services::wait_for_daemon_up($rados, $type, $id, $opts->{timeout});
 
-    # 'auth rotate' keeps a staged pending key; the active key is on disk, so dropping it is safe
-    eval { $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity }) };
-    if (my $err = $@) {
-        chomp $err;
-        log_warn("could not drop the pending key staged for '$entity' ($err). Drop it with 'ceph"
-            . " auth clear-pending $entity', or the next run of this script refuses to start over"
-            . " it.");
-    }
-
     log_pass("'$entity' is up again and uses the '$CIPHER' cipher");
 
     $state->{done}->{$entity} = time();
