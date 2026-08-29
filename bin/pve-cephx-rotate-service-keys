@@ -372,6 +372,9 @@ my $LOCKBOX_TAG_SCRIPT = <<'PERL';
 use strict;
 use warnings;
 
+use IPC::Open3;
+use Symbol qw(gensym);
+
 # ceph-volume copies the shared tags onto the DB and WAL LVs too, and activation reads the lockbox
 # secret from the block LV alone, so anything else would look updated while the OSD stayed stranded.
 my @fsids = @ARGV;
@@ -461,10 +464,21 @@ finally:
     lib.lvm2_exit(handle)
 raise SystemExit(0 if status == 1 else status)
 PYTHON
-        my $pid = open(my $lvm, '|-', 'python3', '-c', $python);
-        die "could not start the LVM command helper: $!\n" if !defined($pid);
-        print {$lvm} join(' ', @cmd) or die "could not send the LVM command: $!\n";
-        close($lvm) or die "could not replace the lockbox tag on '$path'\n";
+        # some liblvm errors name the whole tag, so its output passes a redaction first
+        my ($stdin, $errors) = (undef, gensym());
+        my $pid = eval { open3($stdin, '>&STDOUT', $errors, 'python3', '-c', $python) };
+        die "could not start the LVM command helper: $@" if !$pid;
+        print {$stdin} join(' ', @cmd) or die "could not send the LVM command: $!\n";
+        close($stdin);
+        my $err = do { local $/; <$errors> } // '';
+        waitpid($pid, 0);
+        my $status = $?;
+        # longest first, or a value that prefixes a longer one would leave its tail in the clear
+        for my $secret (sort { length($b) <=> length($a) } grep { length } ($write, @secrets)) {
+            $err =~ s/\Q$secret\E/<key>/g;
+        }
+        print STDERR $err if length($err);
+        die "could not replace the lockbox tag on '$path'\n" if $status;
 
         my $after = `lvs --noheadings -o lv_tags $path 2>/dev/null`;
         my @now = secrets_in($after);

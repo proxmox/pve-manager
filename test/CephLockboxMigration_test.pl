@@ -136,6 +136,11 @@ while (@args) {
     }
 }
 die "incomplete command\n" if !defined($add) || !defined($path);
+if ($ENV{LOCKBOX_LVM_FAIL}) {
+    print STDERR "  Failed to remove tag $_ from vg/osd-block\n" for @delete;
+    print STDERR "  Failed to add tag $add to vg/osd-block\n";
+    exit(5);
+}
 open(my $in, '<', $ENV{LOCKBOX_LVS_DB}) or die $!;
 my @rows = <$in>;
 close($in) or die $!;
@@ -247,14 +252,16 @@ my @saved;
 
     # LVM applies '--deltag X --addtag X' as a removal, so a key the tag already holds stays put,
     # and only base64 may reach the command string liblvm parses
+    my $node_err = '';
     my $node_script = sub {
         my ($payload, @args) = @_;
         my $out = '';
+        $node_err = '';
         PVE::Tools::run_command(
             ['perl', '-', @args],
             input => $HOOKS->{script} . "__END__\n$payload",
             outfunc => sub { $out .= "$_[0]\n" },
-            errfunc => sub { },
+            errfunc => sub { $node_err .= "$_[0]\n" },
         );
         return $out;
     };
@@ -278,6 +285,26 @@ my @saved;
         'by deleting the other',
     );
     unlike($repair, qr/--deltag ceph\.cephx_lockbox_secret=\Q$NEW\E/, 'and not the key itself');
+    # liblvm names the whole tag in some of its errors
+    {
+        local $ENV{LOCKBOX_LVM_FAIL} = 1;
+        set_rows(['/dev/vg/osd-block', base_tags('block', $OLD)]);
+        eval { $node_script->("$NEW\n", $FSID) };
+        like($@, qr/exit code/, 'an LVM failure fails the write');
+        like(
+            $node_err,
+            qr/Failed to add tag ceph\.cephx_lockbox_secret=<key>/,
+            'and its error comes back',
+        );
+        unlike($node_err, qr/\Q$NEW\E|\Q$OLD\E/, 'without either key in it');
+        is(tag_for('/dev/vg/osd-block'), $OLD, 'the tag is as it was');
+
+        my $tags = base_tags('block', 'QUJD') . ',ceph.cephx_lockbox_secret=QUJDREVG';
+        set_rows(['/dev/vg/osd-block', $tags]);
+        eval { $node_script->("$NEW\n", $FSID) };
+        unlike($node_err, qr/QUJD|REVG/, 'a tag that prefixes another leaves no tail in the clear');
+    }
+    set_rows(['/dev/vg/osd-block', base_tags('block', $NEW)]);
     eval { $node_script->("not base64!\n", $FSID) };
     like($@, qr/exit code/, 'a value that is not base64 is refused before LVM sees it');
     is(tag_for('/dev/vg/osd-block'), $NEW, 'and the tag is untouched');
