@@ -373,6 +373,7 @@ use strict;
 use warnings;
 
 use IPC::Open3;
+use MIME::Base64 qw(decode_base64);
 use Symbol qw(gensym);
 
 # ceph-volume copies the shared tags onto the DB and WAL LVs too, and activation reads the lockbox
@@ -408,6 +409,19 @@ sub secrets_in {
     return $tags =~ m/(?:^|,)\s*ceph\.cephx_lockbox_secret=([^,\s]*)/g;
 }
 
+# a cephx key encodes the cipher, the creation time, and the secret behind its length
+sub is_cephx_key {
+    my ($encoded) = @_;
+    return 0 if $encoded !~ m{^[A-Za-z0-9+/]+={0,2}$};
+    my $raw = decode_base64($encoded);
+    return 0 if length($raw) < 12;
+    my ($cipher, $length) = unpack('v x8 v', $raw);
+    return 0 if length($raw) != 12 + $length;
+    return $length >= 16 if $cipher == 1; # ceph accepts any length from 16 up for 'aes'
+    return $length == 32 if $cipher == 2;
+    return 0;
+}
+
 for my $fsid (@fsids) {
     my ($path, $tags) = eval { block_lv($fsid) };
     if (my $err = $@) {
@@ -420,7 +434,7 @@ for my $fsid (@fsids) {
 
     if (length($write)) {
         # the command reaches liblvm as one string, so only base64 may go into it
-        die "the key to write is not base64\n" if $write !~ m{^[A-Za-z0-9+/]+={0,2}$};
+        die "the key to write is not a cephx key\n" if !is_cephx_key($write);
         die "an existing lockbox tag is not base64\n"
             if grep { !m{^[A-Za-z0-9+/]*={0,2}$} } @secrets;
     }

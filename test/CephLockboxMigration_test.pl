@@ -10,6 +10,7 @@ use Test::More;
 
 use PVE::Ceph::KeyMigration qw(key_fingerprint plan_lockbox_keys);
 use PVE::INotify;
+use MIME::Base64;
 use PVE::Tools;
 
 our $NEW = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7IlI=';
@@ -308,6 +309,21 @@ my @saved;
     eval { $node_script->("not base64!\n", $FSID) };
     like($@, qr/exit code/, 'a value that is not base64 is refused before LVM sees it');
     is(tag_for('/dev/vg/osd-block'), $NEW, 'and the tag is untouched');
+    my $short = MIME::Base64::encode_base64(substr(MIME::Base64::decode_base64($NEW), 0, -1), '');
+    for my $value ('Z2FyYmFnZQ==', $short, $OLD =~ s/^AQ/Aw/r) {
+        eval { $node_script->("$value\n", $FSID) };
+        like($node_err, qr/not a cephx key/, "'$value' is not a cephx key");
+    }
+    is(tag_for('/dev/vg/osd-block'), $NEW, 'and the tag is still untouched');
+    my $raw = MIME::Base64::decode_base64($OLD);
+    my $spare = MIME::Base64::encode_base64(
+        substr($raw, 0, 10) . pack('v', 17) . substr($raw, 12) . 'X', '',
+    );
+    like(
+        $node_script->("$spare\n", $FSID),
+        qr/^\Q$FSID\E secret=\Q$spare\E$/m,
+        'an aes key with a spare byte is a key, ceph takes any length from 16 up',
+    );
 
     set_rows(['/dev/vg/osd-block', base_tags('block', undef)]);
     $rados = LockboxTestRados->new(
