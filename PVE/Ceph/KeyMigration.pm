@@ -215,10 +215,17 @@ sub unfinished_entities($state) {
 # Ceph only lists daemons that are running, so one that is merely stopped would be missed and its
 # key never migrated, which the service ticket switch at the end then refuses over. $configured is
 # { <id> => <node> } from what the nodes broadcast about themselves.
-sub merge_configured_daemons($daemons, $type, $configured) {
+sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
     my $running = { map { $_->{id} => 1 } @$daemons };
+    my $ghosts = [];
     for my $id (sort keys %{ $configured // {} }) {
         next if $running->{$id};
+        # a removed daemon can leave its data directory behind, and there is nothing to rotate
+        # for it, so it must not block the run
+        if ($existing && !$existing->{$id}) {
+            push @$ghosts, { type => $type, id => "$id", node => $configured->{$id} };
+            next;
+        }
         push @$daemons,
             {
                 type => $type,
@@ -229,7 +236,7 @@ sub merge_configured_daemons($daemons, $type, $configured) {
             };
     }
 
-    return $daemons;
+    return wantarray ? ($daemons, $ghosts) : $daemons;
 }
 
 # What a run has to do about a live swap an earlier one did not finish, given its journal entry and

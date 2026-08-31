@@ -659,7 +659,23 @@ my sub collect_cluster_info($rados, $opts, $state) {
         }
     };
 
+    # a decommissioned or destroyed OSD can leave its data directory behind on a node, and the
+    # OSD map decides which IDs are still part of the cluster
+    my $osd_dump = $rados->mon_command({ prefix => 'osd dump', format => 'json' });
+    die "could not read the 'osd dump' of the cluster\n"
+        if ref($osd_dump) ne 'HASH' || ref($osd_dump->{osds}) ne 'ARRAY';
+    my ($cluster_osds, $destroyed_osds) = ({}, {});
+    for my $osd ($osd_dump->{osds}->@*) {
+        next if !defined($osd->{osd});
+        if (grep { $_ eq 'destroyed' } ($osd->{state} // [])->@*) {
+            $destroyed_osds->{ $osd->{osd} } = 1;
+        } else {
+            $cluster_osds->{ $osd->{osd} } = 1;
+        }
+    }
+
     $info->{daemons} = {};
+    $info->{ghost_daemons} = [];
     for my $type (qw(mon mgr mds osd)) {
         my $metadata = $rados->mon_command({ prefix => "$type metadata", format => 'json' });
         die "could not read the '$type metadata' of the cluster\n" if ref($metadata) ne 'ARRAY';
@@ -668,6 +684,9 @@ my sub collect_cluster_info($rados, $opts, $state) {
         for my $entry (@$metadata) {
             my $id = $entry->{name} // $entry->{id};
             next if !defined($id);
+            # an OSD the map holds as destroyed still answers with an empty metadata stub; one
+            # the map read above does not know yet is newer, not gone
+            next if $type eq 'osd' && $destroyed_osds->{$id};
             push @$daemons,
                 {
                     type => $type,
@@ -679,7 +698,14 @@ my sub collect_cluster_info($rados, $opts, $state) {
                 };
         }
 
-        merge_configured_daemons($daemons, $type, $configured->{$type});
+        my $ghosts;
+        ($daemons, $ghosts) = merge_configured_daemons(
+            $daemons,
+            $type,
+            $configured->{$type},
+            $type eq 'osd' ? $cluster_osds : undef,
+        );
+        push $info->{ghost_daemons}->@*, $ghosts->@*;
 
         my $numeric = !grep { $_->{id} !~ m/^\d+$/ } @$daemons;
         $info->{daemons}->{$type} = [
@@ -950,6 +976,12 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
     my $has_feature = grep { $_ eq $QUORUM_FEATURE } $info->{quorum_features}->@*;
     my $allows_cipher = grep { $_ eq $CIPHER } $info->{allowed_ciphers}->@*;
     my $insecure = $info->{insecure_entities};
+
+    if (my @ghosts = ($info->{ghost_daemons} // [])->@*) {
+        log_info("ignoring "
+            . join(', ', map { "'$_->{type}.$_->{id}' on node '$_->{node}'" } @ghosts)
+            . ": removed or destroyed daemons, only their data directories are left behind");
+    }
 
     if (!$has_feature) {
         if (!$allows_cipher) {

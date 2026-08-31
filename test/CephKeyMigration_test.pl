@@ -259,6 +259,22 @@ is(
 
     my $mons = merge_configured_daemons([], 'mon', { x => 'n1' });
     is($mons->[0]->{entity}, 'mon.', 'every monitor shares the one mon. entity');
+
+    # a decommissioned OSD can leave its data directory behind
+    my ($kept, $ghosts) = merge_configured_daemons([], 'osd', { 3 => 'n1', 6 => 'n2' }, { 3 => 1 });
+    is(scalar(@$kept), 1, 'an OSD the OSD map does not hold is not picked up');
+    is($kept->[0]->{entity}, 'osd.3', 'while one it holds still is');
+    is_deeply(
+        $ghosts,
+        [{ type => 'osd', id => '6', node => 'n2' }],
+        'and the leftover is reported for the run log instead',
+    );
+    my $every = merge_configured_daemons([], 'osd', { 6 => 'n2' });
+    is(
+        $every->[0]->{entity},
+        'osd.6',
+        'without an inventory of existing IDs every directory counts',
+    );
 }
 
 # --- the plan -----------------------------------------------------------------------------------
