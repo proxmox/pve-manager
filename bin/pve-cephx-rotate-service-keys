@@ -1083,8 +1083,9 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
     if (@orphaned) {
         log_fail("Ceph reports insecure keys for "
             . join(', ', @orphaned)
-            . ", but no running daemon claims them, so there is no keyring to update. Start"
-            . " those daemons, or remove the entities with 'ceph auth rm <entity>'.");
+            . ", but no running or configured daemon claims them, so there is no keyring to"
+            . " update. Before removing an auth entry, verify that the daemon was removed and"
+            . " no node retains its data directory or keyring.");
         return -1;
     }
 
