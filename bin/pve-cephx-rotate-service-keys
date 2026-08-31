@@ -1037,8 +1037,9 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         my @orphaned = sort grep { $info->{lockbox}->{$_}->{orphaned} } keys $info->{lockbox}->%*;
         log_warn("No OSD in this cluster carries the fsid of "
                 . join(', ', @orphaned)
-                . ", so these lockbox keys are left alone. An entry a destroyed OSD left behind"
-                . " can be removed with 'ceph auth rm <entity>'.")
+                . ", so these lockbox keys are left alone. Remove one only after confirming the"
+                . " OSD was destroyed and no node carries its ceph-volume device; absence from"
+                . " the OSD map alone is not enough.")
             if @orphaned;
     }
 
