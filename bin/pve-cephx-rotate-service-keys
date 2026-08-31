@@ -25,10 +25,11 @@ use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
-    parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
+    parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     touched_daemons
-    plan_client_keys plan_lockbox_keys build_plan merge_configured_daemons resume_verdict
+    plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
+    resolve_configured_locations merge_configured_daemons resume_verdict
     open_options parse_lockbox_output
 );
 
@@ -642,22 +643,15 @@ my sub collect_cluster_info($rados, $opts, $state) {
 
     # a stopped daemon is missing from 'ceph <type> metadata', but its key blocks the ticket switch,
     # so the pvestatd inventory supplies it and its node
-    my $configured = {};
+    my $configured_locations = {};
     eval {
         PVE::Cluster::cfs_update();
         for my $type (qw(mon mgr mds osd)) {
             my $by_node = PVE::Ceph::Services::get_cluster_service($type) // {};
-            for my $node (sort keys %$by_node) {
-                my $ids = $by_node->{$node};
-                next if ref($ids) ne 'HASH';
-                for my $id (sort keys %$ids) {
-                    # without a data directory there is nowhere to put a key
-                    next if !$ids->{$id}->{direxists};
-                    $configured->{$type}->{"$id"} = $node;
-                }
-            }
+            $configured_locations->{$type} = configured_daemon_locations($by_node);
         }
     };
+    die "could not read the cluster daemon inventory: $@" if $@;
 
     # a decommissioned or destroyed OSD can leave its data directory behind on a node, and the
     # OSD map decides which IDs are still part of the cluster
@@ -670,7 +664,7 @@ my sub collect_cluster_info($rados, $opts, $state) {
         if (grep { $_ eq 'destroyed' } ($osd->{state} // [])->@*) {
             $destroyed_osds->{ $osd->{osd} } = 1;
         } else {
-            $cluster_osds->{ $osd->{osd} } = 1;
+            $cluster_osds->{ $osd->{osd} } = $osd->{uuid};
         }
     }
 
@@ -695,14 +689,36 @@ my sub collect_cluster_info($rados, $opts, $state) {
                     node => $entry->{hostname},
                     version => $entry->{ceph_version_short} // $entry->{ceph_version},
                     active => ($type eq 'mgr' && "$id" eq $active_mgr) ? 1 : 0,
+                    $type eq 'osd' && exists($cluster_osds->{$id})
+                    ? ('osd-uuid' => $cluster_osds->{$id})
+                    : (),
                 };
         }
+
+        my $running = { map { $_->{id} => 1 } @$daemons };
+        my ($configured, $inventory_ghosts, $conflicts) = resolve_configured_locations(
+            $type,
+            $configured_locations->{$type},
+            $running,
+            $type eq 'osd' ? $cluster_osds : undef,
+        );
+        if (scalar(@$conflicts)) {
+            die join(
+                '',
+                map {
+                    "the data directory of '$_->{type}.$_->{id}' is reported on several nodes: "
+                        . join(', ', $_->{nodes}->@*)
+                        . ". Remove the leftover directories before rotating its key.\n"
+                } @$conflicts,
+            );
+        }
+        push $info->{ghost_daemons}->@*, @$inventory_ghosts;
 
         my $ghosts;
         ($daemons, $ghosts) = merge_configured_daemons(
             $daemons,
             $type,
-            $configured->{$type},
+            $configured,
             $type eq 'osd' ? $cluster_osds : undef,
         );
         push $info->{ghost_daemons}->@*, $ghosts->@*;
@@ -962,6 +978,7 @@ my sub probe_nodes($info, $plan) {
         $daemon->{sections} = $probe->{sections};
         $daemon->{'label-whoami'} = $probe->{'label-whoami'};
         $daemon->{'label-fsid'} = $probe->{'label-fsid'};
+        $daemon->{'label-osd-uuid'} = $probe->{'label-osd-uuid'};
     }
 
     return;
@@ -1196,26 +1213,35 @@ my sub preflight_nodes($info, $plan, $opts) {
                 "the bluestore label of $daemon->{entity} on node '$daemon->{node}' carries"
                 . " no 'osd_key', so a rotated key could not be made to survive a reboot";
         } elsif ($store eq 'block') {
-            # OSD metadata is as fresh as the last boot; a disk moved since would take the write
+            # OSD metadata is as fresh as the last boot; verify the device itself in case a disk
+            # moved, or an ID was reused while an old data directory remained on another node.
+            my $identity = osd_label_identity($daemon, $info->{fsid});
             my $whoami = $daemon->{'label-whoami'} // '';
             my $fsid = $daemon->{'label-fsid'} // '';
+            my $uuid = $daemon->{'label-osd-uuid'} // '';
+            my $expected_uuid = $daemon->{'osd-uuid'} // '';
 
-            if ($whoami ne '' && $whoami ne $daemon->{id}) {
+            if ($identity eq 'wrong-id') {
                 push @unusable,
                     "the bluestore label under /var/lib/ceph/osd/$ccname-$daemon->{id} on node"
                     . " '$daemon->{node}' belongs to osd.$whoami, not to $daemon->{entity}";
-            }
-
-            if ($fsid ne '' && $fsid ne $info->{fsid}) {
+            } elsif ($identity eq 'wrong-cluster') {
                 push @unusable,
                     "the bluestore label of $daemon->{entity} on node '$daemon->{node}' belongs"
                     . " to cluster '$fsid', not to this one";
-            }
-
-            if ($whoami eq '' || $fsid eq '') {
+            } elsif ($identity eq 'incomplete') {
                 push @unusable,
                     "the bluestore label of $daemon->{entity} on node '$daemon->{node}' does not"
-                    . " say which OSD or cluster it belongs to";
+                    . " state its OSD ID, cluster FSID, and OSD UUID";
+            } elsif ($identity eq 'missing-map-uuid') {
+                push @unusable,
+                    "the current OSD map gives no UUID for stopped $daemon->{entity}, so its"
+                    . " bluestore device cannot be identified safely";
+            } elsif ($identity eq 'wrong-uuid') {
+                push @unusable,
+                    "the bluestore label of $daemon->{entity} on node '$daemon->{node}' has OSD"
+                    . " UUID '$uuid', but the current OSD map has '$expected_uuid'; remove the"
+                    . " leftover data directory instead of writing a key to its device";
             }
         } elsif ($store eq 'file') {
             my $sections = $daemon->{sections} // [];

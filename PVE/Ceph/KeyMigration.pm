@@ -18,10 +18,11 @@ our @EXPORT_OK = qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
-    parse_probe_output needs_rotation mon_key_needs_rotation mon_keyring_stale
+    parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     touched_daemons
-    plan_client_keys plan_lockbox_keys build_plan merge_configured_daemons resume_verdict
+    plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
+    resolve_configured_locations merge_configured_daemons resume_verdict
     classify_insecure_clients open_options parse_lockbox_output
 );
 
@@ -114,6 +115,7 @@ sub parse_probe_output($output) {
                 defined($fields) && defined($fields->{osd_key}) ? 'block' : 'block-without-key';
             $probe->{'label-whoami'} = $fields->{whoami} if $fields;
             $probe->{'label-fsid'} = $fields->{ceph_fsid} if $fields;
+            $probe->{'label-osd-uuid'} = $fields->{osd_uuid} if $fields;
             $probe->{'label-key'} = $fields->{osd_key} if $fields;
         }
     }
@@ -131,6 +133,22 @@ sub parse_lockbox_output($output) {
     }
 
     return $facts;
+}
+
+# Match the device under an OSD data directory to the current OSD incarnation. An OSD ID and the
+# cluster FSID survive ID reuse, so only the per-OSD UUID distinguishes a leftover old device.
+sub osd_label_identity($daemon, $cluster_fsid) {
+    my $whoami = $daemon->{'label-whoami'} // '';
+    my $fsid = $daemon->{'label-fsid'} // '';
+    my $uuid = $daemon->{'label-osd-uuid'} // '';
+    my $expected_uuid = $daemon->{'osd-uuid'} // '';
+
+    return 'wrong-id' if $whoami ne '' && $whoami ne $daemon->{id};
+    return 'wrong-cluster' if $fsid ne '' && $fsid ne $cluster_fsid;
+    return 'incomplete' if $whoami eq '' || $fsid eq '' || $uuid eq '';
+    return 'missing-map-uuid' if $daemon->{down} && $expected_uuid eq '';
+    return 'wrong-uuid' if $expected_uuid ne '' && $uuid ne $expected_uuid;
+    return 'ok';
 }
 
 sub needs_rotation($info, $entity) {
@@ -210,6 +228,41 @@ sub unfinished_entities($state) {
     } keys %$started;
 }
 
+# Keep every node that reports a data directory for an ID. Silently picking one would direct a
+# stopped-daemon key write at an arbitrary leftover directory when an ID was reused.
+sub configured_daemon_locations($by_node) {
+    my $locations = {};
+    for my $node (sort keys %{ $by_node // {} }) {
+        my $ids = $by_node->{$node};
+        next if ref($ids) ne 'HASH';
+        for my $id (sort keys %$ids) {
+            next if ref($ids->{$id}) ne 'HASH' || !$ids->{$id}->{direxists};
+            push $locations->{"$id"}->@*, $node;
+        }
+    }
+    return $locations;
+}
+
+# Running metadata is authoritative for its current node. Otherwise duplicate locations are
+# ambiguous for an existing daemon, while every location of an absent OSD is only a remnant.
+sub resolve_configured_locations($type, $locations, $running, $existing = undef) {
+    my ($configured, $ghosts, $conflicts) = ({}, [], []);
+    for my $id (sort keys %{ $locations // {} }) {
+        my $nodes = $locations->{$id};
+        next if $running->{$id};
+        if ($existing && !exists($existing->{$id})) {
+            push @$ghosts, map { { type => $type, id => "$id", node => $_ } } @$nodes;
+            next;
+        }
+        if (scalar(@$nodes) > 1) {
+            push @$conflicts, { type => $type, id => "$id", nodes => [@$nodes] };
+            next;
+        }
+        $configured->{$id} = $nodes->[0];
+    }
+    return ($configured, $ghosts, $conflicts);
+}
+
 # The daemons this run writes to. Only these are asked about their data directory, so a run
 # narrowed with '--only' touches one node instead of every node that runs a daemon.
 # Ceph only lists daemons that are running, so one that is merely stopped would be missed and its
@@ -222,7 +275,7 @@ sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
         next if $running->{$id};
         # a removed daemon can leave its data directory behind, and there is nothing to rotate
         # for it, so it must not block the run
-        if ($existing && !$existing->{$id}) {
+        if ($existing && !exists($existing->{$id})) {
             push @$ghosts, { type => $type, id => "$id", node => $configured->{$id} };
             next;
         }
@@ -233,6 +286,7 @@ sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
                 entity => $type eq 'mon' ? 'mon.' : "$type.$id",
                 node => $configured->{$id},
                 down => 1,
+                $type eq 'osd' && $existing ? ('osd-uuid' => $existing->{$id}) : (),
             };
     }
 

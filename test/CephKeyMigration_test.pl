@@ -9,10 +9,11 @@ use Test::More;
 
 use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER
-    key_cipher key_fingerprint parse_probe_output needs_rotation mon_keyring_stale
+    key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
     plan_client_keys build_plan
-    merge_configured_daemons resume_verdict classify_insecure_clients open_options
+    configured_daemon_locations resolve_configured_locations merge_configured_daemons
+    resume_verdict classify_insecure_clients open_options
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -74,6 +75,71 @@ isnt(key_fingerprint($NEW), key_fingerprint($OLD), 'different keys get different
     is($probes->{'osd:2'}->{'label-whoami'}, '2', 'whoami comes out of it');
     is($probes->{'osd:2'}->{'label-key'}, $NEW, 'and the key, which is what verifies a write');
     like($probes->{'osd:2'}->{'label-fsid'}, qr/^[0-9a-f-]{36}$/, 'the cluster fsid comes out too');
+    is(
+        $probes->{'osd:2'}->{'label-osd-uuid'},
+        '9d4ef7d6-6ce8-4192-938a-cfe0ced279a5',
+        'and the per-OSD UUID distinguishes a reused ID from its old device',
+    );
+
+    my $identity = {
+        id => '2',
+        down => 1,
+        'osd-uuid' => '9d4ef7d6-6ce8-4192-938a-cfe0ced279a5',
+        $probes->{'osd:2'}->%*,
+    };
+    is(
+        osd_label_identity($identity, 'e3bcf831-39e8-4db3-a458-bbfa643a139d'),
+        'ok',
+        'the current OSD incarnation accepts its own device',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, 'label-whoami' => '7' },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'wrong-id',
+        'a label for another OSD ID is still refused',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, 'label-fsid' => 'c452afbd-c4bd-4219-994c-cd93a144dbb7' },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'wrong-cluster',
+        'a label from another cluster is still refused',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, 'osd-uuid' => '11c76ab5-9237-478e-9860-88c8215bb2fe' },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'wrong-uuid',
+        'an old device with the same ID and cluster FSID is refused after ID reuse',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, 'label-osd-uuid' => undef },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'incomplete',
+        'a label without its per-OSD UUID proves too little',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, 'osd-uuid' => undef },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'missing-map-uuid',
+        'a stopped OSD also needs an expected UUID from the current map',
+    );
+    is(
+        osd_label_identity(
+            { %$identity, down => 0, 'osd-uuid' => undef },
+            'e3bcf831-39e8-4db3-a458-bbfa643a139d',
+        ),
+        'ok',
+        'a running OSD first seen after the map snapshot still carries its own identity',
+    );
     is_deeply(
         $probes->{'mds:two'}->{sections},
         ['mds.two', 'client.admin'],
@@ -260,10 +326,54 @@ is(
     my $mons = merge_configured_daemons([], 'mon', { x => 'n1' });
     is($mons->[0]->{entity}, 'mon.', 'every monitor shares the one mon. entity');
 
+    my $locations = configured_daemon_locations({
+        n1 => { 3 => { direxists => 1 }, 4 => { service => 1 } },
+        n2 => { 3 => { direxists => 1 } },
+    });
+    is_deeply(
+        $locations,
+        { 3 => ['n1', 'n2'] },
+        'every data directory remains visible when an ID is reported on several nodes',
+    );
+    my ($configured, $remnants, $conflicts) =
+        resolve_configured_locations('osd', $locations, {}, { 3 => 'current-uuid' });
+    is_deeply($configured, {}, 'an ambiguous stopped OSD gets no arbitrary node');
+    is_deeply($remnants, [], 'a current OSD is not called a remnant');
+    is_deeply(
+        $conflicts,
+        [{ type => 'osd', id => '3', nodes => ['n1', 'n2'] }],
+        'both locations block a stopped OSD key write',
+    );
+
+    ($configured, $remnants, $conflicts) =
+        resolve_configured_locations('osd', $locations, { 3 => 1 }, { 3 => 'current-uuid' });
+    is_deeply($conflicts, [], 'running metadata makes its current node authoritative');
+
+    ($configured, $remnants, $conflicts) =
+        resolve_configured_locations('osd', $locations, {}, {});
+    is_deeply(
+        $remnants,
+        [
+            { type => 'osd', id => '3', node => 'n1' }, { type => 'osd', id => '3', node => 'n2' },
+        ],
+        'every location of an OSD absent from the map is reported as a remnant',
+    );
+    is_deeply($conflicts, [], 'absent OSD remnants cannot receive a key write');
+
     # a decommissioned OSD can leave its data directory behind
-    my ($kept, $ghosts) = merge_configured_daemons([], 'osd', { 3 => 'n1', 6 => 'n2' }, { 3 => 1 });
+    my ($kept, $ghosts) = merge_configured_daemons(
+        [],
+        'osd',
+        { 3 => 'n1', 6 => 'n2' },
+        { 3 => '9d4ef7d6-6ce8-4192-938a-cfe0ced279a5' },
+    );
     is(scalar(@$kept), 1, 'an OSD the OSD map does not hold is not picked up');
     is($kept->[0]->{entity}, 'osd.3', 'while one it holds still is');
+    is(
+        $kept->[0]->{'osd-uuid'},
+        '9d4ef7d6-6ce8-4192-938a-cfe0ced279a5',
+        'and it carries the current map UUID to the device check',
+    );
     is_deeply(
         $ghosts,
         [{ type => 'osd', id => '6', node => 'n2' }],
