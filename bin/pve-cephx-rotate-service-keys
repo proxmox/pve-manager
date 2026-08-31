@@ -2690,9 +2690,24 @@ sub main {
             . " out.");
     }
 
-    my $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
+    my ($rados, $info);
+    eval {
+        $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
+        $rados->mon_command({ prefix => 'fsid', format => 'json' });
+    };
+    if (my $err = $@) {
+        die $err if $err !~ m/permission denied/i;
+        chomp $err;
+        log_fail("Could not authenticate to the cluster: $err.");
+        log_text("If 'client.admin' was rotated outside this script, its keyring no longer"
+            . " matches the authentication database. The independent monitor identity reads the"
+            . " current key back:");
+        log_step("ceph -n mon. --keyring $pve_mon_keyring auth get client.admin");
+        log_text("Write that key into '$admin_keyring', then run this again.");
+        return 1;
+    }
 
-    my $info = collect_cluster_info($rados, $opts, $state);
+    $info = collect_cluster_info($rados, $opts, $state);
     $info->{rados} = $rados;
     $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
     $info->{pve_mon_key} = pve_mon_keyring_key();
