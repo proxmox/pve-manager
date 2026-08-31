@@ -1030,6 +1030,11 @@ __PACKAGE__->register_method({
             eval {
                 PVE::Ceph::Services::ceph_service_cmd('stop', $osdsection);
                 PVE::Ceph::Services::ceph_service_cmd('disable', $osdsection);
+                # ceph-volume enables the unit at runtime, which the disable above leaves in
+                # place, so the OSD keeps being reported as configured until the next boot
+                run_command(
+                    ['/bin/systemctl', 'disable', '--runtime', "ceph-osd\@${osdid}.service"],
+                );
             };
             warn $@ if $@;
 
@@ -1123,6 +1128,12 @@ __PACKAGE__->register_method({
                         $remove_partition->($part);
                     }
                 }
+            }
+
+            # after the unmount only the empty mount point directory is left of the OSD, and
+            # pvestatd would keep broadcasting it as a configured OSD
+            if (-d $mountpoint && !rmdir($mountpoint)) {
+                warn "could not remove the leftover '$mountpoint' directory - $!\n";
             }
         };
 
