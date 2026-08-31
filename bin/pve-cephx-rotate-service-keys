@@ -1498,7 +1498,9 @@ my sub print_plan($info, $plan, $state, $opts) {
         $step++;
         log_text("");
         log_text("Step $step: switch the service tickets to the new cipher, which clears the second"
-            . " error. Clients are unaffected: they never decrypt those tickets.");
+            . " error. Clients never decrypt those tickets, so none needs a restart. The setting is"
+            . " part of the monitor map, so the change makes the monitors hold an election, a few"
+            . " seconds in which they do not answer.");
         log_step("ceph mon set auth_service_cipher $CIPHER");
     }
 
@@ -1518,10 +1520,14 @@ my sub print_plan($info, $plan, $state, $opts) {
         !$plan->{stages_pending_keys} ? "is left untouched"
         : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
         : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
+    my $elects =
+        $plan->{stages_pending_keys}
+        ? " It is part of the monitor map, so each change makes the monitors hold an election."
+        : "";
     log_text("'auth_preferred_cipher' (currently '"
         . $now
         . "') $restore. It decides the cipher of keys created later; on '$LEGACY_CIPHER', new"
-        . " client keys stay usable by kernel clients that do not know '$CIPHER'.");
+        . " client keys stay usable by kernel clients that do not know '$CIPHER'.$elects");
     if ($info->{preferred_cipher} eq $CIPHER) {
         log_warn("'auth_preferred_cipher' is already '$CIPHER', so client keys created from now on"
             . " will not work with kernel clients that do not know that cipher");
