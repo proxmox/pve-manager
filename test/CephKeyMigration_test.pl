@@ -14,6 +14,7 @@ use PVE::Ceph::KeyMigration qw(
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients open_options
+    summarize_sessions session_hosts
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -385,6 +386,90 @@ is(
         'osd.6',
         'without an inventory of existing IDs every directory counts',
     );
+}
+
+# --- live client sessions -------------------------------------------------------------------
+{
+    my $mons = [
+        {
+            mon => 'a',
+            sessions => [
+                {
+                    con_type => 'client',
+                    entity_name => 'client.admin',
+                    global_id => 100,
+                    socket_addr => { addr => '10.0.0.1:0' },
+                },
+                {
+                    con_type => 'client',
+                    entity_name => 'client.admin',
+                    global_id => 120,
+                    socket_addr => { addr => '10.0.0.2:0' },
+                },
+                { con_type => 'osd', entity_name => 'osd.1', global_id => 90 },
+            ],
+        },
+        {
+            mon => 'b',
+            sessions => [{
+                con_type => 'client',
+                entity_name => 'client.backup',
+                global_id => 130,
+                socket_addr => { addr => '10.0.0.1:0' },
+            }],
+        },
+    ];
+    my $summary = summarize_sessions($mons);
+    ok($summary->{complete}, 'every monitor answered, so the picture is complete');
+    is(scalar($summary->{clients}->{'client.admin'}->@*), 2, 'sessions are grouped by entity');
+    ok(!exists $summary->{clients}->{'osd.1'}, 'daemon connections are not client sessions');
+    is(
+        session_hosts($summary->{clients}->{'client.admin'}),
+        '10.0.0.1: 1, 10.0.0.2: 1',
+        'the hosts of an entity read as host: count',
+    );
+
+    my $expected = summarize_sessions($mons, [qw(a b)]);
+    ok($expected->{complete}, 'every expected monitor returned one result');
+    ok(
+        !summarize_sessions([$mons->[0]], [qw(a b)])->{complete},
+        'an omitted monitor result marks the picture incomplete',
+    );
+    ok(
+        !summarize_sessions([], [])->{complete},
+        'an empty expected monitor inventory cannot prove completeness',
+    );
+    ok(
+        !summarize_sessions($mons, [qw(a a)])->{complete},
+        'duplicate expected monitor IDs cannot prove completeness',
+    );
+
+    my $partial = summarize_sessions([$mons->[0], { mon => 'b', sessions => undef }]);
+    ok(!$partial->{complete}, 'a monitor that did not answer marks the picture incomplete');
+    is(
+        scalar($partial->{clients}->{'client.admin'}->@*),
+        2,
+        'while the sessions that were read still count',
+    );
+
+    my $malformed_result = summarize_sessions(['not a monitor result']);
+    ok(!$malformed_result->{complete}, 'a malformed monitor result marks the picture incomplete');
+
+    my $malformed = summarize_sessions([{ mon => 'a', sessions => ['not a session'] }]);
+    ok(!$malformed->{complete}, 'a malformed session entry marks the picture incomplete');
+
+    my $bad_client = summarize_sessions([{
+        mon => 'a',
+        sessions => [{ con_type => 'client', entity_name => '', global_id => [] }],
+    }]);
+    ok(!$bad_client->{complete}, 'a client without a usable entity or ID is incomplete');
+    is_deeply($bad_client->{clients}, {}, 'a malformed client contributes no consumer evidence');
+
+    my $non_client = summarize_sessions([{
+        mon => 'a',
+        sessions => [{ con_type => 'osd', entity_name => '', global_id => [] }],
+    }]);
+    ok($non_client->{complete}, 'a valid non-client session remains irrelevant');
 }
 
 # --- the plan -----------------------------------------------------------------------------------

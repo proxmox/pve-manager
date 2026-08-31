@@ -23,6 +23,7 @@ our @EXPORT_OK = qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
+    summarize_sessions session_hosts
     classify_insecure_clients open_options parse_lockbox_output
 );
 
@@ -268,6 +269,95 @@ sub resolve_configured_locations($type, $locations, $running, $existing = undef)
 # Ceph only lists daemons that are running, so one that is merely stopped would be missed and its
 # key never migrated, which the service ticket switch at the end then refuses over. $configured is
 # { <id> => <node> } from what the nodes broadcast about themselves.
+# Live sessions come from each monitor's admin socket. Only 'client' connections matter here:
+# daemons re-read their keyring at restart, while a client process loads its key once and keeps
+# it for as long as it runs.
+sub summarize_sessions($per_mon, $expected_mons = undef) {
+    my $summary = { complete => 1, clients => {} };
+    if (ref($per_mon) ne 'ARRAY') {
+        $summary->{complete} = 0;
+        return $summary;
+    }
+
+    my ($expected, $seen);
+    if (defined($expected_mons)) {
+        if (
+            ref($expected_mons) ne 'ARRAY'
+            || !scalar(@$expected_mons)
+            || grep { !defined($_) || ref($_) || !length($_) } @$expected_mons
+        ) {
+            $summary->{complete} = 0;
+        } else {
+            $expected = { map { $_ => 1 } @$expected_mons };
+            $summary->{complete} = 0 if scalar(keys %$expected) != scalar(@$expected_mons);
+            $seen = {};
+        }
+    }
+
+    for my $mon (@$per_mon) {
+        if (ref($mon) ne 'HASH' || ref($mon->{sessions}) ne 'ARRAY') {
+            $summary->{complete} = 0;
+            next;
+        }
+        if ($expected) {
+            my $id = $mon->{mon};
+            if (!defined($id) || ref($id) || !$expected->{$id} || $seen->{$id}++) {
+                $summary->{complete} = 0;
+                next;
+            }
+        }
+        for my $session ($mon->{sessions}->@*) {
+            if (
+                ref($session) ne 'HASH'
+                || !defined($session->{con_type})
+                || ref($session->{con_type})
+                || !length($session->{con_type})
+            ) {
+                $summary->{complete} = 0;
+                next;
+            }
+            next if $session->{con_type} ne 'client';
+
+            my $gid = $session->{global_id};
+            my $entity = $session->{entity_name};
+            if (
+                !defined($gid)
+                || ref($gid)
+                || $gid !~ m/^\d+$/
+                || !defined($entity)
+                || ref($entity)
+                || !length($entity)
+            ) {
+                $summary->{complete} = 0;
+                next;
+            }
+
+            my $socket = $session->{socket_addr};
+            if (
+                defined($socket)
+                && (ref($socket) ne 'HASH'
+                    || (defined($socket->{addr}) && ref($socket->{addr})))
+            ) {
+                $summary->{complete} = 0;
+                next;
+            }
+            my ($host) = ((($socket // {})->{addr} // '') =~ m/^\[?(.+?)\]?:\d+$/);
+            push $summary->{clients}->{$entity}->@*, { global_id => $gid, host => $host // '?' };
+        }
+    }
+    if ($expected && scalar(keys %$seen) != scalar(keys %$expected)) {
+        $summary->{complete} = 0;
+    }
+    return $summary;
+}
+
+# the hosts of one entity's live sessions, as 'host: count' for the run log
+sub session_hosts($live) {
+    my $hosts = {};
+    $hosts->{ $_->{host} }++ for @$live;
+    return join(', ', map { "$_: $hosts->{$_}" } sort keys %$hosts);
+}
+
 sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
     my $running = { map { $_->{id} => 1 } @$daemons };
     my $ghosts = [];

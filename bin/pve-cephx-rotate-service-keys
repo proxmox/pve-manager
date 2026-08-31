@@ -30,6 +30,7 @@ use PVE::Ceph::KeyMigration qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
+    summarize_sessions session_hosts
     open_options parse_lockbox_output
 );
 
@@ -509,6 +510,22 @@ PYTHON
 }
 PERL
 
+# Every monitor is asked over its admin socket, which needs no cephx and answers even while the
+# authentication layer itself is in trouble. One that does not answer marks the result incomplete,
+# so the checks built on it stay honest.
+my sub poll_client_sessions($info) {
+    my $per_mon = [];
+    for my $mon ($info->{daemons}->{mon}->@*) {
+        next if $mon->{down};
+        my $sessions = eval {
+            decode_json(node_run(
+                $mon->{node}, ['ceph', 'daemon', "mon.$mon->{id}", 'sessions']));
+        };
+        push @$per_mon, { mon => $mon->{id}, sessions => $sessions };
+    }
+    return summarize_sessions($per_mon, $info->{monmap_mons});
+}
+
 # The lockbox key lives in the auth database and in an LVM tag on the OSD's block device. Reading
 # the tags costs an SSH round trip per node, so only a run that acts on them asks.
 my sub collect_lockbox($rados, $info, $probe) {
@@ -730,6 +747,8 @@ my sub collect_cluster_info($rados, $opts, $state) {
             : (sort { $a->{id} cmp $b->{id} } @$daemons)
         ];
     }
+
+    $info->{sessions} = poll_client_sessions($info);
 
     # 'auth ls' drops a staged pending key; only the JSON export keeps it apart from the active one
     my $exported = $rados->mon_command({ prefix => 'auth export', format => 'json' });
@@ -1481,6 +1500,18 @@ my sub print_plan($info, $plan, $state, $opts) {
         }
         my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
         log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
+        for my $item ($plan->{client_keys}->@*) {
+            my $live = $info->{sessions}->{clients}->{ $item->{entity} } // [];
+            next if !scalar(@$live);
+            log_step(
+                scalar(@$live)
+                    . " live client(s) authenticate as '$item->{entity}' ("
+                    . session_hosts($live)
+                    . ") and keep the current key in memory");
+        }
+        log_step("a rotated key reaches a running consumer only through a restart: live-migrate"
+            . " every VM, remount CephFS mounts, and restart other consumers afterwards; a dry"
+            . " run of this script then reports who is left");
     }
 
     if (scalar($plan->{lockbox_keys}->@*)) {
