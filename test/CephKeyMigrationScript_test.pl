@@ -175,7 +175,10 @@ sub run_client_rotation {
     sub mon_command {
         my ($self, $args) = @_;
         push $self->{commands}->@*, {%$args};
-        return { mons => [map { { name => $_ } } $self->{mons}->@*] }
+        return {
+            mons => [map { { name => $_ } } $self->{mons}->@*],
+            auth_service_cipher => { name => $self->{service_cipher} // 'aes256k' },
+            }
             if $args->{prefix} eq 'mon dump';
         return { quorum_names => [$self->{quorum}->@*] }
             if $args->{prefix} eq 'quorum_status';
@@ -185,6 +188,17 @@ sub run_client_rotation {
             } $self->{metadata}->@*
             ]
             if $args->{prefix} eq 'mon metadata';
+        return [
+            map {
+                { %$_ }
+            } ($self->{exported} // [])->@*
+            ]
+            if $args->{prefix} eq 'auth export';
+        if ($args->{prefix} eq 'auth wipe-rotating-service-keys') {
+            $self->{service_cipher} = $self->{after_wipe_cipher}
+                if defined($self->{after_wipe_cipher});
+            return {};
+        }
         die "unexpected monitor command '$args->{prefix}'\n";
     }
 }
@@ -424,6 +438,168 @@ sub migrated_info {
     ok(
         !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
         'the duplicate cannot accept the record after measuring it in the same run',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => [qw(a b)],
+        quorum => [qw(a b)],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        exported => [],
+    );
+    my $current = $HOOKS->{collect_monitor_state}->(
+        $rados, sub { return encode_json([]) },
+    );
+    ok(!$current->{sessions}->{complete}, 'missing fresh monitor metadata marks the sweep partial');
+
+    my $state = { client_keys_seen => {} };
+    eval {
+        $HOOKS->{assert_consumers}->(
+            $rados,
+            $state,
+            { apply => 0, force => 0 },
+            'wipe the rotating service keys',
+            sub { return $current },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to wipe.*not every monitor answered/s,
+        'the wipe guard fails closed on an incomplete fresh monitor inventory',
+    );
+}
+
+sub wipe_monitor_picture {
+    my ($service_cipher, @ids) = @_;
+    return {
+        sessions => picture(1, @ids),
+        service_cipher => $service_cipher // 'aes256k',
+    };
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        exported => [{ entity => 'client.crash', key => $NEW }],
+    );
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.crash' => {
+                rotated => 1,
+                session_ids => [47],
+                cleared => 2,
+                acknowledged => 2,
+            },
+        },
+    };
+    my @saved;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        eval {
+            $HOOKS->{assert_consumers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                'wipe the rotating service keys',
+                sub { return wipe_monitor_picture('aes256k', 47) },
+            );
+        };
+    }
+    like($@, qr/refusing to wipe.*recorded live client/s, 'a returning client refuses the wipe');
+    my $persisted = decode_json($saved[-1]->[1]);
+    ok(
+        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        'the action-time wipe poll durably reopens the returned client record',
+    );
+
+    eval {
+        $HOOKS->{assert_consumers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            'wipe the rotating service keys',
+            sub { return wipe_monitor_picture() },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to wipe.*not confirmed refreshed/s,
+        'a later no-session poll cannot reuse the superseded acknowledgment',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(exported => []);
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    eval {
+        $HOOKS->{assert_consumers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            'wipe the rotating service keys',
+            sub { return wipe_monitor_picture() },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to wipe.*no auth entry exists/s,
+        'a connected client whose auth entry disappeared blocks the wipe',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        exported => [{ entity => 'client.crash', key => $NEW }],
+    );
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    eval {
+        $HOOKS->{assert_consumers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            'wipe the rotating service keys',
+            sub { return wipe_monitor_picture('aes') },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to wipe.*regenerated with the 'aes' cipher/s,
+        'the action-time service cipher must already be aes256k before the wipe',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        exported => [{ entity => 'client.crash', key => $NEW }],
+        service_cipher => 'aes256k',
+        after_wipe_cipher => 'aes',
+    );
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        eval {
+            $HOOKS->{wipe_rotating_keys}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                sub { return wipe_monitor_picture('aes256k') },
+            );
+        };
+    }
+    like(
+        $@,
+        qr/rotating keys were regenerated with the 'aes' cipher/,
+        'the service cipher is verified again after the wipe',
+    );
+    is_deeply(
+        [map { $_->{prefix} } $rados->{commands}->@*],
+        ['auth export', 'auth wipe-rotating-service-keys', 'mon dump'],
+        'the post-wipe verification immediately follows the destructive command',
     );
 }
 

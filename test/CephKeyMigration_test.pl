@@ -7,6 +7,7 @@ use lib ('.', '..');
 
 use Test::More;
 
+use FindBin;
 use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
@@ -386,6 +387,50 @@ is(
         'osd.6',
         'without an inventory of existing IDs every directory counts',
     );
+}
+
+# --- lexical subs must be defined before their first call ------------------------------------
+{
+    # a call site above a 'my sub' definition compiles clean and dies only at runtime
+    open(my $fh, '<', "$FindBin::Bin/../bin/pve-cephx-rotate-service-keys") or die $!;
+    my @lines = <$fh>;
+    close($fh);
+    my %defined_at;
+    for my $i (0 .. $#lines) {
+        $defined_at{$1} = $i if $lines[$i] =~ m/^my sub (\w+)/;
+    }
+    my @early;
+    for my $i (0 .. $#lines) {
+        next if $lines[$i] =~ m/^\s*#/;
+        for my $name (keys %defined_at) {
+            next if $i >= $defined_at{$name};
+            push @early, "$name called on line " . ($i + 1) . " before its definition"
+                if $lines[$i] =~ m/\b\Q$name\E\s*\(/ && $lines[$i] !~ m/^my sub/;
+        }
+    }
+    is_deeply(\@early, [], 'no lexical sub is called above its definition');
+
+    # a module function that is called but not imported compiles clean and dies at runtime
+    my $module = "$FindBin::Bin/../PVE/Ceph/KeyMigration.pm";
+    open(my $mfh, '<', $module) or die $!;
+    my @module_lines = <$mfh>;
+    close($mfh);
+    my %exported = map { $_ => 1 } grep { m/^\w+$/ }
+        map { split(/\s+/, $_) } grep { m/^sub (\w+)/ ? 0 : 1 } ();
+    my %module_subs;
+    for my $line (@module_lines) {
+        $module_subs{$1} = 1 if $line =~ m/^sub (\w+)/;
+    }
+    my $source = join('', @lines);
+    my ($import_list) = $source =~ m/use PVE::Ceph::KeyMigration qw\(\s*(.*?)\);/s;
+    my %imported = map { $_ => 1 } grep { length } split(/\s+/, $import_list // '');
+    my @missing;
+    for my $name (sort keys %module_subs) {
+        next if $imported{$name} || $defined_at{$name};
+        next if !grep { m/(?<![\w:>])\Q$name\E\s*\(/ && !m/^\s*#/ } @lines;
+        push @missing, $name;
+    }
+    is_deeply(\@missing, [], 'every module function the script calls is imported');
 }
 
 # --- live client sessions -------------------------------------------------------------------

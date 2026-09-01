@@ -592,6 +592,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
         monmap_mons => \@monmap,
         quorum => \@quorum,
         sessions => summarize_sessions($per_mon),
+        service_cipher => $mon_dump->{auth_service_cipher}->{name} // 'unknown',
     };
 }
 
@@ -1073,7 +1074,9 @@ my sub probe_nodes($info, $plan) {
 }
 
 # A client key rotated outside this script leaves consumers behind the same way as one this
-# script rotates, and only the key fingerprints recorded at earlier apply runs make that visible.
+# script rotates, and only the key fingerprints recorded at earlier apply runs make that
+# visible. Shared by the preflight and by the destructive actions, which reconcile again right
+# before acting: a long run does not serialize other 'ceph auth' commands.
 my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
     my $seen = $state->{client_keys_seen} // {};
     my $seen_changed = 0;
@@ -1117,6 +1120,73 @@ my sub reopen_returning_clients($state, $sessions) {
     }
     save_state($state) if $reopened;
     return $stale;
+}
+
+# Polled fresh at the moment of the action: this very run may have rotated a client key after
+# the preflight gate ran, and a stale consumer cannot follow the wipe.
+my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef) {
+    $collect //= sub { collect_current_monitor_state($rados) };
+    my $monitor = $collect->();
+    die "could not collect the current monitor state before attempting to $action\n"
+        if ref($monitor) ne 'HASH'
+        || ref($monitor->{sessions}) ne 'HASH'
+        || ref($monitor->{sessions}->{clients}) ne 'HASH'
+        || !defined($monitor->{sessions}->{complete})
+        || !defined($monitor->{service_cipher})
+        || ref($monitor->{service_cipher});
+    my $fresh = $monitor->{sessions};
+    die "refusing to $action: the service tickets would be regenerated with the"
+        . " '$monitor->{service_cipher}' cipher\n"
+        if $monitor->{service_cipher} ne $CIPHER;
+
+    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
+    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
+    my $exported = {};
+    for my $entry (@$auth) {
+        die "the cephx auth export is malformed\n"
+            if ref($entry) ne 'HASH'
+            || !defined($entry->{entity})
+            || ref($entry->{entity})
+            || !length($entry->{entity})
+            || exists($exported->{ $entry->{entity} })
+            || !defined($entry->{key})
+            || ref($entry->{key})
+            || !length($entry->{key});
+        $exported->{ $entry->{entity} } = $entry;
+    }
+    reconcile_client_fingerprints($state, $exported, $fresh, $opts);
+    my $stale = reopen_returning_clients($state, $fresh);
+    my $blockers = [];
+    push @$blockers, "not every monitor answered the session query"
+        if !$fresh->{complete};
+    for my $entity (sort keys %{ $fresh->{clients} }) {
+        next if $exported->{$entity};
+        push @$blockers,
+            scalar($fresh->{clients}->{$entity}->@*)
+            . " live client(s) authenticate as '$entity', but no auth entry exists for it";
+    }
+
+    for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
+        if (my $held = $stale->{$entity}) {
+            push @$blockers,
+                scalar(@$held)
+                . " recorded live client(s) may still hold the previous key of '$entity' ("
+                . session_hosts($held) . ")";
+        } elsif (!defined($state->{client_refresh}->{$entity}->{cleared})) {
+            push @$blockers, "the rotation of '$entity' is not confirmed refreshed yet";
+        }
+    }
+    return if !scalar(@$blockers);
+    if (!$opts->{force}) {
+        die "refusing to $action: "
+            . join('; ', @$blockers)
+            . ". Refresh the consumers, close each record with '--ack-refreshed', or pass"
+            . " '--force' to continue anyway.\n";
+    }
+    log_warn("Continuing to $action although a client may be stopped, as '--force' was"
+        . " passed: "
+        . join('; ', @$blockers));
+    return;
 }
 
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
@@ -1256,6 +1326,21 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             log_info("no live session predates the key rotation of '$entity'; confirm with"
                 . " '--ack-refreshed $entity' once every consumer of it was refreshed");
         }
+    }
+
+    if ($opts->{'wipe-rotating-keys'} && (%$stale_clients || !$info->{sessions}->{complete})) {
+        my $why =
+            %$stale_clients
+            ? "the clients above cannot fetch new rotating tickets, as the key they hold is no"
+            . " longer in the authentication database, so the wipe would stop their IO at once"
+            : "not every monitor answered the session query, so it cannot be verified that no"
+            . " client would be stopped";
+        if (!$opts->{force}) {
+            log_fail("Refusing '--wipe-rotating-keys': $why. Refresh the consumers first, or"
+                . " pass '--force' to wipe anyway.");
+            return -1;
+        }
+        log_warn("Wiping the rotating keys although $why, as '--force' was passed.");
     }
 
     if (!$has_feature) {
@@ -2668,12 +2753,26 @@ my sub set_service_cipher($rados, $state) {
     return;
 }
 
-my sub wipe_rotating_keys($rados, $state) {
+my sub wipe_rotating_keys($rados, $state, $opts, $collect = undef) {
+    assert_consumers_current(
+        $rados, $state, $opts, 'wipe the rotating service keys', $collect,
+    );
+
     log_heading("Wiping the rotating service keys");
 
     log_warn("This briefly invalidates the rotating secrets, as asked for with"
         . " '--wipe-rotating-keys'.");
     $rados->mon_command({ prefix => 'auth wipe-rotating-service-keys' });
+
+    my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
+    my $now =
+        ref($mon_dump) eq 'HASH' && ref($mon_dump->{auth_service_cipher}) eq 'HASH'
+        ? $mon_dump->{auth_service_cipher}->{name}
+        : undef;
+    die "the rotating keys were wiped, but the current service cipher could not be verified\n"
+        if !defined($now);
+    die "the rotating keys were regenerated with the '$now' cipher instead of '$CIPHER'\n"
+        if $now ne $CIPHER;
 
     $state->{rotating_keys_wiped} = time();
     save_state($state);
@@ -2798,9 +2897,10 @@ and client keys require their rotation options. Without '--apply', this only pri
   --assume-yes, -y            do not ask for confirmation. '--apply' needs this when
                               standard input is not a terminal
   --timeout SECONDS           how long to wait for a daemon to come back (default 600)
-  --force                     continue past blocking HEALTH_WARN checks and unresolved
-                              kernel compatibility checks. HEALTH_ERR and failed health
-                              queries are never overridden
+  --force                     continue past blocking HEALTH_WARN checks, kernel
+                              compatibility checks, and consumer-refresh records that keep
+                              a wipe from stopping live clients. HEALTH_ERR and failed
+                              health queries are never overridden
   --only SCOPE[,SCOPE]...     limit the run to 'mon', a daemon type ($types), or a single
                               daemon such as 'osd.3'. Comma-separated or given more than
                               once. A limited run does not switch the service tickets
@@ -3358,7 +3458,8 @@ sub main {
                 release_preferred_cipher($rados, $state);
 
                 set_service_cipher($rados, $state) if $plan->{service_cipher};
-                wipe_rotating_keys($rados, $state) if $opts->{'wipe-rotating-keys'};
+                wipe_rotating_keys($rados, $state, $opts)
+                    if $opts->{'wipe-rotating-keys'};
             },
         );
     };
@@ -3442,6 +3543,8 @@ sub key_migration_test_hooks {
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
         preflight => \&preflight_cluster,
+        assert_consumers => \&assert_consumers_current,
+        wipe_rotating_keys => \&wipe_rotating_keys,
     };
 }
 
