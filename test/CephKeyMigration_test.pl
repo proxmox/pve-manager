@@ -15,7 +15,7 @@ use PVE::Ceph::KeyMigration qw(
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients open_options
-    summarize_sessions session_hosts stale_consumers ack_decision
+    summarize_sessions session_hosts stale_consumers cephfs_mount_storages ack_decision
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -556,6 +556,28 @@ is(
 
     $stale = stale_consumers($sessions, { 'client.crash' => { session_ids => [50] } });
     is_deeply($stale, {}, 'a rotated entity with no live session left has nothing to report');
+}
+
+# --- the mounts a rotated key reaches ----------------------------------------------------------
+{
+    my $item = {
+        files => [
+            {
+                path => '/etc/pve/priv/ceph/cephfs.secret',
+                format => 'secret',
+                store => 'cephfs',
+            },
+            { path => '/etc/pve/priv/ceph/fs2.secret', format => 'secret', store => 'fs2' },
+            { path => '/etc/pve/priv/ceph/rbd.keyring', format => 'keyring', store => 'rbd' },
+            { path => '/etc/pve/priv/ceph.client.admin.keyring', format => 'keyring' },
+        ],
+    };
+    is_deeply(
+        cephfs_mount_storages($item),
+        ['cephfs', 'fs2'],
+        'every CephFS storage of the key is redone, an RBD storage has no mount to redo',
+    );
+    is_deeply(cephfs_mount_storages({ files => [] }), [], 'a key without storages redoes nothing');
 }
 
 # --- a record without a measurement cannot be confirmed away ------------------------------------

@@ -30,7 +30,8 @@ use PVE::Ceph::KeyMigration qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers ack_decision
+    summarize_sessions session_hosts merge_refresh_record stale_consumers cephfs_mount_storages
+    ack_decision
     open_options parse_lockbox_output
 );
 
@@ -155,6 +156,7 @@ my sub node_run($node, $cmd, %opts) {
         errfunc => sub { $err .= "$_[0]\n" },
     );
     $args{input} = $opts{input} if defined($opts{input});
+    $args{timeout} = $opts{timeout} if defined($opts{timeout});
 
     eval { run_command(node_command($node, $cmd), %args) };
     if (my $failure = $@) {
@@ -171,7 +173,12 @@ my sub node_perl($node, $code, %opts) {
     my $input = $code;
     $input .= "__END__\n" . $opts{payload} if defined($opts{payload});
 
-    return node_run($node, ['perl', '-', ($opts{args} // [])->@*], input => $input);
+    return node_run(
+        $node,
+        ['perl', '-', ($opts{args} // [])->@*],
+        input => $input,
+        defined($opts{timeout}) ? (timeout => $opts{timeout}) : (),
+    );
 }
 
 my $WRITE_FILE = <<'PERL_EOF';
@@ -1820,7 +1827,8 @@ my sub print_plan($info, $plan, $state, $opts) {
         $step++;
         log_text("");
         log_text("Step $step: rotate the client keys asked for and rewrite every copy Proxmox VE"
-            . " keeps; copies elsewhere are up to you.");
+            . " keeps; copies elsewhere are up to you. The mount of a CephFS storage that uses"
+            . " such a key is redone on every node, unless something is using it.");
         for my $item ($plan->{client_keys}->@*) {
             my $where =
                 scalar($item->{files}->@*)
@@ -2505,6 +2513,177 @@ my sub migrate_lockbox_key($rados, $state, $item) {
     return;
 }
 
+# Redoes the mount of one CephFS storage, so the kernel client loads the rotated key. An
+# unmount that fails because something uses the mount is the answer, not a problem: that is
+# exactly when it must not be pulled away, and the run says so. Only a mount that no longer
+# answers is forced, as nothing in it can finish anyway.
+my $CEPHFS_REMOUNT_SCRIPT = <<'PERL';
+use strict;
+use warnings;
+
+use PVE::Storage;
+use PVE::Tools;
+
+my ($storeid) = @ARGV;
+my $cfg = PVE::Storage::config();
+my $scfg = PVE::Storage::storage_config($cfg, $storeid);
+my $path = $scfg->{path} // "/mnt/pve/$storeid";
+
+# A mount whose key is gone answers nothing, not even a stat, so its state is read from the
+# kernel's mount table rather than from the mount itself.
+sub mount_table {
+    open(my $fh, '<', '/proc/self/mountinfo') or die "could not read the mount table: $!\n";
+    my @entries;
+    while (my $line = <$fh>) {
+        my @fields = split(/\s+/, $line);
+        my ($sep) = grep { $fields[$_] eq '-' } 0 .. $#fields;
+        next if !defined($sep) || !defined($fields[4]);
+        my $mounted = $fields[4];
+        $mounted =~ s/\\040/ /g;
+        push @entries, { path => $mounted, dev => $fields[2], type => $fields[$sep + 1] // '' };
+    }
+    return \@entries;
+}
+
+sub is_mounted {
+    return scalar(grep { $_->{path} eq $path } mount_table()->@*) ? 1 : 0;
+}
+
+# The kernel keeps one client per CephFS superblock and lists them in debugfs. A superblock
+# outlives a detached mount while something is blocked in it, so more clients than mounted
+# CephFS superblocks means such a survivor exists.
+sub cephfs_clients_beyond_mounts {
+    return undef if !-d '/sys/kernel/debug/ceph';
+    my $clients = scalar(grep { -e "$_/mdsc" } glob('/sys/kernel/debug/ceph/*'));
+    my %superblocks = map { $_->{dev} => 1 } grep { $_->{type} eq 'ceph' } mount_table()->@*;
+    return $clients - scalar(keys %superblocks);
+}
+
+# Processes sleeping in the CephFS client: a mount that lost its key never answers them.
+sub blocked_in_cephfs {
+    my @blocked;
+    for my $dir (glob('/proc/[0-9]*')) {
+        my $wchan = PVE::Tools::file_read_firstline("$dir/wchan") // '';
+        next if $wchan !~ m/^ceph_/;
+        my $stat = PVE::Tools::file_read_firstline("$dir/stat") // '';
+        next if $stat !~ m/^\d+ \(.*\) D /;
+        my ($pid) = $dir =~ m{(\d+)$};
+        my $comm = PVE::Tools::file_read_firstline("$dir/comm") // '?';
+        push @blocked, "$pid ($comm)";
+    }
+    return \@blocked;
+}
+
+if (!is_mounted()) {
+    print "not mounted\n";
+    exit 0;
+}
+
+my $surplus_before = cephfs_clients_beyond_mounts();
+
+my ($err, $how) = ('', '');
+eval {
+    PVE::Tools::run_command(
+        ['umount', $path],
+        timeout => 20,
+        errfunc => sub { $err .= "$_[0] " },
+    );
+};
+if (my $failure = $@) {
+    $err =~ s/^\s*umount:\s*//;
+    $err =~ s/[\s.]+$//;
+    if ($failure !~ m/timeout|timed out/i) {
+        print "in use, left alone: " . ($err || 'the unmount failed') . "\n";
+        exit 0;
+    }
+    # A plain unmount waits for the mount to answer, which one that lost its key never does.
+    # Forcing that mount ends the requests blocked in it with an error, so the kernel can drop
+    # the old client. A mount that still answers is only slow and is detached instead: forcing
+    # it would fail writes it can still finish.
+    my $answers = eval {
+        PVE::Tools::run_command(
+            ['stat', '-f', '-c', '%T', $path],
+            timeout => 10,
+            outfunc => sub { },
+        );
+        1;
+    };
+    if (!$answers && eval { PVE::Tools::run_command(['umount', '-f', $path], timeout => 20); 1 }) {
+        $how = 'forced';
+    } elsif (eval { PVE::Tools::run_command(['umount', '-l', $path], timeout => 20); 1 }) {
+        $how = 'detached';
+    } else {
+        print "does not answer and could not be detached\n";
+        exit 0;
+    }
+}
+
+PVE::Storage::activate_storage($cfg, $storeid);
+if (!is_mounted()) {
+    print "unmounted, but not mounted again\n";
+    exit 0;
+}
+
+my $out = 'remounted';
+$out .= ", it had stopped answering and was $how" if $how;
+if (defined($surplus_before)) {
+    my $surplus = cephfs_clients_beyond_mounts();
+    if ($surplus > $surplus_before) {
+        my $blocked = blocked_in_cephfs();
+        $out .= "; the old client survived";
+        $out .= ", held by " . join(', ', @$blocked) if scalar(@$blocked);
+    }
+}
+print "$out\n";
+PERL
+
+my sub refresh_cephfs_mounts($item) {
+    my $stores = cephfs_mount_storages($item);
+    return if !scalar(@$stores);
+
+    PVE::Cluster::cfs_update();
+    for my $node (sort @{ PVE::Cluster::get_nodelist() // [] }) {
+        for my $storeid (@$stores) {
+            my $out = eval {
+                node_perl($node, $CEPHFS_REMOUNT_SCRIPT, args => [$storeid], timeout => 120);
+            };
+            if (my $err = $@) {
+                chomp $err;
+                log_warn("could not redo the '$storeid' mount on node '$node': $err."
+                    . " Unmount it there once nothing uses it, it is mounted again by itself.");
+                next;
+            }
+            $out =~ s/\s+$//;
+            next if $out eq 'not mounted';
+            if ($out =~ m/^in use/) {
+                log_warn("the '$storeid' mount on node '$node' is $out."
+                    . " It keeps the previous key until it is redone: unmount it there once"
+                    . " nothing uses it, it is mounted again by itself.");
+                next;
+            }
+            if ($out =~ m/^remounted/) {
+                my $how = "";
+                $how = ", after it had stopped answering" if $out =~ m/stopped answering/;
+                $how .= "; the requests blocked in it got an error" if $out =~ m/was forced/;
+                log_step("redid the '$storeid' mount on node '$node', which now reads the new"
+                    . " key$how");
+                if ($out =~ m/; the old client survived(?:, held by (.+))?$/) {
+                    my $held = $1;
+                    log_warn("a client of the old '$storeid' mount survived on node '$node'"
+                        . (defined($held) ? ", held by $held" : "")
+                        . ": what is blocked in it stays blocked, and the kernel keeps retrying"
+                        . " the monitors with the previous key until the node reboots");
+                }
+                next;
+            }
+            log_warn("the '$storeid' mount on node '$node': $out. It cannot read the new key"
+                . " like this, so redo it there by hand.");
+        }
+    }
+
+    return;
+}
+
 my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
     my $entity = $item->{entity};
 
@@ -2609,6 +2788,8 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
         delete $state->{admin_recovery};
         log_pass("a fresh '$entity' connection succeeds with the updated keyring");
     }
+
+    refresh_cephfs_mounts($item);
 
     # only for keys something outside Ceph may hold; Ceph's own tools fetch the rest
     if ($entity eq $ADMIN_ENTITY || grep { defined($_->{store}) } $item->{files}->@*) {

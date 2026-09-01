@@ -23,7 +23,8 @@ our @EXPORT_OK = qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers ack_decision
+    summarize_sessions session_hosts merge_refresh_record stale_consumers cephfs_mount_storages
+    ack_decision
     classify_insecure_clients open_options parse_lockbox_output
 );
 
@@ -401,6 +402,17 @@ sub stale_consumers($sessions, $refresh) {
         $stale->{$entity} = \@held if scalar(@held);
     }
     return $stale;
+}
+
+# The CephFS storages whose mount reads a rotated key. The kernel holds the key a mount was
+# made with and cannot take a new one, so such a mount is a consumer of its own.
+sub cephfs_mount_storages($item) {
+    my $stores = {};
+    for my $file ($item->{files}->@*) {
+        next if ($file->{format} // '') ne 'secret' || !defined($file->{store});
+        $stores->{ $file->{store} } = 1;
+    }
+    return [sort keys %$stores];
 }
 
 # What a requested confirmation can do, from the records and the session picture alone. Only
