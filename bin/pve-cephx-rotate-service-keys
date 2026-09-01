@@ -1120,7 +1120,7 @@ my sub reopen_returning_clients($state, $sessions) {
 }
 
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
-my sub preflight_cluster($info, $opts, $recovered_count, $state) {
+my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
     my @unfinished = unfinished_entities($state);
     push @unfinished, 'mon.'
         if mon_rotation_unfinished($info, $state) && !grep { $_ eq 'mon.' } @unfinished;
@@ -1382,6 +1382,12 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
 
     my $wanted = { map { $_ => 1 } $TOOL_CLIENT_KEYS->@*, $ADMIN_ENTITY };
     $wanted->{ $_->{entity} } = 1 for plan_lockbox_keys($info, $opts)->@*;
+    my $selected_stores = { map { $_ => 1 } @{ $opts->{'rotate-storage-key'} // [] } };
+    for my $entity (sort keys %$client_files) {
+        $wanted->{$entity} = 1 if grep {
+            defined($_->{store}) && $selected_stores->{ $_->{store} }
+        } $client_files->{$entity}->@*;
+    }
     my @elsewhere = grep { m/^client\./ && !$wanted->{$_} } @staged;
     @staged = grep { !m/^client\./ || $wanted->{$_} } @staged;
     if (@elsewhere) {
@@ -3162,7 +3168,9 @@ sub main {
 
     my $client_files = client_key_files();
 
-    my $verdict = preflight_cluster($info, $opts, scalar(@$recovered), $state);
+    my $verdict = preflight_cluster(
+        $info, $opts, scalar(@$recovered), $state, $client_files,
+    );
     if ($verdict <= 0) {
         print_open_options(
             $info->{health_checks},

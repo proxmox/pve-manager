@@ -312,6 +312,25 @@ sub migrated_info {
 }
 
 {
+    my $info = migrated_info(picture(1));
+    $info->{exported} = { 'client.store' => { key => $NEW, pending_key => $OLD } };
+    my $state = { client_keys_seen => { 'client.store' => key_fingerprint($NEW) } };
+    my $files = { 'client.store' => [{ store => 'rbd-vm' }] };
+    my $verdict = $HOOKS->{preflight}->(
+        $info, { apply => 0, 'rotate-storage-key' => ['rbd-vm'] }, 0, $state, $files,
+    );
+    cmp_ok(
+        $verdict,
+        '<',
+        0,
+        'a pending key staged for a selected storage user refuses the rotation',
+    );
+
+    $verdict = $HOOKS->{preflight}->($info, { apply => 0 }, 0, $state, $files);
+    is($verdict, 0, 'a pending key for an unrelated storage user only warns');
+}
+
+{
     my $state = {
         client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
         client_refresh => {
