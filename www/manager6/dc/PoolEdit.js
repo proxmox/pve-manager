@@ -17,20 +17,47 @@ Ext.define('PVE.dc.PoolEdit', {
 
     items: [
         {
-            xtype: 'pmxDisplayEditField',
-            fieldLabel: gettext('Name'),
-            cbind: {
-                editable: '{isCreate}',
-                value: '{poolid}',
+            xtype: 'inputpanel',
+            onGetValues: function (values) {
+                if (Ext.isString(values.parentPool) && values.parentPool.length > 0) {
+                    values.poolid = values.parentPool + '/' + values.poolid;
+                }
+                delete values.parentPool;
+                return values;
             },
-            name: 'poolid',
-            allowBlank: false,
-        },
-        {
-            xtype: 'textfield',
-            fieldLabel: gettext('Comment'),
-            name: 'comment',
-            allowBlank: true,
+            items: [
+                {
+                    xtype: 'pmxDisplayEditField',
+                    fieldLabel: gettext('Name'),
+                    cbind: {
+                        editable: '{isCreate}',
+                        value: '{poolid}',
+                    },
+                    editConfig: {
+                        regex: /^[^/]+$/,
+                    },
+                    name: 'poolid',
+                    allowBlank: false,
+                },
+                {
+                    xtype: 'pvePoolSelector',
+                    name: 'parentPool',
+                    fieldLabel: gettext('Parent Pool'),
+                    allowBlank: true,
+                    maxLevel: 2,
+                    emptyText: Proxmox.Utils.NoneText,
+                    cbind: {
+                        disabled: '{!isCreate}',
+                        hidden: '{!isCreate}',
+                    },
+                },
+                {
+                    xtype: 'textfield',
+                    fieldLabel: gettext('Comment'),
+                    name: 'comment',
+                    allowBlank: true,
+                },
+            ],
         },
     ],
 
