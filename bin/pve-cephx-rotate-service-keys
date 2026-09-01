@@ -30,7 +30,7 @@ use PVE::Ceph::KeyMigration qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts
+    summarize_sessions session_hosts merge_refresh_record stale_consumers
     open_options parse_lockbox_output
 );
 
@@ -526,6 +526,75 @@ my sub poll_client_sessions($info) {
     return summarize_sessions($per_mon, $info->{monmap_mons});
 }
 
+# A rotation can follow a long daemon walk, so rediscover the monitors instead of trusting the
+# inventory and liveness recorded at startup. Every current monitor gets a result entry; missing
+# metadata, missing quorum membership, and a failed admin-socket query therefore make the summary
+# incomplete rather than making that monitor disappear from it.
+my sub collect_current_monitor_state($rados, $run_node = undef) {
+    $run_node //= sub($node, $command) { node_run($node, $command) };
+
+    my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
+    die "could not refresh the monitor map\n"
+        if ref($mon_dump) ne 'HASH'
+        || ref($mon_dump->{mons}) ne 'ARRAY'
+        || !scalar($mon_dump->{mons}->@*)
+        || grep {
+            ref($_) ne 'HASH'
+            || !defined($_->{name})
+            || ref($_->{name})
+            || !length($_->{name})
+        } $mon_dump->{mons}->@*;
+    my @monmap = sort map { $_->{name} } $mon_dump->{mons}->@*;
+    my $in_monmap = { map { $_ => 1 } @monmap };
+    die "could not refresh the monitor map\n" if scalar(keys %$in_monmap) != scalar(@monmap);
+
+    my $quorum = $rados->mon_command({ prefix => 'quorum_status', format => 'json' });
+    die "could not refresh the monitor quorum status\n"
+        if ref($quorum) ne 'HASH'
+        || ref($quorum->{quorum_names}) ne 'ARRAY'
+        || !scalar($quorum->{quorum_names}->@*)
+        || grep { !defined($_) || ref($_) || !length($_) } $quorum->{quorum_names}->@*;
+    my @quorum = sort $quorum->{quorum_names}->@*;
+    my $in_quorum = { map { $_ => 1 } @quorum };
+    die "could not refresh the monitor quorum status\n"
+        if scalar(keys %$in_quorum) != scalar(@quorum)
+        || grep { !$in_monmap->{$_} } @quorum;
+
+    my $metadata = $rados->mon_command({ prefix => 'mon metadata', format => 'json' });
+    die "could not refresh the monitor metadata\n"
+        if ref($metadata) ne 'ARRAY' || grep { ref($_) ne 'HASH' } @$metadata;
+    my ($nodes, $metadata_seen) = ({}, {});
+    for my $entry (@$metadata) {
+        my $id = $entry->{name} // $entry->{id};
+        die "could not refresh the monitor metadata\n"
+            if !defined($id)
+            || ref($id)
+            || !length($id)
+            || $metadata_seen->{$id}++
+            || (defined($entry->{hostname}) && ref($entry->{hostname}));
+        $nodes->{$id} = $entry->{hostname}
+            if defined($entry->{hostname}) && length($entry->{hostname});
+    }
+
+    my $per_mon = [];
+    for my $id (@monmap) {
+        my $sessions;
+        if ($in_quorum->{$id} && $nodes->{$id}) {
+            $sessions = eval {
+                decode_json($run_node->(
+                    $nodes->{$id}, ['ceph', 'daemon', "mon.$id", 'sessions']));
+            };
+        }
+        push @$per_mon, { mon => $id, sessions => $sessions };
+    }
+
+    return {
+        monmap_mons => \@monmap,
+        quorum => \@quorum,
+        sessions => summarize_sessions($per_mon),
+    };
+}
+
 # The lockbox key lives in the auth database and in an LVM tag on the OSD's block device. Reading
 # the tags costs an SSH round trip per node, so only a run that acts on them asks.
 my sub collect_lockbox($rados, $info, $probe) {
@@ -1003,6 +1072,35 @@ my sub probe_nodes($info, $plan) {
     return;
 }
 
+# A client key rotated outside this script leaves consumers behind the same way as one this
+# script rotates, and only the key fingerprints recorded at earlier apply runs make that visible.
+my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
+    my $seen = $state->{client_keys_seen} // {};
+    my $seen_changed = 0;
+    for my $entity (
+        sort grep { m/^client\./ && !m/^client\.osd-lockbox\./ }
+        keys %{ $exported // {} }
+    ) {
+        my $fp = key_fingerprint($exported->{$entity}->{key});
+        if (defined($seen->{$entity}) && $seen->{$entity} ne $fp) {
+            log_warn("the key of '$entity' changed outside this script; retaining every recorded"
+                . " or currently visible instance because its loaded key cannot be determined");
+            $state->{client_refresh}->{$entity} = merge_refresh_record(
+                $state->{client_refresh}->{$entity},
+                $sessions,
+                $entity,
+                0,
+                time(),
+            );
+        }
+        $seen_changed = 1 if ($seen->{$entity} // '') ne $fp;
+        $seen->{$entity} = $fp;
+    }
+    $state->{client_keys_seen} = $seen;
+    save_state($state) if $opts->{apply} && $seen_changed;
+    return;
+}
+
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
 my sub preflight_cluster($info, $opts, $recovered_count, $state) {
     my @unfinished = unfinished_entities($state);
@@ -1017,6 +1115,62 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         log_info("ignoring "
             . join(', ', map { "'$_->{type}.$_->{id}' on node '$_->{node}'" } @ghosts)
             . ": removed or destroyed daemons, only their data directories are left behind");
+    }
+
+    # Without a fingerprint baseline nothing proves what key a live session's instance loaded:
+    # the state file may be from an earlier version, or was deleted after a finished rotation.
+    # An entity still on the old cipher is unambiguous, its consumers hold the current key;
+    # every other client entity remains unresolved. A cluster without any trace of a migration
+    # is left alone. The sessions visible now may predate a rotation, so record their exact IDs.
+    if (
+        !$state->{client_keys_seen}
+        && (scalar(grep { $_ eq $LEGACY_CIPHER } $info->{allowed_ciphers}->@*)
+            || scalar(grep { m/^AUTH_INSECURE_/ } keys %{ $info->{health_checks} // {} })
+            || scalar(keys %{ $state->{previous_keys} // {} }))
+    ) {
+        my $seeded = 0;
+        for my $entity (
+            sort grep { m/^client\./ && !m/^client\.osd-lockbox\./ }
+            keys %{ $info->{exported} // {} }
+        ) {
+            next if $state->{client_refresh}->{$entity};
+            next if (key_cipher($info->{exported}->{$entity}->{key}) // -1) != $CIPHER_ID;
+            log_warn("the consumers of '$entity' predate this script's tracking; the record"
+                . " remains open until every one of them was refreshed");
+            $state->{client_refresh}->{$entity} = merge_refresh_record(
+                undef,
+                $info->{sessions},
+                $entity,
+                $info->{sessions}->{complete},
+                $state->{previous_keys}->{$entity}->{saved} // time(),
+            );
+            $seeded = 1;
+        }
+        save_state($state) if $seeded && $opts->{apply};
+    }
+
+    reconcile_client_fingerprints($state, $info->{exported}, $info->{sessions}, $opts);
+
+    my $stale_clients = stale_consumers($info->{sessions}, $state->{client_refresh});
+    for my $entity (sort keys %$stale_clients) {
+        my $held = $stale_clients->{$entity};
+        log_warn("Clients recorded around the rotation of '$entity' may still hold its previous"
+            . " key: "
+            . scalar(@$held) . " ("
+            . session_hosts($held)
+            . "). One that does can lose monitor authentication on a reconnect, and does so no"
+            . " later than its current monitor ticket's expiry, within three days by default."
+            . " Existing data connections may work longer. Live-migrate those VMs, remount"
+            . " CephFS mounts, or restart the consumers, then run this again.");
+    }
+    if ($info->{sessions}->{complete}) {
+        for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
+            next if $stale_clients->{$entity};
+            # A consumer can keep its IO on established connections without any monitor session,
+            # so absence proves nothing. Retain the record until the operator can resolve it.
+            log_info("no live session predates the key rotation of '$entity'; the record remains"
+                . " open until every consumer of it was refreshed");
+        }
     }
 
     if (!$has_feature) {
@@ -2175,7 +2329,7 @@ my sub migrate_lockbox_key($rados, $state, $item) {
     return;
 }
 
-my sub migrate_client_key($rados, $state, $item) {
+my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
     my $entity = $item->{entity};
 
     if ($entity eq $ADMIN_ENTITY) {
@@ -2192,7 +2346,37 @@ my sub migrate_client_key($rados, $state, $item) {
         log_info("verified the independent 'mon.' credential before rotating '$entity'");
     }
 
+    $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
+
+    # Record intent before the auth change. A failure after the rotation then leaves an open,
+    # deliberately incomplete record instead of losing every consumer seen immediately before it.
+    my $before_cipher = key_cipher(auth_entry($rados, $entity)->{key}) // -1;
+    my ($before, $started);
+    if ($before_cipher != $CIPHER_ID) {
+        $before = $snapshot->();
+        $started = time();
+        $state->{client_refresh}->{$entity} = merge_refresh_record(
+            $state->{client_refresh}->{$entity},
+            $before, $entity, 0, $started,
+        );
+        save_state($state);
+    }
+
     my $entry = rotate_entity($rados, $state, $entity);
+    my $after;
+    if (defined($started)) {
+        $after = $snapshot->();
+        $state->{client_refresh}->{$entity} = merge_refresh_record(
+            $state->{client_refresh}->{$entity},
+            $after,
+            $entity,
+            $before->{complete} && $after->{complete},
+            $started,
+        );
+        # Reconciliation must not mistake this helper-owned change for another external rotation.
+        $state->{client_keys_seen}->{$entity} = key_fingerprint($entry->{key});
+        save_state($state);
+    }
 
     my $stale = [];
     for my $file ($item->{files}->@*) {
@@ -2253,6 +2437,19 @@ my sub migrate_client_key($rados, $state, $item) {
     # only for keys something outside Ceph may hold; Ceph's own tools fetch the rest
     if ($entity eq $ADMIN_ENTITY || grep { defined($_->{store}) } $item->{files}->@*) {
         log_warn("'$entity' is rotated; any copy outside Proxmox VE still holds the old key.");
+    }
+    if (defined($after)) {
+        my $held = stale_consumers(
+            $after, { $entity => $state->{client_refresh}->{$entity} },
+        )->{$entity} // [];
+        if (scalar(@$held)) {
+            log_warn("Live clients possibly holding the previous '$entity' key in memory: "
+                . scalar(@$held)
+                . ". One that does can lose monitor authentication on a reconnect, and does so no"
+                . " later than its current monitor ticket's expiry, within three days by default."
+                . " Existing data connections may work longer. Live-migrate every VM and restart"
+                . " the other consumers, then run a dry run to confirm none remain.");
+        }
     }
 
     $state->{done}->{$entity} = time();
@@ -3133,6 +3330,14 @@ sub lockbox_test_hooks {
         collect => \&collect_lockbox,
         resume => \&resume_lockbox_keys,
         migrate => \&migrate_lockbox_key,
+    };
+}
+
+sub key_migration_test_hooks {
+    return {
+        collect_monitor_state => \&collect_current_monitor_state,
+        reconcile_clients => \&reconcile_client_fingerprints,
+        migrate_client => \&migrate_client_key,
     };
 }
 

@@ -23,7 +23,7 @@ our @EXPORT_OK = qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts
+    summarize_sessions session_hosts merge_refresh_record stale_consumers
     classify_insecure_clients open_options parse_lockbox_output
 );
 
@@ -356,6 +356,51 @@ sub session_hosts($live) {
     my $hosts = {};
     $hosts->{ $_->{host} }++ for @$live;
     return join(', ', map { "$_: $hosts->{$_}" } sort keys %$hosts);
+}
+
+# Add every instance observed around a rotation without losing evidence from an earlier one.
+# The post-rotation sample closes the race where a client loaded the old key after the first
+# sample. It can also include a client that already loaded the new key, but retaining that ID is
+# the safe ambiguity: refreshing one extra consumer is preferable to accepting an old key.
+sub merge_refresh_record($record, $sessions, $entity, $measurement_complete, $rotated = undef) {
+    my $merged = { %{ $record // {} } };
+    my $ids = {};
+    for my $id (@{ $merged->{session_ids} // [] }) {
+        $ids->{"$id"} = $id;
+    }
+    for my $session (@{ ($sessions->{clients} // {})->{$entity} // [] }) {
+        my $id = $session->{global_id} // next;
+        $ids->{"$id"} = $id;
+    }
+    $merged->{session_ids} = [sort { "$a" cmp "$b" } values %$ids]
+        if scalar(keys %$ids) || defined($merged->{session_ids}) || $measurement_complete;
+
+    if ($measurement_complete) {
+        delete $merged->{measurement_incomplete};
+    } else {
+        $merged->{measurement_incomplete} = 1;
+    }
+
+    if (defined($rotated)) {
+        $merged->{rotated} = $rotated;
+        delete $merged->{cleared};
+        delete $merged->{acknowledged};
+    }
+
+    return $merged;
+}
+
+# A recorded ID names the same client instance across reconnects and monitor restarts. Numeric
+# order says nothing because monitors allocate IDs in independent rank-strided sequences.
+sub stale_consumers($sessions, $refresh) {
+    my $stale = {};
+    for my $entity (sort keys %{ $refresh // {} }) {
+        my $recorded = { map { $_ => 1 } @{ $refresh->{$entity}->{session_ids} // [] } };
+        my @held = grep { $recorded->{ $_->{global_id} } }
+            @{ ($sessions->{clients} // {})->{$entity} // [] };
+        $stale->{$entity} = \@held if scalar(@held);
+    }
+    return $stale;
 }
 
 sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {

@@ -43,6 +43,7 @@ test-ceph-auth:
 .PHONY: test-ceph-key-migration
 test-ceph-key-migration:
 	./CephKeyMigration_test.pl
+	./CephKeyMigrationScript_test.pl
 
 .PHONY: test-ceph-lockbox-migration
 test-ceph-lockbox-migration:

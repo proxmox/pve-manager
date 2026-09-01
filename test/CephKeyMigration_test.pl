@@ -14,7 +14,7 @@ use PVE::Ceph::KeyMigration qw(
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients open_options
-    summarize_sessions session_hosts
+    summarize_sessions session_hosts stale_consumers
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -470,6 +470,38 @@ is(
         sessions => [{ con_type => 'osd', entity_name => '', global_id => [] }],
     }]);
     ok($non_client->{complete}, 'a valid non-client session remains irrelevant');
+}
+
+# --- consumers a rotation left behind ---------------------------------------------------------
+{
+    my $sessions = {
+        complete => 1,
+        clients => {
+            'client.admin' => [
+                { global_id => 100, host => 'a' },
+                { global_id => 120, host => 'a' },
+                { global_id => 121, host => 'b' },
+            ],
+            'client.backup' => [{ global_id => 90, host => 'c' }],
+        },
+    };
+    # only an id recorded at the rotation proves an instance predates it; monitors allocate ids
+    # in independent sequences, so a fresh instance may sit below any older id and must never
+    # be flagged
+    my $stale =
+        stale_consumers($sessions, { 'client.admin' => { session_ids => [100, 120] } });
+    is_deeply(
+        [sort map { $_->{global_id} } $stale->{'client.admin'}->@*],
+        [100, 120],
+        'exactly the recorded instances count as stale',
+    );
+    ok(!exists $stale->{'client.backup'}, 'an entity nobody rotated is not reported');
+
+    $stale = stale_consumers($sessions, { 'client.admin' => { rotated => 1000 } });
+    is_deeply($stale, {}, 'a record without a measurement proves nothing by itself');
+
+    $stale = stale_consumers($sessions, { 'client.crash' => { session_ids => [50] } });
+    is_deeply($stale, {}, 'a rotated entity with no live session left has nothing to report');
 }
 
 # --- the plan -----------------------------------------------------------------------------------
