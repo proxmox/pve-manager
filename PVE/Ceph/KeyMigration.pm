@@ -546,8 +546,9 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
 
     # a run narrowed by '--only' is refused this until the cipher is switched
     push @$next,
-        "--wipe-rotating-keys: discard the rotating service keys instead of letting them"
-        . " expire"
+        "--wipe-rotating-keys: NOT RECOMMENDED; invalidate every service ticket instead of"
+        . " waiting a few hours for the old rotating keys to expire; every client and service"
+        . " daemon must support '$CIPHER'"
         if $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
         && !$opts->{'wipe-rotating-keys'}
         && !($opts->{only} && $service_cipher ne $CIPHER);

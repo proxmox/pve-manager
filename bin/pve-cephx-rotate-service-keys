@@ -1880,7 +1880,9 @@ my sub print_plan($info, $plan, $state, $opts) {
         $step++;
         log_text("");
         log_text("Step $step: wipe the rotating service keys, as '--wipe-rotating-keys' was passed."
-            . " Not recommended: left alone, the last warning clears within a few hours.");
+            . " Not recommended: this invalidates every service ticket. Continue only if every"
+            . " client and service daemon supports '$CIPHER'; otherwise wait a few hours for the"
+            . " old keys to expire.");
         log_step("ceph auth wipe-rotating-service-keys");
     }
 
@@ -2943,8 +2945,7 @@ my sub wipe_rotating_keys($rados, $state, $opts, $collect = undef) {
 
     log_heading("Wiping the rotating service keys");
 
-    log_warn("This briefly invalidates the rotating secrets, as asked for with"
-        . " '--wipe-rotating-keys'.");
+    log_warn("Invalidating every service ticket, as asked for with '--wipe-rotating-keys'.");
     $rados->mon_command({ prefix => 'auth wipe-rotating-service-keys' });
 
     my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
@@ -3105,8 +3106,9 @@ and client keys require their rotation options. Without '--apply', this only pri
                               client key that this run cannot see was refreshed. Refused
                               while a recorded consumer is connected; a returning one
                               reopens the record
-  --wipe-rotating-keys        discard the rotating service keys at the end instead of
-                              letting them expire
+  --wipe-rotating-keys        NOT RECOMMENDED: invalidate every service ticket instead of
+                              waiting a few hours for the rotating keys to expire. Use only
+                              if every client and service daemon supports 'aes256k'
   --help, -h                  print this and exit
 
 This runs from one node and drives the whole cluster over SSH, so run it once. The cluster lock
