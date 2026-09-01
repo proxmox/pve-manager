@@ -23,7 +23,7 @@ our @EXPORT_OK = qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers
+    summarize_sessions session_hosts merge_refresh_record stale_consumers ack_decision
     classify_insecure_clients open_options parse_lockbox_output
 );
 
@@ -401,6 +401,23 @@ sub stale_consumers($sessions, $refresh) {
         $stale->{$entity} = \@held if scalar(@held);
     }
     return $stale;
+}
+
+# What a requested confirmation can do, from the records and the session picture alone. Only
+# 'accept' closes a record; everything else names what stands in the way, and 'measure' first
+# turns the clients visible right now into named consumers.
+sub ack_decision($entity, $state, $sessions, $stale) {
+    my $mark = ($state->{client_refresh} // {})->{$entity};
+    return { verdict => 'unknown' } if !$mark;
+    return { verdict => 'connected', held => $stale->{$entity} } if $stale->{$entity};
+    return { verdict => 'incomplete' } if !$sessions->{complete};
+
+    if ($mark->{measurement_incomplete} || !defined($mark->{session_ids})) {
+        my $live = ($sessions->{clients} // {})->{$entity} // [];
+        return { verdict => 'measure', live => $live } if scalar(@$live);
+    }
+
+    return { verdict => 'accept' };
 }
 
 sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {

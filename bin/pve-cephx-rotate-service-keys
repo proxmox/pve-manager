@@ -30,7 +30,7 @@ use PVE::Ceph::KeyMigration qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers
+    summarize_sessions session_hosts merge_refresh_record stale_consumers ack_decision
     open_options parse_lockbox_output
 );
 
@@ -1101,6 +1101,24 @@ my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
     return;
 }
 
+# A returned retained ID is positive evidence even if the poll is incomplete or the client drops
+# its monitor session again. Persist it before any absence-based decision can reuse an old ack.
+my sub reopen_returning_clients($state, $sessions) {
+    my $stale = stale_consumers($sessions, $state->{client_refresh});
+    my $reopened = 0;
+    for my $entity (sort keys %$stale) {
+        my $mark = $state->{client_refresh}->{$entity};
+        if (defined($mark->{cleared}) || defined($mark->{acknowledged})) {
+            log_warn("a client recorded before the key rotation of '$entity' returned,"
+                . " reopening the record");
+        }
+        $reopened = 1 if delete $mark->{cleared};
+        $reopened = 1 if delete $mark->{acknowledged};
+    }
+    save_state($state) if $reopened;
+    return $stale;
+}
+
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
 my sub preflight_cluster($info, $opts, $recovered_count, $state) {
     my @unfinished = unfinished_entities($state);
@@ -1135,8 +1153,8 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
         ) {
             next if $state->{client_refresh}->{$entity};
             next if (key_cipher($info->{exported}->{$entity}->{key}) // -1) != $CIPHER_ID;
-            log_warn("the consumers of '$entity' predate this script's tracking; the record"
-                . " remains open until every one of them was refreshed");
+            log_warn("the consumers of '$entity' predate this script's tracking; confirm with"
+                . " '--ack-refreshed $entity' once every one of them was refreshed");
             $state->{client_refresh}->{$entity} = merge_refresh_record(
                 undef,
                 $info->{sessions},
@@ -1151,7 +1169,72 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
 
     reconcile_client_fingerprints($state, $info->{exported}, $info->{sessions}, $opts);
 
-    my $stale_clients = stale_consumers($info->{sessions}, $state->{client_refresh});
+    my $stale_clients = reopen_returning_clients($state, $info->{sessions});
+
+    my $ack_refused = 0;
+    my $ack_seen = {};
+    for my $entity (grep { !$ack_seen->{$_}++ } @{ $opts->{'ack-refreshed'} // [] }) {
+        my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
+        my $verdict = $decision->{verdict};
+
+        if ($verdict eq 'unknown') {
+            log_fail("nothing to confirm: no rotation record exists for '$entity'");
+            $ack_refused = 1;
+            next;
+        }
+        if ($verdict eq 'connected') {
+            my $held = $decision->{held};
+            log_fail("not accepting '--ack-refreshed $entity': "
+                . scalar(@$held)
+                . " recorded client(s) of it are still connected ("
+                . session_hosts($held)
+                . "). Refresh those first, the confirmation covers only what this run cannot"
+                . " see.");
+            $ack_refused = 1;
+            next;
+        }
+        if ($verdict eq 'incomplete') {
+            log_fail("not accepting '--ack-refreshed $entity': not every monitor answered the"
+                . " session query, so a consumer of it could be connected unseen");
+            $ack_refused = 1;
+            next;
+        }
+        # A record without a measurement, from an interrupted run or a rotation done elsewhere,
+        # cannot tell an old consumer from a new one. Measuring first turns everything visible
+        # into a named consumer, so the confirmation can never wave one through.
+        if ($verdict eq 'measure') {
+            my $live = $decision->{live};
+            $state->{client_refresh}->{$entity} = merge_refresh_record(
+                $state->{client_refresh}->{$entity},
+                $info->{sessions}, $entity, 1,
+            );
+            save_state($state);
+            log_fail("not accepting '--ack-refreshed $entity' yet: its rotation was never"
+                . " measured, so the "
+                . scalar(@$live)
+                . " client(s) connected as it right now ("
+                . session_hosts($live)
+                . ") are now recorded as possibly holding the previous key. Refresh them, then"
+                . " confirm again; the confirmation then covers only consumers this run cannot"
+                . " see.");
+            $ack_refused = 1;
+            next;
+        }
+
+        # what is left are consumers no run can see: disconnected ones, and copies of the key on
+        # hosts Proxmox VE does not manage
+        log_warn("accepting '--ack-refreshed $entity': every consumer of it that this run can"
+            . " see is refreshed, and you confirm the same for those it cannot see");
+        my $mark = $state->{client_refresh}->{$entity};
+        $mark->{cleared} = time();
+        $mark->{acknowledged} = time();
+        save_state($state);
+        delete $stale_clients->{$entity};
+    }
+
+    # No later readiness or no-op verdict may turn a refused state-changing request into success.
+    return -1 if $ack_refused;
+
     for my $entity (sort keys %$stale_clients) {
         my $held = $stale_clients->{$entity};
         log_warn("Clients recorded around the rotation of '$entity' may still hold its previous"
@@ -1161,15 +1244,17 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state) {
             . "). One that does can lose monitor authentication on a reconnect, and does so no"
             . " later than its current monitor ticket's expiry, within three days by default."
             . " Existing data connections may work longer. Live-migrate those VMs, remount"
-            . " CephFS mounts, or restart the consumers, then run this again.");
+            . " CephFS mounts, or restart the consumers, then run this again and close the record"
+            . " with '--ack-refreshed'.");
     }
     if ($info->{sessions}->{complete}) {
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
-            next if $stale_clients->{$entity};
-            # A consumer can keep its IO on established connections without any monitor session,
-            # so absence proves nothing. Retain the record until the operator can resolve it.
-            log_info("no live session predates the key rotation of '$entity'; the record remains"
-                . " open until every consumer of it was refreshed");
+            my $mark = $state->{client_refresh}->{$entity};
+            next if $stale_clients->{$entity} || defined($mark->{cleared});
+            # a consumer can keep its IO on established connections without any monitor
+            # session, so absence proves nothing; only the operator can close the record
+            log_info("no live session predates the key rotation of '$entity'; confirm with"
+                . " '--ack-refreshed $entity' once every consumer of it was refreshed");
         }
     }
 
@@ -2727,14 +2812,19 @@ and client keys require their rotation options. Without '--apply', this only pri
                               Proxmox VE keeps
   --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
                               user. May be given more than once
+  --ack-refreshed ENTITY      needs '--apply'. Confirm that every consumer of a rotated
+                              client key that this run cannot see was refreshed. Refused
+                              while a recorded consumer is connected; a returning one
+                              reopens the record
   --wipe-rotating-keys        discard the rotating service keys at the end instead of
                               letting them expire
   --help, -h                  print this and exit
 
-This runs from one node and drives the whole cluster over SSH, so run it once. A second apply
-run on any node waits for one in progress and gives up after a few minutes. Do not start a
-rolling restart from the web interface until it finishes: the lock guarding against that is
-advisory.
+This runs from one node and drives the whole cluster over SSH, so run it once. The cluster lock
+makes a dry run or a run from another node wait for one in progress and give up after a few
+minutes. An apply or bulk restart on the same node also holds a local lock, so another apply
+refuses immediately. Do not start a rolling restart from the web interface until it finishes:
+the lock guarding against that is advisory.
 EOF
 }
 
@@ -2841,6 +2931,7 @@ my sub parse_options() {
         'rotate-admin-key',
         'rotate-lockbox-keys',
         'rotate-storage-key=s@',
+        'ack-refreshed=s@',
         'help|h',
     )) {
         print STDERR usage();
@@ -2871,6 +2962,9 @@ my sub parse_options() {
 
     die "'--timeout' needs a positive number of seconds\n" if $opts->{timeout} < 1;
 
+    die "'--ack-refreshed' changes what the next run may do, so it needs '--apply'\n"
+        if scalar(@{ $opts->{'ack-refreshed'} // [] }) && !$opts->{apply};
+
     die "this script must run as root\n" if $> != 0;
 
     return ($opts, undef);
@@ -2888,7 +2982,7 @@ sub main {
         die "aborting on signal, run this again to resume\n";
     };
 
-    my ($operation_lock, $cluster_lock);
+    my $operation_lock;
     if ($opts->{apply}) {
         # the file the rolling restart in the web interface locks too; across nodes only the
         # advisory config-key lock keeps that one off
@@ -2896,10 +2990,10 @@ sub main {
         open($operation_lock, '>>', $lockfile) or die "could not open '$lockfile': $!\n";
         flock($operation_lock, LOCK_EX | LOCK_NB)
             or die "another Ceph key migration or bulk restart is active on this node\n";
-
-        $cluster_lock =
-            PVE::Ceph::KeyMigration::ClusterLock->take($CLUSTER_LOCK_DIR, $CLUSTER_LOCK_WAIT);
     }
+
+    my $cluster_lock =
+        PVE::Ceph::KeyMigration::ClusterLock->take($CLUSTER_LOCK_DIR, $CLUSTER_LOCK_WAIT);
 
     # once the cluster lock is held: a run that waited for another one needs that run's final state
     my $state = load_state();
@@ -2914,8 +3008,8 @@ sub main {
     if ($opts->{apply}) {
         log_info("Collecting cluster info.");
     } else {
-        log_info("This is a dry run, nothing will be changed. Pass '--apply' to carry the plan"
-            . " out.");
+        log_info("This is a dry run. No Ceph key, cipher setting, or daemon will be changed."
+            . " Session observations can update the migration journal.");
     }
 
     my ($rados, $info);
@@ -3151,8 +3245,9 @@ sub main {
         );
 
         log_heading("Dry run finished");
-        log_text("Nothing on the cluster was changed. Run this again with '--apply' to carry"
-            . " the plan out.");
+        log_text("No Ceph key, cipher setting, or daemon was changed. Session observations may"
+            . " have updated the migration journal. Run this again with '--apply' to carry the"
+            . " plan out.");
         return 0;
     }
 
@@ -3338,6 +3433,7 @@ sub key_migration_test_hooks {
         collect_monitor_state => \&collect_current_monitor_state,
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
+        preflight => \&preflight_cluster,
     };
 }
 

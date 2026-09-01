@@ -5,7 +5,7 @@ use warnings;
 
 use lib ('.', '..');
 
-use JSON qw(encode_json);
+use JSON qw(decode_json encode_json);
 use Test::More;
 
 use PVE::Ceph::KeyMigration qw(key_fingerprint);
@@ -276,6 +276,136 @@ sub run_client_rotation {
         $rados, sub { return encode_json({ malformed => 1 }) },
     );
     ok(!$current->{sessions}->{complete}, 'a malformed monitor session result is incomplete');
+}
+
+sub migrated_info {
+    my ($sessions) = @_;
+    return {
+        quorum_features => ['cephx_auth_aes256k'],
+        allowed_ciphers => ['aes256k'],
+        preferred_cipher => 'aes256k',
+        service_cipher => 'aes256k',
+        insecure_entities => {},
+        health_checks => {},
+        ghost_daemons => [],
+        exported => { 'client.crash' => { key => $NEW } },
+        sessions => $sessions,
+        mon_entry => {},
+        pve_mon_key => $NEW,
+        monmap_mons => [],
+        quorum => [],
+        daemons => { mon => [], mgr => [], mds => [], osd => [] },
+        lockbox => {},
+    };
+}
+
+{
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $verdict = $HOOKS->{preflight}->(
+        migrated_info(picture(1)),
+        { apply => 1, 'ack-refreshed' => ['client.unknown'] },
+        0,
+        $state,
+    );
+    cmp_ok($verdict, '<', 0, 'an unknown acknowledgment fails before the migrated no-op return');
+    is($verdict == 0 ? 0 : 1, 1, 'the refused preflight verdict maps to a nonzero main status');
+}
+
+{
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.crash' => {
+                rotated => 1,
+                session_ids => [45],
+                cleared => 2,
+                acknowledged => 2,
+            },
+        },
+    };
+    my @saved;
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        $verdict = $HOOKS->{preflight}->(
+            migrated_info(picture(0, 45)),
+            { apply => 1, 'ack-refreshed' => ['client.crash'] },
+            0,
+            $state,
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a returning client in a partial poll keeps the run fail closed');
+    ok(
+        !defined($state->{client_refresh}->{'client.crash'}->{cleared})
+            && !defined($state->{client_refresh}->{'client.crash'}->{acknowledged}),
+        'positive returning-ID evidence immediately reopens both record fields',
+    );
+    my $persisted = decode_json($saved[-1]->[1]);
+    ok(
+        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        'apply mode persists the reopened record despite the incomplete session picture',
+    );
+}
+
+{
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.crash' => {
+                rotated => 1,
+                session_ids => [46],
+                cleared => 2,
+                acknowledged => 2,
+            },
+        },
+    };
+    my @saved;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        $HOOKS->{preflight}->(migrated_info(picture(1, 46)), { apply => 0 }, 0, $state);
+    }
+    my $persisted = decode_json($saved[-1]->[1]);
+    ok(
+        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        'a dry run durably reopens an acknowledged record when its exact client ID returns',
+    );
+}
+
+{
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => { 'client.crash' => { rotated => 1, measurement_incomplete => 1 } },
+    };
+    my @saved;
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        $verdict = $HOOKS->{preflight}->(
+            migrated_info(picture(1, 40)),
+            {
+                apply => 1,
+                'ack-refreshed' => ['client.crash', 'client.crash'],
+            },
+            0,
+            $state,
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a duplicated unmeasured acknowledgment still exits nonzero');
+    is(scalar(@saved), 1, 'duplicate acknowledgment options are processed only once');
+    is_deeply(
+        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        [40],
+        'the one request measures the visible consumer',
+    );
+    ok(
+        !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        'the duplicate cannot accept the record after measuring it in the same run',
+    );
 }
 
 done_testing();

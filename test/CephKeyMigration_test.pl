@@ -14,7 +14,7 @@ use PVE::Ceph::KeyMigration qw(
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients open_options
-    summarize_sessions session_hosts stale_consumers
+    summarize_sessions session_hosts stale_consumers ack_decision
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -487,7 +487,7 @@ is(
     };
     # only an id recorded at the rotation proves an instance predates it; monitors allocate ids
     # in independent sequences, so a fresh instance may sit below any older id and must never
-    # be flagged
+    # be flagged, or a record could neither clear nor be confirmed
     my $stale =
         stale_consumers($sessions, { 'client.admin' => { session_ids => [100, 120] } });
     is_deeply(
@@ -500,8 +500,88 @@ is(
     $stale = stale_consumers($sessions, { 'client.admin' => { rotated => 1000 } });
     is_deeply($stale, {}, 'a record without a measurement proves nothing by itself');
 
+    $stale = stale_consumers(
+        $sessions, { 'client.admin' => { session_ids => [120], cleared => 5000 } },
+    );
+    is_deeply(
+        [map { $_->{global_id} } $stale->{'client.admin'}->@*],
+        [120],
+        'a recorded instance that returns re-raises a cleared record, fresh ones never do',
+    );
+
     $stale = stale_consumers($sessions, { 'client.crash' => { session_ids => [50] } });
     is_deeply($stale, {}, 'a rotated entity with no live session left has nothing to report');
+}
+
+# --- a record without a measurement cannot be confirmed away ------------------------------------
+{
+    # the same predicate the confirmation uses: a record with no recorded instances proves
+    # nothing about the clients connected as that key right now
+    my $sessions = {
+        complete => 1,
+        clients => { 'client.admin' => [{ global_id => 7, host => 'a' }] },
+    };
+    is_deeply(
+        stale_consumers($sessions, { 'client.admin' => { rotated => 1 } }),
+        {},
+        'an unmeasured record flags nobody, so the run must measure before it may confirm',
+    );
+    is_deeply(
+        [
+            map { $_->{global_id} } stale_consumers(
+                $sessions,
+                { 'client.admin' => { rotated => 1, session_ids => [7] } },
+            )->{'client.admin'}->@*
+        ],
+        [7],
+        'once measured, the client connected as that key is a named consumer',
+    );
+}
+
+# --- what a requested confirmation may do ------------------------------------------------------
+{
+    my $complete = {
+        complete => 1,
+        clients => { 'client.admin' => [{ global_id => 7, host => 'a' }] },
+    };
+    my $measured = { client_refresh => { 'client.admin' => { session_ids => [7] } } };
+    my $unmeasured = { client_refresh => { 'client.admin' => { rotated => 1 } } };
+
+    is(
+        ack_decision('client.crash', $measured, $complete, {})->{verdict},
+        'unknown',
+        'a key without a rotation record has nothing to confirm',
+    );
+
+    my $stale = stale_consumers($complete, $measured->{client_refresh});
+    my $connected = ack_decision('client.admin', $measured, $complete, $stale);
+    is($connected->{verdict}, 'connected', 'a recorded consumer that is connected refuses it');
+    is(scalar(@{ $connected->{held} }), 1, 'and is named, so the operator knows what to refresh');
+
+    is(
+        ack_decision('client.admin', $measured, { complete => 0, clients => {} }, {})->{verdict},
+        'incomplete',
+        'an unanswered monitor refuses it, a consumer could be connected unseen',
+    );
+
+    my $measure = ack_decision('client.admin', $unmeasured, $complete, {});
+    is($measure->{verdict}, 'measure', 'an unmeasured rotation records what is connected first');
+    is_deeply(
+        [map { $_->{global_id} } @{ $measure->{live} }],
+        [7],
+        'namely every client connected as that key right now',
+    );
+
+    is(
+        ack_decision('client.admin', $unmeasured, { complete => 1, clients => {} }, {})->{verdict},
+        'accept',
+        'an unmeasured rotation with nothing connected is the operator\'s word to give',
+    );
+    is(
+        ack_decision('client.admin', $measured, { complete => 1, clients => {} }, {})->{verdict},
+        'accept',
+        'and so is a measured one whose recorded consumers are gone',
+    );
 }
 
 # --- the plan -----------------------------------------------------------------------------------
