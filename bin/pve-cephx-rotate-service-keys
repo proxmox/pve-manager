@@ -156,7 +156,9 @@ my sub node_run($node, $cmd, %opts) {
         errfunc => sub { $err .= "$_[0]\n" },
     );
     $args{input} = $opts{input} if defined($opts{input});
-    $args{timeout} = $opts{timeout} if defined($opts{timeout});
+    # a node that stops answering must not stall the whole run; every command here is a
+    # keyring write, a probe, or a unit action, none of which legitimately takes minutes
+    $args{timeout} = $opts{timeout} // 300;
 
     eval { run_command(node_command($node, $cmd), %args) };
     if (my $failure = $@) {
