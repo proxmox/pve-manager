@@ -14,8 +14,9 @@ use PVE::Ceph::KeyMigration qw(
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
-    resume_verdict classify_insecure_clients open_options
-    summarize_sessions session_hosts stale_consumers cephfs_mount_storages ack_decision
+    resume_verdict classify_insecure_clients open_options open_actions
+    summarize_sessions session_hosts stale_consumers restrict_blockers cephfs_mount_storages
+    ack_decision finish_after_acks
     plan_lockbox_keys parse_lockbox_output
 );
 
@@ -517,6 +518,37 @@ is(
     ok($non_client->{complete}, 'a valid non-client session remains irrelevant');
 }
 
+# --- the final step is offered once nothing else is open ---------------------------------------
+{
+    my $checks = { AUTH_INSECURE_KEYS_ALLOWED => {} };
+    my $info = {
+        sessions => { complete => 1, clients => {} },
+        exported => {},
+        pve_mon_key => $NEW,
+        service_cipher => $CIPHER,
+        health_checks => {},
+    };
+    my $options = open_actions('/helper', $checks, {}, {}, $CIPHER, {}, $info);
+    is(scalar($options->{next}->@*), 1, 'an otherwise finished cluster gets one suggestion');
+    like($options->{next}->[0], qr/--restrict-ciphers/, 'the cipher restriction');
+
+    $checks->{AUTH_INSECURE_CLIENT_KEY_TYPE} =
+        { detail => [{ message => "entity client.admin using insecure key type: aes" }] };
+    $options = open_actions(
+        '/helper',
+        $checks,
+        {},
+        {},
+        $CIPHER,
+        {},
+        { %$info, exported => { 'client.admin' => { key => $OLD } } },
+    );
+    ok(
+        !(grep { m/restrict-ciphers/ } $options->{next}->@*),
+        'not while a client key still needs its rotation',
+    );
+}
+
 # --- consumers a rotation left behind ---------------------------------------------------------
 {
     my $sessions = {
@@ -648,6 +680,116 @@ is(
         ack_decision('client.admin', $measured, { complete => 1, clients => {} }, {})->{verdict},
         'accept',
         'and so is a measured one whose recorded consumers are gone',
+    );
+}
+
+# --- what blocks the cipher restriction --------------------------------------------------------
+{
+    my $clean = {
+        sessions => {
+            complete => 1,
+            clients => { 'client.admin' => [{ global_id => 200, host => 'a' }] },
+        },
+        exported => { 'client.admin' => { key => $NEW } },
+        pve_mon_key => $NEW,
+        service_cipher => $CIPHER,
+    };
+    is_deeply(restrict_blockers($clean, {}), [], 'nothing blocks a fully migrated cluster');
+
+    my $blockers = restrict_blockers(
+        $clean,
+        { client_refresh => { 'client.admin' => { session_ids => [200] } } },
+    );
+    like(
+        $blockers->[0],
+        qr/recorded live client\(s\) may still hold the previous key of 'client.admin' \(a: 1\)/,
+        'a recorded consumer that may predate the rotation blocks it',
+    );
+
+    my $old_key = { %$clean, exported => { 'client.admin' => { key => $OLD } } };
+    $blockers = restrict_blockers($old_key, {});
+    like(
+        $blockers->[0],
+        qr/1 active or pending keys still use another cipher: client.admin \(active\)/,
+        'an entity key on the old cipher blocks it',
+    );
+    like(
+        $blockers->[1],
+        qr/1 live client\(s\) authenticate as 'client.admin'/,
+        'and so does its live consumer, named separately',
+    );
+
+    my $old_pending = {
+        %$clean, exported => { 'client.admin' => { key => $NEW, pending_key => $OLD } },
+    };
+    like(
+        restrict_blockers($old_pending, {})->[0],
+        qr/client.admin \(pending\)/,
+        'a staged old-cipher key blocks the restriction before it can become active',
+    );
+
+    like(
+        restrict_blockers({ %$clean, service_cipher => $LEGACY_CIPHER }, {})->[0],
+        qr/service tickets still use the 'aes' cipher/,
+        'the current service-ticket cipher is part of the authoritative predicate',
+    );
+
+    $blockers = restrict_blockers({ %$clean, pve_mon_key => $OLD }, {});
+    like($blockers->[0], qr/stored 'mon.' key/, 'the stored monitor key counts too');
+
+    my $partial = { %$clean, sessions => { complete => 0, clients => {} } };
+    like(
+        restrict_blockers($partial, {})->[0],
+        qr/not every monitor answered/,
+        'an incomplete session picture is never waved through',
+    );
+
+    $blockers = restrict_blockers(
+        $clean, { client_refresh => { 'client.crash' => { rotated => 1000 } } },
+    );
+    like(
+        $blockers->[0],
+        qr/awaits '--ack-refreshed client.crash'/,
+        'a rotation record asks for the acknowledgment, a consumer may be invisible',
+    );
+
+    $blockers = restrict_blockers(
+        $clean,
+        {
+            client_refresh => { 'client.crash' => { rotated => 1000, session_ids => [50] } },
+        },
+    );
+    like(
+        $blockers->[0],
+        qr/awaits '--ack-refreshed client.crash'/,
+        'a measured record is no different, session absence proves nothing',
+    );
+
+    like(
+        restrict_blockers(
+            { %$clean, health_checks => { AUTH_EMERGENCY_CIPHERS_SET => {} } }, {},
+        )->[0],
+        qr/mon_auth_emergency_allowed_ciphers.*overrides the restriction/,
+        'the emergency cipher override blocks, the restriction would not hold',
+    );
+
+    is_deeply(
+        restrict_blockers(
+            $clean,
+            {
+                client_refresh => {
+                    'client.crash' => { rotated => 1000, session_ids => [50], cleared => 2000 },
+                },
+            },
+        ),
+        [],
+        'a record considered refreshed no longer blocks while its instances stay away',
+    );
+
+    like(
+        restrict_blockers({ %$clean, pve_mon_key => undef }, {})->[0],
+        qr/stored 'mon.' key could not be read/,
+        'an unreadable stored monitor key is a blocker, not a pass',
     );
 }
 

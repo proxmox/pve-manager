@@ -23,9 +23,9 @@ our @EXPORT_OK = qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers cephfs_mount_storages
-    ack_decision
-    classify_insecure_clients open_options parse_lockbox_output
+    summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
+    cephfs_mount_storages ack_decision finish_after_acks
+    classify_insecure_clients open_options open_actions parse_lockbox_output
 );
 
 our $CIPHER = 'aes256k';
@@ -415,6 +415,21 @@ sub cephfs_mount_storages($item) {
     return [sort keys %$stores];
 }
 
+# Whether the cipher restriction would go through once exactly the confirmations a run offers
+# are given. Asking the blocker set itself, on a copy of the state with those records closed,
+# keeps the offer honest: an empty option list says nothing about a key nobody manages, a
+# service key still on the old cipher, or a rotation this very run is about to make.
+sub finish_after_acks($info, $state, $ready) {
+    my $records = { ($state->{client_refresh} // {})->%* };
+    for my $entity (@$ready) {
+        $records->{$entity} = { ($records->{$entity} // {})->%*, cleared => time() };
+    }
+
+    return scalar(@{ restrict_blockers($info, { %$state, client_refresh => $records }) })
+        ? 0
+        : 1;
+}
+
 # What a requested confirmation can do, from the records and the session picture alone. Only
 # 'accept' closes a record; everything else names what stands in the way, and 'measure' first
 # turns the clients visible right now into named consumers.
@@ -430,6 +445,82 @@ sub ack_decision($entity, $state, $sessions, $stale) {
     }
 
     return { verdict => 'accept' };
+}
+
+# what must be resolved before the old cipher can be disallowed without stopping a consumer
+sub restrict_blockers($info, $state) {
+    my $blockers = [];
+    my $sessions = $info->{sessions} // {};
+    push @$blockers,
+        "not every monitor answered the session query, so live consumers cannot be verified"
+        if !$sessions->{complete};
+    push @$blockers,
+        "the service tickets still use the '" . ($info->{service_cipher} // 'unknown') . "' cipher"
+        if ($info->{service_cipher} // '') ne $CIPHER;
+
+    my $old_active = {};
+    my @old_keys;
+    for my $entity (sort keys %{ $info->{exported} // {} }) {
+        my $entry = $info->{exported}->{$entity};
+        if ((key_cipher($entry->{key}) // -1) != $CIPHER_ID) {
+            $old_active->{$entity} = 1;
+            push @old_keys, "$entity (active)";
+        }
+        if (
+            defined($entry->{pending_key})
+            && length($entry->{pending_key})
+            && (key_cipher($entry->{pending_key}) // -1) != $CIPHER_ID
+        ) {
+            push @old_keys, "$entity (pending)";
+        }
+    }
+    if (scalar(@old_keys)) {
+        my $count = scalar(@old_keys);
+        my @shown_keys = @old_keys;
+        my $shown = join(', ', splice(@shown_keys, 0, 5));
+        $shown .= " and " . scalar(@shown_keys) . " more" if scalar(@shown_keys);
+        push @$blockers,
+            "$count active or pending keys still use another cipher: $shown"
+            . " (run this without '--restrict-ciphers' to see the option for each)";
+    }
+    push @$blockers, "the stored 'mon.' key still uses another cipher, see '--rotate-mon-key'"
+        if defined($info->{pve_mon_key})
+        && (key_cipher($info->{pve_mon_key}) // -1) != $CIPHER_ID;
+
+    for my $entity (sort keys %{ $sessions->{clients} // {} }) {
+        next if !$old_active->{$entity};
+        push @$blockers,
+            scalar(@{ $sessions->{clients}->{$entity} })
+            . " live client(s) authenticate as '$entity' ("
+            . session_hosts($sessions->{clients}->{$entity})
+            . "), whose key they could then no longer use";
+    }
+    my $stale = stale_consumers($sessions, $state->{client_refresh});
+    for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
+        my $mark = $state->{client_refresh}->{$entity};
+        if (my $held = $stale->{$entity}) {
+            push @$blockers,
+                scalar(@$held)
+                . " recorded live client(s) may still hold the previous key of '$entity' ("
+                . session_hosts($held) . ")";
+            next;
+        }
+        next if defined($mark->{cleared});
+        # a consumer can keep its IO on established connections without any monitor session,
+        # so its absence from the sweep proves nothing; only the operator closes a record
+        push @$blockers,
+            "the rotation of '$entity' awaits '--ack-refreshed $entity' once every consumer"
+            . " of it was refreshed";
+    }
+    push @$blockers, "the stored 'mon.' key could not be read, see '--rotate-mon-key'"
+        if !defined($info->{pve_mon_key});
+    # this monitor option overrides the restriction for as long as it is set
+    push @$blockers,
+        "the monitors run with 'mon_auth_emergency_allowed_ciphers' set, which overrides the"
+        . " restriction; remove it from ceph.conf and restart every monitor first"
+        if ($info->{health_checks} // {})->{AUTH_EMERGENCY_CIPHERS_SET};
+
+    return $blockers;
 }
 
 sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
@@ -559,6 +650,26 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
         lockbox => $lockbox_open,
         hedge => $hedge,
     };
+}
+
+# Add the final step only after asking the same cluster-wide predicate that guards it. The health
+# details alone do not cover unmanaged clients, service keys, or work requested by the current run.
+sub open_actions(
+    $program, $checks, $opts, $storage_entities, $service_cipher, $state, $info,
+) {
+    my $open = open_options($checks, $opts, $storage_entities, $service_cipher);
+    my $finish =
+        $info && !$opts->{'restrict-ciphers'} && $checks->{AUTH_INSECURE_KEYS_ALLOWED}
+        ? finish_after_acks($info, $state, [])
+        : 0;
+
+    if ($finish && !scalar($open->{next}->@*)) {
+        push $open->{next}->@*,
+            "--restrict-ciphers: allow only the '$CIPHER' cipher for authentication, once every"
+            . " running consumer holds its rotated key";
+    }
+
+    return $open;
 }
 
 # as { entity, files, kernel, reason }. Opt-in: only the operator knows what reads a client key

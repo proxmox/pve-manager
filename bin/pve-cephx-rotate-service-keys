@@ -30,9 +30,9 @@ use PVE::Ceph::KeyMigration qw(
     touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers cephfs_mount_storages
-    ack_decision
-    open_options parse_lockbox_output
+    summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
+    cephfs_mount_storages ack_decision
+    open_actions parse_lockbox_output
 );
 
 my $QUORUM_FEATURE = 'cephx_auth_aes256k'; # every quorum monitor must advertise it first
@@ -600,8 +600,11 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
     return {
         monmap_mons => \@monmap,
         quorum => \@quorum,
+        monitor_metadata => $metadata,
         sessions => summarize_sessions($per_mon),
         service_cipher => $mon_dump->{auth_service_cipher}->{name} // 'unknown',
+        preferred_cipher => $mon_dump->{auth_preferred_cipher}->{name} // 'unknown',
+        allowed_ciphers => [map { $_->{name} } @{ $mon_dump->{auth_allowed_ciphers} // [] }],
     };
 }
 
@@ -950,6 +953,68 @@ my sub pve_mon_keyring_key {
     return undef;
 }
 
+# A restriction decision needs this complete set of current inputs. The JSON auth export is
+# required because the shorter auth listing omits pending keys.
+my sub collect_restriction_snapshot(
+    $rados, $collect_monitor = undef, $read_mon_key = undef,
+) {
+    $collect_monitor //= sub { collect_current_monitor_state($rados) };
+    $read_mon_key //= sub { pve_mon_keyring_key() };
+
+    my $monitor = $collect_monitor->();
+    die "could not collect the current monitor state for the cipher restriction\n"
+        if ref($monitor) ne 'HASH'
+        || ref($monitor->{monmap_mons}) ne 'ARRAY'
+        || !scalar($monitor->{monmap_mons}->@*)
+        || scalar(grep { !defined($_) || ref($_) || !length($_) } $monitor->{monmap_mons}->@*)
+        || ref($monitor->{quorum}) ne 'ARRAY'
+        || !scalar($monitor->{quorum}->@*)
+        || scalar(grep { !defined($_) || ref($_) || !length($_) } $monitor->{quorum}->@*)
+        || ref($monitor->{monitor_metadata}) ne 'ARRAY'
+        || ref($monitor->{sessions}) ne 'HASH'
+        || ref($monitor->{sessions}->{clients}) ne 'HASH'
+        || !defined($monitor->{sessions}->{complete})
+        || !defined($monitor->{service_cipher})
+        || ref($monitor->{service_cipher})
+        || !length($monitor->{service_cipher});
+    my $snapshot_mons = { map { $_ => 1 } $monitor->{monmap_mons}->@* };
+    my $snapshot_quorum = { map { $_ => 1 } $monitor->{quorum}->@* };
+    die "could not collect the current monitor state for the cipher restriction\n"
+        if scalar(keys %$snapshot_mons) != scalar($monitor->{monmap_mons}->@*)
+        || scalar(keys %$snapshot_quorum) != scalar($monitor->{quorum}->@*)
+        || grep { !$snapshot_mons->{$_} } $monitor->{quorum}->@*;
+
+    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
+    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
+    my $exported = {};
+    for my $entry (@$auth) {
+        die "the cephx auth export is malformed\n"
+            if ref($entry) ne 'HASH'
+            || !defined($entry->{entity})
+            || ref($entry->{entity})
+            || !length($entry->{entity})
+            || exists($exported->{ $entry->{entity} })
+            || !defined($entry->{key})
+            || ref($entry->{key})
+            || !length($entry->{key})
+            || (defined($entry->{pending_key}) && ref($entry->{pending_key}));
+        $exported->{ $entry->{entity} } = $entry;
+    }
+
+    my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
+    die "could not refresh the cluster health for the cipher restriction\n"
+        if ref($health) ne 'HASH'
+        || ref($health->{checks}) ne 'HASH'
+        || grep { ref($_) ne 'HASH' } values $health->{checks}->%*;
+
+    return {
+        $monitor->%*,
+        exported => $exported,
+        pve_mon_key => $read_mon_key->(),
+        health_checks => $health->{checks},
+    };
+}
+
 my sub mon_rotation_unfinished($info, $state) {
     return 0 if !$state->{rotated}->{'mon.'} && !$state->{previous_keys}->{'mon.'};
 
@@ -1198,6 +1263,13 @@ my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef
     return;
 }
 
+# a run asked to restrict on a cluster that already is has nothing left to do
+my sub restrict_wanted($info, $opts) {
+    return 0 if !$opts->{'restrict-ciphers'};
+    return 1 if ($info->{preferred_cipher} // '') ne $CIPHER;
+    return scalar(grep { $_ ne $CIPHER } $info->{allowed_ciphers}->@*) ? 1 : 0;
+}
+
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
 my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
     my @unfinished = unfinished_entities($state);
@@ -1352,6 +1424,21 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         log_warn("Wiping the rotating keys although $why, as '--force' was passed.");
     }
 
+    if (restrict_wanted($info, $opts)) {
+        my $blockers = restrict_blockers($info, $state);
+        if (scalar(@$blockers)) {
+            if (!$opts->{force}) {
+                log_fail("Not restricting the allowed ciphers to '$CIPHER': a client would be"
+                    . " stopped. Resolve these first:");
+                log_steps($blockers);
+                return -1;
+            }
+            log_warn("Restricting the allowed ciphers although a client may be stopped, as"
+                . " '--force' was passed:");
+            log_steps($blockers);
+        }
+    }
+
     if (!$has_feature) {
         if (!$allows_cipher) {
             log_info("This cluster is not ready for the migration yet: its monitors do not support"
@@ -1411,6 +1498,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         && !%$insecure
         && $info->{service_cipher} eq $CIPHER
         && !$opts->{'wipe-rotating-keys'}
+        && !restrict_wanted($info, $opts)
         && !$recovered_count
         && !@unfinished
     ) {
@@ -1884,6 +1972,18 @@ my sub print_plan($info, $plan, $state, $opts) {
             . " client and service daemon supports '$CIPHER'; otherwise wait a few hours for the"
             . " old keys to expire.");
         log_step("ceph auth wipe-rotating-service-keys");
+    }
+
+    if (restrict_wanted($info, $opts)) {
+        $step++;
+        log_text("");
+        log_text("Step $step: allow only the '$CIPHER' cipher for authentication, which clears"
+            . " the remaining insecure-key warnings. A key or client on the old cipher is"
+            . " refused from then on, and 'auth_preferred_cipher' moves to '$CIPHER' for good."
+            . " Both settings are part of the monitor map, so the monitors hold an election for"
+            . " each, a few seconds in which they do not answer.");
+        log_step("ceph mon set auth_preferred_cipher $CIPHER");
+        log_step("ceph mon set auth_allowed_ciphers $CIPHER");
     }
 
     log_text("");
@@ -2938,6 +3038,46 @@ my sub set_service_cipher($rados, $state) {
     return;
 }
 
+my sub restrict_ciphers(
+    $rados, $state, $opts, $collect = undef, $read_mon_key = undef,
+) {
+    # a run can be long and the cluster lock does not serialize other 'ceph auth' commands, so
+    # the verdict is taken again on a snapshot collected right before the switch
+    my $snapshot = collect_restriction_snapshot($rados, $collect, $read_mon_key);
+    reconcile_client_fingerprints(
+        $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
+    );
+    reopen_returning_clients($state, $snapshot->{sessions});
+    my $blockers = restrict_blockers($snapshot, $state);
+
+    if (scalar(@$blockers)) {
+        if (!$opts->{force}) {
+            die "refusing to restrict the allowed ciphers: "
+                . join('; ', @$blockers)
+                . ". Refresh the consumers, close each record with '--ack-refreshed', or pass"
+                . " '--force' to continue anyway.\n";
+        }
+        log_warn("Restricting the allowed ciphers although a client may be stopped, as"
+            . " '--force' was passed: "
+            . join('; ', @$blockers));
+    }
+
+    log_heading("Restricting the allowed ciphers");
+
+    $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
+    $rados->mon_command({ prefix => 'mon set', name => 'auth_allowed_ciphers', value => $CIPHER });
+
+    # nothing may put the old cipher back after this
+    delete $state->{preferred_cipher_was};
+    $state->{ciphers_restricted} = time();
+    save_state($state);
+
+    log_pass("only the '$CIPHER' cipher is allowed for authentication now; a key or client on"
+        . " the old cipher is refused from here on");
+
+    return;
+}
+
 my sub wipe_rotating_keys($rados, $state, $opts, $collect = undef) {
     assert_consumers_current(
         $rados, $state, $opts, 'wipe the rotating service keys', $collect,
@@ -2977,8 +3117,24 @@ my sub storage_entities($files) {
     return $res;
 }
 
-my sub print_open_options($checks, $opts, $storage_entities, $service_cipher) {
-    my $open = open_options($checks, $opts, $storage_entities, $service_cipher);
+my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
+    reconcile_client_fingerprints(
+        $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
+    );
+
+    return open_actions(
+        $0,
+        $snapshot->{health_checks},
+        $opts,
+        $storage_entities,
+        $snapshot->{service_cipher},
+        $state,
+        $snapshot,
+    );
+}
+
+my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
+    my $open = open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot);
 
     if (scalar($open->{next}->@*)) {
         log_text("");
@@ -3008,12 +3164,12 @@ my sub print_open_options($checks, $opts, $storage_entities, $service_cipher) {
 }
 
 my sub print_closing_notes(
-    $rados, $opts, $storage_entities, $switched, $service_cipher, $rotated_keys,
+    $rados, $opts, $storage_entities, $switched, $rotated_keys, $state = {},
 ) {
     log_heading("What is left");
 
-    my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
-    my $checks = $health->{checks} // {};
+    my $snapshot = collect_restriction_snapshot($rados);
+    my $checks = $snapshot->{health_checks};
 
     # Any check Ceph raises as an error settles this, AUTH_BAD_CAPS included. The ticket one lags
     # the monitors' tick, so set_service_cipher's 'mon dump' read is the better proof.
@@ -3058,7 +3214,7 @@ my sub print_closing_notes(
         . " other warnings stay until every client key is migrated and the old cipher is dropped;"
         . " 'ceph health mute <check>' silences one you cannot act on.");
 
-    print_open_options($checks, $opts, $storage_entities, $service_cipher);
+    print_open_options($opts, $storage_entities, $state, $snapshot);
 
     log_text("");
     log_warn("Keep $STATE_FILE until Ceph health and daemon access are verified: it holds the only"
@@ -3082,9 +3238,12 @@ and client keys require their rotation options. Without '--apply', this only pri
                               standard input is not a terminal
   --timeout SECONDS           how long to wait for a daemon to come back (default 600)
   --force                     continue past blocking HEALTH_WARN checks, kernel
-                              compatibility checks, and consumer-refresh records that keep
-                              a wipe from stopping live clients. HEALTH_ERR and failed
-                              health queries are never overridden
+                              compatibility checks, and consumer or incomplete-session
+                              blockers for a wipe. With '--restrict-ciphers', also override
+                              every blocker for the switch, including old-cipher
+                              'client.admin' and stored 'mon.' keys and clients using them.
+                              This can stop client IO or lock out administration. HEALTH_ERR
+                              and failed health queries are never overridden
   --only SCOPE[,SCOPE]...     limit the run to 'mon', a daemon type ($types), or a single
                               daemon such as 'osd.3'. Comma-separated or given more than
                               once. A limited run does not switch the service tickets
@@ -3106,6 +3265,9 @@ and client keys require their rotation options. Without '--apply', this only pri
                               client key that this run cannot see was refreshed. Refused
                               while a recorded consumer is connected; a returning one
                               reopens the record
+  --restrict-ciphers          allow only the 'aes256k' cipher for authentication, the final
+                              step; refused while any key or live consumer still depends on
+                              the old cipher
   --wipe-rotating-keys        NOT RECOMMENDED: invalidate every service ticket instead of
                               waiting a few hours for the rotating keys to expire. Use only
                               if every client and service daemon supports 'aes256k'
@@ -3205,6 +3367,7 @@ my sub parse_options() {
         'rotate-client-keys' => 0,
         'rotate-admin-key' => 0,
         'rotate-lockbox-keys' => 0,
+        'restrict-ciphers' => 0,
         timeout => 600,
     };
 
@@ -3222,6 +3385,7 @@ my sub parse_options() {
         'rotate-admin-key',
         'rotate-lockbox-keys',
         'rotate-storage-key=s@',
+        'restrict-ciphers',
         'ack-refreshed=s@',
         'help|h',
     )) {
@@ -3458,10 +3622,10 @@ sub main {
     );
     if ($verdict <= 0) {
         print_open_options(
-            $info->{health_checks},
             $opts,
             storage_entities($client_files),
-            $info->{service_cipher},
+            $state,
+            collect_restriction_snapshot($rados),
         ) if $verdict == 0;
         return $verdict == 0 ? 0 : 1;
     }
@@ -3483,6 +3647,7 @@ sub main {
         && !scalar(@{ $plan->{client_keys} // [] })
         && !scalar(@{ $plan->{lockbox_keys} // [] })
         && !$opts->{'wipe-rotating-keys'}
+        && !restrict_wanted($info, $opts)
     ) {
         my @unfinished =
             grep { $_ eq 'mon.' || $info->{exported}->{$_} } unfinished_entities($state);
@@ -3513,10 +3678,10 @@ sub main {
         }
         mon_key_hint($info, $opts);
         print_open_options(
-            $info->{health_checks},
             $opts,
             storage_entities($client_files),
-            $info->{service_cipher},
+            $state,
+            collect_restriction_snapshot($rados),
         );
         return 0;
     }
@@ -3531,10 +3696,10 @@ sub main {
 
     if (!$opts->{apply}) {
         print_open_options(
-            $info->{health_checks},
             $opts,
             storage_entities($client_files),
-            $info->{service_cipher},
+            $state,
+            collect_restriction_snapshot($rados),
         );
 
         log_heading("Dry run finished");
@@ -3645,6 +3810,8 @@ sub main {
                 set_service_cipher($rados, $state) if $plan->{service_cipher};
                 wipe_rotating_keys($rados, $state, $opts)
                     if $opts->{'wipe-rotating-keys'};
+                restrict_ciphers($rados, $state, $opts)
+                    if restrict_wanted($info, $opts);
             },
         );
     };
@@ -3694,8 +3861,8 @@ sub main {
         $opts,
         storage_entities($client_files),
         $plan->{service_cipher},
-        $plan->{service_cipher} ? $CIPHER : $info->{service_cipher},
         scalar($plan->{daemons}->@*) ? 1 : 0,
+        $state,
     );
 
     log_heading("Done");
@@ -3725,11 +3892,15 @@ sub lockbox_test_hooks {
 sub key_migration_test_hooks {
     return {
         collect_monitor_state => \&collect_current_monitor_state,
+        restriction_snapshot => \&collect_restriction_snapshot,
+        open_actions_from_snapshot => \&open_actions_from_snapshot,
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,
         wipe_rotating_keys => \&wipe_rotating_keys,
+        set_service_cipher => \&set_service_cipher,
+        restrict_ciphers => \&restrict_ciphers,
     };
 }
 

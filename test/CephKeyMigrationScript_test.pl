@@ -52,6 +52,19 @@ sub picture {
     };
 }
 
+sub current_monitor_picture {
+    my ($service_cipher) = @_;
+    return {
+        monmap_mons => ['a'],
+        quorum => ['a'],
+        monitor_metadata => [{ name => 'a', hostname => 'node-a' }],
+        sessions => picture(1),
+        service_cipher => $service_cipher // 'aes256k',
+        preferred_cipher => 'aes256k',
+        allowed_ciphers => ['aes256k'],
+    };
+}
+
 sub run_client_rotation {
     my ($rados, $state, @snapshots) = @_;
     my $calls = 0;
@@ -175,9 +188,16 @@ sub run_client_rotation {
     sub mon_command {
         my ($self, $args) = @_;
         push $self->{commands}->@*, {%$args};
+        die "simulated '$args->{prefix}' failure\n"
+            if ($self->{fail_prefix} // '') eq $args->{prefix};
+        return $self->{mon_dump_reply}
+            if $args->{prefix} eq 'mon dump' && exists($self->{mon_dump_reply});
         return {
             mons => [map { { name => $_ } } $self->{mons}->@*],
             auth_service_cipher => { name => $self->{service_cipher} // 'aes256k' },
+            auth_preferred_cipher => { name => $self->{preferred_cipher} // 'aes256k' },
+            auth_allowed_ciphers =>
+                [map { { name => $_ } } @{ $self->{allowed_ciphers} // ['aes256k'] }],
             }
             if $args->{prefix} eq 'mon dump';
         return { quorum_names => [$self->{quorum}->@*] }
@@ -188,12 +208,23 @@ sub run_client_rotation {
             } $self->{metadata}->@*
             ]
             if $args->{prefix} eq 'mon metadata';
+        return $self->{auth_export_reply}
+            if $args->{prefix} eq 'auth export' && exists($self->{auth_export_reply});
         return [
             map {
                 { %$_ }
             } ($self->{exported} // [])->@*
             ]
             if $args->{prefix} eq 'auth export';
+        return $self->{health_reply}
+            if $args->{prefix} eq 'health' && exists($self->{health_reply});
+        return { checks => { %{ $self->{health_checks} // {} } } }
+            if $args->{prefix} eq 'health';
+        if ($args->{prefix} eq 'mon set') {
+            $self->{service_cipher} = $args->{value}
+                if $args->{name} eq 'auth_service_cipher';
+            return {};
+        }
         if ($args->{prefix} eq 'auth wipe-rotating-service-keys') {
             $self->{service_cipher} = $self->{after_wipe_cipher}
                 if defined($self->{after_wipe_cipher});
@@ -201,6 +232,25 @@ sub run_client_rotation {
         }
         die "unexpected monitor command '$args->{prefix}'\n";
     }
+}
+
+sub fresh_test_restriction_snapshot {
+    my ($rados) = @_;
+    return $HOOKS->{restriction_snapshot}->(
+        $rados,
+        sub {
+            return $HOOKS->{collect_monitor_state}->(
+                $rados, sub { return encode_json([]) },
+            );
+        },
+        sub { return $NEW },
+    );
+}
+
+sub restriction_is_offered {
+    my ($open) = @_;
+    return 1 if grep { m/--restrict-ciphers/ } $open->{next}->@*;
+    return ($open->{command} // '') =~ m/--restrict-ciphers/ ? 1 : 0;
 }
 
 {
@@ -229,6 +279,13 @@ sub run_client_rotation {
         },
     );
     ok($current->{sessions}->{complete}, 'the fresh monitor inventory was queried completely');
+    is_deeply(
+        $current->{monitor_metadata},
+        [
+            { name => 'a', hostname => 'node-a' }, { name => 'b', hostname => 'node-b' },
+        ],
+        'the fresh monitor metadata remains part of the current snapshot',
+    );
     is_deeply(
         \@queried,
         ['mon.a', 'mon.b'],
@@ -600,6 +657,294 @@ sub wipe_monitor_picture {
         [map { $_->{prefix} } $rados->{commands}->@*],
         ['auth export', 'auth wipe-rotating-service-keys', 'mon dump'],
         'the post-wipe verification immediately follows the destructive command',
+    );
+}
+
+{
+    my $monitor = current_monitor_picture();
+    my $rados = CurrentMonitorRados->new(
+        exported => [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+    );
+    my $snapshot = $HOOKS->{restriction_snapshot}->(
+        $rados, sub { return $monitor }, sub { return $NEW },
+    );
+    is(
+        $snapshot->{exported}->{'client.crash'}->{pending_key},
+        $OLD,
+        'the fresh restriction snapshot retains pending keys from the auth export',
+    );
+    is($snapshot->{pve_mon_key}, $NEW, 'the fresh restriction snapshot reads the stored mon. key');
+
+    eval {
+        $HOOKS->{restriction_snapshot}->(
+            $rados, sub { return {} }, sub { return $NEW },
+        );
+    };
+    like($@, qr/current monitor state/, 'a malformed fresh monitor result fails closed');
+
+    my @invalid_inventories = (
+        ['an empty map', { $monitor->%*, monmap_mons => [] }],
+        ['an empty quorum', { $monitor->%*, quorum => [] }],
+        ['a foreign quorum member', { $monitor->%*, quorum => ['b'] }],
+    );
+    for my $case (@invalid_inventories) {
+        my ($label, $invalid) = @$case;
+        eval {
+            $HOOKS->{restriction_snapshot}->(
+                $rados, sub { return $invalid }, sub { return $NEW },
+            );
+        };
+        like($@, qr/current monitor state/, "$label cannot prove a restriction snapshot");
+    }
+
+    $rados = CurrentMonitorRados->new(auth_export_reply => [{}]);
+    eval {
+        $HOOKS->{restriction_snapshot}->(
+            $rados, sub { return $monitor }, sub { return $NEW },
+        );
+    };
+    like($@, qr/auth export is malformed/, 'a malformed fresh auth result fails closed');
+
+    $rados = CurrentMonitorRados->new(exported => [], health_reply => { checks => [] });
+    eval {
+        $HOOKS->{restriction_snapshot}->(
+            $rados, sub { return $monitor }, sub { return $NEW },
+        );
+    };
+    like($@, qr/refresh the cluster health/, 'a malformed fresh health result fails closed');
+
+    $rados = CurrentMonitorRados->new(exported => [], fail_prefix => 'health');
+    eval {
+        $HOOKS->{restriction_snapshot}->(
+            $rados, sub { return $monitor }, sub { return $NEW },
+        );
+    };
+    like($@, qr/simulated 'health' failure/, 'a failed fresh health query fails closed');
+
+    $rados = CurrentMonitorRados->new(
+        mon_dump_reply => { mons => [{ name => undef }] },
+    );
+    eval {
+        $HOOKS->{collect_monitor_state}->($rados, sub { return encode_json([]) });
+    };
+    like($@, qr/refresh the monitor map/, 'malformed monitor-map data fails closed');
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        service_cipher => 'aes',
+        exported => [{ entity => 'client.crash', key => $NEW }],
+        health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
+    );
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $startup = fresh_test_restriction_snapshot($rados);
+    my $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, $state, $startup);
+    ok(!restriction_is_offered($open), 'the old startup service cipher withholds the finish');
+
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{set_service_cipher}->($rados, $state);
+    }
+    my $fresh = fresh_test_restriction_snapshot($rados);
+    $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, $state, $fresh);
+    ok(
+        restriction_is_offered($open),
+        'the service-cipher switch made by this run enables the fresh finishing offer',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        service_cipher => 'aes256k',
+        exported => [{ entity => 'client.crash', key => $NEW }],
+        health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
+    );
+    my $baseline = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $startup = fresh_test_restriction_snapshot($rados);
+    my $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, {%$baseline}, $startup);
+    ok(restriction_is_offered($open), 'the clean startup snapshot permits the finishing offer');
+
+    my @changes = (
+        [
+            'an external old active key',
+            [{ entity => 'client.crash', key => $OLD }],
+            { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        ],
+        [
+            'an external old pending key',
+            [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+            { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        ],
+        [
+            'an external emergency override',
+            [{ entity => 'client.crash', key => $NEW }],
+            { AUTH_INSECURE_KEYS_ALLOWED => {}, AUTH_EMERGENCY_CIPHERS_SET => {} },
+        ],
+    );
+    for my $change (@changes) {
+        my ($label, $exported, $checks) = @$change;
+        $rados->{exported} = $exported;
+        $rados->{health_checks} = $checks;
+        my $state = { client_keys_seen => { $baseline->{client_keys_seen}->%* } };
+        my $fresh = fresh_test_restriction_snapshot($rados);
+        $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, $state, $fresh);
+        ok(
+            !restriction_is_offered($open),
+            "$label added after startup prevents the fresh finishing offer",
+        );
+        ok(
+            $state->{client_refresh}->{'client.crash'},
+            'the external active-key change is reconciled before options are offered',
+        ) if $label =~ m/active key/;
+    }
+}
+
+{
+    my $info = migrated_info(picture(1));
+    $info->{service_cipher} = 'aes';
+    $info->{preferred_cipher} = 'aes';
+    $info->{allowed_ciphers} = [qw(aes aes256k)];
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $verdict = $HOOKS->{preflight}->(
+        $info,
+        {
+            apply => 0,
+            force => 0,
+            only => { mgr => 1 },
+            'restrict-ciphers' => 1,
+        },
+        0,
+        $state,
+    );
+    cmp_ok(
+        $verdict,
+        '<',
+        0,
+        "a scoped '--only' run cannot restrict while the service cipher remains old",
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        exported => [{ entity => 'client.crash', key => $NEW }],
+    );
+    my $monitor = current_monitor_picture('aes256k');
+    $monitor->{sessions} = picture(1, 48);
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.crash' => {
+                rotated => 1,
+                session_ids => [48],
+                cleared => 2,
+                acknowledged => 2,
+            },
+        },
+    };
+    my @saved;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        eval {
+            $HOOKS->{restrict_ciphers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                sub { return $monitor },
+                sub { return $NEW },
+            );
+        };
+    }
+    like(
+        $@,
+        qr/refusing to restrict.*recorded live client/s,
+        'a returning client refuses the action-time cipher restriction',
+    );
+    my $persisted = decode_json($saved[-1]->[1]);
+    ok(
+        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        'the action-time restriction poll durably reopens the returned client record',
+    );
+
+    $monitor->{sessions} = picture(1);
+    eval {
+        $HOOKS->{restrict_ciphers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            sub { return $monitor },
+            sub { return $NEW },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to restrict.*awaits '--ack-refreshed client\.crash'/s,
+        'a later no-session restriction cannot reuse the superseded acknowledgment',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        exported => [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+    );
+    my $monitor = current_monitor_picture('aes256k');
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    eval {
+        $HOOKS->{restrict_ciphers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            sub { return $monitor },
+            sub { return $NEW },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to restrict.*pending/s,
+        'an old pending key staged after preflight is caught by the action-time auth export',
+    );
+    ok(
+        !(grep { $_->{prefix} eq 'mon set' } $rados->{commands}->@*),
+        'the action-time pending-key refusal happens before either cipher setting changes',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        exported => [{ entity => 'client.crash', key => $NEW }],
+    );
+    my $monitor = current_monitor_picture('aes');
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    eval {
+        $HOOKS->{restrict_ciphers}->(
+            $rados,
+            $state,
+            { apply => 1, force => 0 },
+            sub { return $monitor },
+            sub { return $NEW },
+        );
+    };
+    like(
+        $@,
+        qr/refusing to restrict.*service tickets still use the 'aes' cipher/s,
+        'a fresh old service cipher also blocks execution after preflight',
     );
 }
 
