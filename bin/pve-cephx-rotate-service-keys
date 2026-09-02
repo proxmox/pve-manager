@@ -1272,6 +1272,15 @@ my sub restrict_wanted($info, $opts) {
 }
 
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
+# The bootstrap and crash keys have no long-running reader, so confirming them needs no refresh
+# first; every other client key does.
+my sub confirm_hint($entity) {
+    return "only Ceph's own tools read it and none keeps it loaded, so confirm with"
+        . " '--ack-refreshed $entity'"
+        if grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*;
+    return "confirm with '--ack-refreshed $entity' once every consumer of it was refreshed";
+}
+
 my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
     my @unfinished = unfinished_entities($state);
     push @unfinished, 'mon.'
@@ -1292,6 +1301,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     # An entity still on the old cipher is unambiguous, its consumers hold the current key;
     # every other client entity remains unresolved. A cluster without any trace of a migration
     # is left alone. The sessions visible now may predate a rotation, so record their exact IDs.
+    my $seeded_now = {};
     if (
         !$state->{client_keys_seen}
         && (scalar(grep { $_ eq $LEGACY_CIPHER } $info->{allowed_ciphers}->@*)
@@ -1305,8 +1315,9 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         ) {
             next if $state->{client_refresh}->{$entity};
             next if (key_cipher($info->{exported}->{$entity}->{key}) // -1) != $CIPHER_ID;
-            log_warn("the consumers of '$entity' predate this script's tracking; confirm with"
-                . " '--ack-refreshed $entity' once every one of them was refreshed");
+            log_warn("the consumers of '$entity' predate this script's tracking; "
+                . confirm_hint($entity));
+            $seeded_now->{$entity} = 1;
             $state->{client_refresh}->{$entity} = merge_refresh_record(
                 undef,
                 $info->{sessions},
@@ -1403,10 +1414,11 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
             my $mark = $state->{client_refresh}->{$entity};
             next if $stale_clients->{$entity} || defined($mark->{cleared});
+            next if $seeded_now->{$entity}; # said when the record was seeded above
             # a consumer can keep its IO on established connections without any monitor
             # session, so absence proves nothing; only the operator can close the record
-            log_info("no live session predates the key rotation of '$entity'; confirm with"
-                . " '--ack-refreshed $entity' once every consumer of it was refreshed");
+            log_info(
+                "no live session predates the key rotation of '$entity'; " . confirm_hint($entity));
         }
     }
 
