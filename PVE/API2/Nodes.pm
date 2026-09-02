@@ -369,6 +369,12 @@ __PACKAGE__->register_method({
         additionalProperties => 1,
         properties => {
             # TODO: document remaining ones
+            uptime => {
+                type => "integer",
+                minimum => 0,
+                description =>
+                    "The uptime of the system (including time spent in suspend), in seconds.",
+            },
             idle => {
                 type => "integer",
                 minimum => 0,
