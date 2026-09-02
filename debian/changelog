@@ -1,3 +1,54 @@
+pve-manager (9.2.15) trixie; urgency=medium
+
+  * fix #7896: ui: qemu: show the effective implicit machine version for
+    Windows guests and avoid accidentally pinning a fallback when changing
+    other machine settings
+
+  * ceph: cephx key migration:
+    - name the running consumers of every client key a run rotates, and
+      report the recorded consumers that may still hold a replaced key and
+      could fail on a reconnect or ticket expiry
+    - confirm a rotation only for the consumers a run cannot see: the
+      confirmation is refused while a recorded consumer is connected, and an
+      unmeasured rotation is measured first
+    - add --restrict-ciphers to drop the old cipher as a guarded final step,
+      refused while any key depends on it or a recorded consumer may still
+      do so
+    - refuse a rotating-key wipe while a recorded client may still hold a
+      replaced key, and mark the wipe as not recommended, as it invalidates
+      every service ticket and requires all clients and daemons to support
+      aes256k
+    - offer the options that are still open as one command to paste, so the
+      finish of the migration is visible
+    - redo the mount of every CephFS storage whose key a run rotates, on each
+      node, so it starts a fresh client with the new key; a mount that is in
+      use is named rather than pulled away, and one that stopped answering
+      is force-unmounted, which frees the processes blocked in it
+    - refuse to rotate a storage key while a pending key is staged for it, as
+      that key would replace the fresh one on its first use and leave the
+      storage copies mismatched
+    - fail a run when a node stops answering instead of waiting forever
+    - say that the service ticket switch and the cipher restriction make the
+      monitors hold an election, a few seconds in which they do not answer
+    - point at the independent monitor identity when the admin keyring no
+      longer matches the cluster, instead of a bare permission error
+    - ignore data directories left by removed or destroyed OSDs while
+      continuing to block existing OSDs without an authentication entry
+    - identify a stopped OSD device by its per-OSD UUID and refuse duplicate
+      data directories, so a reused ID cannot direct a key write at old data
+    - validate lockbox values as cephx keys rather than accepting any base64
+      data, and redact lockbox keys from LVM error output to keep them out of
+      task logs and bug reports
+    - ask for the checks that prove an OSD is gone before its leftover lockbox
+      key is removed, and no longer suggest removing the authentication entry
+      of a daemon that only seems gone
+
+  * ceph: osd: on destroy, remove the empty mount-point directory and the
+    runtime unit enablement ceph-volume left behind, so the OSD stops being
+    reported as a configured service before the next boot
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 02 Sep 2026 14:50:05 +0200
+
 pve-manager (9.2.14) trixie; urgency=medium
 
   * ceph: cephx key migration:
