@@ -1318,12 +1318,15 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             log_warn("the consumers of '$entity' predate this script's tracking; "
                 . confirm_hint($entity));
             $seeded_now->{$entity} = 1;
+            # A nested read would leave an empty previous-key entry behind, and an entity with one
+            # counts as a started rotation. Look without creating.
+            my $previous = ($state->{previous_keys} // {})->{$entity};
             $state->{client_refresh}->{$entity} = merge_refresh_record(
                 undef,
                 $info->{sessions},
                 $entity,
                 $info->{sessions}->{complete},
-                $state->{previous_keys}->{$entity}->{saved} // time(),
+                (ref($previous) eq 'HASH' ? $previous->{saved} : undef) // time(),
             );
             $seeded = 1;
         }

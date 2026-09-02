@@ -402,6 +402,26 @@ sub migrated_info {
 }
 
 {
+    my $info = migrated_info(picture(1));
+    $info->{allowed_ciphers} = ['aes', 'aes256k'];
+    my $state = {};
+    $HOOKS->{preflight}->($info, { apply => 0 }, 0, $state);
+    ok(
+        exists($state->{client_refresh}->{'client.crash'}),
+        'a client key rotated before the tracking existed gets a seeded record',
+    );
+    ok(
+        !exists(($state->{previous_keys} // {})->{'client.crash'}),
+        'seeding leaves no previous-key stub behind for an entity the journal never knew',
+    );
+    is_deeply(
+        [PVE::Ceph::KeyMigration::unfinished_entities($state)],
+        [],
+        'a seeded record does not count as an unfinished rotation',
+    );
+}
+
+{
     my $state = {
         client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
         client_refresh => {
