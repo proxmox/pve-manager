@@ -369,6 +369,11 @@ __PACKAGE__->register_method({
         additionalProperties => 1,
         properties => {
             # TODO: document remaining ones
+            idle => {
+                type => "integer",
+                minimum => 0,
+                description => "Sum of how much time each core has spent idle, in seconds.",
+            },
             'boot-info' => {
                 description => "Meta-information about the boot mode.",
                 type => 'object',
@@ -500,6 +505,7 @@ __PACKAGE__->register_method({
 
         my ($uptime, $idle) = PVE::ProcFSTools::read_proc_uptime();
         $res->{uptime} = $uptime;
+        $res->{idle} = $idle;
 
         my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
         $res->{loadavg} = [$avg1, $avg5, $avg15];
