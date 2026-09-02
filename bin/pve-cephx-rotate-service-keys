@@ -3136,12 +3136,30 @@ my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
 my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
     my $open = open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot);
 
+    if (scalar($open->{waiting}->@*)) {
+        log_text("");
+        log_text("Refresh the consumers named above of: " . join(', ', $open->{waiting}->@*));
+    }
+
+    if (scalar($open->{ready}->@*)) {
+        log_text("");
+        log_text("Rotations whose remaining consumers only you can vouch for, once the ones"
+            . " named above are refreshed:");
+        log_step($open->{command});
+    }
+
     if (scalar($open->{next}->@*)) {
         log_text("");
         log_text("Options that address what is still reported, combinable in one '--apply' run:");
         log_step($_) for $open->{next}->@*;
-        log_text("'pveceph auth status' reports what reads each client key, and whether it can"
-                . " take the new cipher.")
+        if (scalar($open->{together}->@*)) {
+            log_text("The ones that need no decision of yours, in one command:");
+            log_step("$0 --apply " . join(' ', $open->{together}->@*));
+        }
+        log_text("'pveceph auth status' reports the kernel of every node and which keys are"
+                . " still on the old cipher; the live consumers of a key are named by this run."
+                . " A client key above is rotated only once you decide that every consumer of"
+                . " it can take the new cipher.")
             if $open->{hedge};
     }
 

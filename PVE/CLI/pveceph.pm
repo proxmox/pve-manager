@@ -553,7 +553,7 @@ __PACKAGE__->register_method({
     name => 'auth_status',
     path => 'auth-status',
     method => 'GET',
-    description => "Get the cephx key cipher status, for judging the aes256k key migration.",
+    description => "Show cephx key ciphers and aes256k migration prerequisites.",
     protected => 1,
     permissions => {
         check => ['perm', '/', ['Sys.Audit', 'Datastore.Audit'], any => 1],

@@ -14,7 +14,8 @@ use PVE::Ceph::KeyMigration qw(
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
     plan_client_keys build_plan
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
-    resume_verdict classify_insecure_clients open_options open_actions
+    resume_verdict classify_insecure_clients
+    open_options open_actions
     summarize_sessions session_hosts stale_consumers restrict_blockers cephfs_mount_storages
     ack_decision finish_after_acks
     plan_lockbox_keys parse_lockbox_output
@@ -683,6 +684,311 @@ is(
     );
 }
 
+# --- the option list is the whole next step ----------------------------------------------------
+{
+    my $checks = { AUTH_INSECURE_KEYS_ALLOWED => {} };
+    my $sessions = {
+        complete => 1,
+        clients => { 'client.admin' => [{ global_id => 7, host => 'a' }] },
+    };
+    my $info = {
+        sessions => $sessions,
+        exported => { 'client.admin' => { key => $NEW } },
+        pve_mon_key => $NEW,
+        service_cipher => $CIPHER,
+        health_checks => {},
+    };
+
+    my $waiting = { client_refresh => { 'client.admin' => { session_ids => [7] } } };
+    my $open = open_options($checks, {}, {}, $CIPHER, $waiting, $sessions);
+    is_deeply($open->{waiting}, ['client.admin'], 'a record with a connected consumer waits');
+    ok(
+        !(grep { m/restrict-ciphers|ack-refreshed/ } $open->{next}->@*),
+        'neither the confirmation nor the restriction is offered while it does',
+    );
+
+    my $unmeasured = {
+        client_refresh => { 'client.admin' => { rotated => 1, measurement_incomplete => 1 } },
+    };
+    $open = open_actions('/helper', $checks, {}, {}, $CIPHER, $unmeasured, $info);
+    is_deeply(
+        $open->{waiting},
+        ['client.admin'],
+        'a record that would first measure its live consumer remains an explicit waiter',
+    );
+    is_deeply($open->{ready}, [], 'a measure verdict is never presented as ready');
+    ok(!defined($open->{command}), 'no acknowledgment command is generated for a measurement');
+
+    my $ready = { client_refresh => { 'client.admin' => { session_ids => [99] } } };
+    $open = open_options($checks, {}, {}, $CIPHER, $ready, $sessions);
+    is_deeply(
+        $open->{ready},
+        ['client.admin'],
+        'once they are gone the confirmation is the next step, in one command for every key',
+    );
+    ok(
+        !(grep { m/restrict-ciphers/ } $open->{next}->@*),
+        'and the restriction waits for that confirmation',
+    );
+
+    $open = open_actions('/helper', $checks, {}, {}, $CIPHER, {}, $info);
+    like(
+        $open->{next}->[0],
+        qr/^--restrict-ciphers:/,
+        'with no record left, the restriction is what remains',
+    );
+
+    my $confirmed = {
+        client_refresh => { 'client.admin' => { session_ids => [99], cleared => 5 } },
+    };
+    $open = open_actions('/helper', $checks, {}, {}, $CIPHER, $confirmed, $info);
+    is_deeply($open->{ready}, [], 'a record already confirmed is not offered again');
+    like(
+        $open->{next}->[0],
+        qr/^--restrict-ciphers:/,
+        'and it no longer holds the restriction back',
+    );
+
+    my $returned = {
+        client_refresh => { 'client.admin' => { session_ids => [7], cleared => 5 } },
+    };
+    $open = open_options($checks, {}, {}, $CIPHER, $returned, $sessions);
+    is_deeply($open->{waiting}, ['client.admin'], 'a recorded consumer that returns waits again');
+    ok(
+        !(grep { m/restrict-ciphers/ } $open->{next}->@*),
+        'and the restriction is off the table until it is gone',
+    );
+
+    my $partial = { complete => 0, clients => {} };
+    $open = open_options($checks, {}, {}, $CIPHER, $ready, $partial);
+    is_deeply($open->{ready}, [], 'an unanswered monitor offers no confirmation');
+    is_deeply(
+        $open->{waiting},
+        ['client.admin'],
+        'the incomplete verdict keeps every open record visible as a waiter',
+    );
+    ok(
+        !(grep { m/restrict-ciphers/ } $open->{next}->@*),
+        'nor the restriction, as a consumer could be connected unseen',
+    );
+    ok(
+        !(
+            grep { m/restrict-ciphers/ } open_actions(
+                '/helper', $checks, {}, {}, $CIPHER, {}, { %$info, sessions => $partial },
+            )->{next}->@*
+        ),
+        'which holds with no record at all, the sweep is what is missing',
+    );
+}
+
+# --- when the offered command may promise the finish ---------------------------------------
+{
+    # the offer must ask the predicate that decides the restriction, not an empty option list
+    my $sessions = {
+        complete => 1,
+        clients => { 'client.admin' => [{ global_id => 7, host => 'a' }] },
+    };
+    my $state = { client_refresh => { 'client.admin' => { session_ids => [99] } } };
+    my $clean = {
+        sessions => $sessions,
+        exported => { 'client.admin' => { key => $NEW } },
+        pve_mon_key => $NEW,
+        service_cipher => $CIPHER,
+        health_checks => {},
+    };
+    ok(
+        finish_after_acks($clean, $state, ['client.admin']),
+        'with the confirmation given, nothing is left and the finish may be offered',
+    );
+
+    my $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        $state,
+        $clean,
+    );
+    is(
+        $actions->{command},
+        '/helper --apply --ack-refreshed client.admin --restrict-ciphers',
+        'the paste command receives the full snapshot and carries the guarded final step',
+    );
+
+    my $mixed = {
+        client_refresh => {
+            'client.admin' => { session_ids => [7] },
+            'client.crash' => { session_ids => [99] },
+        },
+    };
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        $mixed,
+        {
+            %$clean,
+            exported => {
+                %{ $clean->{exported} }, 'client.crash' => { key => $NEW },
+            },
+        },
+    );
+    is_deeply($actions->{waiting}, ['client.admin'], 'the paste-command input retains waiters');
+    is_deeply($actions->{ready}, ['client.crash'], 'and carries every ready confirmation');
+    is(
+        $actions->{command},
+        '/helper --apply --ack-refreshed client.crash',
+        'a waiter keeps the final step out of that command',
+    );
+
+    my $unsafe_entity = q{client.bad;$(touch /root/pwned) 'quoted'};
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        { client_refresh => { $unsafe_entity => { session_ids => [99] } } },
+        {
+            %$clean, exported => { %{ $clean->{exported} }, $unsafe_entity => { key => $NEW } },
+        },
+    );
+    is(
+        $actions->{command},
+        '/helper --apply --ack-refreshed '
+            . PVE::Tools::shellquote($unsafe_entity)
+            . ' --restrict-ciphers',
+        'a cephx entity is shell-quoted before it enters the paste command',
+    );
+
+    my $both_ready = {
+        client_refresh => {
+            'client.admin' => { session_ids => [98] },
+            'client.crash' => { session_ids => [99] },
+        },
+    };
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        $both_ready,
+        {
+            %$clean,
+            exported => {
+                %{ $clean->{exported} }, 'client.crash' => { key => $NEW },
+            },
+        },
+    );
+    is(
+        $actions->{command},
+        '/helper --apply --ack-refreshed client.admin --ack-refreshed client.crash'
+            . ' --restrict-ciphers',
+        'the command includes every ready confirmation before the permitted final step',
+    );
+
+    my $unmanaged = {
+        %$clean, exported => { %{ $clean->{exported} }, 'client.rgw.foo' => { key => $OLD } },
+    };
+    ok(
+        !finish_after_acks($unmanaged, $state, ['client.admin']),
+        'a key nothing here manages still blocks it, though no option covers that key',
+    );
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        $state,
+        $unmanaged,
+    );
+    unlike(
+        $actions->{command},
+        qr/restrict-ciphers/,
+        'an unmanaged key also keeps the final step out of the actual paste command',
+    );
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        {},
+        $unmanaged,
+    );
+    ok(
+        !(grep { m/restrict-ciphers/ } $actions->{next}->@*),
+        'nor is the final step offered on its own while an unmanaged key blocks it',
+    );
+
+    my $service = {
+        %$clean, exported => { %{ $clean->{exported} }, 'osd.3' => { key => $OLD } },
+    };
+    ok(
+        !finish_after_acks($service, $state, ['client.admin']),
+        'and so does a service key on the old cipher',
+    );
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        {},
+        $service,
+    );
+    ok(
+        !(grep { m/restrict-ciphers/ } $actions->{next}->@*),
+        'an old service key also withholds the standalone final step',
+    );
+
+    my $current_run = {
+        %$clean, exported => {
+            %{ $clean->{exported} }, 'client.crash' => { key => $OLD },
+        },
+    };
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        { 'rotate-client-keys' => 1 },
+        {},
+        $CIPHER,
+        $state,
+        $current_run,
+    );
+    unlike(
+        $actions->{command},
+        qr/restrict-ciphers/,
+        'a requested rotation cannot promise the finish before its new record exists',
+    );
+
+    ok(
+        !finish_after_acks({ %$clean, service_cipher => $LEGACY_CIPHER }, $state, ['client.admin']),
+        'the service tickets must have moved as well',
+    );
+
+    ok(
+        !finish_after_acks({ %$clean, pve_mon_key => $OLD }, $state, ['client.admin']),
+        'a stored monitor key on the old cipher blocks it too',
+    );
+
+    my $another = {
+        client_refresh => {
+            'client.admin' => { session_ids => [99] },
+            'client.crash' => { session_ids => [7] },
+        },
+    };
+    ok(
+        !finish_after_acks($clean, $another, ['client.admin']),
+        'a record the run does not confirm keeps the finish out of the command',
+    );
+}
+
 # --- what blocks the cipher restriction --------------------------------------------------------
 {
     my $clean = {
@@ -1227,7 +1533,46 @@ my sub cluster {
         'a key behind several storages names one of them, so the option can be copied as printed',
     );
 
+    is_deeply(
+        $all->{together},
+        ['--rotate-client-keys'],
+        'the bundle offers only what needs no decision, never the admin or a storage key',
+    );
+
     my $wipe = { AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {} };
+    my $offered = open_options($wipe, {}, {}, $CIPHER);
+    like($offered->{next}->[0], qr/^--wipe-rotating-keys:/, 'the wipe is offered as an option');
+    is_deeply(
+        $offered->{together},
+        [],
+        'but never bundled: waiting a few hours instead is a decision of the operator',
+    );
+
+    my $refresh = {
+        client_refresh => { 'client.crash' => { session_ids => [45], rotated => 1 } },
+    };
+    my $connected = {
+        complete => 1,
+        clients => { 'client.crash' => [{ global_id => 45, host => 'node1' }] },
+    };
+    ok(
+        !grep({ m/^--wipe-rotating-keys:/ }
+            open_options($wipe, {}, {}, $CIPHER, $refresh, $connected)->{next}->@*),
+        'the wipe is not offered while its fresh guard sees a recorded consumer',
+    );
+    ok(
+        !grep({ m/^--wipe-rotating-keys:/ }
+            open_options($wipe, {}, {}, $CIPHER, $refresh, { complete => 1, clients => {} })
+                ->{next}->@*),
+        'the wipe is not offered while a refresh record still needs acknowledgment',
+    );
+    ok(
+        !grep({ m/^--wipe-rotating-keys:/ }
+            open_options($wipe, {}, {}, $CIPHER, {}, { complete => 0, clients => {} })->{next}
+                ->@*),
+        'the wipe is not offered while the live session picture is incomplete',
+    );
+
     ok(
         scalar(open_options($wipe, { only => { 'osd.3' => 1 } }, {}, $CIPHER)->{next}->@*),
         "'--only' allows --wipe-rotating-keys once the service cipher is switched",

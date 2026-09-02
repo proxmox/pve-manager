@@ -10,6 +10,7 @@ use JSON;
 use MIME::Base64 qw(decode_base64);
 
 use PVE::Ceph::Services;
+use PVE::Tools ();
 use PVE::Ceph::Tools;
 
 use base 'Exporter';
@@ -605,7 +606,12 @@ sub classify_insecure_clients($checks, $storage_entities = {}) {
 
 # Only the options that can still change something. 'stuck' holds the keys none of them reach, for
 # the caller to report rather than offer.
-sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
+sub open_options(
+    $checks, $opts, $storage_entities,
+    $service_cipher = $CIPHER,
+    $state = {},
+    $sessions = undef,
+) {
     my $clients = classify_insecure_clients($checks, $storage_entities);
     my $done = $opts->{'rotate-storage-key'} // [];
 
@@ -635,17 +641,61 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
         . " database and in the LVM tag it is rebuilt from"
         if $lockbox_open;
 
-    # a run narrowed by '--only' is refused this until the cipher is switched
+    # a rotation this run cannot see the end of is a step of its own, and it comes before the
+    # cipher restriction, which no record may survive
+    my $records = $state->{client_refresh} // {};
+    my $picture = $sessions // { complete => 0, clients => {} };
+    my $stale = stale_consumers($picture, $records);
+    my (@waiting, @ready);
+    for my $entity (sort keys %$records) {
+        my $cleared = defined($records->{$entity}->{cleared});
+        # a confirmed record only becomes visible again when one of its retained IDs returns
+        next if $cleared && !$stale->{$entity};
+
+        my $verdict = ack_decision($entity, $state, $picture, $stale)->{verdict};
+        if (!$cleared && $verdict eq 'accept') {
+            push @ready, $entity;
+        } else {
+            push @waiting, $entity;
+        }
+    }
+
+    # A run narrowed by '--only' is refused the wipe until the service cipher is switched. The
+    # fresh action guard also refuses while the session picture or a refresh record is unresolved,
+    # so do not present the wipe as the next step in that state.
     push @$next,
         "--wipe-rotating-keys: NOT RECOMMENDED; invalidate every service ticket instead of"
         . " waiting a few hours for the old rotating keys to expire; every client and service"
         . " daemon must support '$CIPHER'"
         if $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
         && !$opts->{'wipe-rotating-keys'}
-        && !($opts->{only} && $service_cipher ne $CIPHER);
+        && !($opts->{only} && $service_cipher ne $CIPHER)
+        && (!$sessions || $picture->{complete})
+        && !@waiting
+        && !@ready;
+
+    # The options that only touch what Proxmox VE itself reads can be carried out together
+    # without a decision. Rotating 'client.admin' or a storage key is one, as their consumers
+    # can sit outside this cluster, and so is the wipe, which buys a few hours of waiting for
+    # a round trip of every client in the cluster; both are named but never bundled.
+    my $together = [
+        grep {
+            my $entry = $_;
+            grep { $entry =~ m/^\Q$_\E[: ]/ } (
+                '--rotate-mon-key',
+                '--rotate-client-keys',
+                '--rotate-lockbox-keys',
+                '--restrict-ciphers',
+            )
+        } @$next
+    ];
+    $together = [map { (split(/:/, $_, 2))[0] } @$together];
 
     return {
         next => $next,
+        together => $together,
+        waiting => \@waiting,
+        ready => \@ready,
         stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
         lockbox => $lockbox_open,
         hedge => $hedge,
@@ -657,16 +707,31 @@ sub open_options($checks, $opts, $storage_entities, $service_cipher = $CIPHER) {
 sub open_actions(
     $program, $checks, $opts, $storage_entities, $service_cipher, $state, $info,
 ) {
-    my $open = open_options($checks, $opts, $storage_entities, $service_cipher);
+    my $open = open_options(
+        $checks,
+        $opts,
+        $storage_entities,
+        $service_cipher,
+        $state,
+        $info ? $info->{sessions} : undef,
+    );
     my $finish =
         $info && !$opts->{'restrict-ciphers'} && $checks->{AUTH_INSECURE_KEYS_ALLOWED}
-        ? finish_after_acks($info, $state, [])
+        ? finish_after_acks($info, $state, $open->{ready})
         : 0;
 
-    if ($finish && !scalar($open->{next}->@*)) {
+    if ($finish && !scalar($open->{ready}->@*) && !scalar($open->{next}->@*)) {
         push $open->{next}->@*,
             "--restrict-ciphers: allow only the '$CIPHER' cipher for authentication, once every"
             . " running consumer holds its rotated key";
+        push $open->{together}->@*, '--restrict-ciphers';
+    }
+
+    if (scalar($open->{ready}->@*)) {
+        $open->{command} =
+            "$program --apply "
+            . join(' ', map { "--ack-refreshed " . PVE::Tools::shellquote($_) } $open->{ready}->@*)
+            . ($finish ? ' --restrict-ciphers' : '');
     }
 
     return $open;
