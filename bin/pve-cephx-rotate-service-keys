@@ -2,6 +2,7 @@
 
 use v5.36;
 
+use Cwd ();
 use File::Temp;
 use Fcntl qw(:flock);
 use Getopt::Long;
@@ -3117,13 +3118,16 @@ my sub storage_entities($files) {
     return $res;
 }
 
+# the offered commands are pasted later, from whatever directory the operator is in by then
+my $PROGRAM = Cwd::abs_path($0) // $0;
+
 my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
     reconcile_client_fingerprints(
         $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
     );
 
     return open_actions(
-        $0,
+        $PROGRAM,
         $snapshot->{health_checks},
         $opts,
         $storage_entities,
@@ -3154,7 +3158,7 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
         log_step($_) for $open->{next}->@*;
         if (scalar($open->{together}->@*)) {
             log_text("The ones that need no decision of yours, in one command:");
-            log_step("$0 --apply " . join(' ', $open->{together}->@*));
+            log_step("$PROGRAM --apply " . join(' ', $open->{together}->@*));
         }
         log_text("'pveceph auth status' reports the kernel of every node and which keys are"
                 . " still on the old cipher; the live consumers of a key are named by this run."
