@@ -1277,6 +1277,33 @@ my sub cluster {
         'a key an in-kernel client reads is marked, which is what gates it on the node kernels',
     );
 
+    my $ordered_info = {
+        exported => {
+            'client.admin' => { key => $OLD },
+            'client.alpha' => { key => $OLD },
+            'client.zeta' => { key => $OLD },
+        },
+    };
+    my $ordered_files = {
+        'client.admin' => $files->{'client.admin'},
+        'client.alpha' => [{ store => 'alpha' }],
+        'client.zeta' => [{ store => 'zeta' }],
+    };
+    ($plan) = plan_client_keys(
+        $ordered_info,
+        {},
+        {
+            'rotate-admin-key' => 1,
+            'rotate-storage-key' => [qw(zeta alpha)],
+        },
+        $ordered_files,
+    );
+    is_deeply(
+        [map { $_->{entity} } @$plan],
+        [qw(client.alpha client.zeta client.admin)],
+        'client.admin is planned after other selected users in deterministic order',
+    );
+
     my $repeated = {
         done => { 'client.admin' => 100 },
         rotated => { 'client.admin' => 200 },

@@ -765,7 +765,12 @@ sub plan_client_keys($info, $state, $opts, $files) {
 
     my $plan = [];
     my $warnings = [];
-    for my $entity (sort keys %$wanted) {
+    # 'client.admin' is the broad fallback for the CLI and Ceph storages. Leaving it last
+    # reduces the recovery scope if a dedicated Ceph user rotation fails.
+    for my $entity (
+        sort { ($a eq $ADMIN_ENTITY) <=> ($b eq $ADMIN_ENTITY) || $a cmp $b }
+        keys %$wanted
+    ) {
         if (!$info->{exported}->{$entity}) {
             push @$warnings,
                 "'$entity' ($wanted->{$entity}) has no entry in the authentication database of"
