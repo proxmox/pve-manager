@@ -9,6 +9,7 @@ use Test::More;
 
 use FindBin;
 use PVE::Ceph::KeyMigration qw(
+    manual_promotion_support client_key_stageable staged_records
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
@@ -1891,6 +1892,234 @@ my sub cluster {
         'each fact lands with the OSD it is about, an error stands in for the facts',
     );
     is_deeply(parse_lockbox_output(''), {}, 'no output, no facts');
+}
+
+# --- staged client keys ------------------------------------------------------------------------
+{
+    my $ok = { reached => 1, value => 'false' };
+    my $on = { reached => 1, value => 'true' };
+    my $old = { reached => 1, value => undef };
+    my $gone = { reached => 0, error => 'ssh: connect to host mon-c failed' };
+
+    my $all = manual_promotion_support({ a => $ok, b => $ok, c => $ok }, [qw(a b c)]);
+    is_deeply(
+        $all,
+        { supported => 1, disabled => 1, unsupported => [], unanswered => [] },
+        'every monitor knows the option and has it disabled',
+    );
+
+    my $enabled = manual_promotion_support({ a => $ok, b => $on, c => $ok }, [qw(a b c)]);
+    ok(
+        $enabled->{supported} && !$enabled->{disabled},
+        'one monitor still promoting is supported but not disabled',
+    );
+
+    my $mixed = manual_promotion_support({ a => $ok, b => $old, c => $gone }, [qw(a b c)]);
+    ok(!$mixed->{supported}, 'an old or silent monitor rules staging out');
+    is_deeply($mixed->{unsupported}, ['b'], 'the monitor without the option is named');
+    is_deeply($mixed->{unanswered}, ['c'], 'and so is the one that did not answer');
+
+    my $partial = manual_promotion_support({ a => $ok, b => $ok }, [qw(a b c)]);
+    is_deeply(
+        $partial->{unanswered},
+        ['c'],
+        'a monitor of the map that was never asked counts as unanswered, quorum alone is not enough',
+    );
+    ok(!manual_promotion_support({}, [])->{supported}, 'no monitor map, no support');
+
+    ok(!client_key_stageable('client.crash'), 'a tool key is replaced at once');
+    ok(!client_key_stageable('client.bootstrap-osd'), 'so is a bootstrap key');
+    ok(client_key_stageable('client.admin'), 'client.admin can be staged');
+    ok(client_key_stageable('client.cp'), 'and so can a storage key');
+}
+
+{
+    my $fp = key_fingerprint($NEW);
+    my $state = {
+        staged =>
+            { 'client.admin' => { key => $fp, staged => 100 }, 'client.cp' => { key => $fp } },
+    };
+    my $info = {
+        exported => {
+            'client.admin' => { key => $OLD, pending_key => $NEW },
+            'client.cp' => { key => $NEW },
+        },
+    };
+    is_deeply(
+        staged_records($info, $state),
+        { 'client.admin' => 'waiting', 'client.cp' => 'committed' },
+        'a matching pending key waits for its confirmation, a matching active key was committed',
+    );
+    is_deeply(
+        staged_records({ exported => { 'client.admin' => { key => $OLD } } }, $state),
+        { 'client.admin' => 'lost', 'client.cp' => 'lost' },
+        'a staged key that is neither pending nor active is lost, as is one of a removed entity',
+    );
+    is_deeply(
+        staged_records($info, { staged => { 'client.admin' => { staged => 100 } } }),
+        {},
+        'a record without a fingerprint cannot be judged and is skipped',
+    );
+
+    is_deeply(
+        [
+            unfinished_entities({
+                previous_keys => { 'client.admin' => { saved => 5 } },
+                staged => { 'client.admin' => { key => $fp } },
+            })
+        ],
+        [],
+        'a staged key is open on purpose and not an unfinished rotation',
+    );
+}
+
+{
+    my $files = {
+        'client.admin' =>
+            [{ path => '/etc/pve/priv/ceph.client.admin.keyring', scope => 'cluster' }],
+        'client.crash' =>
+            [{ path => '/etc/pve/ceph/ceph.client.crash.keyring', scope => 'cluster' }],
+    };
+    my $opts = { 'rotate-admin-key' => 1, 'rotate-client-keys' => 1 };
+    my $exported = { 'client.admin' => { key => $OLD }, 'client.crash' => { key => $OLD } };
+
+    my ($plan) = plan_client_keys(
+        { exported => $exported, manual_promotion => { supported => 1 } },
+        {},
+        $opts,
+        $files,
+    );
+    is_deeply(
+        { map { $_->{entity} => $_->{staged} } @$plan },
+        { 'client.admin' => 1, 'client.crash' => 0 },
+        'with every monitor able to hold two keys, client.admin is staged and the tool key replaced',
+    );
+
+    ($plan) = plan_client_keys(
+        { exported => $exported, manual_promotion => { supported => 0 } },
+        {},
+        $opts,
+        $files,
+    );
+    is_deeply(
+        { map { $_->{entity} => $_->{staged} } @$plan },
+        { 'client.admin' => 0, 'client.crash' => 0 },
+        'without that support every key is replaced at once, as before',
+    );
+
+    my $fp = key_fingerprint($NEW);
+    my $waiting = {
+        exported => {
+            'client.admin' => { key => $OLD, pending_key => $NEW },
+            'client.crash' => { key => $NEW },
+        },
+        manual_promotion => { supported => 1 },
+    };
+    my $state = {
+        staged => { 'client.admin' => { key => $fp, written => 101 } },
+        previous_keys => { 'client.admin' => { saved => 5 } },
+        done => { 'client.crash' => 6 },
+    };
+    ($plan) = plan_client_keys($waiting, $state, $opts, $files);
+    is(scalar(@$plan), 0, 'a key waiting for its confirmation is not staged again');
+
+    delete $state->{staged}->{'client.admin'}->{written};
+    ($plan) = plan_client_keys($waiting, $state, $opts, $files);
+    is_deeply(
+        [map { $_->{entity} } @$plan],
+        ['client.admin'],
+        'a staged key whose copies were not all written is planned again to finish them',
+    );
+    ($plan) = plan_client_keys(
+        { %$waiting, manual_promotion => { supported => 0 } },
+        $state,
+        $opts,
+        $files,
+    );
+    is(
+        $plan->[0]->{staged},
+        1,
+        'and stays on the staged path even when the monitors no longer support it',
+    );
+    $state->{staged}->{'client.admin'}->{written} = 101;
+
+    my $lost = {
+        %$waiting,
+        exported => { 'client.admin' => { key => $OLD }, 'client.crash' => { key => $NEW } },
+    };
+    ($plan) = plan_client_keys($lost, $state, $opts, $files);
+    is_deeply([map { $_->{entity} } @$plan], ['client.admin'],
+        'a lost staged key is planned again');
+
+    my $records = { 'client.admin' => { rotated => 1, session_ids => [] } };
+    my $picture = { complete => 1, clients => {} };
+    my $open = open_options(
+        {},
+        {},
+        {},
+        $CIPHER,
+        { client_refresh => $records, staged => { 'client.admin' => { key => $fp } } },
+        $picture,
+    );
+    is_deeply(
+        [$open->{ready}, $open->{waiting}],
+        [[], ['client.admin']],
+        'a staged key whose copies are not all written is not offered for confirmation',
+    );
+    $open = open_options(
+        {},
+        {},
+        {},
+        $CIPHER,
+        {
+            client_refresh => $records,
+            staged => { 'client.admin' => { key => $fp, written => 1 } },
+        },
+        $picture,
+    );
+    is_deeply([$open->{ready}], [['client.admin']], 'once every copy is written it is offered');
+
+    my $insecure = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [{ message => 'entity client.admin using insecure key type: aes' }],
+        },
+    };
+    $open = open_options(
+        $insecure,
+        {},
+        {},
+        $CIPHER,
+        {
+            client_refresh => $records,
+            staged => { 'client.admin' => { key => $fp, written => 1 } },
+        },
+        $picture,
+    );
+    ok(
+        !grep({ m/--rotate-admin-key/ } $open->{next}->@*),
+        'a staged key still on the old cipher is not offered its rotation option again',
+    );
+    $open = open_options($insecure, {}, {}, $CIPHER, {}, $picture);
+    ok(grep({ m/--rotate-admin-key/ } $open->{next}->@*), 'without a staged key it is');
+
+    my $built = build_plan(
+        {
+            exported => $exported,
+            manual_promotion => { supported => 1 },
+            daemons => { mgr => [], mds => [], osd => [] },
+            mon_entry => {},
+            service_cipher => 'aes256k',
+            lockbox => {},
+        },
+        {},
+        { 'rotate-admin-key' => 1, 'restart-daemons' => 1 },
+        $files,
+    );
+    is(
+        $built->{stages_pending_keys},
+        1,
+        'a staged client key needs the preferred cipher claimed like any pending key',
+    );
 }
 
 done_testing();

@@ -17,7 +17,7 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
-    $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
+    $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
@@ -27,6 +27,7 @@ our @EXPORT_OK = qw(
     summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
     cephfs_mount_storages ack_decision finish_after_acks
     classify_insecure_clients open_options open_actions parse_lockbox_output
+    manual_promotion_support client_key_stageable staged_records
 );
 
 our $CIPHER = 'aes256k';
@@ -51,6 +52,10 @@ our $TOOL_CLIENT_KEYS = [
 ];
 
 our $ADMIN_ENTITY = 'client.admin';
+
+# Monitors that know this option can keep a client's old and new key valid side by side while it
+# is disabled; older ones promote a pending key on its first use.
+our $GRACE_OPTION = 'mon_auth_client_pending_key_auto_promote';
 
 sub key_cipher($key) {
     return undef if !defined($key) || $key eq '';
@@ -216,7 +221,8 @@ sub migration_unfinished($state, $entity) {
 
 # Rotated but not written everywhere. An OSD left stopped stays in 'osd metadata', so the recovery
 # walk alone misses some. A lockbox key with a journal entry is finished from that journal before
-# any plan is built, so it is not listed as something the plan has to pick up.
+# any plan is built, so it is not listed as something the plan has to pick up. A staged client key
+# is open on purpose until its consumers are confirmed, and reported through its own record.
 sub unfinished_entities($state) {
     my $started = {
         %{ $state->{rotated} // {} },
@@ -227,8 +233,66 @@ sub unfinished_entities($state) {
     return sort grep {
         $_ eq 'mon.' && $state->{mon_key_complete} ? 0
             : $state->{lockbox}->{$_} ? 0
+            : $state->{staged}->{$_} ? 0
             : migration_unfinished($state, $_)
     } keys %$started;
+}
+
+# Whether every monitor can keep a client's old and new key valid side by side. The option only
+# exists on patched monitors, and a single monitor that still promotes on first use would end
+# the grace period on its own, so every monitor of the map has to answer, not only the quorum.
+# $reports is { <mon id> => { reached, value } } from each monitor's admin socket, where 'value'
+# is undef on a monitor that does not know the option.
+sub manual_promotion_support($reports, $monmap) {
+    my $res = { supported => 0, disabled => 0, unsupported => [], unanswered => [] };
+    return $res if ref($monmap) ne 'ARRAY' || !scalar(@$monmap);
+
+    my $values = {};
+    for my $mon (sort @$monmap) {
+        my $report = ($reports // {})->{$mon};
+        if (ref($report) ne 'HASH' || !$report->{reached}) {
+            push $res->{unanswered}->@*, $mon;
+        } elsif (!defined($report->{value}) || $report->{value} !~ m/^(?:true|false)$/) {
+            push $res->{unsupported}->@*, $mon;
+        } else {
+            $values->{$mon} = $report->{value};
+        }
+    }
+    return $res if scalar($res->{unanswered}->@*) || scalar($res->{unsupported}->@*);
+
+    $res->{supported} = 1;
+    $res->{disabled} = (grep { $_ ne 'false' } values %$values) ? 0 : 1;
+    return $res;
+}
+
+# Ceph's own tools read a keyring for every command, so nothing keeps the old bootstrap or crash
+# key in memory; only a key that long-running clients load is worth a grace period.
+sub client_key_stageable($entity) {
+    return (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? 0 : 1;
+}
+
+# What became of the keys this script staged, from the auth export: { <entity> => verdict }
+#   waiting    the pending key is still the staged one, the rotation awaits its confirmation
+#   committed  the staged key is the active key now, so it was promoted, by this script or by hand
+#   lost       the staged key is gone without becoming active, so every copy written holds a key
+#              the monitors no longer accept, and the rotation has to be redone
+sub staged_records($info, $state) {
+    my $verdicts = {};
+    for my $entity (sort keys %{ $state->{staged} // {} }) {
+        my $record = $state->{staged}->{$entity};
+        next if ref($record) ne 'HASH' || !defined($record->{key});
+
+        my $entry = ($info->{exported} // {})->{$entity};
+        my $pending = $entry ? $entry->{pending_key} : undef;
+        if (defined($pending) && length($pending) && key_fingerprint($pending) eq $record->{key}) {
+            $verdicts->{$entity} = 'waiting';
+        } elsif ($entry && key_fingerprint($entry->{key} // '') eq $record->{key}) {
+            $verdicts->{$entity} = 'committed';
+        } else {
+            $verdicts->{$entity} = 'lost';
+        }
+    }
+    return $verdicts;
 }
 
 # Keep every node that reports a data directory for an ID. Silently picking one would direct a
@@ -614,16 +678,27 @@ sub open_options(
 ) {
     my $clients = classify_insecure_clients($checks, $storage_entities);
     my $done = $opts->{'rotate-storage-key'} // [];
+    # a key staged with every copy written is still on the old cipher, but its next step is the
+    # confirmation, not the rotation option again
+    my $awaiting = sub($entity) {
+        my $record = ($state->{staged} // {})->{$entity};
+        return $record && $record->{written} ? 1 : 0;
+    };
 
     my ($next, $hedge) = ([], 0);
     push @$next, "--rotate-client-keys: the bootstrap keys and 'client.crash'"
         if scalar($clients->{tool}->@*) && !$opts->{'rotate-client-keys'};
-    if (scalar($clients->{admin}->@*) && !$opts->{'rotate-admin-key'}) {
+    if (
+        scalar($clients->{admin}->@*)
+        && !$opts->{'rotate-admin-key'}
+        && !$awaiting->($ADMIN_ENTITY)
+    ) {
         push @$next,
             "--rotate-admin-key: '$ADMIN_ENTITY' and the copies of it that Proxmox VE keeps";
         $hedge = 1;
     }
     for my $entity ($clients->{storage}->@*) {
+        next if $awaiting->($entity);
         my $stores = $storage_entities->{$entity};
         next if grep {
             my $store = $_;
@@ -653,7 +728,10 @@ sub open_options(
         next if $cleared && !$stale->{$entity};
 
         my $verdict = ack_decision($entity, $state, $picture, $stale)->{verdict};
-        if (!$cleared && $verdict eq 'accept') {
+        # a staged key whose copies are not all written yet must not be committed: the
+        # confirmation would drop the key those copies still hold
+        my $unwritten = $state->{staged}->{$entity} && !$state->{staged}->{$entity}->{written};
+        if (!$cleared && $verdict eq 'accept' && !$unwritten) {
             push @ready, $entity;
         } else {
             push @waiting, $entity;
@@ -765,6 +843,8 @@ sub plan_client_keys($info, $state, $opts, $files) {
 
     my $plan = [];
     my $warnings = [];
+    my $staged = staged_records($info, $state);
+    my $grace = ($info->{manual_promotion} // {})->{supported} ? 1 : 0;
     # 'client.admin' is the broad fallback for the CLI and Ceph storages. Leaving it last
     # reduces the recovery scope if a dedicated Ceph user rotation fails.
     for my $entity (
@@ -777,10 +857,19 @@ sub plan_client_keys($info, $state, $opts, $files) {
                 . " this cluster, so it is left alone";
             next;
         }
+        # a key staged by an earlier run with every copy written stays open on purpose until its
+        # consumers are confirmed; one whose copies are not all written is planned again, and the
+        # staging reuses the pending key rather than staging a second one over it
+        next
+            if ($staged->{$entity} // '') eq 'waiting'
+            && $state->{staged}->{$entity}->{written};
         # 'rotated' without 'done' means copies are missing; with 'done' the kernel check below
         # would refuse a key nobody is changing
         next if !needs_rotation($info, $entity) && !migration_unfinished($state, $entity);
 
+        # a key this script staged is finished on the staged path whatever the monitors report
+        # now: replacing it at once would leave a third key state behind the copies
+        my $owned = ($staged->{$entity} // '') eq 'waiting';
         my $mine = $files->{$entity} // [];
         push @$plan,
             {
@@ -788,6 +877,7 @@ sub plan_client_keys($info, $state, $opts, $files) {
                 files => $mine,
                 kernel => (grep { $_->{kernel} } @$mine) ? 1 : 0,
                 reason => $wanted->{$entity},
+                staged => $owned || ($grace && client_key_stageable($entity)) ? 1 : 0,
             };
     }
 
@@ -907,8 +997,10 @@ sub build_plan($info, $state, $opts, $files) {
 
     # a pending key takes its cipher from 'auth_preferred_cipher', so any path that stages one
     # needs that setting pointed at the new cipher for the run
-    $plan->{stages_pending_keys} = (!$opts->{'restart-daemons'} && scalar($plan->{daemons}->@*))
-        || scalar($plan->{lockbox_keys}->@*) ? 1 : 0;
+    $plan->{stages_pending_keys} =
+        (!$opts->{'restart-daemons'} && scalar($plan->{daemons}->@*))
+        || scalar($plan->{lockbox_keys}->@*)
+        || scalar(grep { $_->{staged} } @$clients) ? 1 : 0;
 
     return $plan;
 }
