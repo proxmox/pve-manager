@@ -672,15 +672,31 @@ is(
         'namely every client connected as that key right now',
     );
 
+    my $empty_measurement =
+        ack_decision('client.admin', $unmeasured, { complete => 1, clients => {} }, {});
     is(
-        ack_decision('client.admin', $unmeasured, { complete => 1, clients => {} }, {})->{verdict},
-        'accept',
-        'an unmeasured rotation with nothing connected is the operator\'s word to give',
+        $empty_measurement->{verdict},
+        'measure',
+        'an unmeasured rotation needs a complete measurement even when no client is connected',
+    );
+    is_deeply($empty_measurement->{live}, [], 'the empty live-client measurement is explicit');
+
+    my $incomplete_measurement = {
+        client_refresh => {
+            'client.admin' => { session_ids => [], measurement_incomplete => 1 },
+        },
+    };
+    is(
+        ack_decision(
+            'client.admin', $incomplete_measurement, { complete => 1, clients => {} }, {},
+        )->{verdict},
+        'measure',
+        'an explicitly incomplete record also needs the complete empty measurement',
     );
     is(
         ack_decision('client.admin', $measured, { complete => 1, clients => {} }, {})->{verdict},
         'accept',
-        'and so is a measured one whose recorded consumers are gone',
+        'a measured record whose recorded consumers are gone can be confirmed',
     );
 }
 
@@ -703,7 +719,7 @@ is(
     my $open = open_options($checks, {}, {}, $CIPHER, $waiting, $sessions);
     is_deeply($open->{waiting}, ['client.admin'], 'a record with a connected consumer waits');
     ok(
-        !(grep { m/restrict-ciphers|ack-refreshed/ } $open->{next}->@*),
+        !(grep { m/restrict-ciphers|confirm-clients-refreshed/ } $open->{next}->@*),
         'neither the confirmation nor the restriction is offered while it does',
     );
 
@@ -718,6 +734,22 @@ is(
     );
     is_deeply($open->{ready}, [], 'a measure verdict is never presented as ready');
     ok(!defined($open->{command}), 'no acknowledgment command is generated for a measurement');
+
+    $open = open_actions(
+        '/helper',
+        $checks,
+        {},
+        {},
+        $CIPHER,
+        $unmeasured,
+        { %$info, sessions => { complete => 1, clients => {} } },
+    );
+    is_deeply(
+        $open->{waiting},
+        ['client.admin'],
+        'a complete empty snapshot is still the first measurement of an unmeasured record',
+    );
+    ok(!defined($open->{command}), 'that first empty measurement is not offered as confirmation');
 
     my $ready = { client_refresh => { 'client.admin' => { session_ids => [99] } } };
     $open = open_options($checks, {}, {}, $CIPHER, $ready, $sessions);
@@ -812,7 +844,7 @@ is(
     );
     is(
         $actions->{command},
-        '/helper --apply --ack-refreshed client.admin --restrict-ciphers',
+        '/helper --apply --confirm-clients-refreshed client.admin --restrict-ciphers',
         'the paste command receives the full snapshot and carries the guarded final step',
     );
 
@@ -840,7 +872,7 @@ is(
     is_deeply($actions->{ready}, ['client.crash'], 'and carries every ready confirmation');
     is(
         $actions->{command},
-        '/helper --apply --ack-refreshed client.crash',
+        '/helper --apply --confirm-clients-refreshed client.crash',
         'a waiter keeps the final step out of that command',
     );
 
@@ -858,7 +890,7 @@ is(
     );
     is(
         $actions->{command},
-        '/helper --apply --ack-refreshed '
+        '/helper --apply --confirm-clients-refreshed '
             . PVE::Tools::shellquote($unsafe_entity)
             . ' --restrict-ciphers',
         'a cephx entity is shell-quoted before it enters the paste command',
@@ -886,7 +918,7 @@ is(
     );
     is(
         $actions->{command},
-        '/helper --apply --ack-refreshed client.admin --ack-refreshed client.crash'
+        '/helper --apply --confirm-clients-refreshed client.admin --confirm-clients-refreshed client.crash'
             . ' --restrict-ciphers',
         'the command includes every ready confirmation before the permitted final step',
     );
@@ -1055,7 +1087,7 @@ is(
     );
     like(
         $blockers->[0],
-        qr/awaits '--ack-refreshed client.crash'/,
+        qr/awaits '--confirm-clients-refreshed client.crash'/,
         'a rotation record asks for the acknowledgment, a consumer may be invisible',
     );
 
@@ -1067,7 +1099,7 @@ is(
     );
     like(
         $blockers->[0],
-        qr/awaits '--ack-refreshed client.crash'/,
+        qr/awaits '--confirm-clients-refreshed client.crash'/,
         'a measured record is no different, session absence proves nothing',
     );
 

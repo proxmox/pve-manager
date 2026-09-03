@@ -442,7 +442,7 @@ sub ack_decision($entity, $state, $sessions, $stale) {
 
     if ($mark->{measurement_incomplete} || !defined($mark->{session_ids})) {
         my $live = ($sessions->{clients} // {})->{$entity} // [];
-        return { verdict => 'measure', live => $live } if scalar(@$live);
+        return { verdict => 'measure', live => $live };
     }
 
     return { verdict => 'accept' };
@@ -510,7 +510,7 @@ sub restrict_blockers($info, $state) {
         # a consumer can keep its IO on established connections without any monitor session,
         # so its absence from the sweep proves nothing; only the operator closes a record
         push @$blockers,
-            "the rotation of '$entity' awaits '--ack-refreshed $entity' once every consumer"
+            "the rotation of '$entity' awaits '--confirm-clients-refreshed $entity' once every consumer"
             . " of it was refreshed";
     }
     push @$blockers, "the stored 'mon.' key could not be read, see '--rotate-mon-key'"
@@ -728,9 +728,10 @@ sub open_actions(
     }
 
     if (scalar($open->{ready}->@*)) {
-        $open->{command} =
-            "$program --apply "
-            . join(' ', map { "--ack-refreshed " . PVE::Tools::shellquote($_) } $open->{ready}->@*)
+        $open->{command} = "$program --apply "
+            . join(' ',
+                map { "--confirm-clients-refreshed " . PVE::Tools::shellquote($_) }
+                $open->{ready}->@*)
             . ($finish ? ' --restrict-ciphers' : '');
     }
 

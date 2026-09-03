@@ -374,7 +374,7 @@ sub migrated_info {
     my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
     my $verdict = $HOOKS->{preflight}->(
         migrated_info(picture(1)),
-        { apply => 1, 'ack-refreshed' => ['client.unknown'] },
+        { apply => 1, 'confirm-clients-refreshed' => ['client.unknown'] },
         0,
         $state,
     );
@@ -440,7 +440,7 @@ sub migrated_info {
         local *main::file_set_contents = sub { push @saved, [@_] };
         $verdict = $HOOKS->{preflight}->(
             migrated_info(picture(0, 45)),
-            { apply => 1, 'ack-refreshed' => ['client.crash'] },
+            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
             0,
             $state,
         );
@@ -499,7 +499,7 @@ sub migrated_info {
             migrated_info(picture(1, 40)),
             {
                 apply => 1,
-                'ack-refreshed' => ['client.crash', 'client.crash'],
+                'confirm-clients-refreshed' => ['client.crash', 'client.crash'],
             },
             0,
             $state,
@@ -515,6 +515,61 @@ sub migrated_info {
     ok(
         !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
         'the duplicate cannot accept the record after measuring it in the same run',
+    );
+}
+
+{
+    my $state = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.crash' => { rotated => 1, measurement_incomplete => 1 },
+        },
+    };
+    my (@saved, $output);
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $verdict = $HOOKS->{preflight}->(
+            migrated_info(picture(1)),
+            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
+            0,
+            $state,
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a singular confirmation first records a complete empty measurement');
+    is_deeply(
+        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        [],
+        'the empty measurement is explicit in the refresh record',
+    );
+    ok(
+        !$state->{client_refresh}->{'client.crash'}->{measurement_incomplete}
+            && !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        'the complete measurement is durable without closing the record',
+    );
+    like(
+        $output,
+        qr/needed a first complete measurement; no client is currently connected.*complete empty measurement is now recorded.*Repeat the confirmation/s,
+        'the refusal describes an empty measurement grammatically',
+    );
+
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        $verdict = $HOOKS->{preflight}->(
+            migrated_info(picture(1)),
+            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
+            0,
+            $state,
+        );
+    }
+    cmp_ok($verdict, '>=', 0, 'repeating the singular confirmation can close the measured record');
+    ok(
+        defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        'the repeated confirmation closes it',
     );
 }
 
@@ -909,7 +964,7 @@ sub wipe_monitor_picture {
     };
     like(
         $@,
-        qr/refusing to restrict.*awaits '--ack-refreshed client\.crash'/s,
+        qr/refusing to restrict.*awaits '--confirm-clients-refreshed client\.crash'/s,
         'a later no-session restriction cannot reuse the superseded acknowledgment',
     );
 }
@@ -966,6 +1021,44 @@ sub wipe_monitor_picture {
         qr/refusing to restrict.*service tickets still use the 'aes' cipher/s,
         'a fresh old service cipher also blocks execution after preflight',
     );
+}
+
+{
+    my $help = $HOOKS->{usage}->();
+    like($help, qr/--confirm-clients-refreshed USER/, 'help uses the public USER placeholder');
+    unlike(
+        $help,
+        qr/--confirm-clients-refreshed ENTITY/,
+        'help does not expose the internal entity term for the per-user option',
+    );
+    my ($per_user_help) =
+        $help =~ m/(--confirm-clients-refreshed USER.*?)(?=\n  --restrict-ciphers)/s;
+    like(
+        $per_user_help // '',
+        qr/disconnected consumers.*key copies.*outside\s+Proxmox VE/s,
+        'per-user help states the trust boundary outside Proxmox VE',
+    );
+
+    {
+        local @ARGV = ('--ack-refreshed', 'client.cp');
+        open(my $stderr, '>', \my $errors) or die $!;
+        local *STDERR = $stderr;
+        my ($opts, $status) = $HOOKS->{parse_options}->();
+        is($status, 1, 'the obsolete option is rejected by the parser');
+        ok(!defined($opts), 'a rejected obsolete option produces no option set');
+    }
+
+    for my $case (
+        [
+            [qw(--confirm-clients-refreshed client.cp)],
+            qr/confirm-clients-refreshed.*needs '--apply'/,
+            'the per-user confirmation requires apply',
+        ],
+    ) {
+        local @ARGV = $case->[0]->@*;
+        my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
+        like($err, $case->[1], $case->[2]);
+    }
 }
 
 done_testing();

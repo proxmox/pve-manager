@@ -1255,7 +1255,7 @@ my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef
     if (!$opts->{force}) {
         die "refusing to $action: "
             . join('; ', @$blockers)
-            . ". Refresh the consumers, close each record with '--ack-refreshed', or pass"
+            . ". Refresh the consumers, close each record with '--confirm-clients-refreshed', or pass"
             . " '--force' to continue anyway.\n";
     }
     log_warn("Continuing to $action although a client may be stopped, as '--force' was"
@@ -1276,9 +1276,10 @@ my sub restrict_wanted($info, $opts) {
 # first; every other client key does.
 my sub confirm_hint($entity) {
     return "only Ceph's own tools read it and none keeps it loaded, so confirm with"
-        . " '--ack-refreshed $entity'"
+        . " '--confirm-clients-refreshed $entity'"
         if grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*;
-    return "confirm with '--ack-refreshed $entity' once every consumer of it was refreshed";
+    return
+        "confirm with '--confirm-clients-refreshed $entity' once every consumer of it was refreshed";
 }
 
 my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
@@ -1339,7 +1340,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     my $ack_refused = 0;
     my $ack_seen = {};
-    for my $entity (grep { !$ack_seen->{$_}++ } @{ $opts->{'ack-refreshed'} // [] }) {
+    for my $entity (grep { !$ack_seen->{$_}++ } @{ $opts->{'confirm-clients-refreshed'} // [] }) {
         my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
         my $verdict = $decision->{verdict};
 
@@ -1350,7 +1351,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         }
         if ($verdict eq 'connected') {
             my $held = $decision->{held};
-            log_fail("not accepting '--ack-refreshed $entity': "
+            log_fail("not accepting '--confirm-clients-refreshed $entity': "
                 . scalar(@$held)
                 . " recorded client(s) of it are still connected ("
                 . session_hosts($held)
@@ -1360,8 +1361,9 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             next;
         }
         if ($verdict eq 'incomplete') {
-            log_fail("not accepting '--ack-refreshed $entity': not every monitor answered the"
-                . " session query, so a consumer of it could be connected unseen");
+            log_fail(
+                "not accepting '--confirm-clients-refreshed $entity': not every monitor answered the"
+                    . " session query, so a consumer of it could be connected unseen");
             $ack_refused = 1;
             next;
         }
@@ -1375,22 +1377,28 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                 $info->{sessions}, $entity, 1,
             );
             save_state($state);
-            log_fail("not accepting '--ack-refreshed $entity' yet: its rotation was never"
-                . " measured, so the "
-                . scalar(@$live)
-                . " client(s) connected as it right now ("
-                . session_hosts($live)
-                . ") are now recorded as possibly holding the previous key. Refresh them, then"
-                . " confirm again; the confirmation then covers only consumers this run cannot"
-                . " see.");
+            my $count = scalar(@$live);
+            my $measurement =
+                $count
+                ? "$count currently connected "
+                . ($count == 1 ? 'client is' : 'clients are')
+                . " now recorded as possibly holding the previous key ("
+                . session_hosts($live) . ")"
+                : "no client is currently connected as it, and that complete empty measurement"
+                . " is now recorded";
+            log_fail("not accepting '--confirm-clients-refreshed $entity' yet: its rotation"
+                . " needed a first complete measurement; $measurement. Repeat the confirmation"
+                . " after refreshing any recorded clients; it then covers only consumers this"
+                . " run cannot see.");
             $ack_refused = 1;
             next;
         }
 
         # what is left are consumers no run can see: disconnected ones, and copies of the key on
         # hosts Proxmox VE does not manage
-        log_warn("accepting '--ack-refreshed $entity': every consumer of it that this run can"
-            . " see is refreshed, and you confirm the same for those it cannot see");
+        log_warn(
+            "accepting '--confirm-clients-refreshed $entity': every consumer of it that this run can"
+                . " see is refreshed, and you confirm the same for those it cannot see");
         my $mark = $state->{client_refresh}->{$entity};
         $mark->{cleared} = time();
         $mark->{acknowledged} = time();
@@ -1411,7 +1419,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             . " later than its current monitor ticket's expiry, within three days by default."
             . " Existing data connections may work longer. Live-migrate those VMs, remount"
             . " CephFS mounts, or restart the consumers, then run this again and close the record"
-            . " with '--ack-refreshed'.");
+            . " with '--confirm-clients-refreshed'.");
     }
     if ($info->{sessions}->{complete}) {
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
@@ -3070,7 +3078,7 @@ my sub restrict_ciphers(
         if (!$opts->{force}) {
             die "refusing to restrict the allowed ciphers: "
                 . join('; ', @$blockers)
-                . ". Refresh the consumers, close each record with '--ack-refreshed', or pass"
+                . ". Refresh the consumers, close each record with '--confirm-clients-refreshed', or pass"
                 . " '--force' to continue anyway.\n";
         }
         log_warn("Restricting the allowed ciphers although a client may be stopped, as"
@@ -3298,10 +3306,11 @@ and client keys require their rotation options. Without '--apply', this only pri
                               Proxmox VE keeps
   --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
                               user. May be given more than once
-  --ack-refreshed ENTITY      needs '--apply'. Confirm that every consumer of a rotated
-                              client key that this run cannot see was refreshed. Refused
-                              while a recorded consumer is connected; a returning one
-                              reopens the record
+  --confirm-clients-refreshed USER
+                              needs '--apply'. Confirm that all disconnected consumers of one
+                              rotated Ceph user key were refreshed and all key copies outside
+                              Proxmox VE were updated. Refused while a recorded consumer is
+                              connected; a returning one reopens the record
   --restrict-ciphers          allow only the 'aes256k' cipher for authentication, the final
                               step; refused while any key or live consumer still depends on
                               the old cipher
@@ -3423,7 +3432,7 @@ my sub parse_options() {
         'rotate-lockbox-keys',
         'rotate-storage-key=s@',
         'restrict-ciphers',
-        'ack-refreshed=s@',
+        'confirm-clients-refreshed=s@',
         'help|h',
     )) {
         print STDERR usage();
@@ -3454,8 +3463,8 @@ my sub parse_options() {
 
     die "'--timeout' needs a positive number of seconds\n" if $opts->{timeout} < 1;
 
-    die "'--ack-refreshed' changes what the next run may do, so it needs '--apply'\n"
-        if scalar(@{ $opts->{'ack-refreshed'} // [] }) && !$opts->{apply};
+    die "'--confirm-clients-refreshed' changes what the next run may do, so it needs '--apply'\n"
+        if scalar(@{ $opts->{'confirm-clients-refreshed'} // [] }) && !$opts->{apply};
 
     die "this script must run as root\n" if $> != 0;
 
@@ -3933,6 +3942,8 @@ sub key_migration_test_hooks {
         open_actions_from_snapshot => \&open_actions_from_snapshot,
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
+        usage => \&usage,
+        parse_options => \&parse_options,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,
         wipe_rotating_keys => \&wipe_rotating_keys,
