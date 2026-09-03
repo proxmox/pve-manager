@@ -10,6 +10,10 @@ Ext.define('pve-ceph-warnings', {
         'muteValue',
         'muteIcon',
         'muteLabel',
+        'cephxMigration',
+        'cephxHelpLink',
+        'cephxHelpLabel',
+        'hasActions',
     ],
     idProperty: 'id',
 });
@@ -17,43 +21,48 @@ Ext.define('pve-ceph-warnings', {
 // Ceph reports the same cipher change through several checks, with a detail that lists the
 // affected entities but not what to do about them. Keyed by the exact check, so the unrelated
 // AUTH_INSECURE_GLOBAL_ID_RECLAIM* checks keep ceph's own text.
-const CEPHX_CIPHER_LEAD = gettext(
-    'Ceph Squid 19.2.6 and Ceph Tentacle 20.2.4 report cephx keys that still use the old aes' +
-        ' cipher as insecure, until they are migrated to aes256k. Storage and the daemons keep' +
-        ' working in the meantime.',
+const CEPHX_CIPHER_STATUS_HINT = gettext(
+    'Cephx key migration checks are active. By themselves, they do not indicate unavailable' +
+        ' storage, failed services, or degraded data.',
 );
 
-const CEPHX_MIGRATE_SERVICE_KEYS = gettext(
-    'Run /usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys on one node to see' +
-        ' what it would do, then again with --apply to migrate the manager, metadata server' +
-        ' and OSD keys, which clears this.',
-);
+// The onlineHelp property makes the local documentation index include this subsection.
+const CEPHX_CIPHER_HELP = {
+    onlineHelp: 'pveceph_cephx_migration',
+};
+
+const cephxMigrationHintHtml = function () {
+    let hint = Ext.htmlEncode(CEPHX_CIPHER_STATUS_HINT);
+    let helpLink = Ext.htmlEncode(Proxmox.Utils.get_help_link(CEPHX_CIPHER_HELP.onlineHelp));
+    let helpLabel = Ext.htmlEncode(gettext('Cephx migration guide'));
+
+    return (
+        '<i class="fa fa-fw fa-info-circle info-blue" aria-hidden="true"></i>' +
+        `${hint} <a target="_blank" rel="noopener noreferrer" href="${helpLink}">${helpLabel}</a>`
+    );
+};
 
 const CEPHX_CIPHER_HOWTO = {
-    AUTH_INSECURE_SERVICE_KEY_TYPE: CEPHX_MIGRATE_SERVICE_KEYS,
-    AUTH_INSECURE_SERVICE_TICKETS: CEPHX_MIGRATE_SERVICE_KEYS,
+    AUTH_INSECURE_SERVICE_KEY_TYPE: gettext(
+        'Use the Cephx migration helper to migrate service daemon keys.',
+    ),
+    AUTH_INSECURE_SERVICE_TICKETS: gettext(
+        'Use the Cephx migration helper to switch service tickets to aes256k.',
+    ),
     AUTH_INSECURE_CLIENT_KEY_TYPE: gettext(
-        'Client keys only move when asked for. Pass --rotate-client-keys to the migration' +
-            ' script for the keys that only Ceph reads, which needs no particular kernel.' +
-            ' --rotate-admin-key and --rotate-storage-key NAME cover the keys a storage uses,' +
-            ' and an in-kernel RBD or CephFS client needs kernel 7.0 or newer to read those' +
-            ' once they move. A key an encrypted OSD created before the upgrade uses cannot' +
-            ' move at all, and then muting this check is the way out.',
+        'Use the migration helper for cluster-owned keys and keys of compatible Ceph users.' +
+            ' Leave user keys required by incompatible consumers unchanged.',
     ),
     AUTH_INSECURE_KEYS_ALLOWED: gettext(
-        'The monitors have to keep accepting the old cipher while any key still uses it. This' +
-            ' clears once every service and client key is migrated and the old cipher is' +
-            ' dropped from auth_allowed_ciphers, which the documentation covers.',
+        'Keep aes enabled while any key or consumer still needs it. Restrict the ciphers only' +
+            ' after the migration helper reports no blocker.',
     ),
     AUTH_INSECURE_KEYS_CREATABLE: gettext(
-        'The monitors still create keys with the old cipher, which they do as long as they' +
-            ' accept it. Set mon_auth_allow_insecure_key to false to clear this on its own,' +
-            ' once nothing needs a key that older kernel clients can read.',
+        'Finish the migration after no key or consumer needs aes.',
     ),
     AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE: gettext(
-        'The monitors build these from the cipher they hand out service tickets with, so this' +
-            ' clears on its own about three hours after that switched over, which the last' +
-            ' step of the migration does.',
+        'This usually clears within a few hours after the monitors start issuing aes256k' +
+            ' service tickets.',
     ),
 };
 
@@ -224,12 +233,16 @@ Ext.define('PVE.node.CephStatus', {
                                 data.muteIcon = data.muted ? 'fa-bell' : 'fa-bell-slash';
                                 data.muteLabel = data.muted ? gettext('Unmute') : gettext('Mute');
                                 let howto = CEPHX_CIPHER_HOWTO[key];
+                                data.cephxMigration = !!howto;
                                 if (howto) {
+                                    data.cephxHelpLink = Proxmox.Utils.get_help_link(
+                                        CEPHX_CIPHER_HELP.onlineHelp,
+                                    );
+                                    data.cephxHelpLabel = gettext('Cephx migration guide');
                                     // ahead of ceph's own detail, which would push this out of view
-                                    data.detail =
-                                        `${CEPHX_CIPHER_LEAD} ${howto}` +
-                                        (data.detail ? `\n\n${data.detail}` : '');
+                                    data.detail = howto + (data.detail ? `\n\n${data.detail}` : '');
                                 }
+                                data.hasActions = data.cephxMigration || data.canMute;
                                 data.noDetails = data.detail.length === 0;
                                 data.detailsCls = data.detail.length === 0 ? 'pmx-opacity-75' : '';
                                 if (data.detail.length === 0) {
@@ -332,8 +345,13 @@ Ext.define('PVE.node.CephStatus', {
                                 '<pre class="pve-ceph-warning-detail {detailsCls}">',
                                 '{detail:htmlEncode}',
                                 '</pre>',
-                                '<tpl if="canMute">',
+                                '<tpl if="hasActions">',
                                 '<div class="pve-ceph-warning-actions">',
+                                '<tpl if="cephxMigration">',
+                                '<a target="_blank" rel="noopener noreferrer"',
+                                ' href="{cephxHelpLink:htmlEncode}">{cephxHelpLabel:htmlEncode}</a>',
+                                '</tpl>',
+                                '<tpl if="canMute">',
                                 // ExtJS' own button markup, so that both themes style it
                                 '<a class="x-btn x-unselectable x-btn-default-toolbar-small',
                                 ' pve-ceph-warning-action" role="button"',
@@ -346,6 +364,7 @@ Ext.define('PVE.node.CephStatus', {
                                 '<span class="x-btn-inner x-btn-inner-default-toolbar-small">',
                                 '{muteLabel:htmlEncode}',
                                 '</span></span></span></a>',
+                                '</tpl>',
                                 '</div>',
                                 '</tpl>',
                             ],
@@ -481,8 +500,13 @@ Ext.define('PVE.node.CephStatus', {
         var rec = records[0];
         me.status = rec.data;
 
+        let checks = rec.data.health?.checks || {};
+        let showCephxMigrationHint = Object.keys(checks).some((key) => !!CEPHX_CIPHER_HOWTO[key]);
+
         // add health panel
-        me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
+        let overallHealth = PVE.Utils.render_ceph_health(rec.data.health || {});
+        overallHealth.hintHtml = showCephxMigrationHint ? cephxMigrationHintHtml() : '';
+        me.down('#overallhealth').updateHealth(overallHealth);
         me.down('#warnings').updateHealth(rec.data.health || {}); // add errors to gridstore
 
         me.getComponent('services').updateAll(me.metadata || {}, rec.data);
