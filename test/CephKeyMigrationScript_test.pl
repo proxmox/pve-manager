@@ -1232,6 +1232,190 @@ sub run_staging {
 }
 
 {
+
+    package AggregateConfirmationRados;
+
+    sub new {
+        my ($class, @entities) = @_;
+        return bless {
+            commands => [],
+            committed => [],
+            entries => {
+                map {
+                    $_ => { entity => $_, key => $main::OLD, pending_key => $main::NEW }
+                } @entities
+            },
+        }, $class;
+    }
+
+    sub mon_command {
+        my ($self, $args) = @_;
+        push $self->{commands}->@*, {%$args};
+        my $entity = $args->{entity};
+        if ($args->{prefix} eq 'auth get') {
+            return [{ $self->{entries}->{$entity}->%* }];
+        }
+        if ($args->{prefix} eq 'auth commit-pending') {
+            if (($self->{fail_commit} // '') eq $entity) {
+                delete $self->{fail_commit} if $self->{fail_once};
+                die "simulated commit failure for '$entity'\n";
+            }
+            $self->{entries}->{$entity}->{key} =
+                delete $self->{entries}->{$entity}->{pending_key};
+            push $self->{committed}->@*, $entity;
+            return {};
+        }
+        die "unexpected monitor command '$args->{prefix}'\n";
+    }
+}
+
+sub aggregate_fixture {
+    my ($sessions, @entities) = @_;
+    my $rados = AggregateConfirmationRados->new(@entities);
+    my $state = {
+        client_keys_seen => { map { $_ => key_fingerprint($OLD) } @entities },
+        client_refresh => {},
+        staged => {},
+    };
+    for my $index (0 .. $#entities) {
+        my $entity = $entities[$index];
+        $state->{client_refresh}->{$entity} = { rotated => 1, session_ids => [100 + $index] };
+        $state->{staged}->{$entity} = { key => key_fingerprint($NEW), written => 1 };
+    }
+    my $info = migrated_info($sessions);
+    $info->{exported} = { map { $_ => { $rados->{entries}->{$_}->%* } } @entities };
+    $info->{rados} = $rados;
+    return ($rados, $info, $state);
+}
+
+sub run_aggregate_confirmation {
+    my ($info, $state) = @_;
+    no warnings qw(once redefine);
+    local *main::file_set_contents = sub { };
+    return $HOOKS->{preflight}->(
+        $info, { apply => 1, 'confirm-all-clients-refreshed' => 1 }, 0, $state, {},
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.store', 'client.admin');
+    my $verdict = run_aggregate_confirmation($info, $state);
+    cmp_ok($verdict, '>=', 0, 'the aggregate accepts every ready open record');
+    is_deeply(
+        $rados->{committed},
+        ['client.store', 'client.admin'],
+        'all staged keys are committed with client.admin last',
+    );
+    ok(
+        !scalar(keys $state->{staged}->%*)
+            && defined($state->{client_refresh}->{'client.store'}->{cleared})
+            && defined($state->{client_refresh}->{'client.admin'}->{cleared}),
+        'every staged key is settled and every refresh record is closed',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.ready client.blocked));
+    $info->{sessions}->{clients}->{'client.blocked'} =
+        [{ global_id => 101, host => 'node-b' }];
+    my $verdict = run_aggregate_confirmation($info, $state);
+    cmp_ok($verdict, '<', 0, 'one recorded connected client refuses the aggregate');
+    is_deeply($rados->{committed}, [], 'the ready staged key is not committed first');
+    ok(
+        !defined($state->{client_refresh}->{'client.ready'}->{cleared})
+            && !defined($state->{client_refresh}->{'client.blocked'}->{cleared}),
+        'neither the ready nor blocked record is closed',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 0, clients => {} }, qw(client.store client.admin));
+    my ($verdict, $output);
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $verdict = run_aggregate_confirmation($info, $state);
+    }
+    cmp_ok($verdict, '<', 0, 'incomplete monitor responses refuse the aggregate');
+    is_deeply($rados->{committed}, [], 'incomplete monitor data commits no staged key');
+    my @diagnostics = $output =~ m/not every monitor answered the session query/g;
+    is(
+        scalar(@diagnostics),
+        1,
+        'one snapshot-wide diagnostic covers every entity in an incomplete aggregate request',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.store');
+    $state->{client_refresh}->{'client.store'} = {
+        rotated => 1,
+        measurement_incomplete => 1,
+    };
+    my @saved;
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        $verdict = $HOOKS->{preflight}->(
+            $info, { apply => 1, 'confirm-all-clients-refreshed' => 1 }, 0, $state, {},
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a record needing its first measurement refuses the aggregate');
+    is_deeply(
+        $state->{client_refresh}->{'client.store'}->{session_ids},
+        [],
+        'the complete first measurement is journalled before refusal',
+    );
+    ok(
+        !$state->{client_refresh}->{'client.store'}->{measurement_incomplete} && scalar(@saved),
+        'the measurement is durable without closing the record',
+    );
+    is_deeply($rados->{committed}, [], 'the newly measured staged key is not committed');
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.store');
+    delete $state->{staged}->{'client.store'}->{written};
+    my $verdict = run_aggregate_confirmation($info, $state);
+    cmp_ok($verdict, '<', 0, 'an unwritten managed copy refuses the aggregate');
+    is_deeply($rados->{committed}, [], 'an incompletely written staged key is not committed');
+    ok(
+        !defined($state->{client_refresh}->{'client.store'}->{cleared}),
+        'its refresh record remains open',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    $rados->{fail_commit} = 'client.b';
+    $rados->{fail_once} = 1;
+    my $err = eval { run_aggregate_confirmation($info, $state); 1 } ? '' : $@;
+    like($err, qr/simulated commit failure/, 'a later staged-key commit failure stops the run');
+    is_deeply($rados->{committed}, ['client.a'], 'the completed staged commit stays recorded');
+    ok(
+        defined($state->{client_refresh}->{'client.a'}->{cleared})
+            && !exists($state->{staged}->{'client.a'})
+            && !defined($state->{client_refresh}->{'client.b'}->{cleared})
+            && exists($state->{staged}->{'client.b'}),
+        'the journal distinguishes completed and remaining work',
+    );
+
+    $info->{exported} = { map { $_ => { $rados->{entries}->{$_}->%* } } qw(client.a client.b) };
+    my $verdict = run_aggregate_confirmation($info, $state);
+    cmp_ok($verdict, '>=', 0, 'the aggregate retries the remaining open record');
+    is_deeply($rados->{committed}, [qw(client.a client.b)], 'the retry commits only the remainder');
+    ok(defined($state->{client_refresh}->{'client.b'}->{cleared}),
+        'the retry closes the remainder');
+}
+
+{
     my $rados = StagedRotationRados->new(key => $OLD);
     my $state = { client_keys_seen => { 'client.cp' => key_fingerprint($OLD) } };
     my $err =
@@ -1857,7 +2041,7 @@ sub run_staging {
 }
 
 {
-    # contradicting requests are refused before the cluster is touched
+    # Contradicting requests are refused before the cluster is touched.
     local @ARGV = qw(--apply --confirm-clients-refreshed client.cp --abort-staged-key client.cp);
     my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
     like(
@@ -1876,7 +2060,7 @@ sub run_staging {
         'help does not expose the internal entity term for the per-user option',
     );
     my ($per_user_help) =
-        $help =~ m/(--confirm-clients-refreshed USER.*?)(?=\n  --restrict-ciphers)/s;
+        $help =~ m/(--confirm-clients-refreshed USER.*?)(?=\n  --confirm-all-clients-refreshed)/s;
     like(
         $per_user_help // '',
         qr/disconnected consumers.*key copies.*outside\s+Proxmox VE/s,
@@ -1886,6 +2070,19 @@ sub run_staging {
         $per_user_help // '',
         qr/For a staged key,\s+this commits the new key/s,
         'per-user help explains how staged keys are committed',
+    );
+    like($help, qr/--confirm-all-clients-refreshed/, 'help names the aggregate confirmation');
+    my ($aggregate_help) =
+        $help =~ m/(--confirm-all-clients-refreshed.*?)(?=\n  --restrict-ciphers)/s;
+    like(
+        $aggregate_help // '',
+        qr/every open Ceph user key refresh record.*operator confirms.*disconnected consumers.*key copies.*outside\s+Proxmox VE/s,
+        'aggregate help names open refresh records and the operator trust boundary',
+    );
+    like(
+        $help,
+        qr/staged next to each other.*--confirm-clients-refreshed.*once\s+every open record is ready.*--confirm-all-clients-refreshed/s,
+        'staged-key help names per-user and conditionally ready aggregate completion',
     );
 
     {
@@ -1903,10 +2100,50 @@ sub run_staging {
             qr/confirm-clients-refreshed.*needs '--apply'/,
             'the per-user confirmation requires apply',
         ],
+        [
+            [qw(--confirm-all-clients-refreshed)],
+            qr/confirm-all-clients-refreshed.*needs.*--apply/s,
+            'the aggregate confirmation requires apply',
+        ],
     ) {
         local @ARGV = $case->[0]->@*;
         my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
         like($err, $case->[1], $case->[2]);
+    }
+}
+
+{
+    for my $case (
+        [
+            [qw(
+                --apply --confirm-all-clients-refreshed
+                --confirm-clients-refreshed client.cp
+            )],
+            qr/cannot be combined with '--confirm-clients-refreshed'/,
+            'aggregate plus per-user confirmation',
+        ],
+        [
+            [qw(
+                --apply --confirm-all-clients-refreshed
+                --abort-staged-key client.cp
+            )],
+            qr/cannot be combined with '--abort-staged-key'/,
+            'aggregate plus abort',
+        ],
+    ) {
+        my ($entered_run, $connected, $locked) = (0, 0, 0);
+        no warnings qw(once redefine);
+        local *PVE::RPCEnvironment::setup_default_cli_env = sub { $entered_run++ };
+        local *PVE::Ceph::Services::ResilientRados::new = sub { $connected++ };
+        local *PVE::Ceph::KeyMigration::ClusterLock::take = sub { $locked++ };
+        local @ARGV = $case->[0]->@*;
+        my $err = eval { $HOOKS->{main}->(); 1 } ? '' : $@;
+        like($err, $case->[1], "$case->[2] is rejected");
+        is_deeply(
+            [$entered_run, $connected, $locked],
+            [0, 0, 0],
+            "$case->[2] is rejected before setup, RADOS, or locks",
+        );
     }
 }
 

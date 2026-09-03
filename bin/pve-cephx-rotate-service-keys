@@ -1452,100 +1452,167 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     my $stale_clients = reopen_returning_clients($state, $info->{sessions});
 
-    my $ack_refused = 0;
-    my $ack_seen = {};
+    my $confirmation_refused = 0;
+    my $confirm_all = $opts->{'confirm-all-clients-refreshed'};
+    my $confirmation_seen = {};
     my @confirm =
-        grep { !$ack_seen->{$_}++ } @{ $opts->{'confirm-clients-refreshed'} // [] };
+        grep { !$confirmation_seen->{$_}++ } @{ $opts->{'confirm-clients-refreshed'} // [] };
     my @admin = grep { $_ eq $ADMIN_ENTITY } @confirm;
     my @non_admin = grep { $_ ne $ADMIN_ENTITY } @confirm;
     @confirm = (@non_admin, @admin);
-    for my $entity (@confirm) {
-        my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
-        my $verdict = $decision->{verdict};
 
-        if ($verdict eq 'unknown') {
-            log_fail("nothing to confirm: no rotation record exists for '$entity'");
-            $ack_refused = 1;
-            next;
-        }
-        if ($verdict eq 'connected') {
-            my $held = $decision->{held};
-            log_fail("not accepting '--confirm-clients-refreshed $entity': "
-                . scalar(@$held)
-                . " recorded client(s) of it are still connected ("
-                . session_hosts($held)
-                . "). Refresh those first, the confirmation covers only what this run cannot"
-                . " see.");
-            $ack_refused = 1;
-            next;
-        }
-        if ($verdict eq 'incomplete') {
-            log_fail(
-                "not accepting '--confirm-clients-refreshed $entity': not every monitor answered the"
-                    . " session query, so a consumer of it could be connected unseen");
-            $ack_refused = 1;
-            next;
-        }
-        # A record without a measurement, from an interrupted run or a rotation done elsewhere,
-        # cannot tell an old consumer from a new one. Measuring first turns everything visible
-        # into a named consumer, so the confirmation can never wave one through.
-        if ($verdict eq 'measure') {
-            my $live = $decision->{live};
-            $state->{client_refresh}->{$entity} = merge_refresh_record(
-                $state->{client_refresh}->{$entity},
-                $info->{sessions}, $entity, 1,
-            );
-            save_state($state);
-            my $count = scalar(@$live);
-            my $measurement =
-                $count
-                ? "$count currently connected "
-                . ($count == 1 ? 'client is' : 'clients are')
-                . " now recorded as possibly holding the previous key ("
-                . session_hosts($live) . ")"
-                : "no client is currently connected as it, and that complete empty measurement"
-                . " is now recorded";
-            log_fail("not accepting '--confirm-clients-refreshed $entity' yet: its rotation"
-                . " needed a first complete measurement; $measurement. Repeat the confirmation"
-                . " after refreshing any recorded clients; it then covers only consumers this"
-                . " run cannot see.");
-            $ack_refused = 1;
-            next;
+    if ($confirm_all) {
+        @confirm = sort {
+            ($a eq $ADMIN_ENTITY) <=> ($b eq $ADMIN_ENTITY) || $a cmp $b
+            } grep {
+                !defined($state->{client_refresh}->{$_}->{cleared})
+            } keys %{ $state->{client_refresh} // {} };
+
+        if (!scalar(@confirm)) {
+            log_fail("nothing to confirm: no open client-key refresh record exists");
+            $confirmation_refused = 1;
         }
 
-        # committing a staged key drops the one that copies not yet written still hold
-        if (my $staged = $state->{staged}->{$entity}) {
-            if (!$staged->{written}) {
-                log_fail(
-                    "not accepting '--confirm-clients-refreshed $entity': its staged key is not written to"
-                        . " every copy yet, so committing it would drop the key those copies still"
-                        . " hold. Run the rotation option for it again first.");
-                $ack_refused = 1;
+        if (scalar(@confirm) && !$info->{sessions}->{complete}) {
+            log_fail("not accepting '--confirm-all-clients-refreshed': not every monitor"
+                . " answered the session query");
+            $confirmation_refused = 1;
+        }
+
+        my $measured = 0;
+        for my $entity (@confirm) {
+            my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
+            if ($decision->{verdict} eq 'connected') {
+                my $held = $decision->{held};
+                log_fail("not accepting '--confirm-all-clients-refreshed': "
+                    . scalar(@$held)
+                    . " recorded client(s) of '$entity' are still connected ("
+                    . session_hosts($held)
+                    . ")");
+                $confirmation_refused = 1;
+            }
+            my $mark = $state->{client_refresh}->{$entity};
+            my $needs_measurement =
+                $mark->{measurement_incomplete} || !defined($mark->{session_ids});
+            if ($needs_measurement && $info->{sessions}->{complete}) {
+                my $live = $info->{sessions}->{clients}->{$entity} // [];
+                $state->{client_refresh}->{$entity} = merge_refresh_record(
+                    $mark, $info->{sessions}, $entity, 1,
+                );
+                $measured = 1;
+                my $detail =
+                    scalar(@$live)
+                    ? scalar(@$live)
+                    . " currently connected client(s) are now recorded ("
+                    . session_hosts($live) . ")"
+                    : "no client is currently connected as it";
+                log_fail("not accepting '--confirm-all-clients-refreshed' yet: the rotation of"
+                    . " '$entity' needed its first complete measurement; $detail. Repeat the"
+                    . " confirmation after refreshing any recorded clients.");
+                $confirmation_refused = 1;
+            }
+
+            if (my $staged = $state->{staged}->{$entity}) {
+                if (!$staged->{written}) {
+                    log_fail("not accepting '--confirm-all-clients-refreshed': the staged key of"
+                        . " '$entity' is not written to every managed copy yet");
+                    $confirmation_refused = 1;
+                }
+            }
+        }
+        save_state($state) if $measured;
+    }
+
+    if (!$confirmation_refused) {
+        for my $entity (@confirm) {
+            my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
+            my $verdict = $decision->{verdict};
+            my $option =
+                $confirm_all
+                ? '--confirm-all-clients-refreshed'
+                : "--confirm-clients-refreshed $entity";
+
+            if ($verdict eq 'unknown') {
+                log_fail("nothing to confirm: no rotation record exists for '$entity'");
+                $confirmation_refused = 1;
                 next;
             }
-            die "cannot commit the staged key of '$entity' without a cluster connection\n"
-                if !$info->{rados};
-            # before the record closes: a failed commit must leave the confirmation to be repeated
-            commit_staged_key($info->{rados}, $state, $entity);
-        }
+            if ($verdict eq 'connected') {
+                my $held = $decision->{held};
+                log_fail("not accepting '$option': "
+                    . scalar(@$held)
+                    . " recorded client(s) of it are still connected ("
+                    . session_hosts($held)
+                    . "). Refresh those first, the confirmation covers only what this run cannot"
+                    . " see.");
+                $confirmation_refused = 1;
+                next;
+            }
+            if ($verdict eq 'incomplete') {
+                log_fail("not accepting '$option': not every monitor answered the session query,"
+                    . " so a consumer of it could be connected unseen");
+                $confirmation_refused = 1;
+                next;
+            }
+            # A record without a measurement, from an interrupted run or a rotation done
+            # elsewhere, cannot tell an old consumer from a new one. Measuring first turns
+            # everything visible into a named consumer, so the confirmation cannot wave one
+            # through.
+            if ($verdict eq 'measure') {
+                my $live = $decision->{live};
+                $state->{client_refresh}->{$entity} = merge_refresh_record(
+                    $state->{client_refresh}->{$entity},
+                    $info->{sessions}, $entity, 1,
+                );
+                save_state($state);
+                my $count = scalar(@$live);
+                my $measurement =
+                    $count
+                    ? "$count currently connected "
+                    . ($count == 1 ? 'client is' : 'clients are')
+                    . " now recorded as possibly holding the previous key ("
+                    . session_hosts($live) . ")"
+                    : "no client is currently connected as it, and that complete empty measurement"
+                    . " is now recorded";
+                log_fail("not accepting '$option' yet: its rotation needed a first complete"
+                    . " measurement; $measurement. Repeat the confirmation after refreshing any"
+                    . " recorded clients; it then covers only consumers this run cannot see.");
+                $confirmation_refused = 1;
+                next;
+            }
 
-        # what is left are consumers no run can see: disconnected ones, and copies of the key on
-        # hosts Proxmox VE does not manage
-        log_warn(
-            "accepting '--confirm-clients-refreshed $entity': every consumer of it that this run can"
-                . " see is refreshed, and you confirm the same for those it cannot see");
-        my $mark = $state->{client_refresh}->{$entity};
-        $mark->{cleared} = time();
-        $mark->{acknowledged} = time();
-        save_state($state);
-        delete $stale_clients->{$entity};
+            # Committing a staged key drops the one that copies not yet written still hold.
+            if (my $staged = $state->{staged}->{$entity}) {
+                if (!$staged->{written}) {
+                    log_fail("not accepting '$option': its staged key is not written to every copy"
+                        . " yet, so committing it would drop the key those copies still hold. Run"
+                        . " the rotation option for it again first.");
+                    $confirmation_refused = 1;
+                    next;
+                }
+                die "cannot commit the staged key of '$entity' without a cluster connection\n"
+                    if !$info->{rados};
+                # The record remains open if the commit fails, so the confirmation is retryable.
+                commit_staged_key($info->{rados}, $state, $entity);
+            }
+
+            # What is left are consumers no run can see: disconnected ones, and copies of the key
+            # on hosts Proxmox VE does not manage.
+            log_warn("accepting '$option': every consumer of '$entity' that this run can see is"
+                . " refreshed, and you confirm the same for those it cannot see");
+            my $mark = $state->{client_refresh}->{$entity};
+            $mark->{cleared} = time();
+            $mark->{acknowledged} = time();
+            save_state($state);
+            delete $stale_clients->{$entity};
+        }
     }
-    # a dry run reports, an apply run puts the monitors back
+    # A dry run reports, an apply run puts the monitors back.
     release_manual_promotion($info->{rados}, $state)
         if $opts->{apply} && $info->{rados} && $state->{client_grace};
 
     # No later readiness or no-op verdict may turn a refused state-changing request into success.
-    return -1 if $ack_refused;
+    return -1 if $confirmation_refused;
 
     for my $entity (sort keys %$stale_clients) {
         my $held = $stale_clients->{$entity};
@@ -2095,11 +2162,11 @@ my sub print_plan($info, $plan, $state, $opts) {
             log_step("$item->{entity} ($item->{reason}), $how: $where");
         }
         if (grep { $_->{staged} } $plan->{client_keys}->@*) {
-            log_step(
-                "a staged key and the current one both authenticate until '--confirm-clients-refreshed"
-                    . " USER' commits the new one, so the consumers can be refreshed one by one;"
-                    . " the monitors stop promoting pending client keys on their own until every"
-                    . " staged key is committed or aborted");
+            log_step("a staged key and the current one both authenticate until the new key is"
+                . " committed with '--confirm-clients-refreshed USER' or, once every open record"
+                . " is ready, '--confirm-all-clients-refreshed'; consumers can be refreshed one by"
+                . " one, and the monitors stop automatic promotion until every staged key is"
+                . " committed or aborted");
         }
         if (grep { !$_->{staged} && client_key_stageable($_->{entity}) } $plan->{client_keys}->@*) {
             log_step("replaced at once rather than staged, as not every monitor can keep two"
@@ -3198,9 +3265,9 @@ my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = und
             . " one, which stays valid until the rotation is confirmed.");
     }
     log_pass("'$entity' has a new '$CIPHER' key staged next to its current one. Both authenticate"
-        . " until '--confirm-clients-refreshed $entity' commits the new one and drops the current one, so"
-        . " live-migrate the VMs, remount CephFS mounts, and restart other consumers at your"
-        . " pace.");
+        . " while you live-migrate the VMs, remount CephFS mounts, and restart other consumers."
+        . " Commit the new key with '--confirm-clients-refreshed $entity' or, once every open"
+        . " record is ready, '--confirm-all-clients-refreshed'.");
 
     return;
 }
@@ -3590,8 +3657,9 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
         my @staged = grep { $state->{staged}->{$_} } $open->{waiting}->@*;
         log_text("The new key of "
                 . join(', ', @staged)
-                . " is staged next to the current one, which stays valid until the confirmation"
-                . " commits the new key.")
+                . " is staged next to the current one. Both stay valid until the new key is"
+                . " committed with '--confirm-clients-refreshed USER' or, once every open record"
+                . " is ready, '--confirm-all-clients-refreshed'.")
             if scalar(@staged);
     }
 
@@ -3739,7 +3807,9 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
                 }
             } else {
                 log_info("the new key of '$entity' is staged next to its current one; both"
-                    . " authenticate until '--confirm-clients-refreshed $entity' commits it");
+                    . " authenticate until it is committed with '--confirm-clients-refreshed"
+                    . " $entity' or, once every open record is ready,"
+                    . " '--confirm-all-clients-refreshed'");
             }
             next;
         }
@@ -3848,9 +3918,10 @@ and client keys require their rotation options. Without '--apply', this only pri
   --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
                               user. May be given more than once
                               If every monitor can keep two client keys valid, both keys
-                              are staged next to each other and the consumers can be
-                              refreshed one by one; '--confirm-clients-refreshed' then commits
-                              the new key. Otherwise the key is replaced at once
+                              are staged next to each other and consumers can be refreshed
+                              one by one. Commit with '--confirm-clients-refreshed' or, once
+                              every open record is ready, '--confirm-all-clients-refreshed'.
+                              Otherwise the key is replaced at once
   --abort-staged-key ENTITY   needs '--apply'. Drop a key this script staged for a client
                               entity and put its current key back into every copy Proxmox
                               VE keeps. A consumer already switched to the new key loses
@@ -3861,6 +3932,13 @@ and client keys require their rotation options. Without '--apply', this only pri
                               Proxmox VE were updated. Refused while a recorded consumer is
                               connected; a returning one reopens the record. For a staged key,
                               this commits the new key
+  --confirm-all-clients-refreshed
+                              needs '--apply'. For every open Ceph user key refresh record, the
+                              operator confirms that all disconnected consumers were refreshed
+                              and all key copies outside Proxmox VE were updated. Refused as a
+                              whole unless every record has a complete measurement, no recorded
+                              connected client, and every staged key in it is written to all
+                              managed copies
   --restrict-ciphers          allow only the 'aes256k' cipher for authentication, the final
                               step; refused while any key or live consumer still depends on
                               the old cipher
@@ -3978,6 +4056,7 @@ my sub parse_options() {
         'rotate-admin-key' => 0,
         'rotate-lockbox-keys' => 0,
         'restrict-ciphers' => 0,
+        'confirm-all-clients-refreshed' => 0,
         timeout => 600,
     };
 
@@ -3998,6 +4077,7 @@ my sub parse_options() {
         'rotate-storage-key=s@',
         'restrict-ciphers',
         'confirm-clients-refreshed=s@',
+        'confirm-all-clients-refreshed',
         'abort-staged-key=s@',
         'help|h',
     )) {
@@ -4031,12 +4111,24 @@ my sub parse_options() {
 
     die "'--timeout' needs a positive number of seconds\n" if $opts->{timeout} < 1;
 
+    my $confirmed = $opts->{'confirm-clients-refreshed'} // [];
+    my $confirm_all = $opts->{'confirm-all-clients-refreshed'};
+    my $aborts = $opts->{'abort-staged-key'} // [];
+    die "'--confirm-all-clients-refreshed' cannot be combined with"
+        . " '--confirm-clients-refreshed'\n"
+        if $confirm_all && scalar(@$confirmed);
+    die "'--confirm-all-clients-refreshed' cannot be combined with '--abort-staged-key'\n"
+        if $confirm_all && scalar(@$aborts);
     die "'--confirm-clients-refreshed' changes what the next run may do, so it needs '--apply'\n"
-        if scalar(@{ $opts->{'confirm-clients-refreshed'} // [] }) && !$opts->{apply};
+        if scalar(@$confirmed) && !$opts->{apply};
+    die "'--confirm-all-clients-refreshed' changes what the next run may do, so it needs"
+        . " '--apply'\n"
+        if $confirm_all && !$opts->{apply};
     die "'--abort-staged-key' drops a key, so it needs '--apply'\n"
-        if scalar(@{ $opts->{'abort-staged-key'} // [] }) && !$opts->{apply};
-    my $aborted = { map { $_ => 1 } @{ $opts->{'abort-staged-key'} // [] } };
-    if (my @both = grep { $aborted->{$_} } @{ $opts->{'confirm-clients-refreshed'} // [] }) {
+        if scalar(@$aborts) && !$opts->{apply};
+
+    my $aborted = { map { $_ => 1 } @$aborts };
+    if (my @both = grep { $aborted->{$_} } @$confirmed) {
         die "'--confirm-clients-refreshed' and '--abort-staged-key' contradict each other for "
             . join(', ', @both) . "\n";
     }
@@ -4573,6 +4665,7 @@ sub key_migration_test_hooks {
         usage => \&usage,
         expand_cluster_key_option => \&expand_cluster_key_option,
         parse_options => \&parse_options,
+        main => \&main,
         run_migration => \&run_migration,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,

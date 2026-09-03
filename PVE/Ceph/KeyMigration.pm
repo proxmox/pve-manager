@@ -722,6 +722,7 @@ sub open_options(
     my $picture = $sessions // { complete => 0, clients => {} };
     my $stale = stale_consumers($picture, $records);
     my (@waiting, @ready);
+    my $all_ready_for_aggregate = 1;
     for my $entity (sort keys %$records) {
         my $cleared = defined($records->{$entity}->{cleared});
         # a confirmed record only becomes visible again when one of its retained IDs returns
@@ -733,8 +734,12 @@ sub open_options(
         my $unwritten = $state->{staged}->{$entity} && !$state->{staged}->{$entity}->{written};
         if (!$cleared && $verdict eq 'accept' && !$unwritten) {
             push @ready, $entity;
+            $all_ready_for_aggregate = 0
+                if $records->{$entity}->{measurement_incomplete}
+                || !defined($records->{$entity}->{session_ids});
         } else {
             push @waiting, $entity;
+            $all_ready_for_aggregate = 0;
         }
     }
 
@@ -770,6 +775,7 @@ sub open_options(
         together => $together,
         waiting => \@waiting,
         ready => \@ready,
+        all_ready_for_aggregate => $all_ready_for_aggregate,
         stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
         lockbox => $lockbox_open,
         hedge => $hedge,
@@ -802,11 +808,16 @@ sub open_actions(
     }
 
     if (scalar($open->{ready}->@*)) {
-        $open->{command} = "$program --apply "
-            . join(' ',
-                map { "--confirm-clients-refreshed " . PVE::Tools::shellquote($_) }
-                $open->{ready}->@*)
-            . ($finish ? ' --restrict-ciphers' : '');
+        my $confirmations = !$open->{all_ready_for_aggregate}
+            ? join(
+                ' ',
+                map {
+                    "--confirm-clients-refreshed " . PVE::Tools::shellquote($_)
+                } $open->{ready}->@*,
+            )
+            : '--confirm-all-clients-refreshed';
+        $open->{command} =
+            "$program --apply $confirmations" . ($finish ? ' --restrict-ciphers' : '');
     }
 
     return $open;

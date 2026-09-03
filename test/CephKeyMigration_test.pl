@@ -845,8 +845,8 @@ is(
     );
     is(
         $actions->{command},
-        '/helper --apply --confirm-clients-refreshed client.admin --restrict-ciphers',
-        'the paste command receives the full snapshot and carries the guarded final step',
+        '/helper --apply --confirm-all-clients-refreshed --restrict-ciphers',
+        'an all-ready command uses the aggregate and carries the guarded final step',
     );
 
     my $mixed = {
@@ -884,17 +884,20 @@ is(
         {},
         {},
         $CIPHER,
-        { client_refresh => { $unsafe_entity => { session_ids => [99] } } },
+        {
+            client_refresh => {
+                'client.admin' => { session_ids => [7] },
+                $unsafe_entity => { session_ids => [99] },
+            },
+        },
         {
             %$clean, exported => { %{ $clean->{exported} }, $unsafe_entity => { key => $NEW } },
         },
     );
     is(
         $actions->{command},
-        '/helper --apply --confirm-clients-refreshed '
-            . PVE::Tools::shellquote($unsafe_entity)
-            . ' --restrict-ciphers',
-        'a cephx entity is shell-quoted before it enters the paste command',
+        '/helper --apply --confirm-clients-refreshed ' . PVE::Tools::shellquote($unsafe_entity),
+        'a ready subset remains explicit and shell-quotes its cephx entity',
     );
 
     my $both_ready = {
@@ -919,9 +922,8 @@ is(
     );
     is(
         $actions->{command},
-        '/helper --apply --confirm-clients-refreshed client.admin --confirm-clients-refreshed client.crash'
-            . ' --restrict-ciphers',
-        'the command includes every ready confirmation before the permitted final step',
+        '/helper --apply --confirm-all-clients-refreshed --restrict-ciphers',
+        'the command aggregates every ready record before the permitted final step',
     );
 
     my $unmanaged = {
