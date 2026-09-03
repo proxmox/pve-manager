@@ -752,22 +752,18 @@ sub open_options(
         && !@waiting
         && !@ready;
 
-    # The options that only touch what Proxmox VE itself reads can be carried out together
-    # without a decision. Rotating 'client.admin' or a storage key is one, as their consumers
-    # can sit outside this cluster, and so is the wipe, which buys a few hours of waiting for
-    # a round trip of every client in the cluster; both are named but never bundled.
-    my $together = [
-        grep {
-            my $entry = $_;
-            grep { $entry =~ m/^\Q$_\E[: ]/ } (
-                '--rotate-mon-key',
-                '--rotate-client-keys',
-                '--rotate-lockbox-keys',
-                '--restrict-ciphers',
-            )
-        } @$next
-    ];
-    $together = [map { (split(/:/, $_, 2))[0] } @$together];
+    # The cluster-owned keys can be rotated together without a client decision. The aggregate
+    # option also safely selects categories that are already done. Keep client.admin, Ceph storage
+    # users, and the ticket wipe out; their consumers can sit outside this cluster.
+    my $cluster_keys = grep {
+        my $entry = $_;
+        grep { $entry =~ m/^\Q$_\E[: ]/ }
+            ('--rotate-mon-key', '--rotate-client-keys', '--rotate-lockbox-keys')
+    } @$next;
+    my $together = [];
+    push @$together, '--rotate-cluster-keys' if $cluster_keys;
+    push @$together, '--restrict-ciphers'
+        if grep { m/^--restrict-ciphers[: ]/ } @$next;
 
     return {
         next => $next,

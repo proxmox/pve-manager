@@ -1807,6 +1807,56 @@ sub run_staging {
 }
 
 {
+    # one option selects every cluster-owned key without selecting client decisions or finalization
+    my $selected = { 'rotate-cluster-keys' => 1, apply => 0 };
+    $HOOKS->{expand_cluster_key_option}->($selected);
+    is_deeply(
+        {
+            map { $_ => $selected->{$_} // 0 }
+                qw(
+                rotate-mon-key rotate-client-keys rotate-lockbox-keys
+                rotate-admin-key rotate-storage-key restrict-ciphers wipe-rotating-keys
+                )
+        },
+        {
+            'rotate-mon-key' => 1,
+            'rotate-client-keys' => 1,
+            'rotate-lockbox-keys' => 1,
+            'rotate-admin-key' => 0,
+            'rotate-storage-key' => 0,
+            'restrict-ciphers' => 0,
+            'wipe-rotating-keys' => 0,
+        },
+        'the cluster key option includes only work that needs no client decision',
+    );
+
+    my $apply = { 'rotate-cluster-keys' => 1, apply => 1 };
+    $HOOKS->{expand_cluster_key_option}->($apply);
+    is_deeply(
+        [map { $apply->{$_} } qw(rotate-mon-key rotate-client-keys rotate-lockbox-keys)],
+        [map { $selected->{$_} } qw(rotate-mon-key rotate-client-keys rotate-lockbox-keys)],
+        'a dry run and an apply run select the same keys',
+    );
+
+    my $individual = { 'rotate-mon-key' => 1 };
+    $HOOKS->{expand_cluster_key_option}->($individual);
+    is_deeply($individual, { 'rotate-mon-key' => 1 }, 'individual options stay unchanged');
+
+    my $limited = { 'rotate-cluster-keys' => 1, only => ['osd'] };
+    my $err = eval { $HOOKS->{expand_cluster_key_option}->($limited); 1 } ? '' : $@;
+    like($err, qr/cannot be combined with '--only'/, 'the aggregate cannot become a partial run');
+    like(
+        $HOOKS->{usage}->(),
+        qr/--rotate-cluster-keys.*cluster-owned.*Does not select 'client\.admin',.*Ceph storage users, ticket wipes, or cipher restriction/s,
+        'the help names the aggregate and its exclusions',
+    );
+
+    local @ARGV = qw(--rotate-cluster-keys --only osd);
+    $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
+    like($err, qr/cannot be combined with '--only'/, 'the command line accepts the aggregate');
+}
+
+{
     # contradicting requests are refused before the cluster is touched
     local @ARGV = qw(--apply --confirm-clients-refreshed client.cp --abort-staged-key client.cp);
     my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;

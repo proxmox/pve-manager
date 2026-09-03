@@ -3833,6 +3833,9 @@ and client keys require their rotation options. Without '--apply', this only pri
                               over, and never limits the client keys
   --restart-daemons           stop, rotate and start each daemon instead of swapping its
                               key while it keeps running
+  --rotate-cluster-keys       also rotate the cluster-owned monitor, bootstrap, crash, and
+                              encrypted OSD lockbox keys. Does not select 'client.admin',
+                              Ceph storage users, ticket wipes, or cipher restriction
   --rotate-mon-key            also rotate the shared 'mon.' key, which restarts every
                               monitor, one at a time
   --rotate-client-keys        also rotate the 'client.bootstrap-*' keys and 'client.crash'
@@ -3949,6 +3952,19 @@ my sub clear_leftover_noout($rados, $state) {
     return;
 }
 
+my sub expand_cluster_key_option($opts) {
+    return if !$opts->{'rotate-cluster-keys'};
+
+    die "'--rotate-cluster-keys' cannot be combined with '--only'; use the individual"
+        . " rotation options for a limited run\n"
+        if defined($opts->{only});
+    $opts->{'rotate-mon-key'} = 1;
+    $opts->{'rotate-client-keys'} = 1;
+    $opts->{'rotate-lockbox-keys'} = 1;
+
+    return;
+}
+
 # returns the options, or an exit status for a bad option and for '--help'
 my sub parse_options() {
     my $opts = {
@@ -3957,6 +3973,7 @@ my sub parse_options() {
         force => 0,
         'wipe-rotating-keys' => 0,
         'restart-daemons' => 0,
+        'rotate-cluster-keys' => 0,
         'rotate-client-keys' => 0,
         'rotate-admin-key' => 0,
         'rotate-lockbox-keys' => 0,
@@ -3974,6 +3991,7 @@ my sub parse_options() {
         'only=s@',
         'rotate-mon-key',
         'restart-daemons',
+        'rotate-cluster-keys',
         'rotate-client-keys',
         'rotate-admin-key',
         'rotate-lockbox-keys',
@@ -3991,6 +4009,8 @@ my sub parse_options() {
         print usage();
         return (undef, 0);
     }
+
+    expand_cluster_key_option($opts);
 
     if (defined($opts->{only})) {
         my $only = { map { $_ => 1 } map { split(/\s*,\s*/, $_) } $opts->{only}->@* };
@@ -4551,6 +4571,7 @@ sub key_migration_test_hooks {
         release_grace => \&release_manual_promotion,
         admin_rotation_unfinished => \&admin_rotation_unfinished,
         usage => \&usage,
+        expand_cluster_key_option => \&expand_cluster_key_option,
         parse_options => \&parse_options,
         run_migration => \&run_migration,
         preflight => \&preflight_cluster,

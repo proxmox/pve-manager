@@ -1595,8 +1595,8 @@ my sub cluster {
 
     is_deeply(
         $all->{together},
-        ['--rotate-client-keys'],
-        'the bundle offers only what needs no decision, never the admin or a storage key',
+        ['--rotate-cluster-keys'],
+        'the bundle uses one option for cluster-owned keys, never the admin or a storage key',
     );
 
     my $wipe = { AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {} };
