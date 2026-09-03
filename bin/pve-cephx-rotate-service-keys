@@ -24,7 +24,7 @@ use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
 use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
-    $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY
+    $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
@@ -34,13 +34,14 @@ use PVE::Ceph::KeyMigration qw(
     summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
     cephfs_mount_storages ack_decision
     open_actions parse_lockbox_output
+    manual_promotion_support client_key_stageable staged_records
 );
 
 my $QUORUM_FEATURE = 'cephx_auth_aes256k'; # every quorum monitor must advertise it first
 
 # on pmxcfs, so another node can continue an interrupted run
 my $STATE_FILE = '/etc/pve/priv/cephx-key-migration.json';
-my $STATE_VERSION = 1;
+my $STATE_VERSION = 2; # 2: staged client keys, which an older version would rotate over
 
 my $LOCK_SCOPE = 'cephx-service-keys';
 
@@ -353,7 +354,10 @@ my sub monitor_auth_entry($entity) {
     return $res->[0];
 }
 
+# A staged key keeps the current one valid, so the keyring written with it cannot lock a run out
+# and must not be overwritten with the active key from the monitor credential.
 my sub admin_rotation_unfinished($state) {
+    return 0 if $state->{staged}->{$ADMIN_ENTITY};
     return migration_unfinished($state, $ADMIN_ENTITY);
 }
 
@@ -536,6 +540,34 @@ my sub poll_client_sessions($info) {
     return summarize_sessions($per_mon, $info->{monmap_mons});
 }
 
+# Whether a monitor can keep two client keys valid is told by its admin socket, which needs no
+# cephx. One that answers but does not report the option is old; one that does not answer at all
+# cannot be told apart from a broken connection, and rules staging out just the same.
+my sub probe_manual_promotion($node, $id, $run_node) {
+    my $out =
+        eval { $run_node->($node, ['ceph', 'daemon', "mon.$id", 'config', 'get', $GRACE_OPTION]) };
+    if (!$@) {
+        my $res = eval { decode_json($out) };
+        my $value = ref($res) eq 'HASH' ? $res->{$GRACE_OPTION} : undef;
+        return { reached => 1, value => defined($value) && !ref($value) ? "$value" : undef };
+    }
+    my $reached = eval { $run_node->($node, ['ceph', 'daemon', "mon.$id", 'version']); 1 } ? 1 : 0;
+    return { reached => $reached, value => undef };
+}
+
+my sub poll_manual_promotion($info) {
+    my $reports = {};
+    for my $mon ($info->{daemons}->{mon}->@*) {
+        next if $mon->{down};
+        $reports->{ $mon->{id} } = probe_manual_promotion(
+            $mon->{node},
+            $mon->{id},
+            sub($node, $cmd) { node_run($node, $cmd) },
+        );
+    }
+    return manual_promotion_support($reports, $info->{monmap_mons});
+}
+
 # A rotation can follow a long daemon walk, so rediscover the monitors instead of trusting the
 # inventory and liveness recorded at startup. Every current monitor gets a result entry; missing
 # metadata, missing quorum membership, and a failed admin-socket query therefore make the summary
@@ -587,6 +619,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
     }
 
     my $per_mon = [];
+    my $reports = {};
     for my $id (@monmap) {
         my $sessions;
         if ($in_quorum->{$id} && $nodes->{$id}) {
@@ -594,6 +627,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
                 decode_json($run_node->(
                     $nodes->{$id}, ['ceph', 'daemon', "mon.$id", 'sessions']));
             };
+            $reports->{$id} = probe_manual_promotion($nodes->{$id}, $id, $run_node);
         }
         push @$per_mon, { mon => $id, sessions => $sessions };
     }
@@ -603,6 +637,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
         quorum => \@quorum,
         monitor_metadata => $metadata,
         sessions => summarize_sessions($per_mon),
+        manual_promotion => manual_promotion_support($reports, \@monmap),
         service_cipher => $mon_dump->{auth_service_cipher}->{name} // 'unknown',
         preferred_cipher => $mon_dump->{auth_preferred_cipher}->{name} // 'unknown',
         allowed_ciphers => [map { $_->{name} } @{ $mon_dump->{auth_allowed_ciphers} // [] }],
@@ -832,6 +867,7 @@ my sub collect_cluster_info($rados, $opts, $state) {
     }
 
     $info->{sessions} = poll_client_sessions($info);
+    $info->{manual_promotion} = poll_manual_promotion($info);
 
     # 'auth ls' drops a staged pending key; only the JSON export keeps it apart from the active one
     my $exported = $rados->mon_command({ prefix => 'auth export', format => 'json' });
@@ -1197,6 +1233,84 @@ my sub reopen_returning_clients($state, $sessions) {
     return $stale;
 }
 
+my sub grace_support_problem($support) {
+    my @why;
+    push @why, "monitors that do not report the option: " . join(', ', $support->{unsupported}->@*)
+        if scalar(@{ $support->{unsupported} // [] });
+    push @why, "monitors that did not answer: " . join(', ', $support->{unanswered}->@*)
+        if scalar(@{ $support->{unanswered} // [] });
+    return join('; ', @why) || 'no monitor answered';
+}
+
+# Only once no staged key is left: a monitor promoting again would end every other grace period.
+my sub release_manual_promotion($rados, $state) {
+    my $grace = $state->{client_grace} or return;
+    return if scalar(keys %{ $state->{staged} // {} });
+
+    my $previous = $grace->{previous};
+    my $by_hand =
+        defined($previous)
+        ? "set mon $GRACE_OPTION $previous"
+        : "rm mon $GRACE_OPTION";
+    eval {
+        if (defined($previous)) {
+            $rados->mon_command({
+                prefix => 'config set',
+                who => 'mon',
+                name => $GRACE_OPTION,
+                value => $previous,
+            });
+        } else {
+            $rados->mon_command({ prefix => 'config rm', who => 'mon', name => $GRACE_OPTION });
+        }
+    };
+    if (my $err = $@) {
+        chomp $err;
+        log_warn("could not put '$GRACE_OPTION' back ($err). Do it by hand with 'ceph config"
+            . " $by_hand', or pending client keys keep waiting for an explicit commit.");
+        return;
+    }
+
+    delete $state->{client_grace};
+    save_state($state);
+    log_info("the automatic promotion of pending client keys is back to "
+        . (defined($previous) ? "'$previous'" : "its default"));
+    return;
+}
+
+# Confirmed by the operator: promote the staged key and drop the previous one. From then on a
+# consumer still holding the previous key fails at its next authentication, which is exactly what
+# the confirmation vouches against. Returns whether a key was committed.
+my sub commit_staged_key($rados, $state, $entity) {
+    my $record = $state->{staged}->{$entity} or return 0;
+
+    my $entry = auth_entry($rados, $entity);
+    my $pending = $entry->{pending_key};
+    if (defined($pending) && length($pending) && key_fingerprint($pending) eq $record->{key}) {
+        log_info("committing the staged key of '$entity', its previous key stops working now");
+        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+        my $after = auth_entry($rados, $entity);
+        die "'$entity' does not use the staged key after the commit\n"
+            if key_fingerprint($after->{key}) ne $record->{key};
+    } elsif (key_fingerprint($entry->{key}) eq $record->{key}) {
+        log_info("the staged key of '$entity' is its active key already");
+    } else {
+        die "the key staged for '$entity' is gone without becoming active, so the copies written"
+            . " for it hold a key the monitors no longer accept. Pass the rotation option for it"
+            . " again to stage a new one.\n";
+    }
+
+    # the change is this script's, not one to warn about at the next fingerprint check
+    $state->{client_keys_seen}->{$entity} = $record->{key};
+    $state->{rotated}->{$entity} = time();
+    $state->{done}->{$entity} = time();
+    delete $state->{staged}->{$entity};
+    save_state($state);
+    log_pass("'$entity' now uses the '$CIPHER' cipher");
+
+    return 1;
+}
+
 # Polled fresh at the moment of the action: this very run may have rotated a client key after
 # the preflight gate ran, and a stale consumer cannot follow the wipe.
 my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef) {
@@ -1340,7 +1454,12 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     my $ack_refused = 0;
     my $ack_seen = {};
-    for my $entity (grep { !$ack_seen->{$_}++ } @{ $opts->{'confirm-clients-refreshed'} // [] }) {
+    my @confirm =
+        grep { !$ack_seen->{$_}++ } @{ $opts->{'confirm-clients-refreshed'} // [] };
+    my @admin = grep { $_ eq $ADMIN_ENTITY } @confirm;
+    my @non_admin = grep { $_ ne $ADMIN_ENTITY } @confirm;
+    @confirm = (@non_admin, @admin);
+    for my $entity (@confirm) {
         my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
         my $verdict = $decision->{verdict};
 
@@ -1394,6 +1513,22 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             next;
         }
 
+        # committing a staged key drops the one that copies not yet written still hold
+        if (my $staged = $state->{staged}->{$entity}) {
+            if (!$staged->{written}) {
+                log_fail(
+                    "not accepting '--confirm-clients-refreshed $entity': its staged key is not written to"
+                        . " every copy yet, so committing it would drop the key those copies still"
+                        . " hold. Run the rotation option for it again first.");
+                $ack_refused = 1;
+                next;
+            }
+            die "cannot commit the staged key of '$entity' without a cluster connection\n"
+                if !$info->{rados};
+            # before the record closes: a failed commit must leave the confirmation to be repeated
+            commit_staged_key($info->{rados}, $state, $entity);
+        }
+
         # what is left are consumers no run can see: disconnected ones, and copies of the key on
         # hosts Proxmox VE does not manage
         log_warn(
@@ -1405,6 +1540,9 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         save_state($state);
         delete $stale_clients->{$entity};
     }
+    # a dry run reports, an apply run puts the monitors back
+    release_manual_promotion($info->{rados}, $state)
+        if $opts->{apply} && $info->{rados} && $state->{client_grace};
 
     # No later readiness or no-op verdict may turn a refused state-changing request into success.
     return -1 if $ack_refused;
@@ -1518,6 +1656,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         !mon_keyring_stale($info)
         && !mon_key_rotation_wanted($info, $opts)
         && !client_keys_requested($opts)
+        && !scalar(@{ $opts->{'abort-staged-key'} // [] })
         && !scalar(plan_lockbox_keys($info, $opts)->@*)
         && !%$insecure
         && $info->{service_cipher} eq $CIPHER
@@ -1583,6 +1722,10 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     # a journalled lockbox key is finished by an apply run before this, and a dry run said so
     @staged = grep { !$state->{lockbox}->{$_} } @staged;
+
+    # a client key this script staged waits for its confirmation on purpose
+    my $ours = staged_records($info, $state);
+    @staged = grep { ($ours->{$_} // '') ne 'waiting' } @staged;
 
     # a staged key elsewhere is somebody else's half-finished rotation: worth a word, not a refusal
 
@@ -1948,7 +2091,21 @@ my sub print_plan($info, $plan, $state, $opts) {
                 scalar($item->{files}->@*)
                 ? join(', ', map { $_->{path} } $item->{files}->@*)
                 : 'no copy outside the auth database';
-            log_step("$item->{entity} ($item->{reason}): $where");
+            my $how = $item->{staged} ? 'staged next to the current key' : 'replaced at once';
+            log_step("$item->{entity} ($item->{reason}), $how: $where");
+        }
+        if (grep { $_->{staged} } $plan->{client_keys}->@*) {
+            log_step(
+                "a staged key and the current one both authenticate until '--confirm-clients-refreshed"
+                    . " USER' commits the new one, so the consumers can be refreshed one by one;"
+                    . " the monitors stop promoting pending client keys on their own until every"
+                    . " staged key is committed or aborted");
+        }
+        if (grep { !$_->{staged} && client_key_stageable($_->{entity}) } $plan->{client_keys}->@*) {
+            log_step("replaced at once rather than staged, as not every monitor can keep two"
+                . " client keys valid ("
+                . grace_support_problem($info->{manual_promotion} // {})
+                . "); Ceph 19.2.6-pve3 and 20.2.4-pve3 monitors can");
         }
         my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
         log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
@@ -2765,7 +2922,9 @@ if (defined($surplus_before)) {
 print "$out\n";
 PERL
 
-my sub refresh_cephfs_mounts($item) {
+my sub refresh_cephfs_mounts($item, %opts) {
+    my $reads =
+        $opts{staged} ? 'the staged key' : $opts{restored} ? 'the current key' : 'the new key';
     my $stores = cephfs_mount_storages($item);
     return if !scalar(@$stores);
 
@@ -2793,14 +2952,19 @@ my sub refresh_cephfs_mounts($item) {
                 my $how = "";
                 $how = ", after it had stopped answering" if $out =~ m/stopped answering/;
                 $how .= "; the requests blocked in it got an error" if $out =~ m/was forced/;
-                log_step("redid the '$storeid' mount on node '$node', which now reads the new"
-                    . " key$how");
+                log_step("redid the '$storeid' mount on node '$node', which now reads $reads$how");
                 if ($out =~ m/; the old client survived(?:, held by (.+))?$/) {
                     my $held = $1;
+                    my $fate =
+                        $opts{staged}
+                        ? "it keeps working on the previous key until the rotation is committed;"
+                        . " from then on what is blocked in it stays blocked, and the kernel"
+                        . " keeps retrying the monitors with that key until the node reboots"
+                        : "what is blocked in it stays blocked, and the kernel keeps retrying"
+                        . " the monitors with the previous key until the node reboots";
                     log_warn("a client of the old '$storeid' mount survived on node '$node'"
                         . (defined($held) ? ", held by $held" : "")
-                        . ": what is blocked in it stays blocked, and the kernel keeps retrying"
-                        . " the monitors with the previous key until the node reboots");
+                        . ": $fate");
                 }
                 next;
             }
@@ -2812,8 +2976,304 @@ my sub refresh_cephfs_mounts($item) {
     return;
 }
 
+# The option is read by every monitor at runtime, so it is set once for all through the config
+# store, and each monitor is then asked whether it applied it: one still promoting on first use
+# would end the grace period for the whole cluster.
+my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
+    $collect //= sub { collect_current_monitor_state($rados) };
+    my $check = sub {
+        my $support = ($collect->() // {})->{manual_promotion} // {};
+        die "not every monitor can keep two client keys valid: "
+            . grace_support_problem($support) . "\n"
+            if !$support->{supported};
+        return $support->{disabled};
+    };
+    return if $check->();
+
+    if (!$state->{client_grace}) {
+        # an explicit setting is what goes back at the end; without one the default is restored
+        my $dump = $rados->mon_command({ prefix => 'config dump', format => 'json' });
+        die "could not read the cluster configuration\n" if ref($dump) ne 'ARRAY';
+        my ($explicit) = map { $_->{value} } grep {
+            ref($_) eq 'HASH'
+                && ($_->{section} // '') eq 'mon'
+                && ($_->{name} // '') eq $GRACE_OPTION
+        } @$dump;
+        $state->{client_grace} = { previous => $explicit, set => time() };
+        save_state($state);
+    }
+    log_info("disabling the automatic promotion of pending client keys on the monitors");
+    $rados->mon_command({
+        prefix => 'config set',
+        who => 'mon',
+        name => $GRACE_OPTION,
+        value => 'false',
+    });
+
+    # the config store hands the change to each monitor on its own
+    for (1 .. 30) {
+        return if $check->();
+        sleep(1);
+    }
+    die "not every monitor applied '$GRACE_OPTION = false' within 30 seconds\n";
+}
+
+# Every copy Proxmox VE keeps, the shared ones first. Returns the node-local copies that could not
+# be written, for the caller to report: every shared copy holds the new key by then.
+my sub write_client_key_copies($item, $entry) {
+    my $stale = [];
+    for my $file ($item->{files}->@*) {
+        if ($file->{format} eq 'merge') {
+            if (!-f $file->{path}) {
+                log_step("no '$file->{path}', nothing to merge the key into");
+                next;
+            }
+            log_step("merging the key into '$file->{path}'");
+            merge_keyring_file($file->{path}, $entry);
+            next;
+        }
+
+        my $content =
+            $file->{format} eq 'secret'
+            ? "$entry->{key}\n"
+            : keyring_text($entry);
+        if ($file->{scope} eq 'cluster') {
+            log_step("writing '$file->{path}'");
+            write_cluster_file($file->{path}, $content);
+            next;
+        }
+
+        PVE::Cluster::cfs_update();
+        for my $node (sort @{ PVE::Cluster::get_nodelist() // [] }) {
+            # every shared copy is written by now, and the rest would keep a key the auth db dropped
+            eval {
+                if (!node_file_exists($node, $file->{path})) {
+                    log_step("no '$file->{path}' on node '$node', nothing to update there");
+                    return;
+                }
+                log_step("writing '$file->{path}' on node '$node'");
+                write_node_file($node, $file->{path}, $content);
+            };
+            if (my $err = $@) {
+                chomp $err;
+                push @$stale, "'$file->{path}' on node '$node' ($err)";
+            }
+        }
+    }
+    return $stale;
+}
+
+# The new key becomes the entity's pending key, which the monitors accept next to the active one
+# while automatic promotion is disabled, so every copy can be rewritten and every consumer
+# refreshed at its own pace. The rotation ends with '--confirm-clients-refreshed', which commits the key.
+my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = undef) {
+    my $entity = $item->{entity};
+    $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
+
+    my $current = auth_entry($rados, $entity);
+    if ($entity eq $ADMIN_ENTITY) {
+        my $recovery = monitor_auth_entry($entity);
+        die "the independent 'mon.' credential returned a different '$entity' key\n"
+            if $recovery->{key} ne $current->{key};
+    }
+
+    my $record = $state->{staged}->{$entity};
+    my $pending = $current->{pending_key};
+    $pending = undef if defined($pending) && !length($pending);
+    my $reuse = $record && defined($pending) && key_fingerprint($pending) eq $record->{key};
+
+    # a key already staged is never replaced at once instead, so when the monitors can no longer
+    # hold it the only ways out are the abort, which puts the current key back, or the commit
+    eval { ensure_manual_promotion_disabled($rados, $state, $collect) };
+    if (my $err = $@) {
+        chomp $err;
+        die "the key staged for '$entity' cannot be finished: $err. Abort it with"
+            . " '--abort-staged-key $entity', which puts the current key back into every copy.\n"
+            if $reuse;
+        die "$err\n";
+    }
+    if ($reuse) {
+        die "the key staged earlier for '$entity' uses the '"
+            . ($CIPHER_NAMES->{ key_cipher($pending) // -1 } // 'unreadable')
+            . "' cipher instead of '$CIPHER'. Drop it by hand with 'ceph auth clear-pending"
+            . " $entity', then run this again.\n"
+            if (key_cipher($pending) // -1) != $CIPHER_ID;
+        log_info("the new key of '$entity' was staged by an earlier run, rewriting its copies");
+    } elsif (defined($pending)) {
+        die "'$entity' has a pending key that this script did not stage. Resolve it first with"
+            . " 'ceph auth commit-pending $entity' or 'ceph auth clear-pending $entity'.\n";
+    } else {
+        # Record intent before the auth change. A failure after it then leaves an open,
+        # deliberately incomplete record instead of losing every consumer seen just before.
+        my $before = $snapshot->();
+        my $started = time();
+        $state->{client_refresh}->{$entity} = merge_refresh_record(
+            $state->{client_refresh}->{$entity},
+            $before, $entity, 0, $started,
+        );
+        my $type = key_cipher($current->{key});
+        $state->{previous_keys}->{$entity} = {
+            key => $current->{key},
+            cipher => $CIPHER_NAMES->{ $type // -1 } // "type $type",
+            saved => $started,
+        };
+        delete $state->{done}->{$entity};
+        delete $state->{rotated}->{$entity};
+        save_state($state);
+
+        log_info("staging a new '$CIPHER' key for '$entity' next to its current one");
+        my $reply = $rados->mon_command({
+            prefix => 'auth get-or-create-pending',
+            entity => $entity,
+            format => 'json',
+        });
+        $pending =
+            ref($reply) eq 'ARRAY' && ref($reply->[0]) eq 'HASH'
+            ? $reply->[0]->{pending_key}
+            : undef;
+        die "could not stage a pending key for '$entity'\n"
+            if !defined($pending) || !length($pending);
+        # ownership first: a key that then cannot be dropped must not read as somebody else's
+        $state->{staged}->{$entity} = { key => key_fingerprint($pending), staged => time() };
+        save_state($state);
+        my $cipher = key_cipher($pending) // -1;
+        if ($cipher != $CIPHER_ID) {
+            my $name = $CIPHER_NAMES->{$cipher} // 'unreadable';
+            # nothing holds it yet, so it can go
+            eval { $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity }) };
+            my $err = $@;
+            chomp $err;
+            my $left = auth_entry($rados, $entity)->{pending_key};
+            if (
+                defined($left)
+                && length($left)
+                && key_fingerprint($left) eq key_fingerprint($pending)
+            ) {
+                die "the key staged for '$entity' uses the '$name' cipher instead of '$CIPHER'"
+                    . " and could not be dropped again"
+                    . (length($err) ? " ($err)" : "")
+                    . ". Drop it by hand with 'ceph auth clear-pending $entity'; its record stays"
+                    . " until then.\n";
+            }
+            delete $state->{staged}->{$entity};
+            save_state($state);
+            die "the key staged for '$entity' uses the '$name' cipher instead of '$CIPHER', so it"
+                . " was dropped again\n";
+        }
+
+        my $after = $snapshot->();
+        $state->{client_refresh}->{$entity} = merge_refresh_record(
+            $state->{client_refresh}->{$entity},
+            $after,
+            $entity,
+            $before->{complete} && $after->{complete},
+            $started,
+        );
+        save_state($state);
+    }
+
+    my $entry = { entity => $entity, key => $pending, caps => $current->{caps} };
+    my $stale = write_client_key_copies($item, $entry);
+    if (scalar(@$stale)) {
+        die "'$entity' has its new key staged, and every copy on the cluster file system holds it,"
+            . " but these node-local copies could not be written and still hold the current key,"
+            . " which stays valid: "
+            . join(', ', @$stale)
+            . ". Run this again once those nodes answer, which finishes just these copies.\n";
+    }
+    $state->{staged}->{$entity}->{written} = time();
+    save_state($state);
+
+    if ($entity eq $ADMIN_ENTITY) {
+        my $fresh = verify_fresh_admin_connection();
+        die "a fresh '$entity' connection did not read the staged key\n"
+            if ($fresh->{pending_key} // '') ne $pending;
+        log_pass("a fresh '$entity' connection succeeds with the staged key");
+    }
+
+    refresh_cephfs_mounts($item, staged => 1);
+
+    if ($entity eq $ADMIN_ENTITY || grep { defined($_->{store}) } $item->{files}->@*) {
+        log_warn("'$entity' has a new key; any copy outside Proxmox VE still holds the current"
+            . " one, which stays valid until the rotation is confirmed.");
+    }
+    log_pass("'$entity' has a new '$CIPHER' key staged next to its current one. Both authenticate"
+        . " until '--confirm-clients-refreshed $entity' commits the new one and drops the current one, so"
+        . " live-migrate the VMs, remount CephFS mounts, and restart other consumers at your"
+        . " pace.");
+
+    return;
+}
+
+# Back to the current key: the copies are rewritten first, so a consumer refreshed in between reads
+# a key the monitors still accept when the staged one is dropped.
+my sub abort_staged_key($rados, $state, $entity, $files) {
+    my $record = $state->{staged}->{$entity}
+        or die "no key is staged for '$entity' by this script\n";
+    my $item = { entity => $entity, files => $files->{$entity} // [] };
+
+    my $entry = auth_entry($rados, $entity);
+    my $pending = $entry->{pending_key};
+    $pending = undef if defined($pending) && !length($pending);
+    if (defined($pending) && key_fingerprint($pending) eq $record->{key}) {
+        # journal the phase first: an abort interrupted between the copies and the drop has to
+        # be finished by the next run, not forgotten
+        $record->{aborting} = time();
+        delete $record->{written};
+        save_state($state);
+
+        log_warn("aborting the staged rotation of '$entity': a consumer already switched to the"
+            . " new key loses its access once the key is dropped");
+        my $stale = write_client_key_copies($item, $entry);
+        die "these copies of '$entity' could not be rewritten with the current key, so the staged"
+            . " key is kept: "
+            . join(', ', @$stale) . "\n"
+            if scalar(@$stale);
+
+        $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
+    } elsif (!$record->{aborting}) {
+        die "the key staged for '$entity' is no longer its pending key, so there is nothing to"
+            . " abort; run this without '--abort-staged-key' to have its record settled\n";
+    }
+
+    # Ceph answers a clear without a pending key with success, so only the auth entry tells
+    # whether the key was dropped or promoted in between
+    my $after = auth_entry($rados, $entity);
+    my $left = $after->{pending_key};
+    die "the staged key of '$entity' is still pending after the drop, run this again\n"
+        if defined($left) && length($left) && key_fingerprint($left) eq $record->{key};
+    if (key_fingerprint($after->{key}) eq $record->{key}) {
+        log_warn("the staged key of '$entity' became its active key while the abort ran, so the"
+            . " copies are rewritten with it and the rotation counts as done");
+        my $stale = write_client_key_copies($item, $after);
+        die "these copies of '$entity' still hold a key the monitors no longer accept, run this"
+            . " again once the nodes answer: "
+            . join(', ', @$stale) . "\n"
+            if scalar(@$stale);
+        $state->{client_keys_seen}->{$entity} = $record->{key};
+        $state->{rotated}->{$entity} = time();
+        $state->{done}->{$entity} = time();
+        delete $state->{staged}->{$entity};
+        save_state($state);
+        refresh_cephfs_mounts($item);
+        return;
+    }
+
+    delete $state->{staged}->{$entity};
+    delete $state->{previous_keys}->{$entity};
+    delete $state->{client_refresh}->{$entity};
+    save_state($state);
+
+    refresh_cephfs_mounts($item, restored => 1);
+    log_pass("'$entity' keeps its current key; the staged one was dropped");
+
+    return;
+}
+
 my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
     my $entity = $item->{entity};
+
+    return stage_client_key($rados, $state, $item, $snapshot) if $item->{staged};
 
     if ($entity eq $ADMIN_ENTITY) {
         my $recovery = monitor_auth_entry($entity);
@@ -2861,46 +3321,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
         save_state($state);
     }
 
-    my $stale = [];
-    for my $file ($item->{files}->@*) {
-        if ($file->{format} eq 'merge') {
-            if (!-f $file->{path}) {
-                log_step("no '$file->{path}', nothing to merge the new key into");
-                next;
-            }
-            log_step("merging the new key into '$file->{path}'");
-            merge_keyring_file($file->{path}, $entry);
-            next;
-        }
-
-        my $content =
-            $file->{format} eq 'secret'
-            ? "$entry->{key}\n"
-            : keyring_text($entry);
-        if ($file->{scope} eq 'cluster') {
-            log_step("writing '$file->{path}'");
-            write_cluster_file($file->{path}, $content);
-            next;
-        }
-
-        PVE::Cluster::cfs_update();
-        for my $node (sort @{ PVE::Cluster::get_nodelist() // [] }) {
-            # every shared copy is written by now, and the rest would keep a key the auth db dropped
-            eval {
-                if (!node_file_exists($node, $file->{path})) {
-                    log_step("no '$file->{path}' on node '$node', nothing to update there");
-                    return;
-                }
-                log_step("writing '$file->{path}' on node '$node'");
-                write_node_file($node, $file->{path}, $content);
-            };
-            if (my $err = $@) {
-                chomp $err;
-                push @$stale, "'$file->{path}' on node '$node' ($err)";
-            }
-        }
-    }
-
+    my $stale = write_client_key_copies($item, $entry);
     if (scalar(@$stale)) {
         die "'$entity' was rotated and every copy on the cluster file system now has the new"
             . " key, but these node-local copies could not be written and still hold the old"
@@ -3166,6 +3587,12 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
     if (scalar($open->{waiting}->@*)) {
         log_text("");
         log_text("Refresh the consumers named above of: " . join(', ', $open->{waiting}->@*));
+        my @staged = grep { $state->{staged}->{$_} } $open->{waiting}->@*;
+        log_text("The new key of "
+                . join(', ', @staged)
+                . " is staged next to the current one, which stays valid until the confirmation"
+                . " commits the new key.")
+            if scalar(@staged);
     }
 
     if (scalar($open->{ready}->@*)) {
@@ -3269,6 +3696,117 @@ my sub print_closing_notes(
     return;
 }
 
+# What earlier runs staged, as this run finds it: a key promoted outside this script closes its
+# record, a lost one is named together with the option that stages it again, a waiting one is
+# reported. Only an apply run writes the outcome.
+my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = undef) {
+    my $verdicts = staged_records($info, $state);
+    my $stores = storage_entities($files);
+    my $support = $info->{manual_promotion} // {};
+    for my $entity (sort keys %$verdicts) {
+        my $verdict = $verdicts->{$entity};
+        my $record = $state->{staged}->{$entity};
+        if ($verdict eq 'waiting' && $record->{aborting}) {
+            if ($opts->{apply}) {
+                log_warn("an earlier run did not finish aborting the staged key of '$entity',"
+                    . " finishing it now");
+                abort_staged_key($rados, $state, $entity, $files);
+            } else {
+                log_warn("An earlier run did not finish aborting the staged key of '$entity'."
+                    . " Run this with '--apply' to finish it.");
+            }
+            next;
+        }
+        if ($verdict eq 'waiting') {
+            # the grace period holds only while every monitor keeps the option disabled; a
+            # monitor that promotes on first use ends it for the whole cluster
+            if (!$support->{supported}) {
+                log_warn("the new key of '$entity' is staged, but not every monitor can keep two"
+                    . " client keys valid any more ("
+                    . grace_support_problem($support)
+                    . "). A monitor that promotes a pending key on its first use ends the grace"
+                    . " period on its own, so commit or abort this rotation soon. Do not add or"
+                    . " downgrade monitors while a key is staged.");
+            } elsif (!$support->{disabled}) {
+                if ($opts->{apply}) {
+                    log_warn("the automatic promotion of pending client keys was enabled again"
+                        . " while the new key of '$entity' is staged, disabling it again");
+                    ensure_manual_promotion_disabled($rados, $state, $collect);
+                } else {
+                    log_warn("The automatic promotion of pending client keys was enabled again"
+                        . " while the new key of '$entity' is staged, so its first use would end"
+                        . " the grace period. Run this with '--apply' to disable it again.");
+                }
+            } else {
+                log_info("the new key of '$entity' is staged next to its current one; both"
+                    . " authenticate until '--confirm-clients-refreshed $entity' commits it");
+            }
+            next;
+        }
+        if ($verdict eq 'committed') {
+            log_warn("the key staged for '$entity' was promoted outside this script, so its"
+                . " rotation counts as done; confirm its consumers as before");
+            if (!$record->{written}) {
+                if (!$opts->{apply}) {
+                    log_warn("Not every copy of '$entity' holds that key yet. Run this with"
+                        . " '--apply' to rewrite them.");
+                    next;
+                }
+                # the copies not yet written hold a key the monitors no longer accept
+                my $item = { entity => $entity, files => $files->{$entity} // [] };
+                my $stale = write_client_key_copies($item, auth_entry($rados, $entity));
+                die "these copies of '$entity' still hold a key the monitors no longer accept,"
+                    . " run this again once the nodes answer: "
+                    . join(', ', @$stale) . "\n"
+                    if scalar(@$stale);
+            }
+            if ($opts->{apply}) {
+                $state->{client_keys_seen}->{$entity} = $record->{key};
+                $state->{rotated}->{$entity} = time();
+                $state->{done}->{$entity} = time();
+                delete $state->{staged}->{$entity};
+                save_state($state);
+            }
+            next;
+        }
+        if ($record->{aborting}) {
+            # the drop went through before the record could go
+            log_info("the abort of the staged key of '$entity' is complete");
+            if ($opts->{apply}) {
+                delete $state->{staged}->{$entity};
+                delete $state->{previous_keys}->{$entity};
+                delete $state->{client_refresh}->{$entity};
+                save_state($state);
+            }
+            next;
+        }
+        my $option =
+            $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
+            : $stores->{$entity} ? "'--rotate-storage-key $stores->{$entity}->[0]'"
+            : "the rotation option for it";
+        log_warn("the key staged for '$entity' is gone without becoming active, so every copy"
+            . " written for it holds a key the monitors no longer accept. Pass $option to stage a"
+            . " new one.");
+        if ($opts->{apply}) {
+            delete $state->{staged}->{$entity};
+            save_state($state);
+        }
+    }
+
+    # the option is put back once nothing is staged, which a failed staging can leave behind too
+    if ($state->{client_grace} && !scalar(keys %{ $state->{staged} // {} })) {
+        if ($opts->{apply}) {
+            release_manual_promotion($rados, $state);
+        } else {
+            log_warn("An earlier run disabled the automatic promotion of pending client keys on"
+                . " the monitors and nothing is staged any more. Run this with '--apply' to put"
+                . " it back.");
+        }
+    }
+
+    return;
+}
+
 my sub usage {
     my $types = join('|', @$DAEMON_TYPES);
 
@@ -3306,11 +3844,20 @@ and client keys require their rotation options. Without '--apply', this only pri
                               Proxmox VE keeps
   --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
                               user. May be given more than once
+                              If every monitor can keep two client keys valid, both keys
+                              are staged next to each other and the consumers can be
+                              refreshed one by one; '--confirm-clients-refreshed' then commits
+                              the new key. Otherwise the key is replaced at once
+  --abort-staged-key ENTITY   needs '--apply'. Drop a key this script staged for a client
+                              entity and put its current key back into every copy Proxmox
+                              VE keeps. A consumer already switched to the new key loses
+                              its access
   --confirm-clients-refreshed USER
                               needs '--apply'. Confirm that all disconnected consumers of one
                               rotated Ceph user key were refreshed and all key copies outside
                               Proxmox VE were updated. Refused while a recorded consumer is
-                              connected; a returning one reopens the record
+                              connected; a returning one reopens the record. For a staged key,
+                              this commits the new key
   --restrict-ciphers          allow only the 'aes256k' cipher for authentication, the final
                               step; refused while any key or live consumer still depends on
                               the old cipher
@@ -3433,6 +3980,7 @@ my sub parse_options() {
         'rotate-storage-key=s@',
         'restrict-ciphers',
         'confirm-clients-refreshed=s@',
+        'abort-staged-key=s@',
         'help|h',
     )) {
         print STDERR usage();
@@ -3465,18 +4013,44 @@ my sub parse_options() {
 
     die "'--confirm-clients-refreshed' changes what the next run may do, so it needs '--apply'\n"
         if scalar(@{ $opts->{'confirm-clients-refreshed'} // [] }) && !$opts->{apply};
+    die "'--abort-staged-key' drops a key, so it needs '--apply'\n"
+        if scalar(@{ $opts->{'abort-staged-key'} // [] }) && !$opts->{apply};
+    my $aborted = { map { $_ => 1 } @{ $opts->{'abort-staged-key'} // [] } };
+    if (my @both = grep { $aborted->{$_} } @{ $opts->{'confirm-clients-refreshed'} // [] }) {
+        die "'--confirm-clients-refreshed' and '--abort-staged-key' contradict each other for "
+            . join(', ', @both) . "\n";
+    }
 
     die "this script must run as root\n" if $> != 0;
 
     return ($opts, undef);
 }
 
-sub main {
-    my ($opts, $early_status) = parse_options();
-    return $early_status if defined($early_status);
+my sub assert_abort_rotation_compatible($opts, $client_files) {
+    my @abort = @{ $opts->{'abort-staged-key'} // [] };
+    return if !scalar(@abort);
 
+    # aborting and staging the same key in one run would drop and stage it back to back
+    my $selected = { map { $_ => 1 } @{ $opts->{'rotate-storage-key'} // [] } };
+    for my $entity (@abort) {
+        my $again = ($entity eq $ADMIN_ENTITY && $opts->{'rotate-admin-key'})
+            || grep { defined($_->{store}) && $selected->{ $_->{store} } }
+            @{ $client_files->{$entity} // [] };
+        die "'--abort-staged-key $entity' contradicts the rotation option given for the same"
+            . " key; drop one of them\n"
+            if $again;
+    }
+
+    return;
+}
+
+my sub run_migration($opts) {
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
+
+    # Resolve contradictions before connecting to Ceph or resuming journalled work.
+    my $client_files = client_key_files();
+    assert_abort_rotation_compatible($opts, $client_files);
 
     # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
     local $SIG{INT} = local $SIG{TERM} = local $SIG{HUP} = sub {
@@ -3661,7 +4235,11 @@ sub main {
             . " saved plan because Ceph no longer lists it");
     }
 
-    my $client_files = client_key_files();
+    # Refresh storage mappings after any lock wait, then make sure they still agree with the
+    # options before settling a staged key.
+    $client_files = client_key_files();
+    assert_abort_rotation_compatible($opts, $client_files);
+    settle_staged_records($rados, $info, $state, $opts, $client_files);
 
     my $verdict = preflight_cluster(
         $info, $opts, scalar(@$recovered), $state, $client_files,
@@ -3674,6 +4252,21 @@ sub main {
             collect_restriction_snapshot($rados),
         ) if $verdict == 0;
         return $verdict == 0 ? 0 : 1;
+    }
+
+    if (my @abort = @{ $opts->{'abort-staged-key'} // [] }) {
+        my $seen = {};
+        for my $entity (grep { !$seen->{$_}++ } @abort) {
+            log_text("");
+            log_info("staged key of '$entity'");
+            abort_staged_key($rados, $state, $entity, $client_files);
+        }
+        release_manual_promotion($rados, $state);
+        # the auth database moved, so everything collected before is stale
+        $info = collect_cluster_info($rados, $opts, $state);
+        $info->{rados} = $rados;
+        $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
+        $info->{pve_mon_key} = pve_mon_keyring_key();
     }
 
     my $plan = build_plan($info, $state, $opts, $client_files);
@@ -3866,6 +4459,8 @@ sub main {
     # or every client key created before the next apply run gets the new cipher
     release_preferred_cipher($rados, $state)
         if $failure && defined($state->{preferred_cipher_was});
+    # refuses while a staged key exists, so this only undoes a staging that failed before its key
+    release_manual_promotion($rados, $state) if $failure && $state->{client_grace};
 
     # check while this run still knows which it touched; probe first, as a failed command reads as
     # 'not up'
@@ -3925,6 +4520,13 @@ sub main {
     return 0;
 }
 
+sub main {
+    my ($opts, $early_status) = parse_options();
+    return $early_status if defined($early_status);
+
+    return run_migration($opts);
+}
+
 # Keep the orchestration directly testable without running main().
 sub lockbox_test_hooks {
     return {
@@ -3942,8 +4544,15 @@ sub key_migration_test_hooks {
         open_actions_from_snapshot => \&open_actions_from_snapshot,
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
+        stage_client => \&stage_client_key,
+        commit_staged => \&commit_staged_key,
+        abort_staged => \&abort_staged_key,
+        settle_staged => \&settle_staged_records,
+        release_grace => \&release_manual_promotion,
+        admin_rotation_unfinished => \&admin_rotation_unfinished,
         usage => \&usage,
         parse_options => \&parse_options,
+        run_migration => \&run_migration,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,
         wipe_rotating_keys => \&wipe_rotating_keys,
