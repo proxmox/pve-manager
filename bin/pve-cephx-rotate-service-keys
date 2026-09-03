@@ -32,7 +32,7 @@ use PVE::Ceph::KeyMigration qw(
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
     summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
-    cephfs_mount_storages ack_decision
+    cephfs_mount_storages ack_decision classify_insecure_clients
     open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
 );
@@ -1143,7 +1143,7 @@ my sub installed_versions() {
     return { map { $_ => $broadcast->{$_}->{version}->{str} } keys %$broadcast };
 }
 
-my sub probe_nodes($info, $plan) {
+my sub probe_nodes($info, $plan, $opts = {}) {
     my $installed = installed_versions();
     my $specs = {};
     for my $daemon (touched_daemons($info, $plan)) {
@@ -1155,9 +1155,9 @@ my sub probe_nodes($info, $plan) {
     }
 
     my $by_node = {};
-    log_info("collecting daemon keyrings and bluestore labels from "
-        . scalar(keys %$specs)
-        . " node(s)");
+    log_info(
+        "collecting daemon keyrings and bluestore labels from " . scalar(keys %$specs) . " node(s)")
+        if $opts->{apply} || $opts->{verbose};
     for my $node (sort keys %$specs) {
 
         my $output =
@@ -1405,7 +1405,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     my $allows_cipher = grep { $_ eq $CIPHER } $info->{allowed_ciphers}->@*;
     my $insecure = $info->{insecure_entities};
 
-    if (my @ghosts = ($info->{ghost_daemons} // [])->@*) {
+    if ($opts->{verbose} && (my @ghosts = ($info->{ghost_daemons} // [])->@*)) {
         log_info("ignoring "
             . join(', ', map { "'$_->{type}.$_->{id}' on node '$_->{node}'" } @ghosts)
             . ": removed or destroyed daemons, only their data directories are left behind");
@@ -2035,13 +2035,14 @@ my sub recover_left_behind($info, $state) {
     return \@recovered;
 }
 
-my sub print_plan($info, $plan, $state, $opts) {
+my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
+    $storage_entities //= {};
     my $insecure_service_keys = %{ $info->{insecure_entities} } ? 1 : 0;
     log_heading($insecure_service_keys ? "Why HEALTH_ERR" : "Where this cluster stands");
 
     if ($insecure_service_keys) {
-        log_text("Ceph 19.2.6 and 20.2.4 flag every key still on the old '$LEGACY_CIPHER' cipher"
-            . " as insecure; two of those checks are errors, hence HEALTH_ERR.");
+        log_text("Ceph reports service keys on the old '$LEGACY_CIPHER' cipher. The related"
+            . " health checks are errors, hence HEALTH_ERR.");
         if (grep { $_ eq $LEGACY_CIPHER } $info->{allowed_ciphers}->@*) {
             log_text("The keys still work while '$LEGACY_CIPHER' stays allowed.");
         } else {
@@ -2049,45 +2050,75 @@ my sub print_plan($info, $plan, $state, $opts) {
                 . " fail to authenticate.");
         }
     } else {
-        log_text("Ceph reports no service key on the old '$LEGACY_CIPHER' cipher. That check reads"
-            . " the auth database only, so it cannot see the shared 'mon.' key.");
-    }
-    log_text("");
-    my $clients = $plan->{client_keys} // [];
-    my $asked_for_clients = client_keys_requested($opts);
-    my $untouched = [];
-    if (!scalar(@$clients) && $asked_for_clients) {
-        push @$untouched, "the client keys asked for, which need no rotation";
-    } elsif (!scalar(@$clients)) {
-        push @$untouched, "the client keys, '$ADMIN_ENTITY' among them";
-    } elsif (!grep { $_->{entity} eq $ADMIN_ENTITY } @$clients) {
-        # every storage and the command line fall back to it, so its absence is worth a word
-        if ($opts->{'rotate-admin-key'}) {
-            push @$untouched, "'$ADMIN_ENTITY', which needs no rotation";
-        } else {
-            push @$untouched, "'$ADMIN_ENTITY', which '--rotate-admin-key' covers";
-        }
-    }
-    if (!$plan->{mon_key}) {
-        my $only = $opts->{only};
-        my $why = "";
-        if ($opts->{'rotate-mon-key'} && $only && !$only->{mon}) {
-            $why = ", which the scope given with '--only' leaves out";
-        } elsif ($opts->{'rotate-mon-key'}) {
-            $why = ", which already uses the '$CIPHER' cipher";
-        }
-        push @$untouched, "the shared 'mon.' key$why";
+        log_text("Ceph reports no service key on the old '$LEGACY_CIPHER' cipher.");
+        log_text("The health check cannot inspect the shared 'mon.' key.") if $opts->{verbose};
     }
 
-    if (scalar(@$untouched)) {
-        my $why = "";
-        if (!$asked_for_clients) {
-            $why =
-                " Rotate them with '--rotate-client-keys', '--rotate-admin-key' or"
-                . " '--rotate-storage-key'; what reads a key decides whether it can take the"
-                . " new cipher.";
+    my $only = $opts->{only};
+    my $mon_selected = $opts->{'rotate-mon-key'} && (!$only || $only->{mon});
+    my $insecure_clients =
+        classify_insecure_clients($info->{health_checks} // {}, $storage_entities);
+    my @unselected_users;
+    push @unselected_users, "bootstrap and crash users"
+        if scalar($insecure_clients->{tool}->@*) && !$opts->{'rotate-client-keys'};
+    push @unselected_users, "'$ADMIN_ENTITY'"
+        if scalar($insecure_clients->{admin}->@*) && !$opts->{'rotate-admin-key'};
+    my $insecure_storage = { map { $_ => 1 } $insecure_clients->{storage}->@* };
+    my $selected_stores = { map { $_ => 1 } @{ $opts->{'rotate-storage-key'} // [] } };
+    my @unselected_storage_users = sort grep {
+        my $entity = $_;
+        $entity ne $ADMIN_ENTITY
+            && $insecure_storage->{$entity}
+            && !grep { $selected_stores->{$_} }
+            @{ $storage_entities->{$entity} // [] }
+    } keys %$storage_entities;
+    push @unselected_users,
+        "dedicated storage users " . join(', ', map { "'$_'" } @unselected_storage_users)
+        if scalar(@unselected_storage_users);
+
+    my @unselected_other_keys;
+    push @unselected_other_keys, "the shared 'mon.' key" if !$mon_selected;
+    push @unselected_other_keys, "service daemon keys outside '--only'" if $only;
+    push @unselected_other_keys, "encrypted OSD lockbox keys"
+        if !$opts->{'rotate-lockbox-keys'};
+
+    my @unselected_actions;
+    push @unselected_actions, "the service-ticket cipher switch" if $only;
+    push @unselected_actions, "service-ticket wiping" if !$opts->{'wipe-rotating-keys'};
+    push @unselected_actions, "cipher restriction" if !$opts->{'restrict-ciphers'};
+
+    if (
+        scalar(@unselected_users)
+        || scalar(@unselected_other_keys)
+        || scalar(@unselected_actions)
+    ) {
+        log_text("");
+        log_text("Not touched by this run:");
+        log_step("Ceph user keys not selected: " . join('; ', @unselected_users) . ".")
+            if scalar(@unselected_users);
+        log_step("Other keys not selected: " . join('; ', @unselected_other_keys) . ".")
+            if scalar(@unselected_other_keys);
+        log_step("Additional actions not selected: " . join('; ', @unselected_actions) . ".")
+            if scalar(@unselected_actions);
+    }
+
+    if ($opts->{verbose}) {
+        my $clients = $plan->{client_keys} // [];
+        my $asked_for_clients = client_keys_requested($opts);
+        my @unchanged;
+        if (!scalar(@$clients) && $asked_for_clients) {
+            push @unchanged, "the selected Ceph user keys need no rotation";
+        } elsif (
+            $opts->{'rotate-admin-key'}
+            && !grep { $_->{entity} eq $ADMIN_ENTITY } @$clients
+        ) {
+            push @unchanged, "'$ADMIN_ENTITY' needs no rotation";
         }
-        log_text("Not touched by this run: " . join(', and ', @$untouched) . ".$why");
+        if (!$plan->{mon_key} && $mon_selected) {
+            push @unchanged, "the shared 'mon.' key already uses the '$CIPHER' cipher";
+        }
+        log_text("Selected but unchanged: " . join('; ', @unchanged) . ".")
+            if scalar(@unchanged);
     }
 
     log_heading("Plan");
@@ -2096,19 +2127,22 @@ my sub print_plan($info, $plan, $state, $opts) {
 
     if ($plan->{mon_key} && $plan->{mon_repair_only}) {
         $step++;
-        log_text("Step $step: repair the copy of the shared 'mon.' key in $pve_mon_keyring, which"
-            . " 'pveceph mon create' hands to new monitors. Nothing is rotated or restarted.");
+        log_text("Step $step: repair the stored copy of the shared 'mon.' key. Nothing is rotated"
+            . " or restarted.");
+        log_step("write $pve_mon_keyring for use by monitors created later") if $opts->{verbose};
     } elsif ($plan->{mon_key}) {
         $step++;
-        my $reported =
-            $info->{mon_key_in_auth_db}
-            ? "Ceph lists it in its health checks."
-            : "Ceph's health checks cannot see it.";
-        log_text("Step $step: rotate the shared 'mon.' key, the most privileged one in the cluster."
-            . " $reported Every keyring is written first, then the monitors restart one at a"
-            . " time.");
-        log_step("monitors, restarted one at a time: "
-            . join(', ', map { "$_->{id} (node $_->{node})" } $info->{daemons}->{mon}->@*));
+        log_text("Step $step: rotate the shared 'mon.' key. Every keyring is written first, then"
+            . " the monitors restart one at a time.");
+        if ($opts->{verbose}) {
+            log_step(
+                $info->{mon_key_in_auth_db}
+                ? "Ceph lists the key in its health checks."
+                : "Ceph's health checks cannot see the key."
+            );
+            log_step("monitors, restarted one at a time: "
+                . join(', ', map { "$_->{id} (node $_->{node})" } $info->{daemons}->{mon}->@*));
+        }
     }
 
     if ($plan->{daemons}->@*) {
@@ -2147,56 +2181,85 @@ my sub print_plan($info, $plan, $state, $opts) {
             log_step("'noout' is set on this run's OSDs, as that stop can happen at any point.")
                 if grep { $_->{type} eq 'osd' } $plan->{daemons}->@*;
         }
-        log_step("in this order:");
-        log_steps([map { "$_->{entity} on $_->{node}" } $plan->{daemons}->@*]);
+        if ($opts->{verbose}) {
+            log_step("in this order:");
+            log_steps([map { "$_->{entity} on $_->{node}" } $plan->{daemons}->@*]);
+        }
     }
 
     if (scalar(@{ $plan->{client_keys} // [] })) {
         $step++;
+        my $client_count = scalar($plan->{client_keys}->@*);
+        my $staged_count = scalar(grep { $_->{staged} } $plan->{client_keys}->@*);
+        my $replaced_count = $client_count - $staged_count;
         log_text("");
-        log_text("Step $step: rotate the client keys asked for and rewrite every copy Proxmox VE"
-            . " keeps; copies elsewhere are up to you. The mount of a CephFS storage that uses"
-            . " such a key is redone on every node, unless something is using it.");
+        my $key_label = $client_count == 1 ? 'Ceph user key' : 'Ceph user keys';
+        log_text("Step $step: rotate $client_count selected $key_label and rewrite every copy"
+            . " Proxmox VE keeps. Affected CephFS mounts are redone on every node unless something"
+            . " is using them.");
         for my $item ($plan->{client_keys}->@*) {
-            my $where =
-                scalar($item->{files}->@*)
-                ? join(', ', map { $_->{path} } $item->{files}->@*)
-                : 'no copy outside the auth database';
             my $how = $item->{staged} ? 'staged next to the current key' : 'replaced at once';
-            log_step("$item->{entity} ($item->{reason}), $how: $where");
+            if ($opts->{verbose}) {
+                my $where =
+                    scalar($item->{files}->@*)
+                    ? join(', ', map { $_->{path} } $item->{files}->@*)
+                    : 'no copy outside the auth database';
+                log_step("Ceph user '$item->{entity}' ($item->{reason}), $how: $where");
+            } else {
+                log_step("Ceph user '$item->{entity}': $how");
+            }
         }
-        if (grep { $_->{staged} } $plan->{client_keys}->@*) {
-            log_step("a staged key and the current one both authenticate until the new key is"
-                . " committed with '--confirm-clients-refreshed USER' or, once every open record"
-                . " is ready, '--confirm-all-clients-refreshed'; consumers can be refreshed one by"
-                . " one, and the monitors stop automatic promotion until every staged key is"
-                . " committed or aborted");
+        if ($staged_count) {
+            log_step("For each staged Ceph user key, both the current and new keys authenticate"
+                . " until the new key is committed with '--confirm-clients-refreshed USER' or,"
+                . " once every open record is ready, '--confirm-all-clients-refreshed'.");
+            log_step("the monitors stop automatic pending-key promotion until every staged key is"
+                    . " committed or aborted")
+                if $opts->{verbose};
         }
-        if (grep { !$_->{staged} && client_key_stageable($_->{entity}) } $plan->{client_keys}->@*) {
-            log_step("replaced at once rather than staged, as not every monitor can keep two"
-                . " client keys valid ("
-                . grace_support_problem($info->{manual_promotion} // {})
-                . "); Ceph 19.2.6-pve3 and 20.2.4-pve3 monitors can");
-        }
-        my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
-        log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
-        for my $item ($plan->{client_keys}->@*) {
-            my $live = $info->{sessions}->{clients}->{ $item->{entity} } // [];
-            next if !scalar(@$live);
-            log_step(
-                scalar(@$live)
-                    . " live client(s) authenticate as '$item->{entity}' ("
-                    . session_hosts($live)
-                    . ") and keep the current key in memory");
-        }
-        if (grep { !$_->{staged} } $plan->{client_keys}->@*) {
-            log_step("For every key marked 'replaced at once', stop each affected consumer before"
+        if ($replaced_count) {
+            log_step("For each Ceph user marked 'replaced at once', stop every consumer before"
                 . " applying. Apply the replacement only after all are stopped, update every key"
                 . " copy outside Proxmox VE, and then restart the consumers. Immediate replacement"
                 . " removes the active key immediately, so reconnect can fail as soon as the key"
-                . " changes; monitor-ticket expiry is only an upper bound on continued access");
+                . " changes; monitor-ticket expiry is only an upper bound on continued access."
+            );
         }
-        if (grep { $_->{staged} } $plan->{client_keys}->@*) {
+        if (
+            $opts->{verbose}
+            && grep {
+                !$_->{staged} && client_key_stageable($_->{entity})
+            } $plan->{client_keys}->@*
+        ) {
+            log_step("replacement is required because not every monitor can keep two client keys"
+                . " valid ("
+                . grace_support_problem($info->{manual_promotion} // {})
+                . "); Ceph 19.2.6-pve3 and 20.2.4-pve3 monitors can");
+        }
+        if ($opts->{verbose}) {
+            my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
+            log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
+        }
+        my $possibly_stale = [];
+        for my $item ($plan->{client_keys}->@*) {
+            my $live = $info->{sessions}->{clients}->{ $item->{entity} } // [];
+            next if !scalar(@$live);
+            if ($opts->{verbose}) {
+                log_step(
+                    scalar(@$live)
+                        . " live client(s) authenticate as '$item->{entity}' ("
+                        . session_hosts($live)
+                        . ") and keep the current key in memory");
+            } else {
+                push @$possibly_stale,
+                    "'$item->{entity}': " . scalar(@$live) . " live client session(s)";
+            }
+        }
+        if (scalar(@$possibly_stale)) {
+            log_step("currently connected consumers of the selected Ceph users:");
+            log_steps($possibly_stale);
+        }
+        if ($staged_count) {
             log_step("For staged keys, refresh running consumers after applying: live-migrate every"
                 . " VM, remount CephFS mounts, and restart other consumers; a dry run of this"
                 . " script then reports who is left");
@@ -2210,19 +2273,23 @@ my sub print_plan($info, $plan, $state, $opts) {
             . scalar($plan->{lockbox_keys}->@*)
             . " encrypted OSD(s), in the auth database and in the LVM tag on the OSD's device. No"
             . " OSD is stopped.");
-        log_steps([
-            map { "$_->{entity} on node $_->{node} ($_->{device})" } $plan->{lockbox_keys}->@*
-        ]);
+        if ($opts->{verbose}) {
+            log_steps([
+                map { "$_->{entity} on node $_->{node} ($_->{device})" } $plan->{lockbox_keys}->@*
+            ]);
+        }
     }
 
     if ($plan->{service_cipher}) {
         $step++;
         log_text("");
-        log_text("Step $step: switch the service tickets to the new cipher, which clears the second"
-            . " error. Clients never decrypt those tickets, so none needs a restart. The setting is"
-            . " part of the monitor map, so the change makes the monitors hold an election, a few"
-            . " seconds in which they do not answer.");
-        log_step("ceph mon set auth_service_cipher $CIPHER");
+        log_text("Step $step: switch the service tickets to the new cipher, which clears the"
+            . " second error. Clients need no restart. This causes a brief monitor election.");
+        if ($opts->{verbose}) {
+            log_step("the setting is stored in the monitor map, so monitors briefly stop"
+                . " answering during the election");
+            log_step("ceph mon set auth_service_cipher $CIPHER");
+        }
     }
 
     if ($opts->{'wipe-rotating-keys'}) {
@@ -2232,7 +2299,7 @@ my sub print_plan($info, $plan, $state, $opts) {
             . " Not recommended: this invalidates every service ticket. Continue only if every"
             . " client and service daemon supports '$CIPHER'; otherwise wait a few hours for the"
             . " old keys to expire.");
-        log_step("ceph auth wipe-rotating-service-keys");
+        log_step("ceph auth wipe-rotating-service-keys") if $opts->{verbose};
     }
 
     if (restrict_wanted($info, $opts)) {
@@ -2240,30 +2307,34 @@ my sub print_plan($info, $plan, $state, $opts) {
         log_text("");
         log_text("Step $step: allow only the '$CIPHER' cipher for authentication, which clears"
             . " the remaining insecure-key warnings. A key or client on the old cipher is"
-            . " refused from then on, and 'auth_preferred_cipher' moves to '$CIPHER' for good."
-            . " Both settings are part of the monitor map, so the monitors hold an election for"
-            . " each, a few seconds in which they do not answer.");
-        log_step("ceph mon set auth_preferred_cipher $CIPHER");
-        log_step("ceph mon set auth_allowed_ciphers $CIPHER");
+            . " refused from then on. This causes brief monitor elections.");
+        if ($opts->{verbose}) {
+            log_step("both settings are stored in the monitor map, so monitors briefly stop"
+                . " answering during each election");
+            log_step("ceph mon set auth_preferred_cipher $CIPHER");
+            log_step("ceph mon set auth_allowed_ciphers $CIPHER");
+        }
     }
 
-    log_text("");
-    # go back to the recorded value, not to what the cluster reports now
-    my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
-    my $now = $info->{preferred_cipher} // 'unreadable';
-    my $restore =
-        !$plan->{stages_pending_keys} ? "is left untouched"
-        : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
-        : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
-    my $elects =
-        $plan->{stages_pending_keys}
-        ? " It is part of the monitor map, so each change makes the monitors hold an election."
-        : "";
-    log_text("'auth_preferred_cipher' (currently '"
-        . $now
-        . "') $restore. It decides the cipher of keys created later; on '$LEGACY_CIPHER', new"
-        . " client keys stay usable by kernel clients that do not know '$CIPHER'.$elects");
-    if ($info->{preferred_cipher} eq $CIPHER) {
+    if ($opts->{verbose}) {
+        log_text("");
+        # Go back to the recorded value, not to what the cluster reports now.
+        my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
+        my $now = $info->{preferred_cipher} // 'unreadable';
+        my $restore =
+            !$plan->{stages_pending_keys} ? "is left untouched"
+            : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
+            : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
+        my $elects =
+            $plan->{stages_pending_keys}
+            ? " It is part of the monitor map, so each change causes a monitor election."
+            : "";
+        log_text("'auth_preferred_cipher' (currently '"
+            . $now
+            . "') $restore. It decides the cipher of keys created later; on '$LEGACY_CIPHER', new"
+            . " client keys stay usable by kernel clients that do not know '$CIPHER'.$elects");
+    }
+    if (($info->{preferred_cipher} // '') eq $CIPHER) {
         log_warn("'auth_preferred_cipher' is already '$CIPHER', so client keys created from now on"
             . " will not work with kernel clients that do not know that cipher");
     }
@@ -3145,7 +3216,8 @@ my sub write_client_key_copies($item, $entry) {
 
 # The new key becomes the entity's pending key, which the monitors accept next to the active one
 # while automatic promotion is disabled, so every copy can be rewritten and every consumer
-# refreshed at its own pace. The rotation ends with '--confirm-clients-refreshed', which commits the key.
+# refreshed at its own pace. The rotation ends with '--confirm-clients-refreshed', which commits
+# the key.
 my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = undef) {
     my $entity = $item->{entity};
     $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
@@ -3904,6 +3976,7 @@ and client keys require their rotation options. Without '--apply', this only pri
   --apply                     carry the plan out, instead of only printing it
   --assume-yes, -y            do not ask for confirmation. '--apply' needs this when
                               standard input is not a terminal
+  --verbose                   include full inventories, paths, and equivalent Ceph commands
   --timeout SECONDS           how long to wait for a daemon to come back (default 600)
   --force                     continue past blocking HEALTH_WARN checks, kernel
                               compatibility checks, and consumer or incomplete-session
@@ -4064,6 +4137,7 @@ my sub parse_options() {
         apply => 0,
         'assume-yes' => 0,
         force => 0,
+        verbose => 0,
         'wipe-rotating-keys' => 0,
         'restart-daemons' => 0,
         'rotate-cluster-keys' => 0,
@@ -4080,6 +4154,7 @@ my sub parse_options() {
         'apply',
         'assume-yes|y',
         'force',
+        'verbose',
         'wipe-rotating-keys',
         'timeout=i',
         'only=s@',
@@ -4452,13 +4527,13 @@ my sub run_migration($opts) {
         return 0;
     }
 
-    probe_nodes($info, $plan);
+    probe_nodes($info, $plan, $opts);
     return 1 if preflight_nodes($info, $plan, $opts) <= 0;
 
     # before the plan is printed, so a dry run reports the refusal too
     return 1 if !check_client_kernels($plan->{client_keys} // [], $opts);
 
-    print_plan($info, $plan, $state, $opts);
+    print_plan($info, $plan, $state, $opts, storage_entities($client_files));
 
     if (!$opts->{apply}) {
         print_open_options(

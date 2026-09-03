@@ -2041,59 +2041,6 @@ sub run_aggregate_confirmation {
 }
 
 {
-    my $info = {
-        insecure_entities => {},
-        allowed_ciphers => [qw(aes aes256k)],
-        preferred_cipher => 'aes',
-        mon_key_in_auth_db => 0,
-        manual_promotion => { supported => 0, unsupported => ['a'] },
-        sessions => { complete => 1, clients => {} },
-        daemons => { mon => [], mgr => [], mds => [], osd => [] },
-    };
-    my $plan = {
-        mon_key => 0,
-        daemons => [],
-        client_keys => [
-            {
-                entity => 'client.store',
-                reason => "used by storage 'store'",
-                files => [],
-                staged => 1,
-                kernel => 0,
-            },
-            {
-                entity => 'client.admin',
-                reason => 'asked for with --rotate-admin-key',
-                files => [],
-                staged => 0,
-                kernel => 0,
-            },
-        ],
-        lockbox_keys => [],
-        service_cipher => 0,
-        stages_pending_keys => 1,
-    };
-    my $output = '';
-    {
-        open(my $stdout, '>', \$output) or die $!;
-        local *STDOUT = $stdout;
-        $HOOKS->{print_plan}->(
-            $info, $plan, {}, { 'rotate-admin-key' => 1, 'rotate-storage-key' => ['store'] },
-        );
-    }
-    like(
-        $output,
-        qr/replaced at once.*stop each affected consumer before applying.*Apply the replacement only after all are stopped.*update every key copy outside Proxmox VE.*restart the consumers.*removes the active key immediately.*reconnect can fail as soon as the key changes.*monitor-ticket expiry is only an upper bound/s,
-        'the plan gives the safe replace-at-once sequence before apply',
-    );
-    like(
-        $output,
-        qr/For staged keys, refresh running consumers after applying: live-migrate/s,
-        'the plan keeps post-apply refresh guidance for staged keys',
-    );
-}
-
-{
     my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
     my $rados = ClientRotationRados->new($OLD);
     my $output = '';
@@ -2153,6 +2100,16 @@ sub run_aggregate_confirmation {
         qr/staged next to each other.*--confirm-clients-refreshed.*once\s+every open record is ready.*--confirm-all-clients-refreshed/s,
         'staged-key help names per-user and conditionally ready aggregate completion',
     );
+    like($help, qr/--verbose/, 'help names verbose plan output');
+
+    {
+        local @ARGV = qw(--verbose --help);
+        open(my $stdout, '>', \my $output) or die $!;
+        local *STDOUT = $stdout;
+        my ($opts, $status) = $HOOKS->{parse_options}->();
+        is($status, 0, 'the parser accepts verbose');
+        like($output, qr/--verbose/, 'verbose remains visible in parser help output');
+    }
 
     {
         local @ARGV = ('--ack-refreshed', 'client.cp');
@@ -2214,6 +2171,281 @@ sub run_aggregate_confirmation {
             "$case->[2] is rejected before setup, RADOS, or locks",
         );
     }
+}
+
+{
+    my $client_health = sub {
+        return {
+            AUTH_INSECURE_CLIENT_KEY_TYPE => {
+                detail => [map { { message => "entity $_ using insecure key type: aes" } } @_],
+            },
+        };
+    };
+    my $info = {
+        insecure_entities => { 'osd.7' => 'aes' },
+        health_checks => $client_health->(qw(client.store client.admin)),
+        allowed_ciphers => [qw(aes aes256k)],
+        preferred_cipher => 'aes',
+        mon_key_in_auth_db => 0,
+        manual_promotion => { supported => 1, disabled => 0 },
+        sessions => {
+            complete => 1,
+            clients => {
+                'client.store' => [{ global_id => 9, host => 'node-client' }],
+            },
+        },
+        daemons => {
+            mon => [],
+            mgr => [],
+            mds => [],
+            osd => [{ type => 'osd', id => 7, entity => 'osd.7', node => 'node-daemon' }],
+        },
+    };
+    my $plan = {
+        mon_key => 0,
+        daemons => [$info->{daemons}->{osd}->@*],
+        client_keys => [
+            {
+                entity => 'client.store',
+                reason => "used by storage 'store'",
+                files => [{ path => '/etc/pve/priv/ceph/store.keyring' }],
+                staged => 1,
+                kernel => 1,
+            },
+            {
+                entity => 'client.admin',
+                reason => 'asked for with --rotate-admin-key',
+                files => [{ path => '/etc/pve/priv/ceph.client.admin.keyring' }],
+                staged => 0,
+                kernel => 0,
+            },
+        ],
+        lockbox_keys => [{
+            entity => 'client.osd-lockbox.1234',
+            node => 'node-daemon',
+            device => '/dev/mapper/osd-block-1234',
+        }],
+        service_cipher => 1,
+        stages_pending_keys => 1,
+    };
+    my $opts = {
+        'rotate-admin-key' => 1,
+        'rotate-storage-key' => ['store'],
+        'wipe-rotating-keys' => 1,
+        'restrict-ciphers' => 1,
+        'restart-daemons' => 0,
+    };
+    my $render = sub {
+        my (
+            $verbose,
+            $selected_plan,
+            $selected_opts,
+            $selected_storage_entities,
+            $selected_info,
+        ) = @_;
+        $selected_plan //= $plan;
+        $selected_opts //= $opts;
+        $selected_storage_entities //= {
+            'client.admin' => ['default-rbd'],
+            'client.store' => ['store'],
+        };
+        $selected_info //= $info;
+        my $output = '';
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_plan}->(
+            $selected_info,
+            $selected_plan,
+            {},
+            { %$selected_opts, verbose => $verbose },
+            $selected_storage_entities,
+        );
+        return $output;
+    };
+
+    my $concise = $render->(0);
+    like($concise, qr/Why HEALTH_ERR.*hence HEALTH_ERR/s, 'the default keeps the health reason');
+    unlike(
+        $concise,
+        qr/Ceph user keys not selected:[^\n]*'client\.admin'/,
+        'the default does not call a selected Ceph user untouched',
+    );
+    unlike(
+        $concise,
+        qr/Additional actions not selected:/,
+        'the default does not call selected ticket wiping and cipher restriction untouched',
+    );
+    like(
+        $concise,
+        qr/Step 1: rotate 1 OSD key.*Step 2: rotate 2 selected Ceph user keys.*Step 3: rotate the lockbox key of 1 encrypted OSD/s,
+        'the default keeps numbered category counts with natural plurals',
+    );
+    like(
+        $concise,
+        qr/Ceph user 'client\.store': staged next to the current key.*Ceph user 'client\.admin': replaced at once/s,
+        'the default lists every selected Ceph user and puts client.admin last',
+    );
+    like(
+        $concise,
+        qr/For each staged Ceph user key, both the current and new keys authenticate.*committed with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/s,
+        'the default names both staged completion paths without offering the aggregate early',
+    );
+    like(
+        $concise,
+        qr/For each Ceph user marked 'replaced at once'.*stop every consumer before applying.*Apply the replacement only after all are stopped.*update every key copy outside Proxmox VE.*restart the consumers.*removes the active key immediately.*reconnect can fail as soon as the key changes.*monitor-ticket expiry is only an upper bound/s,
+        'the default gives the safe replace-at-once sequence before apply',
+    );
+    unlike(
+        $concise,
+        qr/old key.*must then be refreshed/s,
+        'the default does not defer the replace-at-once prerequisite until after apply',
+    );
+    unlike($concise, qr/key\(s\)/, 'the default uses natural singular and plural key wording');
+    my $single = $render->(
+        0,
+        {
+            %$plan,
+            daemons => [],
+            client_keys => [$plan->{client_keys}->[0]],
+            lockbox_keys => [],
+            service_cipher => 0,
+        },
+        {
+            'rotate-storage-key' => ['store'],
+            'restart-daemons' => 0,
+        },
+    );
+    like(
+        $single,
+        qr/Step 1: rotate 1 selected Ceph user key\b/,
+        'the default renders the singular Ceph user key label',
+    );
+    like(
+        $concise,
+        qr/stopped, rotated and started again.*stop every consumer.*No OSD is stopped/s,
+        'the default keeps restart and disruption effects',
+    );
+    like($concise, qr/records migration progress/, 'the default keeps the journal warning');
+    unlike($concise, qr/osd\.7 on node-daemon/, 'the default hides full daemon inventory');
+    unlike(
+        $concise,
+        qr{/etc/pve/priv/ceph(?:/store|\.client\.admin)\.keyring},
+        'the default hides keyring paths',
+    );
+    unlike(
+        $concise,
+        qr/client\.osd-lockbox\.1234|osd-block-1234/,
+        'the default hides lockbox identity and device rows',
+    );
+    unlike($concise, qr/ceph (?:mon set|auth wipe)/, 'the default hides equivalent Ceph commands');
+    unlike(
+        $concise,
+        qr/'auth_preferred_cipher' \(currently/,
+        'the default hides preferred-cipher lifecycle detail',
+    );
+
+    my $scope = $render->(
+        0,
+        {
+            mon_key => 0,
+            daemons => [],
+            client_keys => [],
+            lockbox_keys => [],
+            service_cipher => 0,
+            stages_pending_keys => 0,
+        },
+        { 'restart-daemons' => 0 },
+        { 'client.admin' => ['local-rbd'] },
+        { %$info, health_checks => $client_health->(qw(client.crash client.admin)) },
+    );
+    like(
+        $scope,
+        qr/Not touched by this run:.*Ceph user keys not selected: bootstrap and crash users; 'client\.admin'\..*Other keys not selected: the shared 'mon\.' key; encrypted OSD lockbox keys\..*Additional actions not selected: service-ticket wiping; cipher restriction\./s,
+        'the default states unselected key scope and final actions',
+    );
+    unlike(
+        $scope,
+        qr/dedicated storage users/,
+        'the default names no storage user when no dedicated one is configured',
+    );
+
+    my $empty_plan = {
+        mon_key => 0,
+        daemons => [],
+        client_keys => [],
+        lockbox_keys => [],
+        service_cipher => 0,
+        stages_pending_keys => 0,
+    };
+    my $fully_migrated = $render->(
+        0,
+        $empty_plan,
+        { 'restart-daemons' => 0 },
+        {
+            'client.admin' => ['default-rbd'],
+            'client.store' => ['rbd-a'],
+        },
+        { %$info, health_checks => {} },
+    );
+    unlike(
+        $fully_migrated,
+        qr/Ceph user keys not selected:/,
+        'a fully migrated cluster lists no Ceph users as open old-cipher work',
+    );
+
+    my $shared_selected = $render->(
+        0,
+        $empty_plan,
+        { 'restart-daemons' => 0, 'rotate-storage-key' => ['rbd-a'] },
+        { 'client.shared' => [qw(rbd-a rbd-b)] },
+        { %$info, health_checks => $client_health->('client.shared') },
+    );
+    unlike(
+        $shared_selected,
+        qr/dedicated storage users/,
+        'selecting one storage selects its shared dedicated Ceph user',
+    );
+
+    my $one_unselected = $render->(
+        0,
+        $empty_plan,
+        { 'restart-daemons' => 0, 'rotate-storage-key' => ['rbd-b'] },
+        {
+            'client.admin' => ['default-rbd'],
+            'client.other' => ['rbd-c'],
+            'client.shared' => [qw(rbd-a rbd-b)],
+        },
+        { %$info, health_checks => $client_health->(qw(client.shared client.other)) },
+    );
+    like(
+        $one_unselected,
+        qr/Ceph user keys not selected:.*dedicated storage users 'client\.other'/,
+        'the default names a genuinely unselected dedicated Ceph user',
+    );
+    unlike(
+        $one_unselected,
+        qr/dedicated storage users[^\n]*client\.shared/,
+        'the default excludes a shared Ceph user selected through any storage ID',
+    );
+
+    my $verbose = $render->(1);
+    like($verbose, qr/osd\.7 on node-daemon/, 'verbose includes full daemon inventory');
+    like(
+        $verbose,
+        qr/Ceph user 'client\.store' \(used by storage 'store'\).*\/etc\/pve\/priv\/ceph\/store\.keyring/s,
+        'verbose includes selection reasons and keyring paths',
+    );
+    like(
+        $verbose,
+        qr/client\.osd-lockbox\.1234.*osd-block-1234/s,
+        'verbose includes lockbox identity and device rows',
+    );
+    like($verbose, qr/ceph mon set auth_service_cipher/, 'verbose includes Ceph commands');
+    like(
+        $verbose,
+        qr/'auth_preferred_cipher' \(currently/,
+        'verbose includes preferred-cipher lifecycle detail',
+    );
 }
 
 done_testing();
