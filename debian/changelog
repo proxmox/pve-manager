@@ -1,3 +1,33 @@
+pve-manager (9.2.16) trixie; urgency=medium
+
+  * ceph: Cephx key migration:
+    - stage eligible 'client.admin' and storage-user keys while their current
+      keys remain valid, so consumers can refresh before the new key is
+      committed. This requires
+      Ceph 19.2.6-pve3, 20.2.4-pve3, or newer on every monitor; with an older
+      monitor, replace the keys at once as before
+    - journal staged rotations so interrupted work resumes safely; if monitor
+      support disappears, require completion or '--abort-staged-key' instead
+      of falling back to immediate replacement
+    - confirm refreshed consumers per Ceph user or for all ready rotations at
+      once. Refuse confirmation while a recorded consumer is still connected
+      or a monitor did not answer the session query; refuse the all-at-once
+      form entirely if any rotation is not ready
+    - add '--rotate-cluster-keys' as the concise path for the shared 'mon.',
+      bootstrap, crash, and encrypted OSD lockbox keys
+    - before replacing a Ceph user key at once, tell operators to stop every
+      consumer because its next reconnect can fail immediately
+    - print concise plans by default with affected Ceph users, disruptive steps,
+      warnings, and next commands; provide full inventories with '--verbose'
+    - avoid duplicate notices and spurious unfinished records for Ceph user
+      keys rotated by an earlier version of the helper
+
+  * ui: ceph: distinguish Cephx migration checks from availability and data
+    health failures, show check-specific next steps, and link to the local
+    documentation
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 04 Sep 2026 00:25:39 +0200
+
 pve-manager (9.2.15) trixie; urgency=medium
 
   * fix #7896: ui: qemu: show the effective implicit machine version for
