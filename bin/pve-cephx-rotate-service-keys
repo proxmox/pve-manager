@@ -1616,15 +1616,19 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     for my $entity (sort keys %$stale_clients) {
         my $held = $stale_clients->{$entity};
+        my $reconnect_risk =
+            $state->{staged}->{$entity}
+            ? " Both the current and staged keys still authenticate."
+            : " A reconnect can fail immediately because the active key was replaced. The current"
+            . " monitor ticket expires within three days by default, but that is only an upper"
+            . " bound on continued monitor access.";
         log_warn("Clients recorded around the rotation of '$entity' may still hold its previous"
             . " key: "
             . scalar(@$held) . " ("
             . session_hosts($held)
-            . "). One that does can lose monitor authentication on a reconnect, and does so no"
-            . " later than its current monitor ticket's expiry, within three days by default."
-            . " Existing data connections may work longer. Live-migrate those VMs, remount"
-            . " CephFS mounts, or restart the consumers, then run this again and close the record"
-            . " with '--confirm-clients-refreshed'.");
+            . ").$reconnect_risk Existing data connections may work longer. Live-migrate those"
+            . " VMs, remount CephFS mounts, or restart the consumers, then run this again and close"
+            . " the record with '--confirm-clients-refreshed'.");
     }
     if ($info->{sessions}->{complete}) {
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
@@ -2185,9 +2189,18 @@ my sub print_plan($info, $plan, $state, $opts) {
                     . session_hosts($live)
                     . ") and keep the current key in memory");
         }
-        log_step("a rotated key reaches a running consumer only through a restart: live-migrate"
-            . " every VM, remount CephFS mounts, and restart other consumers afterwards; a dry"
-            . " run of this script then reports who is left");
+        if (grep { !$_->{staged} } $plan->{client_keys}->@*) {
+            log_step("For every key marked 'replaced at once', stop each affected consumer before"
+                . " applying. Apply the replacement only after all are stopped, update every key"
+                . " copy outside Proxmox VE, and then restart the consumers. Immediate replacement"
+                . " removes the active key immediately, so reconnect can fail as soon as the key"
+                . " changes; monitor-ticket expiry is only an upper bound on continued access");
+        }
+        if (grep { $_->{staged} } $plan->{client_keys}->@*) {
+            log_step("For staged keys, refresh running consumers after applying: live-migrate every"
+                . " VM, remount CephFS mounts, and restart other consumers; a dry run of this"
+                . " script then reports who is left");
+        }
     }
 
     if (scalar($plan->{lockbox_keys}->@*)) {
@@ -3416,12 +3429,14 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
             $after, { $entity => $state->{client_refresh}->{$entity} },
         )->{$entity} // [];
         if (scalar(@$held)) {
-            log_warn("Live clients possibly holding the previous '$entity' key in memory: "
+            log_warn("Consumers that remained connected through the immediate replacement may"
+                . " still hold the previous '$entity' key in memory: "
                 . scalar(@$held)
-                . ". One that does can lose monitor authentication on a reconnect, and does so no"
-                . " later than its current monitor ticket's expiry, within three days by default."
-                . " Existing data connections may work longer. Live-migrate every VM and restart"
-                . " the other consumers, then run a dry run to confirm none remain.");
+                . ". Their next reconnect can fail immediately because the active key changed."
+                . " Their current monitor tickets expire within three days by default, but that is"
+                . " only an upper bound on continued monitor access. Existing data connections may"
+                . " work longer. Live-migrate every VM and restart the other consumers, then run a"
+                . " dry run to confirm none remain.");
         }
     }
 
@@ -4672,6 +4687,7 @@ sub key_migration_test_hooks {
         wipe_rotating_keys => \&wipe_rotating_keys,
         set_service_cipher => \&set_service_cipher,
         restrict_ciphers => \&restrict_ciphers,
+        print_plan => \&print_plan,
     };
 }
 

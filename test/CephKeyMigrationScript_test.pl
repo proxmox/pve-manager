@@ -2041,6 +2041,75 @@ sub run_aggregate_confirmation {
 }
 
 {
+    my $info = {
+        insecure_entities => {},
+        allowed_ciphers => [qw(aes aes256k)],
+        preferred_cipher => 'aes',
+        mon_key_in_auth_db => 0,
+        manual_promotion => { supported => 0, unsupported => ['a'] },
+        sessions => { complete => 1, clients => {} },
+        daemons => { mon => [], mgr => [], mds => [], osd => [] },
+    };
+    my $plan = {
+        mon_key => 0,
+        daemons => [],
+        client_keys => [
+            {
+                entity => 'client.store',
+                reason => "used by storage 'store'",
+                files => [],
+                staged => 1,
+                kernel => 0,
+            },
+            {
+                entity => 'client.admin',
+                reason => 'asked for with --rotate-admin-key',
+                files => [],
+                staged => 0,
+                kernel => 0,
+            },
+        ],
+        lockbox_keys => [],
+        service_cipher => 0,
+        stages_pending_keys => 1,
+    };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_plan}->(
+            $info, $plan, {}, { 'rotate-admin-key' => 1, 'rotate-storage-key' => ['store'] },
+        );
+    }
+    like(
+        $output,
+        qr/replaced at once.*stop each affected consumer before applying.*Apply the replacement only after all are stopped.*update every key copy outside Proxmox VE.*restart the consumers.*removes the active key immediately.*reconnect can fail as soon as the key changes.*monitor-ticket expiry is only an upper bound/s,
+        'the plan gives the safe replace-at-once sequence before apply',
+    );
+    like(
+        $output,
+        qr/For staged keys, refresh running consumers after applying: live-migrate/s,
+        'the plan keeps post-apply refresh guidance for staged keys',
+    );
+}
+
+{
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
+    my $rados = ClientRotationRados->new($OLD);
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        run_client_rotation($rados, $state, picture(1, 501), picture(1, 501));
+    }
+    like(
+        $output,
+        qr/remained connected through the immediate replacement.*next reconnect can fail immediately.*only an upper bound.*Live-migrate/s,
+        'post-apply advice is remedial and does not promise a grace period',
+    );
+}
+
+{
     # Contradicting requests are refused before the cluster is touched.
     local @ARGV = qw(--apply --confirm-clients-refreshed client.cp --abort-staged-key client.cp);
     my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
