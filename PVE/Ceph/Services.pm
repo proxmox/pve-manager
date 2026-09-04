@@ -1022,8 +1022,8 @@ sub cephx_migration_verdicts {
             "Client keys can be migrated as far as this cluster's own nodes go, but check every"
             . " consumer outside of it first (librados or librbd on external hosts, guests"
             . " that map RBD themselves), those are not visible from here. The"
-            . " '--rotate-client-keys', '--rotate-admin-key' and '--rotate-storage-key'"
-            . " options of the migration helper cover them.";
+            . " '--rotate-client-keys', '--rotate-admin-key', '--rotate-all-storage-keys' and"
+            . " '--rotate-storage-key' options of the migration helper cover them.";
     }
 
     my $allowed = $status->{monmap}->{auth_allowed_ciphers};

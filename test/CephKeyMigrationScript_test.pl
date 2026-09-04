@@ -1999,7 +1999,8 @@ sub run_aggregate_confirmation {
             map { $_ => $selected->{$_} // 0 }
                 qw(
                 rotate-mon-key rotate-client-keys rotate-lockbox-keys
-                rotate-admin-key rotate-storage-key restrict-ciphers wipe-rotating-keys
+                rotate-admin-key rotate-storage-key rotate-all-storage-keys
+                restrict-ciphers wipe-rotating-keys
                 )
         },
         {
@@ -2008,6 +2009,7 @@ sub run_aggregate_confirmation {
             'rotate-lockbox-keys' => 1,
             'rotate-admin-key' => 0,
             'rotate-storage-key' => 0,
+            'rotate-all-storage-keys' => 0,
             'restrict-ciphers' => 0,
             'wipe-rotating-keys' => 0,
         },
@@ -2097,7 +2099,7 @@ sub run_aggregate_confirmation {
     );
     like(
         $help,
-        qr/staged next to each other.*--confirm-clients-refreshed.*once\s+every open record is ready.*--confirm-all-clients-refreshed/s,
+        qr/keeping both keys valid.*--confirm-clients-refreshed.*once every open\s+record is ready.*--confirm-all-clients-refreshed/s,
         'staged-key help names per-user and conditionally ready aggregate completion',
     );
     like($help, qr/--verbose/, 'help names verbose plan output');
@@ -2216,7 +2218,7 @@ sub run_aggregate_confirmation {
                 entity => 'client.admin',
                 reason => 'asked for with --rotate-admin-key',
                 files => [{ path => '/etc/pve/priv/ceph.client.admin.keyring' }],
-                staged => 0,
+                staged => 1,
                 kernel => 0,
             },
         ],
@@ -2282,18 +2284,18 @@ sub run_aggregate_confirmation {
     );
     like(
         $concise,
-        qr/Ceph user 'client\.store': staged next to the current key.*Ceph user 'client\.admin': replaced at once/s,
-        'the default lists every selected Ceph user and puts client.admin last',
+        qr/Ceph user 'client\.store': staged next to the current key.*Ceph user 'client\.admin': staged next to the current key/s,
+        'the default lists every selected Ceph user as staged and puts client.admin last',
     );
     like(
         $concise,
         qr/For each staged Ceph user key, both the current and new keys authenticate.*committed with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/s,
         'the default names both staged completion paths without offering the aggregate early',
     );
-    like(
+    unlike(
         $concise,
-        qr/For each Ceph user marked 'replaced at once'.*stop every consumer before applying.*Apply the replacement only after all are stopped.*update every key copy outside Proxmox VE.*restart the consumers.*removes the active key immediately.*reconnect can fail as soon as the key changes.*monitor-ticket expiry is only an upper bound/s,
-        'the default gives the safe replace-at-once sequence before apply',
+        qr/For each Ceph user marked 'replaced at once'/,
+        'the normal plan has no immediate long-lived client replacement',
     );
     unlike(
         $concise,
@@ -2322,8 +2324,8 @@ sub run_aggregate_confirmation {
     );
     like(
         $concise,
-        qr/stopped, rotated and started again.*stop every consumer.*No OSD is stopped/s,
-        'the default keeps restart and disruption effects',
+        qr/stopped, rotated and started again.*both the current and new keys authenticate.*No OSD is stopped/s,
+        'the default keeps restart and staged-rotation effects',
     );
     like($concise, qr/records migration progress/, 'the default keeps the journal warning');
     unlike($concise, qr/osd\.7 on node-daemon/, 'the default hides full daemon inventory');
@@ -2445,6 +2447,261 @@ sub run_aggregate_confirmation {
         $verbose,
         qr/'auth_preferred_cipher' \(currently/,
         'verbose includes preferred-cipher lifecycle detail',
+    );
+}
+
+# --- bulk rotation of dedicated storage users: command line and guards -------------------------
+{
+    local @ARGV = qw(--rotate-all-storage-keys --rotate-storage-key rbd-vm);
+    my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
+    like(
+        $err,
+        qr/'--rotate-all-storage-keys' cannot be combined with '--rotate-storage-key'/,
+        'the bulk option refuses a single-storage selection before the root check',
+    );
+
+    local @ARGV = qw(--rotate-all-storage-keys --rotate-cluster-keys --rotate-admin-key);
+    $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
+    like($err, qr/must run as root/, 'it combines with the cluster and admin key options');
+
+    local @ARGV = qw(--rotate-all-storage-keys --only osd);
+    $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
+    like($err, qr/must run as root/, "and with '--only', which does not narrow client keys");
+
+    my $help = $HOOKS->{usage}->();
+    like(
+        $help,
+        qr/--rotate-all-storage-keys\s+rotate all dedicated users of managed local RBD and CephFS\s+storages\. Excludes 'client\.admin' and storages for external\s+clusters\. Requires Ceph 19\.2\.6-pve3, 20\.2\.4-pve3, or newer\s+installed on every monitor, followed by a restart of every\s+monitor\. Each key is staged rather than replaced at once\.\s+Refresh every consumer and external key copy, then confirm it\s+in a later run/,
+        'help states scope, exclusions, the monitor requirement, staging, and the later'
+            . ' confirmation',
+    );
+}
+
+{
+    my $files = { 'client.vm' => [{ store => 'rbd-vm' }], 'client.admin' => [{ store => 'cp' }] };
+    my $bulk_abort = sub {
+        my ($entity, $mapping) = @_;
+        return eval {
+            $HOOKS->{assert_abort_rotation_compatible}->(
+                { 'rotate-all-storage-keys' => 1, 'abort-staged-key' => [$entity] }, $mapping,
+            );
+            1;
+        } ? '' : $@;
+    };
+    like(
+        $bulk_abort->('client.vm', $files),
+        qr/'--abort-staged-key client\.vm' contradicts the rotation option/,
+        'aborting a user the bulk option selects is refused',
+    );
+    is($bulk_abort->('client.admin', $files), '', 'client.admin is not selected by it');
+    is($bulk_abort->('client.other', $files), '', 'nor is a user without a storage');
+    is(
+        $bulk_abort->('client.vm', { 'client.admin' => $files->{'client.admin'} }),
+        '',
+        'before the fresh mapping the user is not a storage user',
+    );
+    like(
+        $bulk_abort->('client.vm', $files),
+        qr/contradicts/,
+        'the refreshed mapping after locking repeats the check',
+    );
+}
+
+{
+    my $files = { 'client.vm' => [{ store => 'rbd-vm' }] };
+    my $guard = sub {
+        my ($info, $opts, $state) = @_;
+        return eval {
+            $HOOKS->{assert_client_staging_supported}->($info, $opts, $state, $files);
+            1;
+        } ? '' : $@;
+    };
+    my $bulk = { 'rotate-all-storage-keys' => 1 };
+    my $info = {
+        exported => { 'client.vm' => { key => $OLD } },
+        manual_promotion =>
+            { supported => 0, disabled => 0, unsupported => ['b'], unanswered => [] },
+    };
+    like(
+        $guard->($info, $bulk, {}),
+        qr/the selected long-lived client keys were not changed because not every monitor can keep two client keys valid: monitors that do not report the option: b\. Install Ceph 19\.2\.6-pve3, 20\.2\.4-pve3, or newer on every monitor, and restart every monitor after the package update\. If that was already done, verify that the named monitors are running and that their nodes and admin sockets answer\./s,
+        'an old monitor refuses the bulk option before any change and names the package floor,'
+            . ' the restart, and the running-monitor check',
+    );
+    $info->{manual_promotion} =
+        { supported => 0, disabled => 0, unsupported => [], unanswered => ['due'] };
+    my $unanswered = $guard->($info, $bulk, {});
+    like(
+        $unanswered,
+        qr/monitors that did not answer: due\. Install Ceph/,
+        'an unanswered monitor is told apart from an old one and gets the same guidance',
+    );
+    unlike($unanswered, qr/do not report the option/, 'without calling it old');
+    is($guard->($info, {}, {}), '', 'without a client-key option the guard is silent');
+    is(
+        $guard->({ %$info, exported => { 'client.vm' => { key => $NEW } } }, $bulk, {}),
+        '',
+        'a migrated user needs no monitor support',
+    );
+    is(
+        $guard->(
+            { %$info, exported => { 'client.vm' => { key => $OLD, pending_key => $NEW } } },
+            $bulk,
+            { staged => { 'client.vm' => { key => key_fingerprint($NEW), staged => 1 } } },
+        ),
+        '',
+        'a key this script already staged resumes even after monitor support was lost',
+    );
+    $files = { 'client.admin' => [{ store => 'cp' }] };
+    like(
+        $guard->(
+            { %$info, exported => { 'client.admin' => { key => $OLD } } },
+            { 'rotate-all-storage-keys' => 1, 'rotate-admin-key' => 1 },
+            {},
+        ),
+        qr/selected long-lived client keys were not changed/,
+        'an admin-only bulk selection cannot bypass the staging support guard',
+    );
+}
+
+{
+    # the kernel gate sees the whole selected plan before any key changes
+    my $plan = [
+        { entity => 'client.vm', kernel => 1, staged => 1, bulk => 1 },
+        { entity => 'client.shared', kernel => 0, staged => 1, bulk => 1 },
+    ];
+    my $old = { 'node-a' => { known => 1, supported => 0, release => '6.8.12-9-pve' } };
+    my $output = '';
+    my $verdict;
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $verdict = $HOOKS->{check_client_kernels}->($plan, { force => 0 }, $old);
+    }
+    is($verdict, 0, 'a node kernel without the new cipher refuses the bulk selection');
+    like(
+        $output,
+        qr/The affected keys are: client\.vm\./,
+        'and names the key a kernel client reads',
+    );
+    $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $verdict = $HOOKS->{check_client_kernels}->(
+            $plan, { force => 0 }, { 'node-a' => { known => 0, error => 'unreachable' } },
+        );
+    }
+    is($verdict, 0, 'a node whose kernel cannot be verified refuses it too');
+    like($output, qr/Could not verify kernel.*node-a.*unreachable/s, 'naming the node and why');
+    is(
+        $HOOKS->{check_client_kernels}->([$plan->[1]], { force => 0 }, $old),
+        1,
+        'a selection nothing in-kernel reads passes',
+    );
+}
+
+{
+    # the plan of a bulk selection: labels, counts, and the replace-at-once block
+    my $info = {
+        insecure_entities => {},
+        health_checks => {
+            AUTH_INSECURE_CLIENT_KEY_TYPE => {
+                detail => [
+                    map { { message => "entity $_ using insecure key type: aes" } }
+                        qw(client.crash client.vm client.other)
+                ],
+            },
+        },
+        allowed_ciphers => [qw(aes aes256k)],
+        preferred_cipher => 'aes',
+        mon_key_in_auth_db => 0,
+        manual_promotion => { supported => 1, disabled => 0 },
+        sessions => { complete => 1, clients => {} },
+        daemons => { mon => [], mgr => [], mds => [], osd => [] },
+    };
+    my $stores = { 'client.vm' => ['rbd-vm'], 'client.other' => ['rbd-other'] };
+    my $render = sub {
+        my ($client_keys, $opts) = @_;
+        my $plan = {
+            mon_key => 0,
+            daemons => [],
+            client_keys => $client_keys,
+            lockbox_keys => [],
+            service_cipher => 0,
+            stages_pending_keys => 1,
+        };
+        my $output = '';
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_plan}->($info, $plan, {}, { 'restart-daemons' => 0, %$opts }, $stores);
+        return $output;
+    };
+    my $tool = {
+        entity => 'client.crash',
+        reason => "Ceph's own tools are the only ones that read it",
+        files => [],
+        staged => 0,
+        kernel => 0,
+    };
+    my $resume = {
+        entity => 'client.vm',
+        reason => "used by managed local Ceph storage 'rbd-vm'",
+        files => [{ path => '/etc/pve/priv/ceph/rbd-vm.keyring', store => 'rbd-vm' }],
+        staged => 0,
+        resume_only => 1,
+        kernel => 0,
+    };
+    my $staged = {
+        entity => 'client.other',
+        reason => "used by managed local Ceph storage 'rbd-other'",
+        files => [{ path => '/etc/pve/priv/ceph/rbd-other.keyring', store => 'rbd-other' }],
+        staged => 1,
+        bulk_new_staging => 1,
+        kernel => 0,
+    };
+
+    my $mixed = $render->(
+        [$tool, $resume], { 'rotate-all-storage-keys' => 1, 'rotate-client-keys' => 1 },
+    );
+    like(
+        $mixed,
+        qr/Ceph user 'client\.crash': replaced at once.*Ceph user 'client\.vm': resume writing its current key to every copy/s,
+        'a replaced tool key and a resumed bulk user are labelled apart',
+    );
+    like(
+        $mixed,
+        qr/For each Ceph user marked 'replaced at once'.*stop every consumer/s,
+        'one key replaced at once keeps the safety block, whatever else the plan holds',
+    );
+    unlike(
+        $mixed,
+        qr/bulk storage selection stages every newly rotated/,
+        'the staging note is not printed when the plan stages no bulk key',
+    );
+
+    my $resume_alone = $render->([$resume], { 'rotate-all-storage-keys' => 1 });
+    unlike(
+        $resume_alone,
+        qr/replaced at once/,
+        'finishing the copies of a rotated key is not called a replacement',
+    );
+
+    my $staged_bulk = $render->([$staged, $resume], { 'rotate-all-storage-keys' => 1 });
+    like(
+        $staged_bulk,
+        qr/Ceph user 'client\.other': staged next to the current key.*bulk storage selection stages every newly rotated dedicated user key; it never replaces one at once/s,
+        'a staged bulk key gets the staging note',
+    );
+    unlike(
+        $staged_bulk,
+        qr/dedicated storage users 'client/,
+        'the bulk selection leaves no dedicated storage user unselected',
+    );
+    like(
+        $render->([$staged], { 'rotate-storage-key' => ['rbd-other'] }),
+        qr/Ceph user keys not selected:.*dedicated storage users 'client\.vm'/,
+        'a single-storage selection still names the dedicated users it leaves out',
     );
 }
 

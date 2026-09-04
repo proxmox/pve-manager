@@ -28,7 +28,7 @@ use PVE::Ceph::KeyMigration qw(
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
-    touched_daemons
+    client_staging_needed touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
     summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
@@ -1242,6 +1242,28 @@ my sub grace_support_problem($support) {
     return join('; ', @why) || 'no monitor answered';
 }
 
+my sub grace_support_guidance($support) {
+    return
+        grace_support_problem($support)
+        . ". Install Ceph 19.2.6-pve3, 20.2.4-pve3, or newer on every monitor, and restart"
+        . " every monitor after the package update. If that was already done, verify that the"
+        . " named monitors are running and that their nodes and admin sockets answer.";
+}
+
+my sub assert_client_staging_supported($info, $opts, $state, $files) {
+    return if !client_keys_requested($opts);
+
+    my ($clients) = plan_client_keys($info, $state, $opts, $files);
+    return if !client_staging_needed($clients);
+
+    my $support = $info->{manual_promotion} // {};
+    return if $support->{supported};
+
+    die "the selected long-lived client keys were not changed because not every monitor can keep"
+        . " two client keys valid: "
+        . grace_support_guidance($support) . "\n";
+}
+
 # Only once no staged key is left: a monitor promoting again would end every other grace period.
 my sub release_manual_promotion($rados, $state) {
     my $grace = $state->{client_grace} or return;
@@ -1804,9 +1826,13 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     $wanted->{ $_->{entity} } = 1 for plan_lockbox_keys($info, $opts)->@*;
     my $selected_stores = { map { $_ => 1 } @{ $opts->{'rotate-storage-key'} // [] } };
     for my $entity (sort keys %$client_files) {
-        $wanted->{$entity} = 1 if grep {
-            defined($_->{store}) && $selected_stores->{ $_->{store} }
-        } $client_files->{$entity}->@*;
+        $wanted->{$entity} = 1
+            if ($opts->{'rotate-all-storage-keys'}
+                && $entity ne $ADMIN_ENTITY
+                && grep { defined($_->{store}) } $client_files->{$entity}->@*)
+            || grep {
+                defined($_->{store}) && $selected_stores->{ $_->{store} }
+            } $client_files->{$entity}->@*;
     }
     my @elsewhere = grep { m/^client\./ && !$wanted->{$_} } @staged;
     @staged = grep { !m/^client\./ || $wanted->{$_} } @staged;
@@ -2073,7 +2099,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
     } keys %$storage_entities;
     push @unselected_users,
         "dedicated storage users " . join(', ', map { "'$_'" } @unselected_storage_users)
-        if scalar(@unselected_storage_users);
+        if scalar(@unselected_storage_users) && !$opts->{'rotate-all-storage-keys'};
 
     my @unselected_other_keys;
     push @unselected_other_keys, "the shared 'mon.' key" if !$mon_selected;
@@ -2190,14 +2216,19 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         $step++;
         my $client_count = scalar($plan->{client_keys}->@*);
         my $staged_count = scalar(grep { $_->{staged} } $plan->{client_keys}->@*);
-        my $replaced_count = $client_count - $staged_count;
+        my $replaced_count =
+            scalar(grep { !$_->{staged} && !$_->{resume_only} } $plan->{client_keys}->@*);
         log_text("");
         my $key_label = $client_count == 1 ? 'Ceph user key' : 'Ceph user keys';
         log_text("Step $step: rotate $client_count selected $key_label and rewrite every copy"
             . " Proxmox VE keeps. Affected CephFS mounts are redone on every node unless something"
             . " is using them.");
+
         for my $item ($plan->{client_keys}->@*) {
-            my $how = $item->{staged} ? 'staged next to the current key' : 'replaced at once';
+            my $how =
+                $item->{staged} ? 'staged next to the current key'
+                : $item->{resume_only} ? 'resume writing its current key to every copy'
+                : 'replaced at once';
             if ($opts->{verbose}) {
                 my $where =
                     scalar($item->{files}->@*)
@@ -2207,6 +2238,10 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             } else {
                 log_step("Ceph user '$item->{entity}': $how");
             }
+        }
+        if (grep { $_->{bulk_new_staging} } $plan->{client_keys}->@*) {
+            log_step("The bulk storage selection stages every newly rotated dedicated user key;"
+                . " it never replaces one at once.");
         }
         if ($staged_count) {
             log_step("For each staged Ceph user key, both the current and new keys authenticate"
@@ -2223,17 +2258,6 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
                 . " removes the active key immediately, so reconnect can fail as soon as the key"
                 . " changes; monitor-ticket expiry is only an upper bound on continued access."
             );
-        }
-        if (
-            $opts->{verbose}
-            && grep {
-                !$_->{staged} && client_key_stageable($_->{entity})
-            } $plan->{client_keys}->@*
-        ) {
-            log_step("replacement is required because not every monitor can keep two client keys"
-                . " valid ("
-                . grace_support_problem($info->{manual_promotion} // {})
-                . "); Ceph 19.2.6-pve3 and 20.2.4-pve3 monitors can");
         }
         if ($opts->{verbose}) {
             my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
@@ -2725,10 +2749,10 @@ my sub live_swap_daemon($rados, $state, $daemon) {
     return 1;
 }
 
-my sub check_client_kernels($plan, $opts) {
+my sub check_client_kernels($plan, $opts, $kernels = undef) {
     return 1 if !grep { $_->{kernel} } @$plan;
 
-    my $kernels = collect_node_kernels($opts);
+    $kernels //= collect_node_kernels($opts);
     my @unknown = sort grep { !$kernels->{$_}->{known} } keys %$kernels;
     my @old = sort grep {
         $kernels->{$_}->{known} && !$kernels->{$_}->{supported}
@@ -3136,7 +3160,7 @@ my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
     my $check = sub {
         my $support = ($collect->() // {})->{manual_promotion} // {};
         die "not every monitor can keep two client keys valid: "
-            . grace_support_problem($support) . "\n"
+            . grace_support_guidance($support) . "\n"
             if !$support->{supported};
         return $support->{disabled};
     };
@@ -3940,7 +3964,9 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
         }
         my $option =
             $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
-            : $stores->{$entity} ? "'--rotate-storage-key $stores->{$entity}->[0]'"
+            : $stores->{$entity}
+            ? "'--rotate-all-storage-keys' (or '--rotate-storage-key $stores->{$entity}->[0]'"
+            . " for a compatible subset)"
             : "the rotation option for it";
         log_warn("the key staged for '$entity' is gone without becoming active, so every copy"
             . " written for it holds a key the monitors no longer accept. Pass $option to stage a"
@@ -4002,15 +4028,21 @@ and client keys require their rotation options. Without '--apply', this only pri
                               OSD, in the auth database and in the LVM tag its keyring is
                               rebuilt from at activation. Both are written in one run, so
                               the OSD keeps unlocking
-  --rotate-admin-key          also rotate 'client.admin' and rewrite the copies of it that
-                              Proxmox VE keeps
-  --rotate-storage-key NAME   also rotate the key of one Ceph storage that has its own
-                              user. May be given more than once
-                              If every monitor can keep two client keys valid, both keys
-                              are staged next to each other and consumers can be refreshed
-                              one by one. Commit with '--confirm-clients-refreshed' or, once
-                              every open record is ready, '--confirm-all-clients-refreshed'.
-                              Otherwise the key is replaced at once
+  --rotate-admin-key          also stage a new 'client.admin' key and rewrite the copies of it
+                              that Proxmox VE keeps. Requires every monitor to support keeping
+                              both keys valid until confirmation
+  --rotate-all-storage-keys   rotate all dedicated users of managed local RBD and CephFS
+                              storages. Excludes 'client.admin' and storages for external
+                              clusters. Requires Ceph 19.2.6-pve3, 20.2.4-pve3, or newer
+                              installed on every monitor, followed by a restart of every
+                              monitor. Each key is staged rather than replaced at once.
+                              Refresh every consumer and external key copy, then confirm it
+                              in a later run
+  --rotate-storage-key NAME   also stage a new key for one Ceph storage that has its own user.
+                              May be given more than once. Requires every monitor to support
+                              keeping both keys valid while consumers are refreshed one by one.
+                              Commit with '--confirm-clients-refreshed' or, once every open
+                              record is ready, '--confirm-all-clients-refreshed'
   --abort-staged-key ENTITY   needs '--apply'. Drop a key this script staged for a client
                               entity and put its current key back into every copy Proxmox
                               VE keeps. A consumer already switched to the new key loses
@@ -4144,6 +4176,7 @@ my sub parse_options() {
         'rotate-cluster-keys' => 0,
         'rotate-client-keys' => 0,
         'rotate-admin-key' => 0,
+        'rotate-all-storage-keys' => 0,
         'rotate-lockbox-keys' => 0,
         'restrict-ciphers' => 0,
         'confirm-all-clients-refreshed' => 0,
@@ -4164,6 +4197,7 @@ my sub parse_options() {
         'rotate-cluster-keys',
         'rotate-client-keys',
         'rotate-admin-key',
+        'rotate-all-storage-keys',
         'rotate-lockbox-keys',
         'rotate-storage-key=s@',
         'restrict-ciphers',
@@ -4182,6 +4216,10 @@ my sub parse_options() {
     }
 
     expand_cluster_key_option($opts);
+
+    die "'--rotate-all-storage-keys' cannot be combined with '--rotate-storage-key'\n"
+        if $opts->{'rotate-all-storage-keys'}
+        && scalar(@{ $opts->{'rotate-storage-key'} // [] });
 
     if (defined($opts->{only})) {
         my $only = { map { $_ => 1 } map { split(/\s*,\s*/, $_) } $opts->{only}->@* };
@@ -4237,6 +4275,9 @@ my sub assert_abort_rotation_compatible($opts, $client_files) {
     my $selected = { map { $_ => 1 } @{ $opts->{'rotate-storage-key'} // [] } };
     for my $entity (@abort) {
         my $again = ($entity eq $ADMIN_ENTITY && $opts->{'rotate-admin-key'})
+            || ($opts->{'rotate-all-storage-keys'}
+                && $entity ne $ADMIN_ENTITY
+                && grep { defined($_->{store}) } @{ $client_files->{$entity} // [] })
             || grep { defined($_->{store}) && $selected->{ $_->{store} } }
             @{ $client_files->{$entity} // [] };
         die "'--abort-staged-key $entity' contradicts the rotation option given for the same"
@@ -4308,6 +4349,10 @@ my sub run_migration($opts) {
     }
 
     $info = collect_cluster_info($rados, $opts, $state);
+    # Before any recovery of earlier runs: a selection that would have to stage new keys while a
+    # monitor cannot keep two client keys valid stops here. The check repeats once the staged
+    # records are settled, as settling can leave a key that needs staging anew.
+    assert_client_staging_supported($info, $opts, $state, client_key_files());
     $info->{rados} = $rados;
     $info->{mon_entry} = eval { auth_entry($rados, 'mon.') } // {};
     $info->{pve_mon_key} = pve_mon_keyring_key();
@@ -4443,6 +4488,7 @@ my sub run_migration($opts) {
     $client_files = client_key_files();
     assert_abort_rotation_compatible($opts, $client_files);
     settle_staged_records($rados, $info, $state, $opts, $client_files);
+    assert_client_staging_supported($info, $opts, $state, $client_files);
 
     my $verdict = preflight_cluster(
         $info, $opts, scalar(@$recovered), $state, $client_files,
@@ -4502,7 +4548,9 @@ my sub run_migration($opts) {
                     : $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
                     : (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? "'--rotate-client-keys'"
                     : $entity =~ m/^client\.osd-lockbox\./ ? "'--rotate-lockbox-keys'"
-                    : $stores->{$entity} ? "'--rotate-storage-key $stores->{$entity}->[0]'"
+                    : $stores->{$entity}
+                    ? "'--rotate-all-storage-keys' (or '--rotate-storage-key"
+                    . " $stores->{$entity}->[0]')"
                     : "a run not narrowed by '--only'";
                 "$entity ($option)";
             } @unfinished;
@@ -4542,6 +4590,7 @@ my sub run_migration($opts) {
             storage_entities($client_files),
             $state,
             collect_restriction_snapshot($rados),
+            1,
         );
 
         log_heading("Dry run finished");
@@ -4755,6 +4804,8 @@ sub key_migration_test_hooks {
         admin_rotation_unfinished => \&admin_rotation_unfinished,
         usage => \&usage,
         expand_cluster_key_option => \&expand_cluster_key_option,
+        assert_abort_rotation_compatible => \&assert_abort_rotation_compatible,
+        assert_client_staging_supported => \&assert_client_staging_supported,
         parse_options => \&parse_options,
         main => \&main,
         run_migration => \&run_migration,
@@ -4765,6 +4816,7 @@ sub key_migration_test_hooks {
         restrict_ciphers => \&restrict_ciphers,
         print_plan => \&print_plan,
         resume_live_swap => \&resume_live_swap,
+        check_client_kernels => \&check_client_kernels,
     };
 }
 

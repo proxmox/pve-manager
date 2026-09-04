@@ -21,7 +21,7 @@ our @EXPORT_OK = qw(
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
-    touched_daemons
+    bulk_storage_staging_needed client_staging_needed touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
     summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
@@ -196,8 +196,19 @@ sub mon_key_rotation_wanted($info, $opts) {
 }
 
 sub client_keys_requested($opts) {
-    return 1 if $opts->{'rotate-client-keys'} || $opts->{'rotate-admin-key'};
+    return 1
+        if $opts->{'rotate-client-keys'}
+        || $opts->{'rotate-admin-key'}
+        || $opts->{'rotate-all-storage-keys'};
     return scalar(@{ $opts->{'rotate-storage-key'} // [] }) ? 1 : 0;
+}
+
+sub bulk_storage_staging_needed($plan) {
+    return scalar(grep { $_->{bulk_new_staging} } @{ $plan // [] }) ? 1 : 0;
+}
+
+sub client_staging_needed($plan) {
+    return scalar(grep { $_->{new_staging} } @{ $plan // [] }) ? 1 : 0;
 }
 
 # A completed older rotation must not hide a newer interrupted one. Live-swap state is always open;
@@ -698,6 +709,7 @@ sub open_options(
             "--rotate-admin-key: '$ADMIN_ENTITY' and the copies of it that Proxmox VE keeps";
         $hedge = 1;
     }
+    my @storage_open;
     for my $entity ($clients->{storage}->@*) {
         next if $awaiting->($entity);
         my $stores = $storage_entities->{$entity};
@@ -705,8 +717,20 @@ sub open_options(
             my $store = $_;
             grep { $_ eq $store } @$done
         } @$stores;
-        my $shared = scalar(@$stores) > 1 ? ", shared by " . join(', ', @$stores) : '';
-        push @$next, "--rotate-storage-key $stores->[0]: the '$entity' key$shared";
+        push @storage_open,
+            "'$entity' ("
+            . (scalar(@$stores) > 1 ? 'storages ' : 'storage ')
+            . join(', ', @$stores) . ")";
+    }
+    # the bulk option stages every new key, so it is the safe suggestion; '--rotate-storage-key
+    # NAME' stays the path when only some users can take the new cipher yet
+    my $storage_bulk = scalar(@storage_open) && !$opts->{'rotate-all-storage-keys'} ? 1 : 0;
+    if ($storage_bulk) {
+        push @$next,
+            "--rotate-all-storage-keys: the dedicated storage users "
+            . join(', ', @storage_open)
+            . "; every new key is staged, which needs Ceph 19.2.6-pve3, 20.2.4-pve3, or newer on"
+            . " every monitor";
         $hedge = 1;
     }
     # the monitors recount a moment behind, so a run that passed the option is not offered it
@@ -779,6 +803,7 @@ sub open_options(
         all_ready_for_aggregate => $all_ready_for_aggregate,
         stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
         lockbox => $lockbox_open,
+        storage_bulk => $storage_bulk,
         hedge => $hedge,
     };
 }
@@ -832,6 +857,20 @@ sub plan_client_keys($info, $state, $opts, $files) {
     }
     $wanted->{$ADMIN_ENTITY} = 'asked for with --rotate-admin-key' if $opts->{'rotate-admin-key'};
 
+    if ($opts->{'rotate-all-storage-keys'}) {
+        for my $entity (sort keys %$files) {
+            next if $entity eq $ADMIN_ENTITY;
+            my @stores = sort grep { defined($_) } map { $_->{store} } $files->{$entity}->@*;
+            next if !scalar(@stores);
+            $wanted->{$entity} = "used by managed local Ceph "
+                . (
+                    scalar(@stores) == 1
+                    ? "storage '$stores[0]'"
+                    : "storages " . join(', ', @stores)
+                );
+        }
+    }
+
     for my $storeid (@{ $opts->{'rotate-storage-key'} // [] }) {
         die "'--rotate-storage-key' needs a storage name\n" if $storeid eq '';
 
@@ -852,7 +891,6 @@ sub plan_client_keys($info, $state, $opts, $files) {
     my $plan = [];
     my $warnings = [];
     my $staged = staged_records($info, $state);
-    my $grace = ($info->{manual_promotion} // {})->{supported} ? 1 : 0;
     # 'client.admin' is the broad fallback for the CLI and Ceph storages. Leaving it last
     # reduces the recovery scope if a dedicated Ceph user rotation fails.
     for my $entity (
@@ -867,10 +905,12 @@ sub plan_client_keys($info, $state, $opts, $files) {
         }
         # a key staged by an earlier run with every copy written stays open on purpose until its
         # consumers are confirmed; one whose copies are not all written is planned again, and the
-        # staging reuses the pending key rather than staging a second one over it
+        # staging reuses the pending key rather than staging a second one over it. An aborting key
+        # only follows the explicit rollback path.
         next
             if ($staged->{$entity} // '') eq 'waiting'
-            && $state->{staged}->{$entity}->{written};
+            && ($state->{staged}->{$entity}->{written}
+                || $state->{staged}->{$entity}->{aborting});
         # 'rotated' without 'done' means copies are missing; with 'done' the kernel check below
         # would refuse a key nobody is changing
         next if !needs_rotation($info, $entity) && !migration_unfinished($state, $entity);
@@ -879,14 +919,28 @@ sub plan_client_keys($info, $state, $opts, $files) {
         # now: replacing it at once would leave a third key state behind the copies
         my $owned = ($staged->{$entity} // '') eq 'waiting';
         my $mine = $files->{$entity} // [];
-        push @$plan,
-            {
-                entity => $entity,
-                files => $mine,
-                kernel => (grep { $_->{kernel} } @$mine) ? 1 : 0,
-                reason => $wanted->{$entity},
-                staged => $owned || ($grace && client_key_stageable($entity)) ? 1 : 0,
-            };
+        my $bulk =
+            $opts->{'rotate-all-storage-keys'}
+            && $entity ne $ADMIN_ENTITY
+            && grep { defined($_->{store}) } @$mine;
+        my $new_staging =
+            !$owned && needs_rotation($info, $entity) && client_key_stageable($entity) ? 1 : 0;
+        my $bulk_new_staging = $bulk && $new_staging ? 1 : 0;
+        my $staged = $owned || $new_staging ? 1 : 0;
+        push @$plan, {
+            entity => $entity,
+            files => $mine,
+            kernel => (grep { $_->{kernel} } @$mine) ? 1 : 0,
+            reason => $wanted->{$entity},
+            staged => $staged,
+            new_staging => $new_staging,
+            bulk_new_staging => $bulk_new_staging,
+            # A replacement started by an older helper may already have changed the active key.
+            # Finish its managed copies without creating or replacing another key.
+            resume_only =>
+                !$owned && !$staged && !needs_rotation($info, $entity)
+                && migration_unfinished($state, $entity) ? 1 : 0,
+        };
     }
 
     return ($plan, $warnings);

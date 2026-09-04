@@ -13,7 +13,8 @@ use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
-    plan_client_keys build_plan
+    plan_client_keys build_plan bulk_storage_staging_needed client_staging_needed
+    client_keys_requested
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients
     open_options open_actions
@@ -1572,7 +1573,17 @@ my sub cluster {
     my $stores = { 'client.store-a' => ['rbd-vm'], 'client.store-b' => ['cephfs-iso', 'rbd-ct'] };
 
     my $all = open_options($checks, {}, $stores);
-    is(scalar($all->{next}->@*), 4, 'every key that an option covers is offered');
+    is(scalar($all->{next}->@*), 3, 'every key that an option covers is offered');
+    ok(
+        (
+            grep {
+                m/^--rotate-all-storage-keys: the dedicated storage users 'client\.store-a' \(storage rbd-vm\), 'client\.store-b' \(storages cephfs-iso, rbd-ct\); every new key is staged/
+            } $all->{next}->@*
+        ),
+        'the dedicated storage users are offered together by the bulk option, each with its'
+            . ' storages',
+    );
+    ok($all->{storage_bulk}, 'and the single-storage option is named as the subset path');
 
     my $one = open_options($checks, { 'rotate-storage-key' => ['rbd-vm'] }, $stores);
     is_deeply(
@@ -1589,10 +1600,25 @@ my sub cluster {
     );
     ok(
         (
-            grep { m/^--rotate-storage-key cephfs-iso: .* shared by cephfs-iso, rbd-ct$/ }
-                $one->{next}->@*
+            grep {
+                m/^--rotate-all-storage-keys: .*'client\.store-b' \(storages cephfs-iso, rbd-ct\)/
+            } $one->{next}->@*
         ),
-        'a key behind several storages names one of them, so the option can be copied as printed',
+        'the user behind the other storages is still offered, with every storage it serves',
+    );
+    ok(
+        !(grep { m/^--rotate-storage-key / } $one->{next}->@*),
+        'no per-storage option is suggested, the bulk option stages and the subset note covers it',
+    );
+    my $bulk_run = open_options($checks, { 'rotate-all-storage-keys' => 1 }, $stores);
+    ok(
+        !(grep { m/rotate-all-storage-keys|rotate-storage-key/ } $bulk_run->{next}->@*)
+        && !$bulk_run->{storage_bulk},
+        'a run that passed the bulk option is not offered it again',
+    );
+    ok(
+        !(grep { m/rotate-all-storage-keys/ } $all->{together}->@*),
+        'the bulk option never joins the command for work needing no decision',
     );
 
     is_deeply(
@@ -2015,9 +2041,10 @@ my sub cluster {
     );
     is_deeply(
         { map { $_->{entity} => $_->{staged} } @$plan },
-        { 'client.admin' => 0, 'client.crash' => 0 },
-        'without that support every key is replaced at once, as before',
+        { 'client.admin' => 1, 'client.crash' => 0 },
+        'without that support the long-lived admin key still takes only the staged path',
     );
+    ok(client_staging_needed($plan), 'the caller can refuse that unsupported admin staging');
 
     my $fp = key_fingerprint($NEW);
     my $waiting = {
@@ -2131,6 +2158,163 @@ my sub cluster {
         $built->{stages_pending_keys},
         1,
         'a staged client key needs the preferred cipher claimed like any pending key',
+    );
+}
+
+# --- bulk rotation of dedicated storage users --------------------------------------------------
+{
+    my $files = {
+        'client.admin' =>
+            [{ path => '/etc/pve/priv/ceph/cp.keyring', scope => 'cluster', store => 'cp' }],
+        'client.vm' => [{
+            path => '/etc/pve/priv/ceph/rbd-vm.keyring',
+            scope => 'cluster',
+            store => 'rbd-vm',
+            kernel => 1,
+        }],
+        'client.shared' => [
+            {
+                path => '/etc/pve/priv/ceph/rbd-a.keyring',
+                scope => 'cluster',
+                store => 'rbd-a',
+            },
+            {
+                path => '/etc/pve/priv/ceph/rbd-b.keyring',
+                scope => 'cluster',
+                store => 'rbd-b',
+            },
+        ],
+        'client.done' =>
+            [{ path => '/etc/pve/priv/ceph/old.keyring', scope => 'cluster', store => 'old' }],
+        'client.bootstrap-osd' =>
+            [{ path => '/var/lib/ceph/bootstrap-osd/ceph.keyring', scope => 'nodes' }],
+    };
+    my $info = {
+        exported => {
+            'client.admin' => { key => $OLD },
+            'client.vm' => { key => $OLD },
+            'client.shared' => { key => $OLD },
+            'client.done' => { key => $NEW },
+            'client.bootstrap-osd' => { key => $OLD },
+        },
+        manual_promotion => { supported => 1 },
+    };
+    my $bulk = { 'rotate-all-storage-keys' => 1 };
+
+    my ($plan, $warnings) = plan_client_keys($info, {}, $bulk, $files);
+    is_deeply(
+        [map { $_->{entity} } @$plan],
+        [qw(client.shared client.vm)],
+        'every dedicated storage user still on the old cipher is selected once; client.admin,'
+            . ' the tool keys and a migrated user are not',
+    );
+    my ($shared) = grep { $_->{entity} eq 'client.shared' } @$plan;
+    like(
+        $shared->{reason},
+        qr/storages rbd-a, rbd-b/,
+        'a user shared by several storages is planned once and names all of them',
+    );
+    is(scalar($shared->{files}->@*), 2, 'and every managed copy of it is rewritten');
+    ok(!(grep { !$_->{staged} } @$plan), 'every new bulk rotation is staged');
+    ok(bulk_storage_staging_needed($plan), 'a new bulk rotation needs monitors keeping two keys');
+    is(scalar(@$warnings), 0, 'a clean selection warns about nothing');
+
+    ($plan) =
+        plan_client_keys({ %$info, manual_promotion => { supported => 0 } }, {}, $bulk, $files);
+    ok(
+        !(grep { !$_->{staged} } @$plan) && bulk_storage_staging_needed($plan),
+        'without monitor support the bulk selection still plans staging, never replacement; the'
+            . ' caller refuses it before any change',
+    );
+
+    ($plan) = plan_client_keys($info, {}, $bulk, { 'client.admin' => $files->{'client.admin'} });
+    is_deeply($plan, [], 'storages on client.admin select nothing');
+    ($plan) = plan_client_keys($info, {}, $bulk, {});
+    is_deeply($plan, [], 'no dedicated user selects nothing');
+
+    my $migrated = {
+        %$info,
+        exported => {
+            %{ $info->{exported} },
+            'client.vm' => { key => $NEW },
+            'client.shared' => { key => $NEW },
+        },
+    };
+    ($plan) = plan_client_keys($migrated, {}, $bulk, $files);
+    is_deeply($plan, [], 'migrated users are left alone');
+    ok(!bulk_storage_staging_needed($plan), 'and need no monitor support');
+
+    my $state = { staged => { 'client.vm' => { key => key_fingerprint($NEW), staged => 1 } } };
+    my $lost = {
+        %$info,
+        exported =>
+            { %{ $info->{exported} }, 'client.vm' => { key => $OLD, pending_key => $NEW } },
+        manual_promotion => { supported => 0 },
+    };
+    ($plan) = plan_client_keys($lost, $state, $bulk, $files);
+    my ($vm) = grep { $_->{entity} eq 'client.vm' } @$plan;
+    ok(
+        $vm && $vm->{staged} && !$vm->{bulk_new_staging},
+        'a key this script staged resumes its staged path after monitor support was lost and does'
+            . ' not count as a new staging',
+    );
+    ok(bulk_storage_staging_needed($plan), 'while the other user still needs a new staging');
+    my $owned_only = {%$files};
+    delete $owned_only->{'client.shared'};
+    ($plan) = plan_client_keys($lost, $state, $bulk, $owned_only);
+    ok(!bulk_storage_staging_needed($plan), 'an owned staged key alone needs no monitor check');
+
+    my $unfinished = {
+        rotated => { 'client.vm' => 200 },
+        previous_keys => { 'client.vm' => { saved => 200 } },
+    };
+    ($plan) = plan_client_keys($migrated, $unfinished, $bulk, $files);
+    ($vm) = grep { $_->{entity} eq 'client.vm' } @$plan;
+    ok(
+        $vm && $vm->{resume_only} && !$vm->{staged} && !$vm->{bulk_new_staging},
+        'an unfinished replacement only repairs its managed copies without changing the key',
+    );
+    ok(!client_staging_needed($plan), 'the repair creates no fresh pending key');
+    ($plan) = plan_client_keys(
+        { %$migrated, manual_promotion => { supported => 0 } },
+        $unfinished, $bulk, $files,
+    );
+    ($vm) = grep { $_->{entity} eq 'client.vm' } @$plan;
+    ok(
+        $vm && $vm->{resume_only} && !$vm->{staged} && !$vm->{bulk_new_staging},
+        'without monitor support it only finishes writing its copies, never a replacement',
+    );
+    ok(!bulk_storage_staging_needed($plan), 'which needs no monitor support either');
+
+    ok(
+        client_keys_requested($bulk) && !client_keys_requested({}),
+        'the bulk option counts as a client key request, so the run does not end early',
+    );
+    my ($missing, $missing_warnings) = plan_client_keys(
+        { %$info, exported => { 'client.shared' => { key => $OLD } } },
+        {},
+        $bulk,
+        $files,
+    );
+    is_deeply(
+        [map { $_->{entity} } @$missing],
+        ['client.shared'],
+        'a user without an auth entry is skipped',
+    );
+    ok(
+        (
+            grep {
+                m/'client\.vm' \(used by managed local Ceph storage 'rbd-vm'\) has no entry/
+            } @$missing_warnings
+        ),
+        'and reported with the storage that references it',
+    );
+
+    ($plan) = plan_client_keys($info, {}, { %$bulk, 'rotate-admin-key' => 1 }, $files);
+    is_deeply(
+        [map { $_->{entity} } @$plan],
+        [qw(client.shared client.vm client.admin)],
+        'client.admin joins only when asked for, and last',
     );
 }
 
