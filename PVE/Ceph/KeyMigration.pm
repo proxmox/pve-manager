@@ -788,12 +788,22 @@ sub touched_daemons($info, $plan) {
 
 # A lockbox key looks ordinary, but its only persistent copy is an LVM tag on the OSD it unlocks,
 # so rotating the auth entry just breaks that OSD's next activation.
-sub classify_insecure_clients($checks, $storage_entities = {}) {
+# Health can lag both key creation and retirement. A complete export is authoritative, including
+# entries absent from the health details and entries removed since the last health update.
+sub classify_insecure_clients($checks, $storage_entities = {}, $exported = undef) {
     my $found = {};
-    my $check = $checks->{AUTH_INSECURE_CLIENT_KEY_TYPE}; # a rvalue deref here would autovivify it
-    for my $detail (((defined($check) ? $check->{detail} : undef) // [])->@*) {
-        my $message = $detail->{message} // '';
-        $found->{$1} = 1 if $message =~ m/^entity (\S+) using insecure key type: \S+$/;
+    if (ref($exported) eq 'HASH') {
+        for my $entity (grep { m/^client\./ } keys %$exported) {
+            my $entry = $exported->{$entity};
+            next if ref($entry) ne 'HASH' || !defined($entry->{key});
+            $found->{$entity} = 1 if (key_cipher($entry->{key}) // -1) != $CIPHER_ID;
+        }
+    } else {
+        my $check = $checks->{AUTH_INSECURE_CLIENT_KEY_TYPE};
+        for my $detail (((defined($check) ? $check->{detail} : undef) // [])->@*) {
+            my $message = $detail->{message} // '';
+            $found->{$1} = 1 if $message =~ m/^entity (\S+) using insecure key type: \S+$/;
+        }
     }
 
     my $res = { lockbox => [], tool => [], admin => [], storage => [], other => [] };
@@ -818,7 +828,7 @@ sub open_options(
     $sessions = undef,
     $exported = undef,
 ) {
-    my $clients = classify_insecure_clients($checks, $storage_entities);
+    my $clients = classify_insecure_clients($checks, $storage_entities, $exported);
     my $done = $opts->{'rotate-storage-key'} // [];
     # a key staged with every copy written is still on the old cipher, but its next step is the
     # confirmation, not the rotation option again
@@ -898,14 +908,16 @@ sub open_options(
         }
     }
 
-    # A run narrowed by '--only' is refused the wipe until the service cipher is switched. The
-    # fresh action guard also refuses while the session picture or a refresh record is unresolved,
-    # so do not present the wipe as the next step in that state.
+    # The wipe is an escape hatch, not a next step: the rotating keys expire on their own, so
+    # it is named only when asked for details. A run narrowed by '--only' is refused the wipe
+    # until the service cipher is switched, and the fresh action guard refuses it while the
+    # session picture or a refresh record is unresolved.
     push @$next,
         "--wipe-rotating-keys: NOT RECOMMENDED; invalidate every service ticket instead of"
         . " waiting a few hours for the old rotating keys to expire; every client and service"
         . " daemon must support '$CIPHER'"
-        if $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
+        if $opts->{verbose}
+        && $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
         && !$opts->{'wipe-rotating-keys'}
         && !($opts->{only} && $service_cipher ne $CIPHER)
         && (!$sessions || $picture->{complete})
@@ -952,8 +964,16 @@ sub open_actions(
         $info ? $info->{sessions} : undef,
         $info ? $info->{exported} : undef,
     );
+    my $allowed = $info ? $info->{allowed_ciphers} : undef;
+    my $preferred = $info ? $info->{preferred_cipher} : undef;
+    my $restriction_needed =
+        ref($allowed) eq 'ARRAY'
+        && scalar(@$allowed)
+        && defined($preferred)
+        ? ($preferred ne $CIPHER || scalar(grep { $_ ne $CIPHER } @$allowed))
+        : $checks->{AUTH_INSECURE_KEYS_ALLOWED};
     my $finish =
-        $info && !$opts->{'restrict-ciphers'} && $checks->{AUTH_INSECURE_KEYS_ALLOWED}
+        $info && !$opts->{'restrict-ciphers'} && $restriction_needed
         ? finish_after_acks($info, $state, $open->{ready})
         : 0;
 

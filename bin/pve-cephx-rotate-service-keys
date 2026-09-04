@@ -2270,8 +2270,11 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
 
     my $only = $opts->{only};
     my $mon_selected = $opts->{'rotate-mon-key'} && (!$only || $only->{mon});
-    my $insecure_clients =
-        classify_insecure_clients($info->{health_checks} // {}, $storage_entities);
+    my $insecure_clients = classify_insecure_clients(
+        $info->{health_checks} // {},
+        $storage_entities,
+        $info->{exported},
+    );
     my @unselected_users;
     push @unselected_users, "bootstrap and crash users"
         if scalar($insecure_clients->{tool}->@*) && !$opts->{'rotate-client-keys'};
@@ -2298,7 +2301,6 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
 
     my @unselected_actions;
     push @unselected_actions, "the service-ticket cipher switch" if $only;
-    push @unselected_actions, "service-ticket wiping" if !$opts->{'wipe-rotating-keys'};
     push @unselected_actions, "cipher restriction" if !$opts->{'restrict-ciphers'};
 
     if (
@@ -3985,6 +3987,16 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot, $planned 
         log_step($open->{command});
     }
 
+    if (!$planned && !scalar($open->{next}->@*) && !scalar($open->{ready}->@*)) {
+        my $checks = $snapshot->{health_checks} // {};
+        my @auth = grep { m/^AUTH_/ } keys %$checks;
+        if (@auth && !grep { $_ ne 'AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE' } @auth) {
+            log_text("");
+            log_text("Nothing is left to do. AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its"
+                . " own within a few hours.");
+        }
+    }
+
     if (scalar($open->{next}->@*) && !$planned) {
         log_text("");
         log_text("Options that address what is still reported, combinable in one '--apply' run:");
@@ -4730,7 +4742,8 @@ my sub run_migration($opts) {
     # an old-cipher 'mon.' in the auth db blocks the switch, so say so before walking every daemon
     if ($info->{insecure_entities}->{'mon.'} && !$plan->{mon_key} && !$opts->{only}) {
         log_fail("The shared 'mon.' key sits in the auth database on the old cipher, which blocks"
-            . " the service ticket switch at the end. Pass '--rotate-mon-key'.");
+            . " the service ticket switch at the end. Pass '--rotate-cluster-keys', the first step"
+            . " of the migration, or '--rotate-mon-key' alone.");
         return 1;
     }
 

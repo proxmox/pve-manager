@@ -1632,7 +1632,18 @@ my sub cluster {
 
     my $wipe = { AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {} };
     my $offered = open_options($wipe, {}, {}, $CIPHER);
-    like($offered->{next}->[0], qr/^--wipe-rotating-keys:/, 'the wipe is offered as an option');
+    ok(
+        !(grep { m/^--wipe-rotating-keys:/ } $offered->{next}->@*),
+        'the wipe is not offered as a next step, the rotating keys expire on their own',
+    );
+    my $verbose_offer = open_options(
+        { AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {} }, { verbose => 1 }, {},
+    );
+    like(
+        $verbose_offer->{next}->[0],
+        qr/^--wipe-rotating-keys:/,
+        'and is named only when asked for details',
+    );
     is_deeply(
         $offered->{together},
         [],
@@ -1665,7 +1676,10 @@ my sub cluster {
     );
 
     ok(
-        scalar(open_options($wipe, { only => { 'osd.3' => 1 } }, {}, $CIPHER)->{next}->@*),
+        scalar(
+            open_options($wipe, { verbose => 1, only => { 'osd.3' => 1 } }, {}, $CIPHER)
+                ->{next}->@*
+        ),
         "'--only' allows --wipe-rotating-keys once the service cipher is switched",
     );
     ok(
@@ -2470,6 +2484,86 @@ my sub cluster {
         [map { $_->{global_id} } stale_consumers($sessions, $refresh)->{'client.vm'}->@*],
         [2, 4],
         'without targets only the recorded IDs count, as before',
+    );
+}
+
+# --- an export that is ahead of the health check drops keys rotated a moment ago ---------------
+{
+    my $checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [
+                map { { message => "entity $_ using insecure key type: aes" } }
+                    ('client.admin', 'client.osd-lockbox.1', 'client.store'),
+            ],
+        },
+    };
+    my $exported = {
+        'client.admin' => { key => $NEW },
+        'client.osd-lockbox.1' => { key => $NEW },
+        'client.store' => { key => $OLD },
+    };
+    my $clients = classify_insecure_clients($checks, { 'client.store' => ['s'] }, $exported);
+    is_deeply(
+        [$clients->{admin}, $clients->{lockbox}, $clients->{storage}],
+        [[], [], ['client.store']],
+        'a key the export shows on the new cipher is not offered on the strength of a stale check',
+    );
+    my $open =
+        open_options($checks, {}, { 'client.store' => ['s'] }, $CIPHER, {}, undef, $exported);
+    ok(
+        !(grep { m/rotate-lockbox-keys|rotate-admin-key/ } $open->{next}->@*),
+        'so neither is offered',
+    );
+    ok((grep { m/rotate-all-storage-keys/ } $open->{next}->@*), 'while the one still on aes is');
+}
+
+{
+    my $checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [{ message => 'entity client.removed using insecure key type: aes' }],
+        },
+        AUTH_INSECURE_KEYS_ALLOWED => {},
+    };
+    my $stores = { 'client.store' => ['data'] };
+    my $exported = { 'client.store' => { key => $OLD } };
+    my $clients = classify_insecure_clients($checks, $stores, $exported);
+    is_deeply($clients->{storage}, ['client.store'], 'the export discovers an unreported old key');
+    is_deeply($clients->{other}, [], 'a complete export drops a removed health-check entity');
+    is_deeply(
+        classify_insecure_clients($checks, $stores)->{other},
+        ['client.removed'],
+        'health remains the fallback when no export is available',
+    );
+    is_deeply(
+        classify_insecure_clients($checks, $stores, {})->{other},
+        [],
+        'a complete empty export does not reuse stale health entries',
+    );
+    my $info = {
+        exported => $exported,
+        pve_mon_key => $NEW,
+        sessions => { complete => 1, clients => {} },
+        service_cipher => $CIPHER,
+        preferred_cipher => $CIPHER,
+        allowed_ciphers => ['aes', $CIPHER],
+    };
+    my $open = open_actions('/helper', {}, {}, $stores, $CIPHER, {}, $info);
+    ok(
+        scalar(grep { m/^--rotate-all-storage-keys:/ } $open->{next}->@*),
+        'the helper offers an old managed key before health catches up',
+    );
+    $info->{exported}->{'client.store'}->{key} = $NEW;
+    $open = open_actions('/helper', {}, {}, $stores, $CIPHER, {}, $info);
+    like($open->{next}->[0], qr/^--restrict-ciphers:/, 'actual mixed ciphers offer restriction');
+    $info->{allowed_ciphers} = [$CIPHER];
+    $open = open_actions('/helper', $checks, {}, $stores, $CIPHER, {}, $info);
+    is_deeply($open->{next}, [], 'stale health does not offer already completed work');
+    $info->{preferred_cipher} = 'aes';
+    $open = open_actions('/helper', {}, {}, $stores, $CIPHER, {}, $info);
+    like(
+        $open->{next}->[0],
+        qr/^--restrict-ciphers:/,
+        'an old creation default still needs finishing',
     );
 }
 

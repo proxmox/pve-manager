@@ -849,6 +849,7 @@ sub wipe_monitor_picture {
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
         service_cipher => 'aes',
+        allowed_ciphers => [qw(aes aes256k)],
         exported => [{ entity => 'client.app', key => $NEW }],
         health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
     );
@@ -876,6 +877,7 @@ sub wipe_monitor_picture {
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
         service_cipher => 'aes256k',
+        allowed_ciphers => [qw(aes aes256k)],
         exported => [{ entity => 'client.app', key => $NEW }],
         health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
     );
@@ -2251,7 +2253,13 @@ sub run_aggregate_confirmation {
             'client.admin' => ['default-rbd'],
             'client.store' => ['store'],
         };
-        $selected_info //= $info;
+        $selected_info = { %{ $selected_info // $info } };
+        $selected_info->{exported} //= {
+            map { $_->{message} =~ m/^entity (\S+)/ ? ($1 => { key => $OLD }) : () } @{
+                ($selected_info->{health_checks}->{AUTH_INSECURE_CLIENT_KEY_TYPE} // {})
+                ->{detail} // []
+            }
+        };
         my $output = '';
         open(my $stdout, '>', \$output) or die $!;
         local *STDOUT = $stdout;
@@ -2362,7 +2370,7 @@ sub run_aggregate_confirmation {
     );
     like(
         $scope,
-        qr/Not touched by this run:.*Ceph user keys not selected: bootstrap and crash users; 'client\.admin'\..*Other keys not selected: the shared 'mon\.' key; encrypted OSD lockbox keys\..*Additional actions not selected: service-ticket wiping; cipher restriction\./s,
+        qr/Not touched by this run:.*Ceph user keys not selected: bootstrap and crash users; 'client\.admin'\..*Other keys not selected: the shared 'mon\.' key; encrypted OSD lockbox keys\..*Additional actions not selected: cipher restriction\./s,
         'the default states unselected key scope and final actions',
     );
     unlike(
@@ -2706,7 +2714,11 @@ sub run_aggregate_confirmation {
     my $snapshot = {
         health_checks => {},
         sessions => picture(1),
-        exported => { 'client.store' => { key => $NEW } },
+        exported => {
+            'client.store' => { key => $NEW },
+            'client.rgw.node1' => { key => $OLD },
+            'client.osd-lockbox.1234' => { key => $OLD },
+        },
         service_cipher => 'aes256k',
     };
     my $state = {
@@ -2783,6 +2795,7 @@ sub run_aggregate_confirmation {
     # the plan of a bulk selection: labels, counts, and the replace-at-once block
     my $info = {
         insecure_entities => {},
+        exported => { map { $_ => { key => $OLD } } qw(client.crash client.vm client.other) },
         health_checks => {
             AUTH_INSECURE_CLIENT_KEY_TYPE => {
                 detail => [
