@@ -1157,7 +1157,7 @@ my sub probe_nodes($info, $plan, $opts = {}) {
     my $by_node = {};
     log_info(
         "collecting daemon keyrings and bluestore labels from " . scalar(keys %$specs) . " node(s)")
-        if $opts->{apply} || $opts->{verbose};
+        if scalar(keys %$specs) && ($opts->{apply} || $opts->{verbose});
     for my $node (sort keys %$specs) {
 
         my $output =
@@ -1418,6 +1418,25 @@ my sub confirm_hint($entity) {
         "confirm with '--confirm-clients-refreshed $entity' once every consumer of it was refreshed";
 }
 
+# The bootstrap and crash records are one line by default; the identities come with '--verbose'.
+my sub tool_keys_label($entities, $opts) {
+    my $count = scalar(@$entities);
+    return "the tool key '$entities->[0]'" if $count == 1;
+    my $label = "$count bootstrap and crash keys";
+    $label .= " (" . join(', ', @$entities) . ")" if $opts->{verbose};
+    return $label;
+}
+
+my sub tool_keys_hint($entities) {
+    return "only Ceph's own tools read it and load the key afresh, so it needs no consumer"
+        . " refresh; confirm it with '--confirm-clients-refreshed $entities->[0]'"
+        if scalar(@$entities) == 1;
+    return
+        "only Ceph's own tools read them and load the key afresh, so they need no consumer"
+        . " refresh; confirm them with '--confirm-clients-refreshed USER' or, once every open"
+        . " record is ready, '--confirm-all-clients-refreshed'";
+}
+
 my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
     my @unfinished = unfinished_entities($state);
     push @unfinished, 'mon.'
@@ -1446,14 +1465,19 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             || scalar(keys %{ $state->{previous_keys} // {} }))
     ) {
         my $seeded = 0;
+        my @seeded_tools;
         for my $entity (
             sort grep { m/^client\./ && !m/^client\.osd-lockbox\./ }
             keys %{ $info->{exported} // {} }
         ) {
             next if $state->{client_refresh}->{$entity};
             next if (key_cipher($info->{exported}->{$entity}->{key}) // -1) != $CIPHER_ID;
-            log_warn("the consumers of '$entity' predate this script's tracking; "
-                . confirm_hint($entity));
+            if (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) {
+                push @seeded_tools, $entity;
+            } else {
+                log_warn("the consumers of '$entity' predate this script's tracking; "
+                    . confirm_hint($entity));
+            }
             $seeded_now->{$entity} = 1;
             # A nested read would leave an empty previous-key entry behind, and an entity with one
             # counts as a started rotation. Look without creating.
@@ -1467,6 +1491,11 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             );
             $seeded = 1;
         }
+        log_warn("the rotation of "
+                . tool_keys_label(\@seeded_tools, $opts)
+                . " predates this script's tracking; "
+                . tool_keys_hint(\@seeded_tools))
+            if scalar(@seeded_tools);
         save_state($state) if $seeded && $opts->{apply};
     }
 
@@ -1653,15 +1682,25 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             . " the record with '--confirm-clients-refreshed'.");
     }
     if ($info->{sessions}->{complete}) {
+        my @open_tools;
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
             my $mark = $state->{client_refresh}->{$entity};
             next if $stale_clients->{$entity} || defined($mark->{cleared});
             next if $seeded_now->{$entity}; # said when the record was seeded above
+            if (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) {
+                push @open_tools, $entity;
+                next;
+            }
             # a consumer can keep its IO on established connections without any monitor
             # session, so absence proves nothing; only the operator can close the record
             log_info(
                 "no live session predates the key rotation of '$entity'; " . confirm_hint($entity));
         }
+        log_info("the rotation of "
+                . tool_keys_label(\@open_tools, $opts)
+                . " is open; "
+                . tool_keys_hint(\@open_tools))
+            if scalar(@open_tools);
     }
 
     if ($opts->{'wipe-rotating-keys'} && (%$stale_clients || !$info->{sessions}->{complete})) {
@@ -3760,7 +3799,10 @@ my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
     );
 }
 
-my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
+# A dry run with a plan ends with the apply instruction; a confirmation or finishing command
+# printed there would read as a prerequisite of that plan, so it waits for the apply run or a run
+# with nothing to plan. What the plan cannot reach is still reported.
+my sub print_open_options($opts, $storage_entities, $state, $snapshot, $planned = 0) {
     my $open = open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot);
 
     if (scalar($open->{waiting}->@*)) {
@@ -3775,17 +3817,20 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot) {
             if scalar(@staged);
     }
 
-    if (scalar($open->{ready}->@*)) {
+    if (scalar($open->{ready}->@*) && !$planned) {
         log_text("");
-        log_text("Rotations whose remaining consumers only you can vouch for, once the ones"
-            . " named above are refreshed:");
+        log_text("Ready once you confirm that disconnected consumers and external key copies were"
+            . " refreshed:");
         log_step($open->{command});
     }
 
-    if (scalar($open->{next}->@*)) {
+    if (scalar($open->{next}->@*) && !$planned) {
         log_text("");
         log_text("Options that address what is still reported, combinable in one '--apply' run:");
         log_step($_) for $open->{next}->@*;
+        log_text("Use '--rotate-storage-key NAME' instead to select only a compatible subset of"
+                . " the dedicated storage users.")
+            if $open->{storage_bulk};
         if (scalar($open->{together}->@*)) {
             log_text("The ones that need no decision of yours, in one command:");
             log_step("$PROGRAM --apply " . join(' ', $open->{together}->@*));
@@ -4815,7 +4860,9 @@ sub key_migration_test_hooks {
         set_service_cipher => \&set_service_cipher,
         restrict_ciphers => \&restrict_ciphers,
         print_plan => \&print_plan,
+        print_open_options => \&print_open_options,
         resume_live_swap => \&resume_live_swap,
+        probe_nodes => \&probe_nodes,
         check_client_kernels => \&check_client_kernels,
     };
 }

@@ -2601,6 +2601,172 @@ sub run_aggregate_confirmation {
     );
 }
 
+# --- focused output: tool key summaries, no premature confirmation, no zero-node line ----------
+{
+    my $tools = $PVE::Ceph::KeyMigration::TOOL_CLIENT_KEYS;
+    is(scalar(@$tools), 7, 'seven bootstrap and crash keys are the standard tool keys');
+    my $info = migrated_info(picture(1));
+    $info->{allowed_ciphers} = ['aes', 'aes256k'];
+    $info->{exported} = {
+        (map { $_ => { key => $NEW } } @$tools),
+        'client.store' => { key => $OLD },
+        'client.admin' => { key => $OLD },
+    };
+    $info->{manual_promotion} =
+        { supported => 1, disabled => 0, unsupported => [], unanswered => [] };
+    my $files = {
+        'client.store' => [{ path => '/etc/pve/priv/ceph/store.keyring', store => 'store' }],
+        'client.admin' => [{ path => '/etc/pve/priv/ceph.client.admin.keyring' }],
+    };
+    my $preflight = sub {
+        my ($verbose) = @_;
+        my $state = {};
+        my $output = '';
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{preflight}->(
+                $info,
+                {
+                    apply => 0,
+                    verbose => $verbose,
+                    'rotate-admin-key' => 1,
+                    'rotate-storage-key' => ['store'],
+                },
+                0,
+                $state,
+                $files,
+            );
+        }
+        return ($output, $state);
+    };
+    my ($concise, $state) = $preflight->(0);
+    is(
+        scalar(grep { defined($state->{client_refresh}->{$_}) } @$tools),
+        7,
+        'every tool key still gets its own refresh record',
+    );
+    my @summaries = grep { m/7 bootstrap and crash keys/ } split(/\n/, $concise);
+    is(scalar(@summaries), 1, 'the seven records are one line by default');
+    like(
+        $summaries[0],
+        qr/predates this script's tracking; only Ceph's own tools read them and load the key afresh, so they need no consumer refresh; confirm them with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/,
+        'which says why no consumer refresh is needed and how to confirm',
+    );
+    unlike(
+        $concise,
+        qr/client\.bootstrap-mds|client\.crash/,
+        'the default output does not list the tool keys one by one',
+    );
+    my ($verbose) = $preflight->(1);
+    like(
+        $verbose,
+        qr/7 bootstrap and crash keys \(client\.bootstrap-mds, client\.bootstrap-mgr, client\.bootstrap-osd, client\.bootstrap-rbd, client\.bootstrap-rbd-mirror, client\.bootstrap-rgw, client\.crash\)/,
+        'verbose output keeps every identity',
+    );
+
+    # the same records, already open, on a later run with every monitor answering
+    my $reopened = {
+        client_keys_seen => { map { $_ => key_fingerprint($NEW) } @$tools },
+        client_refresh => { map { $_ => { rotated => 1, session_ids => [] } } @$tools },
+    };
+    my $later = '';
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$later) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{preflight}->($info, { apply => 0 }, 0, $reopened, $files);
+    }
+    my @open = grep { m/the rotation of 7 bootstrap and crash keys is open/ } split(/\n/, $later);
+    is(scalar(@open), 1, 'existing open tool records are summarized in one line as well');
+    unlike(
+        $later,
+        qr/no live session predates the key rotation of 'client\.bootstrap/,
+        'not per key',
+    );
+}
+
+{
+    # a run with nothing to plan, and the closing notes of an apply run, keep the exact commands
+    my $snapshot = {
+        health_checks => {},
+        sessions => picture(1),
+        exported => { 'client.store' => { key => $NEW } },
+        service_cipher => 'aes256k',
+    };
+    my $state = {
+        client_keys_seen => { 'client.store' => key_fingerprint($NEW) },
+        client_refresh => { 'client.store' => { rotated => 1, session_ids => [] } },
+    };
+    # what no option of this helper reaches, and the lockbox warning, are reported either way
+    $snapshot->{health_checks} = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [
+                map { { message => "entity $_ using insecure key type: aes" } }
+                    qw(client.rgw.node1 client.osd-lockbox.1234)
+            ],
+        },
+    };
+    my $print = sub {
+        my ($planned) = @_;
+        my $output = '';
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_open_options}->(
+            { apply => 0 }, { 'client.store' => ['store'] }, $state, $snapshot, $planned,
+        );
+        return $output;
+    };
+    my $output = $print->(0);
+    like(
+        $output,
+        qr/Ready once you confirm that disconnected consumers and external key copies were refreshed:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
+        'a ready record gets the direct heading and the exact confirmation command',
+    );
+    unlike($output, qr/only you can vouch for/, 'without the old phrase');
+    like(
+        $output,
+        qr/Options that address what is still reported.*--rotate-lockbox-keys/s,
+        'and the remaining options are offered',
+    );
+
+    my $planned = $print->(1);
+    unlike(
+        $planned,
+        qr/--apply|Ready once you confirm|Options that address/,
+        'a dry run with a plan prints neither a confirmation command nor further options',
+    );
+    like(
+        $planned,
+        qr/Never rotate a 'client\.osd-lockbox' key by hand/,
+        'but keeps the lockbox warning',
+    );
+    like(
+        $planned,
+        qr/Left to whoever manages the client that reads them.*client\.rgw\.node1/s,
+        'and the keys no option of this helper reaches',
+    );
+}
+
+{
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{probe_nodes}->(
+            { daemons => { mon => [], mgr => [], mds => [], osd => [] } },
+            { daemons => [], lockbox_keys => [], client_keys => [] },
+            { apply => 1, verbose => 1 },
+        );
+    }
+    unlike($output, qr/collecting daemon keyrings/, 'no node to probe prints no collection line');
+}
+
 {
     # the plan of a bulk selection: labels, counts, and the replace-at-once block
     my $info = {
