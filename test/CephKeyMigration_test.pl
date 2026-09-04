@@ -1580,13 +1580,38 @@ my sub cluster {
     ok(
         (
             grep {
-                m/^--rotate-all-storage-keys: the dedicated storage users 'client\.store-a' \(storage rbd-vm\), 'client\.store-b' \(storages cephfs-iso, rbd-ct\); every new key is staged/
+                m/^--rotate-all-storage-keys: stage keys for 2 dedicated storage users/
             } $all->{next}->@*
         ),
         'the dedicated storage users are offered together by the bulk option, each with its'
             . ' storages',
     );
-    ok($all->{storage_bulk}, 'and the single-storage option is named as the subset path');
+    is_deeply(
+        $all->{storage_scope},
+        ["'client.store-a' (storage rbd-vm)", "'client.store-b' (storages cephfs-iso, rbd-ct)"],
+        'the separate scope retains both users and every storage alias',
+    );
+    is(
+        $all->{storage_bulk}, 2, 'the bulk summary carries the number of selected users',
+    );
+
+    my @many = map { sprintf('client.storage%02d', $_) } 1 .. 50;
+    my $scale_checks = {
+        AUTH_INSECURE_CLIENT_KEY_TYPE => {
+            detail => [map { { message => "entity $_ using insecure key type: aes" } } @many],
+        },
+    };
+    my $scale = open_options(
+        $scale_checks, {}, { map { $_ => ["rbd-$_"] } @many },
+    );
+    my ($bulk_line) = grep { m/^--rotate-all-storage-keys:/ } $scale->{next}->@*;
+    cmp_ok(length($bulk_line), '<=', 100, 'the 50-user bulk option summary stays bounded');
+    is(scalar($scale->{storage_scope}->@*), 50, 'the structured scope retains every selected user');
+    is_deeply(
+        [map { /^'(client\.[^']+)'/ ? $1 : () } $scale->{storage_scope}->@*],
+        \@many,
+        'the structured scope keeps the exact selected identities',
+    );
 
     my $one = open_options($checks, { 'rotate-storage-key' => ['rbd-vm'] }, $stores);
     is_deeply(
@@ -1601,12 +1626,10 @@ my sub cluster {
         !grep({ m/rotate-storage-key rbd-vm/ } $one->{next}->@*),
         'but the storage this run rotated is not offered again',
     );
-    ok(
-        (
-            grep {
-                m/^--rotate-all-storage-keys: .*'client\.store-b' \(storages cephfs-iso, rbd-ct\)/
-            } $one->{next}->@*
-        ),
+    is($one->{storage_bulk}, 1, 'one remaining dedicated user leaves no subset to name');
+    is_deeply(
+        $one->{storage_scope},
+        ["'client.store-b' (storages cephfs-iso, rbd-ct)"],
         'the user behind the other storages is still offered, with every storage it serves',
     );
     ok(
@@ -2564,6 +2587,82 @@ my sub cluster {
         $open->{next}->[0],
         qr/^--restrict-ciphers:/,
         'an old creation default still needs finishing',
+    );
+}
+
+# --- restriction blockers read as one decision per user -----------------------------------------
+{
+    my $tools = $PVE::Ceph::KeyMigration::TOOL_CLIENT_KEYS;
+    my $info = {
+        exported =>
+            { 'client.admin' => { key => $OLD }, map { $_ => { key => $NEW } } @$tools },
+        service_cipher => $CIPHER,
+        sessions => {
+            complete => 1,
+            clients => {
+                'client.admin' => [map { { global_id => $_, host => 'due' } } 200 .. 209],
+            },
+        },
+        pve_mon_key => $NEW,
+        health_checks => {},
+    };
+    my $state = {
+        staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } },
+        client_refresh => {
+            'client.admin' => { rotated => 1, session_ids => [200 .. 203] },
+            map { $_ => { rotated => 1, session_ids => [] } } @$tools,
+        },
+    };
+    my $blockers = restrict_blockers($info, $state);
+    ok(
+        !grep({ m/active or pending keys still use another cipher/ } @$blockers),
+        'an old active key with a staged successor is not listed as a bare old key',
+    );
+    my @admin = grep { m/client\.admin'/ } @$blockers;
+    is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
+    like(
+        $admin[0],
+        qr/^the new key of 'client\.admin' is staged; 4 of its 10 live client\(s\) were recorded before the rotation \(due: 4\), refresh those, then commit it with '--confirm-clients-refreshed client\.admin'$/,
+        'which counts the live sessions, the recorded subset and names the confirmation',
+    );
+    my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
+    $unrecorded->{client_refresh}->{'client.admin'} = { rotated => 1, session_ids => [] };
+    $blockers = restrict_blockers($info, $unrecorded);
+    @admin = grep { m/client\.admin'/ } @$blockers;
+    is(scalar(@admin), 1, 'a staged user with live but unrecorded sessions gets one line too');
+    like(
+        $admin[0],
+        qr/^the new key of 'client\.admin' is staged; once every consumer of it is refreshed \(10 live: due: 10\), commit it with '--confirm-clients-refreshed client\.admin'$/,
+        'which names the live sessions and the confirmation',
+    );
+    my @tools = grep { m/bootstrap and crash keys/ } @$blockers;
+    is(scalar(@tools), 1, 'the open bootstrap and crash records are one line');
+    like(
+        $tools[0],
+        qr/the rotations of 7 bootstrap and crash keys await their confirmation, which needs no consumer refresh; '--confirm-all-clients-refreshed' closes them/,
+        'saying why no refresh is needed and how to close them',
+    );
+    ok(!(grep { m/bootstrap-mds' awaits/ } @$blockers), 'and no line per tool key');
+
+    my $one_tool =
+        { %$state, client_refresh => { 'client.crash' => { rotated => 1, session_ids => [] } } };
+    like(
+        (grep { m/tool key/ } restrict_blockers($info, $one_tool)->@*)[0],
+        qr/the rotation of the tool key 'client\.crash' awaits '--confirm-clients-refreshed client\.crash'/,
+        'a single open tool record keeps its exact command',
+    );
+
+    my $connections =
+        [map { { port => 3300, process => 'kvm', pid => $_, vmid => 100 + $_ } } 1 .. 10];
+    is(
+        summarize_monitor_connections($connections),
+        'VM 101, VM 102, VM 103, VM 104, VM 105, VM 106, VM 107, VM 108, 2 more VMs',
+        'a concise host hint is summarized after the first eight VMs',
+    );
+    is(
+        summarize_monitor_connections($connections, 1),
+        join(', ', map { "VM $_" } 101 .. 110),
+        'verbose output includes every VM identity',
     );
 }
 

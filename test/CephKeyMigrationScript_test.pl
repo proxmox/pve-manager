@@ -6,9 +6,13 @@ use warnings;
 use lib ('.', '..');
 
 use JSON qw(decode_json encode_json);
+use File::Temp qw(tempdir);
 use Test::More;
 
 use PVE::Ceph::KeyMigration qw(key_fingerprint);
+
+# The helper caches terminal detection before we capture its output for plain-text assertions.
+local $ENV{ANSI_COLORS_DISABLED} = 1;
 
 our $NEW = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7IlI=';
 our $OLD = 'AQCP/Y5qflfDFxAAPII6O9qSA7p65js5CEJYDA==';
@@ -2055,7 +2059,7 @@ sub run_aggregate_confirmation {
     }
     like(
         $output,
-        qr/remained connected through the immediate replacement.*next reconnect can fail immediately.*only an upper bound.*Live-migrate/s,
+        qr/remained connected through the immediate replacement.*next reconnect fails.*three days at most.*Live-migrate/s,
         'post-apply advice is remedial and does not promise a grace period',
     );
 }
@@ -2330,12 +2334,56 @@ sub run_aggregate_confirmation {
         qr/Step 1: rotate 1 selected Ceph user key\b/,
         'the default renders the singular Ceph user key label',
     );
+    my $tool = sub {
+        my ($entity) = @_;
+        return {
+            entity => $entity,
+            reason => 'cluster key',
+            files => [],
+            staged => 0,
+            kernel => 0,
+        };
+    };
+    my $tools_only = $render->(
+        0,
+        {
+            %$plan,
+            daemons => [],
+            lockbox_keys => [],
+            client_keys =>
+                [map { $tool->($_) } qw(client.bootstrap-osd client.bootstrap-mds client.crash)],
+        },
+    );
+    like(
+        $tools_only,
+        qr/Plan\nStep 1: rotate 3 bootstrap and crash keys and rewrite every copy Proxmox VE keeps\. Only Ceph's own tools read them, so there is nothing to stop\./,
+        'a step of tool keys alone says so in its heading, right below the plan title',
+    );
+    unlike($tools_only, qr/bootstrap and crash keys: replaced at once/, 'without a second line');
+    unlike($tools_only, qr/CephFS mounts are redone/, 'nor the mount note that is about user keys');
+    my $mixed = $render->(0,
+        { %$plan, client_keys => [$plan->{client_keys}->@*, $tool->('client.crash')] });
+    like(
+        $mixed,
+        qr/Step 2: rotate 2 selected Ceph user keys and the tool key 'client\.crash' and rewrite every copy/,
+        'a mixed step counts the selected users and names the tool key',
+    );
+    like(
+        $mixed,
+        qr/the tool key 'client\.crash': replaced at once; only Ceph's own tools read it/,
+        'with the tool line below the user keys',
+    );
     like(
         $concise,
         qr/stopped, rotated and started again.*both the current and new keys authenticate.*No OSD is stopped/s,
         'the default keeps restart and staged-rotation effects',
     );
-    like($concise, qr/records migration progress/, 'the default keeps the journal warning');
+    unlike(
+        $concise,
+        qr/records migration progress/,
+        'the default leaves the journal note to the closing warning',
+    );
+    like($render->(1), qr/records migration progress/, 'verbose output keeps it');
     unlike($concise, qr/osd\.7 on node-daemon/, 'the default hides full daemon inventory');
     unlike(
         $concise,
@@ -2366,7 +2414,13 @@ sub run_aggregate_confirmation {
         },
         { 'restart-daemons' => 0 },
         { 'client.admin' => ['local-rbd'] },
-        { %$info, health_checks => $client_health->(qw(client.crash client.admin)) },
+        {
+            %$info,
+            health_checks => {
+                %{ $client_health->(qw(client.crash client.admin client.osd-lockbox.1234)) },
+                AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE => {},
+            },
+        },
     );
     like(
         $scope,
@@ -2749,10 +2803,73 @@ sub run_aggregate_confirmation {
     my $output = $print->(0);
     like(
         $output,
-        qr/Ready once you confirm that disconnected consumers and external key copies were refreshed:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
+        qr/Ready once you confirm that disconnected consumers and external key copies of client\.store were refreshed:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
         'a ready record gets the direct heading and the exact confirmation command',
     );
     unlike($output, qr/only you can vouch for/, 'without the old phrase');
+    {
+        # Small inventories fit inline; large alias lists retain every identity when wrapped.
+        my $offers = sub {
+            my ($stores) = @_;
+            my $offered = {
+                health_checks => {
+                    AUTH_INSECURE_CLIENT_KEY_TYPE => {
+                        detail => [
+                            map { { message => "entity $_ using insecure key type: aes" } }
+                            sort keys %$stores
+                        ],
+                    },
+                },
+                sessions => picture(1),
+                exported => { map { $_ => { key => $OLD } } sort keys %$stores },
+                service_cipher => 'aes256k',
+            };
+            my $text = '';
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            open(my $fh, '>', \$text) or die $!;
+            local *STDOUT = $fh;
+            $HOOKS->{print_open_options}->({ apply => 0 }, $stores, {}, $offered, 0);
+            return $text;
+        };
+        my $two = $offers->({ 'client.a' => ['rbd-a'], 'client.b' => ['rbd-b'] });
+        like(
+            $two,
+            qr/--rotate-all-storage-keys: 'client\.a' \(storage rbd-a\); 'client\.b' \(storage rbd-b\)/,
+            'several dedicated users are offered in bulk',
+        );
+        unlike(
+            $two,
+            qr/--rotate-storage-key/,
+            'routine guidance keeps the documented bulk selection',
+        );
+        my $one = $offers->({ 'client.a' => ['rbd-a'] });
+        like(
+            $one,
+            qr/--rotate-all-storage-keys: 'client\.a' \(storage rbd-a\)/,
+            'a single dedicated user is offered the same way',
+        );
+        unlike($one, qr/compatible subset/, 'but there is no subset of one user to name');
+        my @aliases = map { sprintf('storage%03d', $_) } 1 .. 50;
+        my $shared = $offers->({ 'client.a' => \@aliases });
+        my @lines = split(/\n/, $shared);
+        ok(!grep({ length($_) > 100 } @lines), 'many aliases of one user keep bounded output');
+        is_deeply(
+            [sort($shared =~ m/\b(storage\d{3})\b/g)],
+            \@aliases,
+            'wrapping preserves every storage alias exactly once',
+        );
+        my $eight = $offers->({ map { ("client.user$_", ["storage$_"]) } 1 .. 8 });
+        ok(
+            !grep({ length($_) > 100 } split(/\n/, $eight)),
+            'ordinary small batches are bounded too',
+        );
+        like(
+            $one,
+            qr/Rotate only when every consumer supports aes256k/,
+            'and the kernel caveat stays',
+        );
+    }
     like(
         $output,
         qr/Options that address what is still reported.*--rotate-lockbox-keys/s,
@@ -2769,6 +2886,11 @@ sub run_aggregate_confirmation {
         $planned,
         qr/Never rotate a 'client\.osd-lockbox' key by hand/,
         'but keeps the lockbox warning',
+    );
+    like(
+        $planned,
+        qr/Ready for their confirmation after this plan: client\.store/,
+        'and names the rotations whose confirmation follows the plan',
     );
     like(
         $planned,
@@ -2857,18 +2979,30 @@ sub run_aggregate_confirmation {
     );
     like(
         $mixed,
-        qr/Ceph user 'client\.crash': replaced at once.*Ceph user 'client\.vm': resume writing its current key to every copy/s,
-        'a replaced tool key and a resumed bulk user are labelled apart',
+        qr/Ceph user 'client\.vm': resume writing its current key to every copy.*the tool key 'client\.crash': replaced at once; only Ceph's own tools read it, so there is nothing to stop/s,
+        'a replaced tool key is one line without a consumer to stop, a resumed bulk user its own',
     );
-    like(
+    unlike(
         $mixed,
-        qr/For each Ceph user marked 'replaced at once'.*stop every consumer/s,
-        'one key replaced at once keeps the safety block, whatever else the plan holds',
+        qr/For each Ceph user marked 'replaced at once'/,
+        'a tool key alone does not trigger the stop-consumers instruction',
     );
     unlike(
         $mixed,
         qr/bulk storage selection stages every newly rotated/,
         'the staging note is not printed when the plan stages no bulk key',
+    );
+    my $other = {
+        entity => 'client.other',
+        reason => "used by storage 'rbd-other'",
+        files => [{ path => '/etc/pve/priv/ceph/rbd-other.keyring', store => 'rbd-other' }],
+        staged => 0,
+        kernel => 0,
+    };
+    like(
+        $render->([$other, $resume], { 'rotate-storage-key' => ['rbd-other'] }),
+        qr/Ceph user 'client\.other': replaced at once.*For each Ceph user marked 'replaced at once'.*stop every consumer/s,
+        'a real user replaced at once keeps the safety block, whatever else the plan holds',
     );
 
     my $resume_alone = $render->([$resume], { 'rotate-all-storage-keys' => 1 });
@@ -2881,8 +3015,13 @@ sub run_aggregate_confirmation {
     my $staged_bulk = $render->([$staged, $resume], { 'rotate-all-storage-keys' => 1 });
     like(
         $staged_bulk,
-        qr/Ceph user 'client\.other': staged next to the current key.*bulk storage selection stages every newly rotated dedicated user key; it never replaces one at once/s,
-        'a staged bulk key gets the staging note',
+        qr/Ceph user 'client\.other': staged next to the current key/,
+        'a staged bulk key is listed as staged',
+    );
+    unlike(
+        $staged_bulk,
+        qr/bulk storage selection/,
+        'without a policy line repeating what the key lines say',
     );
     unlike(
         $staged_bulk,
@@ -3042,7 +3181,178 @@ sub run_aggregate_confirmation {
         !defined($returning->{client_refresh}->{'client.crash'}->{cleared}),
         'a returning recorded session keeps a tool record open',
     );
-    like($seen, qr/may still hold its previous key/, 'and is reported as a consumer');
+    like($seen, qr/may still hold the previous key/, 'and is reported as a consumer');
+}
+
+# --- the scope names only categories with work left; the closing line only what the run did -----
+{
+    my $output = '';
+    my $info = {
+        insecure_entities => {},
+        health_checks => {},
+        allowed_ciphers => ['aes256k'],
+        preferred_cipher => 'aes256k',
+        mon_key_in_auth_db => 0,
+        pve_mon_key => $NEW,
+        exported => { 'mon.' => { key => $NEW } },
+        manual_promotion => { supported => 1, disabled => 0 },
+        sessions => { complete => 1, clients => {} },
+        daemons => { mon => [], mgr => [], mds => [], osd => [] },
+    };
+    my $plan = {
+        mon_key => 0,
+        daemons => [],
+        client_keys => [{
+            entity => 'client.vm',
+            reason => "used by managed local Ceph storage 'rbd-vm'",
+            files => [],
+            staged => 1,
+            bulk_new_staging => 1,
+            kernel => 0,
+        }],
+        lockbox_keys => [],
+        service_cipher => 0,
+        stages_pending_keys => 1,
+    };
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_plan}->(
+            $info, $plan, {}, { 'restart-daemons' => 0, 'rotate-all-storage-keys' => 1 }, {},
+        );
+    }
+    unlike(
+        $output,
+        qr/Not touched by this run/,
+        'a migrated cluster with one staged user left gets no list of untouched categories',
+    );
+}
+
+{
+    my @many = map { sprintf('client.storage%02d', $_) } 1 .. 50;
+    my $snapshot = {
+        health_checks => {
+            AUTH_INSECURE_CLIENT_KEY_TYPE => {
+                detail =>
+                    [map { { message => "entity $_ using insecure key type: aes" } } @many],
+            },
+        },
+        service_cipher => 'aes256k',
+        exported => { map { $_ => { key => $OLD } } @many },
+        sessions => { complete => 1, clients => {} },
+    };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_open_options}->(
+            {}, { map { $_ => ["rbd-$_"] } @many }, {}, $snapshot,
+        );
+    }
+    my @lines = split(/\n/, $output);
+    cmp_ok(
+        (sort { $b <=> $a } map { length($_) } @lines)[0],
+        '<=',
+        100,
+        'the structured 50-user option output keeps every physical line bounded',
+    );
+    is(
+        scalar(grep { m/^  'client\.storage\d+'/ } @lines),
+        50,
+        'the structured output lists every storage user on its own row',
+    );
+}
+
+{
+    my $dir = tempdir(CLEANUP => 1);
+    my $item = {
+        entity => 'client.app',
+        files => [{ format => 'keyring', scope => 'cluster', path => "$dir/test.keyring" }],
+    };
+    my $entry = { entity => 'client.app', key => $NEW, caps => {} };
+    my ($concise, $verbose) = ('', '');
+    {
+        open(my $stdout, '>', \$concise) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{write_client_key_copies}->($item, $entry, 0);
+    }
+    {
+        open(my $stdout, '>', \$verbose) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{write_client_key_copies}->($item, $entry, 1);
+    }
+    unlike($concise, qr/test\.keyring/, 'routine keyring paths stay out of concise apply output');
+    like($verbose, qr/test\.keyring/, 'verbose apply output retains routine keyring paths');
+
+    my $journal = $HOOKS->{journal_retention_note}->();
+    like(
+        $journal,
+        qr/until migration completion and access verification.*contains secret keys/s,
+        'journal retention is tied to completed migration and verified access',
+    );
+    unlike($journal, qr/delete it afterwards/, 'intermediate runs no longer suggest deletion');
+}
+
+{
+    my $info = migrated_info({
+        complete => 1,
+        clients => {
+            'client.app' => [{ global_id => 11, host => 'node-a' }],
+            'client.backup' => [{ global_id => 12, host => 'node-b' }],
+        },
+    });
+    $info->{exported}->{'client.backup'} = { key => $NEW };
+    my $state = {
+        client_keys_seen => {
+            'client.app' => key_fingerprint($NEW),
+            'client.backup' => key_fingerprint($NEW),
+        },
+        client_refresh => {
+            'client.app' => { rotated => 1, session_ids => [11] },
+            'client.backup' => { rotated => 1, session_ids => [12] },
+        },
+    };
+    my ($ordinary, $restrict) = ('', '');
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$ordinary) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{preflight}->($info, { apply => 0 }, 0, $state, {});
+    }
+    is(
+        scalar(() = $ordinary =~ m/A connected client can keep existing data connections/g),
+        1,
+        'several stale users share one ticket and data-connection rationale',
+    );
+    is(
+        scalar(() = $ordinary =~ m/unresolved session\(s\)/g),
+        2,
+        'the shared warning retains one compact row per stale user',
+    );
+
+    $info->{health_checks}->{AUTH_INSECURE_KEYS_ALLOWED} = {};
+    $info->{allowed_ciphers} = ['aes', 'aes256k'];
+    $info->{preferred_cipher} = 'aes';
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$restrict) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{preflight}->($info, { apply => 0, 'restrict-ciphers' => 1 }, 0, $state, {});
+    }
+    unlike(
+        $restrict,
+        qr/Client-key refresh is still required/,
+        'a restriction attempt does not repeat the preceding stale-user warning section',
+    );
+    is(scalar(() = $restrict =~ m/client\.app/g), 1,
+        'its restriction blocker names each user once');
+    is(
+        scalar(() = $restrict =~ m/client\.backup/g),
+        1,
+        'the second restriction blocker is deduplicated too',
+    );
 }
 
 {

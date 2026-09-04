@@ -658,21 +658,55 @@ sub restrict_blockers($info, $state, $describe = undef) {
         "the service tickets still use the '" . ($info->{service_cipher} // 'unknown') . "' cipher"
         if ($info->{service_cipher} // '') ne $CIPHER;
 
-    my $old_active = {};
+    my $staged_open = $state->{staged} // {};
+    my $records = $state->{client_refresh} // {};
+    my $stale = stale_consumers($sessions, $records, session_key_targets($info->{exported}));
+    my $clients = $sessions->{clients} // {};
+
+    # A key with an open staged record is resolved by its confirmation, so its one line names
+    # what holds that up; a key without one needs its rotation option first.
     my @old_keys;
+    my $covered = {};
     for my $entity (sort keys %{ $info->{exported} // {} }) {
         my $entry = $info->{exported}->{$entity};
-        if ((key_cipher($entry->{key}) // -1) != $CIPHER_ID) {
-            $old_active->{$entity} = 1;
-            push @old_keys, "$entity (active)";
-        }
-        if (
+        my $old_active = (key_cipher($entry->{key}) // -1) != $CIPHER_ID;
+        my $old_pending =
             defined($entry->{pending_key})
             && length($entry->{pending_key})
-            && (key_cipher($entry->{pending_key}) // -1) != $CIPHER_ID
-        ) {
-            push @old_keys, "$entity (pending)";
+            && (key_cipher($entry->{pending_key}) // -1) != $CIPHER_ID;
+        next if !$old_active && !$old_pending;
+        my $record = $records->{$entity};
+        if ($old_active && $staged_open->{$entity} && $record && !defined($record->{cleared})) {
+            $covered->{$entity} = 1;
+            my $live = $clients->{$entity} // [];
+            my $line = "the new key of '$entity' is staged";
+            if (my $held = $stale->{$entity}) {
+                $line .= "; "
+                    . scalar(@$held)
+                    . " of its "
+                    . scalar(@$live)
+                    . " live client(s) "
+                    . (
+                        sessions_judged_by_key($held)
+                        ? "still authenticate with the previous key ("
+                        : "were recorded before the rotation ("
+                    )
+                    . $describe->($held)
+                    . "), refresh those, then";
+            } elsif (scalar(@$live)) {
+                $line .=
+                    "; once every consumer of it is refreshed ("
+                    . scalar(@$live)
+                    . " live: "
+                    . $describe->($live) . "),";
+            } else {
+                $line .= "; once every consumer of it is refreshed,";
+            }
+            push @$blockers, "$line commit it with '--confirm-clients-refreshed $entity'";
+            next;
         }
+        push @old_keys, "$entity (active)" if $old_active;
+        push @old_keys, "$entity (pending)" if $old_pending;
     }
     if (scalar(@old_keys)) {
         my $count = scalar(@old_keys);
@@ -680,25 +714,40 @@ sub restrict_blockers($info, $state, $describe = undef) {
         my $shown = join(', ', splice(@shown_keys, 0, 5));
         $shown .= " and " . scalar(@shown_keys) . " more" if scalar(@shown_keys);
         push @$blockers,
-            "$count active or pending keys still use another cipher: $shown"
-            . " (run this without '--restrict-ciphers' to see the option for each)";
+            "$count active or pending keys still use another cipher: $shown (run this without"
+            . " '--restrict-ciphers' to see the option for each)";
     }
     push @$blockers, "the stored 'mon.' key still uses another cipher, see '--rotate-mon-key'"
         if defined($info->{pve_mon_key})
         && (key_cipher($info->{pve_mon_key}) // -1) != $CIPHER_ID;
 
-    for my $entity (sort keys %{ $sessions->{clients} // {} }) {
-        next if !$old_active->{$entity};
-        push @$blockers,
-            scalar(@{ $sessions->{clients}->{$entity} })
-            . " live client(s) authenticate as '$entity' ("
-            . $describe->($sessions->{clients}->{$entity})
-            . "), whose key they could then no longer use";
+    # the live sessions of a key still on the old cipher would be refused; one line per user,
+    # the recorded ones being the subset that predates its rotation
+    for my $entity (sort keys %$clients) {
+        next if $covered->{$entity};
+        my $entry = $info->{exported}->{$entity};
+        next if !$entry || (key_cipher($entry->{key}) // -1) == $CIPHER_ID;
+        my $live = $clients->{$entity};
+        if (my $held = $stale->{$entity}) {
+            $covered->{$entity} = 1;
+            push @$blockers,
+                scalar(@$live)
+                . " live client(s) authenticate as '$entity', "
+                . scalar(@$held)
+                . " of them recorded before its key rotation ("
+                . $describe->($held) . ")";
+        } else {
+            push @$blockers,
+                scalar(@$live)
+                . " live client(s) authenticate as '$entity' ("
+                . $describe->($live)
+                . "), whose key they could then no longer use";
+        }
     }
-    my $stale = stale_consumers($sessions, $state->{client_refresh},
-        session_key_targets($info->{exported}));
-    for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
-        my $mark = $state->{client_refresh}->{$entity};
+    my @open_tools;
+    for my $entity (sort keys %$records) {
+        next if $covered->{$entity} && $staged_open->{$entity};
+        my $mark = $records->{$entity};
         if (my $held = $stale->{$entity}) {
             push @$blockers,
                 scalar(@$held)
@@ -707,15 +756,32 @@ sub restrict_blockers($info, $state, $describe = undef) {
                     ? " live client(s) still authenticate with a previous key of '$entity' ("
                     : " recorded live client(s) may still hold the previous key of '$entity' ("
                 )
-                . $describe->($held) . ")";
+                . $describe->($held) . ")"
+                if !$covered->{$entity};
             next;
         }
         next if defined($mark->{cleared});
+        if (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) {
+            push @open_tools, $entity;
+            next;
+        }
         # a consumer can keep its IO on established connections without any monitor session,
         # so its absence from the sweep proves nothing; only the operator closes a record
         push @$blockers,
             "the rotation of '$entity' awaits '--confirm-clients-refreshed $entity' once every consumer"
             . " of it was refreshed";
+    }
+    if (scalar(@open_tools) == 1) {
+        push @$blockers,
+            "the rotation of the tool key '$open_tools[0]' awaits '--confirm-clients-refreshed"
+            . " $open_tools[0]'; only Ceph's own tools read it, so it needs no consumer refresh";
+    } elsif (scalar(@open_tools)) {
+        push @$blockers,
+            "the rotations of "
+            . scalar(@open_tools)
+            . " bootstrap and crash keys await their confirmation, which needs no consumer"
+            . " refresh; '--confirm-all-clients-refreshed' closes them once every open record is"
+            . " ready, or '--confirm-clients-refreshed USER' each";
     }
     push @$blockers, "the stored 'mon.' key could not be read, see '--rotate-mon-key'"
         if !defined($info->{pve_mon_key});
@@ -862,15 +928,12 @@ sub open_options(
             . (scalar(@$stores) > 1 ? 'storages ' : 'storage ')
             . join(', ', @$stores) . ")";
     }
-    # the bulk option stages every new key, so it is the safe suggestion; '--rotate-storage-key
-    # NAME' stays the path when only some users can take the new cipher yet
-    my $storage_bulk = scalar(@storage_open) && !$opts->{'rotate-all-storage-keys'} ? 1 : 0;
+    # Storage IDs can share one Ceph user, so offer the complete user inventory in bulk.
+    my $storage_bulk = $opts->{'rotate-all-storage-keys'} ? 0 : scalar(@storage_open);
     if ($storage_bulk) {
+        my $users = $storage_bulk == 1 ? 'user' : 'users';
         push @$next,
-            "--rotate-all-storage-keys: the dedicated storage users "
-            . join(', ', @storage_open)
-            . "; every new key is staged, which needs Ceph 19.2.6-pve3, 20.2.4-pve3, or newer on"
-            . " every monitor";
+            "--rotate-all-storage-keys: stage keys for $storage_bulk dedicated storage $users";
         $hedge = 1;
     }
     # the monitors recount a moment behind, so a run that passed the option is not offered it
@@ -946,6 +1009,9 @@ sub open_options(
         stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
         lockbox => $lockbox_open,
         storage_bulk => $storage_bulk,
+        storage_scope => \@storage_open,
+        storage_requirement => "Staging needs Ceph 19.2.6-pve3, 20.2.4-pve3, or newer on every"
+            . " monitor.",
         hedge => $hedge,
     };
 }

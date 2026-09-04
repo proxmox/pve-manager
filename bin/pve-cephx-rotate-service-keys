@@ -11,6 +11,7 @@ use JSON;
 use Digest::SHA qw(sha256_hex);
 use MIME::Base64 qw(decode_base64);
 use Term::ANSIColor;
+use Text::Wrap ();
 
 use PVE::INotify;
 use PVE::RPCEnvironment;
@@ -128,6 +129,13 @@ sub log_steps($lines) {
 
     log_step($lines->[$_]) for 0 .. $shown - 1;
     log_step("and " . ($total - $shown) . " more") if $total > $shown;
+}
+
+my sub journal_retention_note() {
+    return
+        "Keep $STATE_FILE until migration completion and access verification. It contains"
+        . " secret keys needed to recover a daemon left behind ('ceph auth import'), so protect it"
+        . " like a keyring.";
 }
 
 sub log_heading($title) {
@@ -1411,8 +1419,6 @@ my sub release_manual_promotion($rados, $state) {
 
     delete $state->{client_grace};
     save_state($state);
-    log_info("the automatic promotion of pending client keys is back to "
-        . (defined($previous) ? "'$previous'" : "its default"));
     return;
 }
 
@@ -1724,6 +1730,12 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     }
 
     if (!$confirmation_refused) {
+        # every record passed the checks above, so the aggregate option is accepted as a whole
+        log_warn("accepting '--confirm-all-clients-refreshed' for "
+                . join(', ', @confirm)
+                . ": every consumer of them that this run can see is refreshed, and you confirm"
+                . " the same for those it cannot see")
+            if $confirm_all && scalar(@confirm);
         for my $entity (@confirm) {
             my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
             my $verdict = $decision->{verdict};
@@ -1782,24 +1794,24 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             }
 
             # Committing a staged key drops the one that copies not yet written still hold.
-            if (my $staged = $state->{staged}->{$entity}) {
-                if (!$staged->{written}) {
-                    log_fail("not accepting '$option': its staged key is not written to every copy"
-                        . " yet, so committing it would drop the key those copies still hold. Run"
-                        . " the rotation option for it again first.");
-                    $confirmation_refused = 1;
-                    next;
-                }
-                die "cannot commit the staged key of '$entity' without a cluster connection\n"
-                    if !$info->{rados};
-                # The record remains open if the commit fails, so the confirmation is retryable.
-                commit_staged_key($info->{rados}, $state, $entity);
+            my $staged = $state->{staged}->{$entity};
+            if ($staged && !$staged->{written}) {
+                log_fail("not accepting '$option': its staged key is not written to every copy"
+                    . " yet, so committing it would drop the key those copies still hold. Run"
+                    . " the rotation option for it again first.");
+                $confirmation_refused = 1;
+                next;
             }
+            die "cannot commit the staged key of '$entity' without a cluster connection\n"
+                if $staged && !$info->{rados};
 
             # What is left are consumers no run can see: disconnected ones, and copies of the key
-            # on hosts Proxmox VE does not manage.
-            log_warn("accepting '$option': every consumer of '$entity' that this run can see is"
-                . " refreshed, and you confirm the same for those it cannot see");
+            # on hosts Proxmox VE does not manage. The aggregate option said so once, above.
+            log_warn("accepting '$option': every consumer of '$entity' that this run can see"
+                    . " is refreshed, and you confirm the same for those it cannot see")
+                if !$confirm_all;
+            # The record remains open if the commit fails, so the confirmation is retryable.
+            commit_staged_key($info->{rados}, $state, $entity) if $staged;
             my $mark = $state->{client_refresh}->{$entity};
             $mark->{cleared} = time();
             $mark->{acknowledged} = time();
@@ -1815,38 +1827,33 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     $print_possible_for_section->();
     return -1 if $confirmation_refused;
 
-    for my $entity (sort keys %$stale_clients) {
-        my $held = $stale_clients->{$entity};
-        my $reconnect_risk =
-            $state->{staged}->{$entity}
-            ? " Both the current and staged keys still authenticate."
-            : " A reconnect can fail immediately because the active key was replaced. The current"
-            . " monitor ticket expires within three days by default, but that is only an upper"
-            . " bound on continued monitor access.";
-        log_warn(
-            (
+    if (%$stale_clients && !restrict_wanted($info, $opts)) {
+        my ($staged, $replaced) = (0, 0);
+        log_warn("Client-key refresh is still required:");
+        for my $entity (sort keys %$stale_clients) {
+            my $held = $stale_clients->{$entity};
+            my $session_state =
                 sessions_judged_by_key($held)
-                ? "Live clients of '$entity' still authenticate with a previous key: "
-                : "Clients recorded around the rotation of '$entity' may still hold its previous"
-                    . " key: "
-            )
-            . scalar(@$held) . " ("
+                ? 'still authenticate with a previous key'
+                : 'may still hold the previous key';
+            log_step("'$entity': "
+                . scalar(@$held)
+                . " unresolved session(s) ($session_state; "
                 . $describe_for_section->($held)
-                . ").$reconnect_risk Existing data connections may work longer. Live-migrate those"
-                . " VMs, remount CephFS mounts, or restart the consumers, then run this again and close"
-                . " the record with '--confirm-clients-refreshed'."
-        );
-    }
-    if ($info->{sessions}->{complete}) {
-        for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
-            my $mark = $state->{client_refresh}->{$entity};
-            next if $stale_clients->{$entity} || defined($mark->{cleared});
-            next if $seeded_now->{$entity}; # said when the record was seeded above
-            # a consumer can keep its IO on established connections without any monitor
-            # session, so absence proves nothing; only the operator can close the record
-            log_info(
-                "no live session predates the key rotation of '$entity'; " . confirm_hint($entity));
+                . "); refresh its consumers, then use '--confirm-clients-refreshed $entity'");
+            $state->{staged}->{$entity} ? $staged++ : $replaced++;
         }
+        log_text("A connected client can keep existing data connections after its monitor ticket"
+            . " expires, so session absence alone does not prove that its loaded key was"
+            . " refreshed.");
+        log_text("Both keys remain valid until confirmation for the $staged staged key(s).")
+            if $staged;
+        log_text("For the $replaced immediately replaced key(s), reconnect fails with the previous"
+                . " key; a monitor ticket lasts three days at most by default, and open data"
+                . " connections can outlast it.")
+            if $replaced;
+        log_text("Refresh the actual consumers. Possible-consumer hints are host-wide evidence for"
+            . " investigation, not exact restart or migration targets.");
     }
 
     $print_possible_for_section->();
@@ -1854,7 +1861,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     if ($opts->{'wipe-rotating-keys'} && (%$stale_clients || !$info->{sessions}->{complete})) {
         my $why =
             %$stale_clients
-            ? "the clients above cannot fetch new rotating tickets, as the key they hold is no"
+            ? "the unresolved clients cannot fetch new rotating tickets, as the key they hold is no"
             . " longer in the authentication database, so the wipe would stop their IO at once"
             : "not every monitor answered the session query, so it cannot be verified that no"
             . " client would be stopped";
@@ -1947,8 +1954,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         && !$recovered_count
         && !@unfinished
     ) {
-        log_pass("Nothing left for this run: every service key uses '$CIPHER', and so do the"
-            . " service tickets.");
+        log_pass("Every service key uses '$CIPHER', and so do the service tickets.");
         mon_key_hint($info, $opts);
         return 0;
     }
@@ -2187,14 +2193,15 @@ my sub preflight_nodes($info, $plan, $opts) {
         }
     }
     if ($stops_nothing) {
-        log_info("Nothing in this plan is stopped, so the cluster health does not gate this run.");
+        log_info("Nothing in this plan is stopped, so the cluster health does not gate this run.")
+            if grep { !m/^AUTH_/ } keys %{ $info->{health_checks} // {} };
         return 1;
     }
 
     my ($health_ok, $severity, $blockers, $ignored) =
         PVE::Ceph::Services::check_health_acceptable($info->{rados}, $opts->{force}, undef);
 
-    if (@$ignored) {
+    if (@$ignored && $opts->{verbose}) {
         log_info("These health checks do not block this run: " . join(', ', sort @$ignored));
     }
 
@@ -2252,7 +2259,8 @@ my sub recover_left_behind($info, $state) {
 my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
     $storage_entities //= {};
     my $insecure_service_keys = %{ $info->{insecure_entities} } ? 1 : 0;
-    log_heading($insecure_service_keys ? "Why HEALTH_ERR" : "Where this cluster stands");
+    log_heading("Why HEALTH_ERR") if $insecure_service_keys;
+    log_heading("Where this cluster stands") if !$insecure_service_keys && $opts->{verbose};
 
     if ($insecure_service_keys) {
         log_text("Ceph reports service keys on the old '$LEGACY_CIPHER' cipher. The related"
@@ -2263,9 +2271,9 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             log_text("This cluster no longer allows '$LEGACY_CIPHER', so keys still on it may"
                 . " fail to authenticate.");
         }
-    } else {
+    } elsif ($opts->{verbose}) {
         log_text("Ceph reports no service key on the old '$LEGACY_CIPHER' cipher.");
-        log_text("The health check cannot inspect the shared 'mon.' key.") if $opts->{verbose};
+        log_text("The health check cannot inspect the shared 'mon.' key.");
     }
 
     my $only = $opts->{only};
@@ -2293,15 +2301,21 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         "dedicated storage users " . join(', ', map { "'$_'" } @unselected_storage_users)
         if scalar(@unselected_storage_users) && !$opts->{'rotate-all-storage-keys'};
 
+    # only what still has work: a category already migrated is not worth a line
+    my $checks = $info->{health_checks} // {};
     my @unselected_other_keys;
-    push @unselected_other_keys, "the shared 'mon.' key" if !$mon_selected;
+    push @unselected_other_keys, "the shared 'mon.' key"
+        if !$mon_selected && mon_key_needs_rotation($info);
     push @unselected_other_keys, "service daemon keys outside '--only'" if $only;
     push @unselected_other_keys, "encrypted OSD lockbox keys"
-        if !$opts->{'rotate-lockbox-keys'};
+        if scalar($insecure_clients->{lockbox}->@*) && !$opts->{'rotate-lockbox-keys'};
 
     my @unselected_actions;
     push @unselected_actions, "the service-ticket cipher switch" if $only;
-    push @unselected_actions, "cipher restriction" if !$opts->{'restrict-ciphers'};
+    push @unselected_actions, "cipher restriction"
+        if !$opts->{'restrict-ciphers'}
+        && ($checks->{AUTH_INSECURE_KEYS_ALLOWED}
+            || grep { $_ ne $CIPHER } @{ $info->{allowed_ciphers} // [] });
 
     if (
         scalar(@unselected_users)
@@ -2373,7 +2387,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             . "$last "
             . ($total == 1 ? 'key' : 'keys');
 
-        log_text("");
+        log_text("") if $step > 1;
         if ($opts->{'restart-daemons'}) {
             log_text("Step $step: rotate $summary. '--restart-daemons' takes the slow"
                 . " path: each daemon is stopped, rotated and started again.");
@@ -2407,15 +2421,33 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         $step++;
         my $client_count = scalar($plan->{client_keys}->@*);
         my $staged_count = scalar(grep { $_->{staged} } $plan->{client_keys}->@*);
+        my @tool_items = grep { tool_key($_->{entity}) } $plan->{client_keys}->@*;
         my $replaced_count =
-            scalar(grep { !$_->{staged} && !$_->{resume_only} } $plan->{client_keys}->@*);
-        log_text("");
-        my $key_label = $client_count == 1 ? 'Ceph user key' : 'Ceph user keys';
-        log_text("Step $step: rotate $client_count selected $key_label and rewrite every copy"
-            . " Proxmox VE keeps. Affected CephFS mounts are redone on every node unless something"
-            . " is using them.");
+            scalar(grep { !$_->{staged} && !$_->{resume_only} && !tool_key($_->{entity}) }
+                $plan->{client_keys}->@*);
+        log_text("") if $step > 1;
+        my $tool_count = scalar(@tool_items);
+        my $user_count = $client_count - $tool_count;
+        my $tools_label =
+            $tool_count == 1
+            ? "the tool key '$tool_items[0]->{entity}'"
+            : "$tool_count bootstrap and crash keys";
+
+        if ($user_count) {
+            my $key_label = $user_count == 1 ? 'Ceph user key' : 'Ceph user keys';
+            log_text("Step $step: rotate $user_count selected $key_label"
+                . ($tool_count ? " and $tools_label" : '')
+                . " and rewrite every copy Proxmox VE keeps. Affected CephFS mounts are redone on"
+                . " every node unless something is using them.");
+        } else {
+            log_text("Step $step: rotate $tools_label and rewrite every copy Proxmox VE keeps."
+                . " Only Ceph's own tools read "
+                . ($tool_count == 1 ? 'it' : 'them')
+                . ", so there is nothing to stop.");
+        }
 
         for my $item ($plan->{client_keys}->@*) {
+            next if !$opts->{verbose} && tool_key($item->{entity});
             my $how =
                 $item->{staged} ? 'staged next to the current key'
                 : $item->{resume_only} ? 'resume writing its current key to every copy'
@@ -2430,9 +2462,15 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
                 log_step("Ceph user '$item->{entity}': $how");
             }
         }
-        if (grep { $_->{bulk_new_staging} } $plan->{client_keys}->@*) {
-            log_step("The bulk storage selection stages every newly rotated dedicated user key;"
-                . " it never replaces one at once.");
+        if ($user_count && scalar(@tool_items) && !$opts->{verbose}) {
+            log_step((
+                scalar(@tool_items) == 1
+                ? "the tool key '$tool_items[0]->{entity}': replaced at once; only Ceph's"
+                    . " own tools read it, so there is nothing to stop"
+                : scalar(@tool_items)
+                    . " bootstrap and crash keys: replaced at once; only Ceph's own tools read"
+                    . " them, so there is nothing to stop"
+            ));
         }
         if ($staged_count) {
             log_step("For each staged Ceph user key, both the current and new keys authenticate"
@@ -2467,27 +2505,27 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
                         . ") and keep the current key in memory");
             } else {
                 push @$possibly_stale,
-                    "'$item->{entity}': "
+                    "'$item->{entity}', "
                     . scalar(@$live)
-                    . " live client session(s) ("
-                    . describe_live($live, $opts->{verbose}, 0) . ")";
+                    . (scalar(@$live) == 1 ? " session: " : " sessions: ")
+                    . describe_live($live, $opts->{verbose}, 0);
             }
         }
         if (scalar(@$possibly_stale)) {
-            log_step("currently connected consumers of the selected Ceph users:");
+            log_step("Live sessions of the selected Ceph users:");
             log_steps($possibly_stale);
         }
         print_possible_consumers($live_for_hints, $opts);
         if ($staged_count) {
-            log_step("For staged keys, refresh running consumers after applying: live-migrate every"
-                . " VM, remount CephFS mounts, and restart other consumers; a dry run of this"
-                . " script then reports who is left");
+            log_step("For staged keys, refresh their consumers after applying: live-migrate every"
+                . " VM, remount every kernel CephFS or RBD mount, and restart other consumers; a"
+                . " dry run then reports who is left.");
         }
     }
 
     if (scalar($plan->{lockbox_keys}->@*)) {
         $step++;
-        log_text("");
+        log_text("") if $step > 1;
         log_text("Step $step: rotate the lockbox key of "
             . scalar($plan->{lockbox_keys}->@*)
             . " encrypted OSD(s), in the auth database and in the LVM tag on the OSD's device. No"
@@ -2501,7 +2539,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
 
     if ($plan->{service_cipher}) {
         $step++;
-        log_text("");
+        log_text("") if $step > 1;
         log_text("Step $step: switch the service tickets to the new cipher, which clears the"
             . " second error. Clients need no restart. This causes a brief monitor election.");
         if ($opts->{verbose}) {
@@ -2513,7 +2551,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
 
     if ($opts->{'wipe-rotating-keys'}) {
         $step++;
-        log_text("");
+        log_text("") if $step > 1;
         log_text("Step $step: wipe the rotating service keys, as '--wipe-rotating-keys' was passed."
             . " Not recommended: this invalidates every service ticket. Continue only if every"
             . " client and service daemon supports '$CIPHER'; otherwise wait a few hours for the"
@@ -2523,7 +2561,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
 
     if (restrict_wanted($info, $opts)) {
         $step++;
-        log_text("");
+        log_text("") if $step > 1;
         log_text("Step $step: allow only the '$CIPHER' cipher for authentication, which clears"
             . " the remaining insecure-key warnings. A key or client on the old cipher is"
             . " refused from then on. This causes brief monitor elections.");
@@ -2558,11 +2596,16 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             . " will not work with kernel clients that do not know that cipher");
     }
 
-    log_text("");
-    log_text("$STATE_FILE records migration progress and the pre-rotation key for every key this"
-        . " run changes.");
-    log_warn("Do not start a rolling restart from the web interface until this run finishes:"
-        . " the lock guarding against that is advisory.");
+    if ($opts->{verbose}) {
+        log_text("");
+        log_text("$STATE_FILE records migration progress and the pre-rotation key for every key"
+            . " this run changes.");
+    }
+    if ($opts->{apply} && ($plan->{mon_key} || scalar($plan->{daemons}->@*))) {
+        log_text("");
+        log_warn("Do not start a rolling restart from the web interface until this run finishes:"
+            . " the lock guarding against that is advisory.");
+    }
 
     if (my @unfinished = unfinished_entities($state)) {
         log_text("");
@@ -2706,6 +2749,8 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
 
         log_info("restarting monitor '$mon->{id}' on node '$mon->{node}' so it starts using the new"
             . " key");
+        # a unit restarted a few times within its start limit window refuses another start
+        eval { node_run($mon->{node}, ['systemctl', 'reset-failed', "ceph-mon\@$mon->{id}"]) };
         node_run($mon->{node}, ['systemctl', 'restart', "ceph-mon\@$mon->{id}"]);
 
         PVE::Ceph::Services::wait_for_daemon_up($rados, 'mon', $mon->{id}, $opts->{timeout});
@@ -2780,7 +2825,6 @@ my sub release_preferred_cipher($rados, $state) {
 
     delete $state->{preferred_cipher_was};
     save_state($state);
-    log_info("'auth_preferred_cipher' is back to '$previous'");
 
     return;
 }
@@ -3371,7 +3415,6 @@ my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
         $state->{client_grace} = { previous => $explicit, set => time() };
         save_state($state);
     }
-    log_info("disabling the automatic promotion of pending client keys on the monitors");
     $rados->mon_command({
         prefix => 'config set',
         who => 'mon',
@@ -3394,15 +3437,15 @@ my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
 
 # Every copy Proxmox VE keeps, the shared ones first. Returns the node-local copies that could not
 # be written, for the caller to report: every shared copy holds the new key by then.
-my sub write_client_key_copies($item, $entry) {
+my sub write_client_key_copies($item, $entry, $verbose = 0) {
     my $stale = [];
     for my $file ($item->{files}->@*) {
         if ($file->{format} eq 'merge') {
             if (!-f $file->{path}) {
-                log_step("no '$file->{path}', nothing to merge the key into");
+                log_step("no '$file->{path}', nothing to merge the key into") if $verbose;
                 next;
             }
-            log_step("merging the key into '$file->{path}'");
+            log_step("merging the key into '$file->{path}'") if $verbose;
             merge_keyring_file($file->{path}, $entry);
             next;
         }
@@ -3412,7 +3455,7 @@ my sub write_client_key_copies($item, $entry) {
             ? "$entry->{key}\n"
             : keyring_text($entry);
         if ($file->{scope} eq 'cluster') {
-            log_step("writing '$file->{path}'");
+            log_step("writing '$file->{path}'") if $verbose;
             write_cluster_file($file->{path}, $content);
             next;
         }
@@ -3421,11 +3464,8 @@ my sub write_client_key_copies($item, $entry) {
         for my $node (sort @{ PVE::Cluster::get_nodelist() // [] }) {
             # every shared copy is written by now, and the rest would keep a key the auth db dropped
             eval {
-                if (!node_file_exists($node, $file->{path})) {
-                    log_step("no '$file->{path}' on node '$node', nothing to update there");
-                    return;
-                }
-                log_step("writing '$file->{path}' on node '$node'");
+                return if !node_file_exists($node, $file->{path});
+                log_step("writing '$file->{path}' on node '$node'") if $verbose;
                 write_node_file($node, $file->{path}, $content);
             };
             if (my $err = $@) {
@@ -3441,7 +3481,9 @@ my sub write_client_key_copies($item, $entry) {
 # while automatic promotion is disabled, so every copy can be rewritten and every consumer
 # refreshed at its own pace. The rotation ends with '--confirm-clients-refreshed', which commits
 # the key.
-my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = undef) {
+my sub stage_client_key(
+    $rados, $state, $item, $snapshot = undef, $collect = undef, $verbose = 0,
+) {
     my $entity = $item->{entity};
     $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
 
@@ -3548,7 +3590,7 @@ my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = und
     }
 
     my $entry = { entity => $entity, key => $pending, caps => $current->{caps} };
-    my $stale = write_client_key_copies($item, $entry);
+    my $stale = write_client_key_copies($item, $entry, $verbose);
     if (scalar(@$stale)) {
         die "'$entity' has its new key staged, and every copy on the cluster file system holds it,"
             . " but these node-local copies could not be written and still hold the current key,"
@@ -3568,21 +3610,15 @@ my sub stage_client_key($rados, $state, $item, $snapshot = undef, $collect = und
 
     refresh_cephfs_mounts($item, staged => 1);
 
-    if ($entity eq $ADMIN_ENTITY || grep { defined($_->{store}) } $item->{files}->@*) {
-        log_warn("'$entity' has a new key; any copy outside Proxmox VE still holds the current"
-            . " one, which stays valid until the rotation is confirmed.");
-    }
-    log_pass("'$entity' has a new '$CIPHER' key staged next to its current one. Both authenticate"
-        . " while you live-migrate the VMs, remount CephFS mounts, and restart other consumers."
-        . " Commit the new key with '--confirm-clients-refreshed $entity' or, once every open"
-        . " record is ready, '--confirm-all-clients-refreshed'.");
+    log_pass("'$entity' has a new '$CIPHER' key staged next to its current one; both authenticate"
+        . " until you commit the new one, once every consumer of it is refreshed.");
 
     return;
 }
 
 # Back to the current key: the copies are rewritten first, so a consumer refreshed in between reads
 # a key the monitors still accept when the staged one is dropped.
-my sub abort_staged_key($rados, $state, $entity, $files) {
+my sub abort_staged_key($rados, $state, $entity, $files, $verbose = 0) {
     my $record = $state->{staged}->{$entity}
         or die "no key is staged for '$entity' by this script\n";
     my $item = { entity => $entity, files => $files->{$entity} // [] };
@@ -3599,7 +3635,7 @@ my sub abort_staged_key($rados, $state, $entity, $files) {
 
         log_warn("aborting the staged rotation of '$entity': a consumer already switched to the"
             . " new key loses its access once the key is dropped");
-        my $stale = write_client_key_copies($item, $entry);
+        my $stale = write_client_key_copies($item, $entry, $verbose);
         die "these copies of '$entity' could not be rewritten with the current key, so the staged"
             . " key is kept: "
             . join(', ', @$stale) . "\n"
@@ -3620,7 +3656,7 @@ my sub abort_staged_key($rados, $state, $entity, $files) {
     if (key_fingerprint($after->{key}) eq $record->{key}) {
         log_warn("the staged key of '$entity' became its active key while the abort ran, so the"
             . " copies are rewritten with it and the rotation counts as done");
-        my $stale = write_client_key_copies($item, $after);
+        my $stale = write_client_key_copies($item, $after, $verbose);
         die "these copies of '$entity' still hold a key the monitors no longer accept, run this"
             . " again once the nodes answer: "
             . join(', ', @$stale) . "\n"
@@ -3645,10 +3681,11 @@ my sub abort_staged_key($rados, $state, $entity, $files) {
     return;
 }
 
-my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
+my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0) {
     my $entity = $item->{entity};
 
-    return stage_client_key($rados, $state, $item, $snapshot) if $item->{staged};
+    return stage_client_key($rados, $state, $item, $snapshot, undef, $verbose)
+        if $item->{staged};
 
     if ($entity eq $ADMIN_ENTITY) {
         my $recovery = monitor_auth_entry($entity);
@@ -3696,7 +3733,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
         save_state($state);
     }
 
-    my $stale = write_client_key_copies($item, $entry);
+    my $stale = write_client_key_copies($item, $entry, $verbose);
     if (scalar(@$stale)) {
         die "'$entity' was rotated and every copy on the cluster file system now has the new"
             . " key, but these node-local copies could not be written and still hold the old"
@@ -3729,11 +3766,11 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
             log_warn("Consumers that remained connected through the immediate replacement may"
                 . " still hold the previous '$entity' key in memory: "
                 . scalar(@$held)
-                . ". Their next reconnect can fail immediately because the active key changed."
-                . " Their current monitor tickets expire within three days by default, but that is"
-                . " only an upper bound on continued monitor access. Existing data connections may"
-                . " work longer. Live-migrate every VM and restart the other consumers, then run a"
-                . " dry run to confirm none remain.");
+                . ". Their next reconnect fails, as the active key changed; one that stays"
+                . " connected keeps its tickets, the monitor one for three days at most by"
+                . " default, and open data connections can outlast that. Live-migrate every VM,"
+                . " remount the kernel mounts, and restart the other consumers, then run a dry run"
+                . " to confirm none remain.");
         }
     }
 
@@ -3968,23 +4005,28 @@ my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
 my sub print_open_options($opts, $storage_entities, $state, $snapshot, $planned = 0) {
     my $open = open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot);
 
-    if (scalar($open->{waiting}->@*)) {
+    # the warnings above already say which consumers of a waiting rotation to refresh
+    if (scalar($open->{ready}->@*)) {
         log_text("");
-        log_text("Refresh the consumers named above of: " . join(', ', $open->{waiting}->@*));
-        my @staged = grep { $state->{staged}->{$_} } $open->{waiting}->@*;
-        log_text("The new key of "
-                . join(', ', @staged)
-                . " is staged next to the current one. Both stay valid until the new key is"
-                . " committed with '--confirm-clients-refreshed USER' or, once every open record"
-                . " is ready, '--confirm-all-clients-refreshed'.")
-            if scalar(@staged);
+        if ($planned) {
+            log_text(
+                "Ready for their confirmation after this plan: " . join(', ', $open->{ready}->@*));
+        } else {
+            log_text("Ready once you confirm that disconnected consumers and external key copies"
+                . " of "
+                . join(', ', $open->{ready}->@*)
+                . " were refreshed:");
+            log_step($open->{command});
+        }
     }
 
-    if (scalar($open->{ready}->@*) && !$planned) {
+    # an apply run staged or replaced keys after the consumer warnings were printed, so its end
+    # says which records those still hold open
+    if (!$planned && $opts->{apply} && scalar($open->{waiting}->@*)) {
         log_text("");
-        log_text("Ready once you confirm that disconnected consumers and external key copies were"
-            . " refreshed:");
-        log_step($open->{command});
+        log_text("Not ready for their confirmation until their consumers are refreshed; a dry run"
+            . " then names what is left: "
+            . join(', ', $open->{waiting}->@*));
     }
 
     if (!$planned && !scalar($open->{next}->@*) && !scalar($open->{ready}->@*)) {
@@ -4000,19 +4042,30 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot, $planned 
     if (scalar($open->{next}->@*) && !$planned) {
         log_text("");
         log_text("Options that address what is still reported, combinable in one '--apply' run:");
-        log_step($_) for $open->{next}->@*;
-        log_text("Use '--rotate-storage-key NAME' instead to select only a compatible subset of"
-                . " the dedicated storage users.")
-            if $open->{storage_bulk};
+        for my $option ($open->{next}->@*) {
+            if ($option =~ /^--rotate-all-storage-keys:/) {
+                my $inline = '--rotate-all-storage-keys: ' . join('; ', $open->{storage_scope}->@*);
+                if (length($inline) <= 98) {
+                    log_step($inline);
+                } else {
+                    log_step($option);
+                    local $Text::Wrap::columns = 100;
+                    local $Text::Wrap::huge = 'overflow';
+                    log_text(Text::Wrap::wrap('  ', '    ', $_)) for $open->{storage_scope}->@*;
+                }
+                log_text($open->{storage_requirement});
+            } else {
+                log_step($option);
+            }
+        }
         if (scalar($open->{together}->@*)) {
             log_text("The ones that need no decision of yours, in one command:");
             log_step("$PROGRAM --apply " . join(' ', $open->{together}->@*));
         }
-        log_text("'pveceph auth status' reports the kernel of every node and which keys are"
-                . " still on the old cipher; the live consumers of a key are named by this run."
-                . " A client key above is rotated only once you decide that every consumer of"
-                . " it can take the new cipher.")
-            if $open->{hedge};
+        if ($open->{hedge}) {
+            log_text("Rotate only when every consumer supports aes256k. Check 'pveceph auth status'"
+                . " before applying.");
+        }
     }
 
     if ($open->{lockbox}) {
@@ -4034,33 +4087,41 @@ my sub print_open_options($opts, $storage_entities, $state, $snapshot, $planned 
 }
 
 my sub print_closing_notes(
-    $rados, $opts, $storage_entities, $switched, $rotated_keys, $state = {},
+    $rados, $opts, $storage_entities, $switched, $rotated_keys,
+    $state = {},
+    $restricted = 0,
 ) {
     log_heading("What is left");
 
     my $snapshot = collect_restriction_snapshot($rados);
     my $checks = $snapshot->{health_checks};
 
-    # Any check Ceph raises as an error settles this, AUTH_BAD_CAPS included. The ticket one lags
-    # the monitors' tick, so set_service_cipher's 'mon dump' read is the better proof.
-    my $switch_proved = { AUTH_INSECURE_SERVICE_TICKETS => 1 };
+    # Any check Ceph raises as an error settles this, AUTH_BAD_CAPS included. The checks this run
+    # cleared lag the monitors' tick, so the 'mon dump' reads behind the switch and the
+    # restriction are the better proof.
+    my $cleared = {
+        ($switched ? (AUTH_INSECURE_SERVICE_TICKETS => 1) : ()),
+        (
+            $restricted
+            ? (AUTH_INSECURE_KEYS_ALLOWED => 1, AUTH_INSECURE_KEYS_CREATABLE => 1)
+            : ()
+        ),
+    };
     my @errors = grep {
         m/^AUTH_/
             && ($checks->{$_}->{severity} // '') eq 'HEALTH_ERR'
-            && !($switched && $switch_proved->{$_})
+            && !$cleared->{$_}
     } sort keys %$checks;
     if (!scalar(@errors)) {
         if ($switched && $rotated_keys) {
             log_text("This run migrated the service keys and switched their tickets over, clearing"
-                . " both errors. Ceph may still list them until the monitors recompute.");
+                . " both errors.");
         } elsif ($switched) {
-            log_text("This run switched the service tickets to the '$CIPHER' cipher. Ceph may"
-                . " still list that check until the monitors recompute.");
+            log_text("This run switched the service tickets to the '$CIPHER' cipher.");
         } else {
             log_text("No authentication check is an error: the service keys and the tickets they"
                 . " hand out are migrated.");
         }
-        log_text("Everything left below is a warning, and clearing it is optional.");
         log_text("");
     }
 
@@ -4069,27 +4130,27 @@ my sub print_closing_notes(
         log_text("Ceph still reports these authentication health checks:");
         for my $check (@remaining) {
             my $message = $checks->{$check}->{summary}->{message} // '';
-            $message .= " (cleared by this run, not recomputed yet)"
-                if $switched && $switch_proved->{$check};
+            $message .= " (cleared by this run, not recomputed yet)" if $cleared->{$check};
             log_step("$check: $message");
         }
-        log_text("");
-        log_text("The monitors recompute these on their own tick, so a count can still include a"
-            . " key this run migrated; 'pveceph auth status' in a few minutes has the current one."
+        log_text(
+            "These recompute on the monitors' next tick"
+                . (
+                    $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
+                    ? "; AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours"
+                    : ""
+                )
+                . "."
         );
-        log_text("");
+        log_text("'ceph health mute <check>' silences the warning about a client key you leave on"
+                . " the old cipher.")
+            if $checks->{AUTH_INSECURE_CLIENT_KEY_TYPE};
     }
-
-    log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours. The"
-        . " other warnings stay until every client key is migrated and the old cipher is dropped;"
-        . " 'ceph health mute <check>' silences one you cannot act on.");
 
     print_open_options($opts, $storage_entities, $state, $snapshot);
 
     log_text("");
-    log_warn("Keep $STATE_FILE until Ceph health and daemon access are verified: it holds the only"
-        . " copy of the keys used before this run, the way back for a daemon left behind"
-        . " ('ceph auth import'). Protect it like a keyring, and delete it afterwards.");
+    log_warn(journal_retention_note());
 
     return;
 }
@@ -4108,7 +4169,7 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
             if ($opts->{apply}) {
                 log_warn("an earlier run did not finish aborting the staged key of '$entity',"
                     . " finishing it now");
-                abort_staged_key($rados, $state, $entity, $files);
+                abort_staged_key($rados, $state, $entity, $files, $opts->{verbose});
             } else {
                 log_warn("An earlier run did not finish aborting the staged key of '$entity'."
                     . " Run this with '--apply' to finish it.");
@@ -4135,7 +4196,7 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
                         . " while the new key of '$entity' is staged, so its first use would end"
                         . " the grace period. Run this with '--apply' to disable it again.");
                 }
-            } else {
+            } elsif ($opts->{verbose}) {
                 log_info("the new key of '$entity' is staged next to its current one; both"
                     . " authenticate until it is committed with '--confirm-clients-refreshed"
                     . " $entity' or, once every open record is ready,"
@@ -4154,7 +4215,7 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
                 }
                 # the copies not yet written hold a key the monitors no longer accept
                 my $item = { entity => $entity, files => $files->{$entity} // [] };
-                my $stale = write_client_key_copies($item, auth_entry($rados, $entity));
+                my $stale = write_client_key_copies($item, auth_entry($rados, $entity), $opts->{verbose});
                 die "these copies of '$entity' still hold a key the monitors no longer accept,"
                     . " run this again once the nodes answer: "
                     . join(', ', @$stale) . "\n"
@@ -4182,9 +4243,7 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
         }
         my $option =
             $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
-            : $stores->{$entity}
-            ? "'--rotate-all-storage-keys' (or '--rotate-storage-key $stores->{$entity}->[0]'"
-            . " for a compatible subset)"
+            : $stores->{$entity} ? "'--rotate-all-storage-keys'"
             : "the rotation option for it";
         log_warn("the key staged for '$entity' is gone without becoming active, so every copy"
             . " written for it holds a key the monitors no longer accept. Pass $option to stage a"
@@ -4725,8 +4784,7 @@ my sub run_migration($opts) {
         my $seen = {};
         for my $entity (grep { !$seen->{$_}++ } @abort) {
             log_text("");
-            log_info("staged key of '$entity'");
-            abort_staged_key($rados, $state, $entity, $client_files);
+            abort_staged_key($rados, $state, $entity, $client_files, $opts->{verbose});
         }
         release_manual_promotion($rados, $state);
         # the auth database moved, so everything collected before is stale
@@ -4767,9 +4825,7 @@ my sub run_migration($opts) {
                     : $entity eq $ADMIN_ENTITY ? "'--rotate-admin-key'"
                     : (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? "'--rotate-client-keys'"
                     : $entity =~ m/^client\.osd-lockbox\./ ? "'--rotate-lockbox-keys'"
-                    : $stores->{$entity}
-                    ? "'--rotate-all-storage-keys' (or '--rotate-storage-key"
-                    . " $stores->{$entity}->[0]')"
+                    : $stores->{$entity} ? "'--rotate-all-storage-keys'"
                     : "a run not narrowed by '--only'";
                 "$entity ($option)";
             } @unfinished;
@@ -4783,7 +4839,7 @@ my sub run_migration($opts) {
         if ($opts->{only}) {
             log_pass("There is nothing left to migrate in the scope given with '--only'.");
         } else {
-            log_pass("Every service key this script migrates uses the '$CIPHER' cipher.");
+            log_pass("Every service key uses '$CIPHER', and so do the service tickets.");
         }
         mon_key_hint($info, $opts);
         print_open_options(
@@ -4813,9 +4869,7 @@ my sub run_migration($opts) {
         );
 
         log_heading("Dry run finished");
-        log_text("No Ceph key, cipher setting, or daemon was changed. Session observations may"
-            . " have updated the migration journal. Run this again with '--apply' to carry the"
-            . " plan out.");
+        log_text("Run this again with '--apply' to carry the plan out.");
         return 0;
     }
 
@@ -4883,7 +4937,6 @@ my sub run_migration($opts) {
                                     $rados, $_, $upid,
                                 ) for @$scopes;
 
-                                log_text("");
                                 log_info("[$index/$total] $TYPE_LABEL->{$daemon->{type}}"
                                     . " '$daemon->{entity}' on node '$daemon->{node}'");
                                 migrate_daemon($rados, $state, $daemon, $opts);
@@ -4903,8 +4956,7 @@ my sub run_migration($opts) {
 
                 for my $item (@{ $plan->{client_keys} // [] }) {
                     log_text("");
-                    log_info("client key '$item->{entity}'");
-                    migrate_client_key($rados, $state, $item);
+                    migrate_client_key($rados, $state, $item, undef, $opts->{verbose});
                 }
 
                 for my $item (@{ $plan->{lockbox_keys} // [] }) {
@@ -4975,6 +5027,7 @@ my sub run_migration($opts) {
         $plan->{service_cipher},
         scalar($plan->{daemons}->@*) ? 1 : 0,
         $state,
+        restrict_wanted($info, $opts) ? 1 : 0,
     );
 
     log_heading("Done");
@@ -4982,9 +5035,11 @@ my sub run_migration($opts) {
         log_pass("The keys covered by '--only' now use the '$CIPHER' cipher. Run this without"
             . " '--only' to migrate the rest and to switch the service cipher over.");
         mon_key_hint($info, $opts);
-    } else {
+    } elsif (scalar($plan->{daemons}->@*)) {
         log_pass("The manager, metadata server, and OSD keys of this cluster now use the '$CIPHER'"
             . " cipher.");
+        mon_key_hint($info, $opts);
+    } else {
         mon_key_hint($info, $opts);
     }
 
@@ -5018,6 +5073,8 @@ sub key_migration_test_hooks {
         stage_client => \&stage_client_key,
         commit_staged => \&commit_staged_key,
         abort_staged => \&abort_staged_key,
+        write_client_key_copies => \&write_client_key_copies,
+        journal_retention_note => \&journal_retention_note,
         settle_staged => \&settle_staged_records,
         release_grace => \&release_manual_promotion,
         admin_rotation_unfinished => \&admin_rotation_unfinished,
