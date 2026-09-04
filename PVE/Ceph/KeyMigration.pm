@@ -26,7 +26,8 @@ our @EXPORT_OK = qw(
     resolve_configured_locations merge_configured_daemons resume_verdict
     summarize_sessions session_hosts describe_sessions summarize_monitor_connections
     possible_consumer_hints
-    merge_refresh_record stale_consumers restrict_blockers
+    merge_refresh_record stale_consumers session_key_targets sessions_judged_by_key
+    restrict_blockers
     cephfs_mount_storages ack_decision finish_after_acks
     classify_insecure_clients open_options open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
@@ -421,7 +422,14 @@ sub summarize_sessions($per_mon, $expected_mons = undef) {
                 next;
             }
             my ($host) = ((($socket // {})->{addr} // '') =~ m/^\[?(.+?)\]?:\d+$/);
-            push $summary->{clients}->{$entity}->@*, { global_id => $gid, host => $host // '?' };
+            my $client = { global_id => $gid, host => $host // '?' };
+            # a monitor that records the key behind a session names it by fingerprint
+            my $fingerprint = $session->{auth_key_fingerprint};
+            if (defined($fingerprint) && !ref($fingerprint) && length($fingerprint)) {
+                $client->{key_fingerprint} = "$fingerprint";
+                $client->{key_pending} = $session->{auth_key_pending} ? 1 : 0;
+            }
+            push $summary->{clients}->{$entity}->@*, $client;
         }
     }
     if ($expected && scalar(keys %$seen) != scalar(keys %$expected)) {
@@ -548,15 +556,51 @@ sub merge_refresh_record($record, $sessions, $entity, $measurement_complete, $ro
 
 # A recorded ID names the same client instance across reconnects and monitor restarts. Numeric
 # order says nothing because monitors allocate IDs in independent rank-strided sequences.
-sub stale_consumers($sessions, $refresh) {
+# The key each entity's consumers should be on, by fingerprint: the pending key while one is
+# staged, the active key otherwise. A session a monitor names by its key fingerprint is judged
+# against that; one without the fingerprint falls back to the IDs recorded around the rotation.
+sub session_key_targets($exported) {
+    my $targets = {};
+    for my $entity (keys %{ $exported // {} }) {
+        my $entry = $exported->{$entity};
+        next if ref($entry) ne 'HASH';
+        my $key =
+            defined($entry->{pending_key}) && length($entry->{pending_key})
+            ? $entry->{pending_key}
+            : $entry->{key};
+        $targets->{$entity} = key_fingerprint($key) if defined($key) && length($key);
+    }
+    return $targets;
+}
+
+# A session is stale when the key the monitor names for it is not the target, or when its ID
+# was recorded around the rotation: both signals count, so a monitor that names keys adds the
+# clients it can prove without dropping the ones the record vouches for.
+sub stale_consumers($sessions, $refresh, $targets = undef) {
     my $stale = {};
     for my $entity (sort keys %{ $refresh // {} }) {
         my $recorded = { map { $_ => 1 } @{ $refresh->{$entity}->{session_ids} // [] } };
-        my @held = grep { $recorded->{ $_->{global_id} } }
-            @{ ($sessions->{clients} // {})->{$entity} // [] };
+        my $target = ($targets // {})->{$entity};
+        my @held;
+        for my $session (@{ ($sessions->{clients} // {})->{$entity} // [] }) {
+            my $fingerprint = $session->{key_fingerprint};
+            my $by_key =
+                defined($target)
+                && defined($fingerprint)
+                && length($fingerprint)
+                && $fingerprint ne $target;
+            my $by_record = $recorded->{ $session->{global_id} };
+            next if !$by_key && !$by_record;
+            push @held, { %$session, judged_by_key => $by_key ? 1 : 0 };
+        }
         $stale->{$entity} = \@held if scalar(@held);
     }
     return $stale;
+}
+
+# whether every session in a list was found stale by its key, not only by its recorded ID
+sub sessions_judged_by_key($held) {
+    return scalar(@{ $held // [] }) && !scalar(grep { !$_->{judged_by_key} } @$held) ? 1 : 0;
 }
 
 # The CephFS storages whose mount reads a rotated key. The kernel holds the key a mount was
@@ -651,13 +695,18 @@ sub restrict_blockers($info, $state, $describe = undef) {
             . $describe->($sessions->{clients}->{$entity})
             . "), whose key they could then no longer use";
     }
-    my $stale = stale_consumers($sessions, $state->{client_refresh});
+    my $stale = stale_consumers($sessions, $state->{client_refresh},
+        session_key_targets($info->{exported}));
     for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
         my $mark = $state->{client_refresh}->{$entity};
         if (my $held = $stale->{$entity}) {
             push @$blockers,
                 scalar(@$held)
-                . " recorded live client(s) may still hold the previous key of '$entity' ("
+                . (
+                    sessions_judged_by_key($held)
+                    ? " live client(s) still authenticate with a previous key of '$entity' ("
+                    : " recorded live client(s) may still hold the previous key of '$entity' ("
+                )
                 . $describe->($held) . ")";
             next;
         }
@@ -767,6 +816,7 @@ sub open_options(
     $service_cipher = $CIPHER,
     $state = {},
     $sessions = undef,
+    $exported = undef,
 ) {
     my $clients = classify_insecure_clients($checks, $storage_entities);
     my $done = $opts->{'rotate-storage-key'} // [];
@@ -825,7 +875,7 @@ sub open_options(
     # cipher restriction, which no record may survive
     my $records = $state->{client_refresh} // {};
     my $picture = $sessions // { complete => 0, clients => {} };
-    my $stale = stale_consumers($picture, $records);
+    my $stale = stale_consumers($picture, $records, session_key_targets($exported));
     my (@waiting, @ready);
     my $all_ready_for_aggregate = 1;
     for my $entity (sort keys %$records) {
@@ -900,6 +950,7 @@ sub open_actions(
         $service_cipher,
         $state,
         $info ? $info->{sessions} : undef,
+        $info ? $info->{exported} : undef,
     );
     my $finish =
         $info && !$opts->{'restrict-ciphers'} && $checks->{AUTH_INSECURE_KEYS_ALLOWED}

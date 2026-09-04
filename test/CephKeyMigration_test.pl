@@ -20,7 +20,8 @@ use PVE::Ceph::KeyMigration qw(
     open_options open_actions
     summarize_sessions session_hosts describe_sessions summarize_monitor_connections
     possible_consumer_hints
-    stale_consumers restrict_blockers cephfs_mount_storages
+    stale_consumers session_key_targets sessions_judged_by_key restrict_blockers
+    cephfs_mount_storages
     ack_decision finish_after_acks
     plan_lockbox_keys parse_lockbox_output
 );
@@ -2397,6 +2398,78 @@ my sub cluster {
         $blocker,
         qr/1 live client\(s\) authenticate as 'client\.vm' \(due: 1 \(possible consumers: VM 102\)\)/,
         'the restriction blocker labels host-wide hints as possible consumers',
+    );
+}
+
+# --- a monitor that names the key behind a session settles what a recorded ID only guessed ------
+{
+    my $summary = summarize_sessions([{
+        mon => 'a',
+        sessions => [
+            {
+                con_type => 'client',
+                entity_name => 'client.vm',
+                global_id => 1,
+                socket_addr => { addr => '10.0.0.2:0' },
+                auth_key_fingerprint => 'aaaaaaaaaaaaaaaa',
+                auth_key_pending => 0,
+            },
+            {
+                con_type => 'client',
+                entity_name => 'client.vm',
+                global_id => 2,
+                socket_addr => { addr => '10.0.0.3:0' },
+            },
+        ],
+    }]);
+    my ($named, $plain) = $summary->{clients}->{'client.vm'}->@*;
+    is($named->{key_fingerprint}, 'aaaaaaaaaaaaaaaa', 'the fingerprint a monitor reports is kept');
+    ok(!exists($plain->{key_fingerprint}), 'a monitor without it leaves the session unnamed');
+
+    my $targets = session_key_targets({
+        'client.vm' => { key => $OLD, pending_key => $NEW },
+        'client.done' => { key => $NEW },
+        'client.odd' => 'not a hash',
+    });
+    is($targets->{'client.vm'}, key_fingerprint($NEW), 'a staged key is the target');
+    is($targets->{'client.done'}, key_fingerprint($NEW), 'otherwise the active key');
+    ok(!exists($targets->{'client.odd'}), 'and garbage is skipped');
+
+    my $sessions = {
+        complete => 1,
+        clients => {
+            'client.vm' => [
+                { global_id => 1, host => 'a', key_fingerprint => key_fingerprint($OLD) },
+                { global_id => 2, host => 'a', key_fingerprint => key_fingerprint($NEW) },
+                { global_id => 3, host => 'b', key_fingerprint => key_fingerprint($OLD) },
+                { global_id => 4, host => 'b' },
+                { global_id => 5, host => 'b' },
+            ],
+        },
+    };
+    my $refresh = { 'client.vm' => { session_ids => [2, 4] } };
+    my $held = stale_consumers($sessions, $refresh, $targets)->{'client.vm'};
+    is_deeply(
+        [sort map { $_->{global_id} } @$held],
+        [1, 2, 3, 4],
+        'a session on the previous key is stale whether or not it was recorded, a recorded one'
+            . ' stays stale even on the target key, and one without a fingerprint goes by its'
+            . ' record',
+    );
+    is_deeply(
+        { map { $_->{global_id} => $_->{judged_by_key} } @$held },
+        { 1 => 1, 2 => 0, 3 => 1, 4 => 0 },
+        'each held session says whether its key or its record made it stale',
+    );
+    ok(!sessions_judged_by_key($held), 'a mixed list is not judged by key alone');
+    ok(
+        sessions_judged_by_key([grep { $_->{judged_by_key} } @$held]),
+        'a list of key-judged sessions is',
+    );
+    is_deeply(
+        [map { $_->{global_id} } stale_consumers($sessions, $refresh)->{'client.vm'}->@*],
+        [2, 4],
+        'without targets only the recorded IDs count, as before',
     );
 }
 

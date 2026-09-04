@@ -33,7 +33,8 @@ use PVE::Ceph::KeyMigration qw(
     resolve_configured_locations merge_configured_daemons resume_verdict
     summarize_sessions session_hosts describe_sessions summarize_monitor_connections
     possible_consumer_hints
-    merge_refresh_record stale_consumers restrict_blockers
+    merge_refresh_record stale_consumers session_key_targets sessions_judged_by_key
+    restrict_blockers
     cephfs_mount_storages ack_decision classify_insecure_clients
     open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
@@ -1331,8 +1332,9 @@ my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
 
 # A returned retained ID is positive evidence even if the poll is incomplete or the client drops
 # its monitor session again. Persist it before any absence-based decision can reuse an old ack.
-my sub reopen_returning_clients($state, $sessions) {
-    my $stale = stale_consumers($sessions, $state->{client_refresh});
+my sub reopen_returning_clients($state, $sessions, $exported = undef) {
+    my $stale =
+        stale_consumers($sessions, $state->{client_refresh}, session_key_targets($exported));
     my $reopened = 0;
     for my $entity (sort keys %$stale) {
         my $mark = $state->{client_refresh}->{$entity};
@@ -1615,7 +1617,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     reconcile_client_fingerprints($state, $info->{exported}, $info->{sessions}, $opts);
 
-    my $stale_clients = reopen_returning_clients($state, $info->{sessions});
+    my $stale_clients = reopen_returning_clients($state, $info->{sessions}, $info->{exported});
 
     my @possible_live;
     my $describe_for_section = sub {
@@ -1799,13 +1801,19 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             : " A reconnect can fail immediately because the active key was replaced. The current"
             . " monitor ticket expires within three days by default, but that is only an upper"
             . " bound on continued monitor access.";
-        log_warn("Clients recorded around the rotation of '$entity' may still hold its previous"
-            . " key: "
+        log_warn(
+            (
+                sessions_judged_by_key($held)
+                ? "Live clients of '$entity' still authenticate with a previous key: "
+                : "Clients recorded around the rotation of '$entity' may still hold its previous"
+                    . " key: "
+            )
             . scalar(@$held) . " ("
-            . $describe_for_section->($held)
-            . ").$reconnect_risk Existing data connections may work longer. Live-migrate those"
-            . " VMs, remount CephFS mounts, or restart the consumers, then run this again and close"
-            . " the record with '--confirm-clients-refreshed'.");
+                . $describe_for_section->($held)
+                . ").$reconnect_risk Existing data connections may work longer. Live-migrate those"
+                . " VMs, remount CephFS mounts, or restart the consumers, then run this again and close"
+                . " the record with '--confirm-clients-refreshed'."
+        );
     }
     if ($info->{sessions}->{complete}) {
         my @open_tools;
@@ -3699,7 +3707,9 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
     }
     if (defined($after)) {
         my $held = stale_consumers(
-            $after, { $entity => $state->{client_refresh}->{$entity} },
+            $after,
+            { $entity => $state->{client_refresh}->{$entity} },
+            { $entity => key_fingerprint($entry->{key}) },
         )->{$entity} // [];
         if (scalar(@$held)) {
             log_warn("Consumers that remained connected through the immediate replacement may"
@@ -3847,7 +3857,7 @@ my sub restrict_ciphers(
     reconcile_client_fingerprints(
         $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
     );
-    reopen_returning_clients($state, $snapshot->{sessions});
+    reopen_returning_clients($state, $snapshot->{sessions}, $snapshot->{exported});
     my $blockers =
         restrict_blockers($snapshot, $state, sub { describe_live($_[0], $opts->{verbose}) });
 
