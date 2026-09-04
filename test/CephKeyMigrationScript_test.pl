@@ -47,7 +47,7 @@ sub picture {
     return {
         complete => $complete,
         clients => {
-            'client.crash' => [map { { global_id => $_, host => "node$_" } } @ids],
+            'client.app' => [map { { global_id => $_, host => "node$_" } } @ids],
         },
     };
 }
@@ -81,7 +81,7 @@ sub run_client_rotation {
             push @saved, [$path, $content];
         };
         $HOOKS->{migrate_client}->(
-            $rados, $state, { entity => 'client.crash', files => [] }, $snapshot,
+            $rados, $state, { entity => 'client.app', files => [] }, $snapshot,
         );
     }
     return ($calls, \@saved);
@@ -89,7 +89,7 @@ sub run_client_rotation {
 
 {
     my $startup = picture(1, 1);
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($OLD) } };
     my $rados = ClientRotationRados->new($OLD);
     my ($calls) = run_client_rotation(
         $rados, $state, picture(1, 1, 2), picture(1, 1, 2, 3),
@@ -97,54 +97,54 @@ sub run_client_rotation {
 
     is($calls, 2, 'a client-key rotation takes fresh snapshots before and after the auth change');
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [1, 2, 3],
         'clients appearing after the startup snapshot or across the rotation are retained',
     );
     is_deeply(
-        [map { $_->{global_id} } $startup->{clients}->{'client.crash'}->@*],
+        [map { $_->{global_id} } $startup->{clients}->{'client.app'}->@*],
         [1],
         'the startup picture alone did not contain those consumers',
     );
     ok(
-        !$state->{client_refresh}->{'client.crash'}->{measurement_incomplete},
+        !$state->{client_refresh}->{'client.app'}->{measurement_incomplete},
         'two complete boundary snapshots produce a measured record',
     );
 
-    $state->{client_refresh}->{'client.crash'}->{cleared} = 10;
+    $state->{client_refresh}->{'client.app'}->{cleared} = 10;
     $rados->{key} = $OLD;
     run_client_rotation($rados, $state, picture(1, 4), picture(1, 5));
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [1, 2, 3, 4, 5],
         'a repeated helper rotation unions its instances with every retained ID',
     );
     ok(
-        !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        !defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'a repeated rotation reopens a confirmed record',
     );
 }
 
 {
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($OLD) } };
     my $rados = ClientRotationRados->new($OLD);
     run_client_rotation($rados, $state, picture(0, 20), picture(1, 21));
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [20, 21],
         'a partial boundary poll keeps every ID it did return',
     );
     ok(
-        $state->{client_refresh}->{'client.crash'}->{measurement_incomplete},
+        $state->{client_refresh}->{'client.app'}->{measurement_incomplete},
         'one partial boundary poll keeps the record marked as incompletely measured',
     );
 }
 
 {
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($OLD) },
+        client_keys_seen => { 'client.app' => key_fingerprint($OLD) },
         client_refresh => {
-            'client.crash' => { rotated => 1, session_ids => [30], cleared => 2 },
+            'client.app' => { rotated => 1, session_ids => [30], cleared => 2 },
         },
     };
     my @saved;
@@ -152,26 +152,26 @@ sub run_client_rotation {
         no warnings qw(once redefine);
         local *main::file_set_contents = sub { push @saved, [@_] };
         $HOOKS->{reconcile_clients}->(
-            $state, { 'client.crash' => { key => $NEW } }, picture(1, 31), { apply => 1 },
+            $state, { 'client.app' => { key => $NEW } }, picture(1, 31), { apply => 1 },
         );
         $HOOKS->{reconcile_clients}->(
             $state,
-            { 'client.crash' => { key => "$NEW.changed" } },
+            { 'client.app' => { key => "$NEW.changed" } },
             picture(0, 32),
             { apply => 1 },
         );
     }
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [30, 31, 32],
         'repeated external rotations retain old and newly visible instance IDs',
     );
     ok(
-        !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        !defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'an external rotation also reopens a confirmed record',
     );
     ok(
-        $state->{client_refresh}->{'client.crash'}->{measurement_incomplete},
+        $state->{client_refresh}->{'client.app'}->{measurement_incomplete},
         'an external rotation remains conservative because its exact boundary was not observed',
     );
 }
@@ -273,7 +273,7 @@ sub restriction_is_offered {
             return encode_json([
                 {
                     con_type => 'client',
-                    entity_name => 'client.crash',
+                    entity_name => 'client.app',
                     global_id => $id eq 'b' ? 51 : 50,
                     socket_addr => { addr => "$node:0" },
                 },
@@ -397,7 +397,7 @@ sub migrated_info {
         insecure_entities => {},
         health_checks => {},
         ghost_daemons => [],
-        exported => { 'client.crash' => { key => $NEW } },
+        exported => { 'client.app' => { key => $NEW } },
         sessions => $sessions,
         mon_entry => {},
         pve_mon_key => $NEW,
@@ -409,7 +409,7 @@ sub migrated_info {
 }
 
 {
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     my $verdict = $HOOKS->{preflight}->(
         migrated_info(picture(1)),
         { apply => 1, 'confirm-clients-refreshed' => ['client.unknown'] },
@@ -445,11 +445,11 @@ sub migrated_info {
     my $state = {};
     $HOOKS->{preflight}->($info, { apply => 0 }, 0, $state);
     ok(
-        exists($state->{client_refresh}->{'client.crash'}),
+        exists($state->{client_refresh}->{'client.app'}),
         'a client key rotated before the tracking existed gets a seeded record',
     );
     ok(
-        !exists(($state->{previous_keys} // {})->{'client.crash'}),
+        !exists(($state->{previous_keys} // {})->{'client.app'}),
         'seeding leaves no previous-key stub behind for an entity the journal never knew',
     );
     is_deeply(
@@ -461,9 +461,9 @@ sub migrated_info {
 
 {
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
         client_refresh => {
-            'client.crash' => {
+            'client.app' => {
                 rotated => 1,
                 session_ids => [45],
                 cleared => 2,
@@ -478,30 +478,30 @@ sub migrated_info {
         local *main::file_set_contents = sub { push @saved, [@_] };
         $verdict = $HOOKS->{preflight}->(
             migrated_info(picture(0, 45)),
-            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
+            { apply => 1, 'confirm-clients-refreshed' => ['client.app'] },
             0,
             $state,
         );
     }
     cmp_ok($verdict, '<', 0, 'a returning client in a partial poll keeps the run fail closed');
     ok(
-        !defined($state->{client_refresh}->{'client.crash'}->{cleared})
-            && !defined($state->{client_refresh}->{'client.crash'}->{acknowledged}),
+        !defined($state->{client_refresh}->{'client.app'}->{cleared})
+            && !defined($state->{client_refresh}->{'client.app'}->{acknowledged}),
         'positive returning-ID evidence immediately reopens both record fields',
     );
     my $persisted = decode_json($saved[-1]->[1]);
     ok(
-        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
-            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        !defined($persisted->{client_refresh}->{'client.app'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.app'}->{acknowledged}),
         'apply mode persists the reopened record despite the incomplete session picture',
     );
 }
 
 {
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
         client_refresh => {
-            'client.crash' => {
+            'client.app' => {
                 rotated => 1,
                 session_ids => [46],
                 cleared => 2,
@@ -517,16 +517,16 @@ sub migrated_info {
     }
     my $persisted = decode_json($saved[-1]->[1]);
     ok(
-        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
-            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        !defined($persisted->{client_refresh}->{'client.app'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.app'}->{acknowledged}),
         'a dry run durably reopens an acknowledged record when its exact client ID returns',
     );
 }
 
 {
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
-        client_refresh => { 'client.crash' => { rotated => 1, measurement_incomplete => 1 } },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
+        client_refresh => { 'client.app' => { rotated => 1, measurement_incomplete => 1 } },
     };
     my @saved;
     my $verdict;
@@ -537,7 +537,7 @@ sub migrated_info {
             migrated_info(picture(1, 40)),
             {
                 apply => 1,
-                'confirm-clients-refreshed' => ['client.crash', 'client.crash'],
+                'confirm-clients-refreshed' => ['client.app', 'client.app'],
             },
             0,
             $state,
@@ -546,21 +546,21 @@ sub migrated_info {
     cmp_ok($verdict, '<', 0, 'a duplicated unmeasured acknowledgment still exits nonzero');
     is(scalar(@saved), 1, 'duplicate acknowledgment options are processed only once');
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [40],
         'the one request measures the visible consumer',
     );
     ok(
-        !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        !defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'the duplicate cannot accept the record after measuring it in the same run',
     );
 }
 
 {
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
         client_refresh => {
-            'client.crash' => { rotated => 1, measurement_incomplete => 1 },
+            'client.app' => { rotated => 1, measurement_incomplete => 1 },
         },
     };
     my (@saved, $output);
@@ -572,20 +572,20 @@ sub migrated_info {
         local *STDOUT = $stdout;
         $verdict = $HOOKS->{preflight}->(
             migrated_info(picture(1)),
-            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
+            { apply => 1, 'confirm-clients-refreshed' => ['client.app'] },
             0,
             $state,
         );
     }
     cmp_ok($verdict, '<', 0, 'a singular confirmation first records a complete empty measurement');
     is_deeply(
-        $state->{client_refresh}->{'client.crash'}->{session_ids},
+        $state->{client_refresh}->{'client.app'}->{session_ids},
         [],
         'the empty measurement is explicit in the refresh record',
     );
     ok(
-        !$state->{client_refresh}->{'client.crash'}->{measurement_incomplete}
-            && !defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        !$state->{client_refresh}->{'client.app'}->{measurement_incomplete}
+            && !defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'the complete measurement is durable without closing the record',
     );
     like(
@@ -599,14 +599,14 @@ sub migrated_info {
         local *main::file_set_contents = sub { push @saved, [@_] };
         $verdict = $HOOKS->{preflight}->(
             migrated_info(picture(1)),
-            { apply => 1, 'confirm-clients-refreshed' => ['client.crash'] },
+            { apply => 1, 'confirm-clients-refreshed' => ['client.app'] },
             0,
             $state,
         );
     }
     cmp_ok($verdict, '>=', 0, 'repeating the singular confirmation can close the measured record');
     ok(
-        defined($state->{client_refresh}->{'client.crash'}->{cleared}),
+        defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'the repeated confirmation closes it',
     );
 }
@@ -650,12 +650,12 @@ sub wipe_monitor_picture {
 
 {
     my $rados = CurrentMonitorRados->new(
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
     );
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
         client_refresh => {
-            'client.crash' => {
+            'client.app' => {
                 rotated => 1,
                 session_ids => [47],
                 cleared => 2,
@@ -680,8 +680,8 @@ sub wipe_monitor_picture {
     like($@, qr/refusing to wipe.*recorded live client/s, 'a returning client refuses the wipe');
     my $persisted = decode_json($saved[-1]->[1]);
     ok(
-        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
-            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        !defined($persisted->{client_refresh}->{'client.app'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.app'}->{acknowledged}),
         'the action-time wipe poll durably reopens the returned client record',
     );
 
@@ -703,7 +703,7 @@ sub wipe_monitor_picture {
 
 {
     my $rados = CurrentMonitorRados->new(exported => []);
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     eval {
         $HOOKS->{assert_consumers}->(
             $rados,
@@ -722,9 +722,9 @@ sub wipe_monitor_picture {
 
 {
     my $rados = CurrentMonitorRados->new(
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
     );
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     eval {
         $HOOKS->{assert_consumers}->(
             $rados,
@@ -744,11 +744,11 @@ sub wipe_monitor_picture {
 {
     my $rados = CurrentMonitorRados->new(
         mons => ['a'],
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
         service_cipher => 'aes256k',
         after_wipe_cipher => 'aes',
     );
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     {
         no warnings qw(once redefine);
         local *main::file_set_contents = sub { };
@@ -776,13 +776,13 @@ sub wipe_monitor_picture {
 {
     my $monitor = current_monitor_picture();
     my $rados = CurrentMonitorRados->new(
-        exported => [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+        exported => [{ entity => 'client.app', key => $NEW, pending_key => $OLD }],
     );
     my $snapshot = $HOOKS->{restriction_snapshot}->(
         $rados, sub { return $monitor }, sub { return $NEW },
     );
     is(
-        $snapshot->{exported}->{'client.crash'}->{pending_key},
+        $snapshot->{exported}->{'client.app'}->{pending_key},
         $OLD,
         'the fresh restriction snapshot retains pending keys from the auth export',
     );
@@ -849,10 +849,10 @@ sub wipe_monitor_picture {
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
         service_cipher => 'aes',
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
         health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
     );
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     my $startup = fresh_test_restriction_snapshot($rados);
     my $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, $state, $startup);
     ok(!restriction_is_offered($open), 'the old startup service cipher withholds the finish');
@@ -876,10 +876,10 @@ sub wipe_monitor_picture {
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
         service_cipher => 'aes256k',
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
         health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
     );
-    my $baseline = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $baseline = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     my $startup = fresh_test_restriction_snapshot($rados);
     my $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, {%$baseline}, $startup);
     ok(restriction_is_offered($open), 'the clean startup snapshot permits the finishing offer');
@@ -887,17 +887,17 @@ sub wipe_monitor_picture {
     my @changes = (
         [
             'an external old active key',
-            [{ entity => 'client.crash', key => $OLD }],
+            [{ entity => 'client.app', key => $OLD }],
             { AUTH_INSECURE_KEYS_ALLOWED => {} },
         ],
         [
             'an external old pending key',
-            [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+            [{ entity => 'client.app', key => $NEW, pending_key => $OLD }],
             { AUTH_INSECURE_KEYS_ALLOWED => {} },
         ],
         [
             'an external emergency override',
-            [{ entity => 'client.crash', key => $NEW }],
+            [{ entity => 'client.app', key => $NEW }],
             { AUTH_INSECURE_KEYS_ALLOWED => {}, AUTH_EMERGENCY_CIPHERS_SET => {} },
         ],
     );
@@ -913,7 +913,7 @@ sub wipe_monitor_picture {
             "$label added after startup prevents the fresh finishing offer",
         );
         ok(
-            $state->{client_refresh}->{'client.crash'},
+            $state->{client_refresh}->{'client.app'},
             'the external active-key change is reconciled before options are offered',
         ) if $label =~ m/active key/;
     }
@@ -924,7 +924,7 @@ sub wipe_monitor_picture {
     $info->{service_cipher} = 'aes';
     $info->{preferred_cipher} = 'aes';
     $info->{allowed_ciphers} = [qw(aes aes256k)];
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     my $verdict = $HOOKS->{preflight}->(
         $info,
         {
@@ -949,14 +949,14 @@ sub wipe_monitor_picture {
         mons => ['a'],
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
     );
     my $monitor = current_monitor_picture('aes256k');
     $monitor->{sessions} = picture(1, 48);
     my $state = {
-        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
         client_refresh => {
-            'client.crash' => {
+            'client.app' => {
                 rotated => 1,
                 session_ids => [48],
                 cleared => 2,
@@ -985,8 +985,8 @@ sub wipe_monitor_picture {
     );
     my $persisted = decode_json($saved[-1]->[1]);
     ok(
-        !defined($persisted->{client_refresh}->{'client.crash'}->{cleared})
-            && !defined($persisted->{client_refresh}->{'client.crash'}->{acknowledged}),
+        !defined($persisted->{client_refresh}->{'client.app'}->{cleared})
+            && !defined($persisted->{client_refresh}->{'client.app'}->{acknowledged}),
         'the action-time restriction poll durably reopens the returned client record',
     );
 
@@ -1002,7 +1002,7 @@ sub wipe_monitor_picture {
     };
     like(
         $@,
-        qr/refusing to restrict.*awaits '--confirm-clients-refreshed client\.crash'/s,
+        qr/refusing to restrict.*awaits '--confirm-clients-refreshed client\.app'/s,
         'a later no-session restriction cannot reuse the superseded acknowledgment',
     );
 }
@@ -1012,10 +1012,10 @@ sub wipe_monitor_picture {
         mons => ['a'],
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
-        exported => [{ entity => 'client.crash', key => $NEW, pending_key => $OLD }],
+        exported => [{ entity => 'client.app', key => $NEW, pending_key => $OLD }],
     );
     my $monitor = current_monitor_picture('aes256k');
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     eval {
         $HOOKS->{restrict_ciphers}->(
             $rados,
@@ -1041,10 +1041,10 @@ sub wipe_monitor_picture {
         mons => ['a'],
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
-        exported => [{ entity => 'client.crash', key => $NEW }],
+        exported => [{ entity => 'client.app', key => $NEW }],
     );
     my $monitor = current_monitor_picture('aes');
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     eval {
         $HOOKS->{restrict_ciphers}->(
             $rados,
@@ -1935,7 +1935,7 @@ sub run_aggregate_confirmation {
             $info,
             { apply => 1, 'abort-staged-key' => ['client.cp'] },
             0,
-            { client_keys_seen => { 'client.crash' => key_fingerprint($NEW) } },
+            { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } },
             {},
         );
     }
@@ -2043,7 +2043,7 @@ sub run_aggregate_confirmation {
 }
 
 {
-    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($OLD) } };
     my $rados = ClientRotationRados->new($OLD);
     my $output = '';
     {
@@ -2652,8 +2652,13 @@ sub run_aggregate_confirmation {
     is(scalar(@summaries), 1, 'the seven records are one line by default');
     like(
         $summaries[0],
-        qr/predates this script's tracking; only Ceph's own tools read them and load the key afresh, so they need no consumer refresh; confirm them with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/,
-        'which says why no consumer refresh is needed and how to confirm',
+        qr/^INFO: the rotation of 7 bootstrap and crash keys predates this script's tracking; only Ceph's own tools read them and load the key afresh, so their records are closed$/,
+        'which says why they are closed rather than asking for a confirmation',
+    );
+    is(
+        scalar(grep { defined($state->{client_refresh}->{$_}->{cleared}) } @$tools),
+        7,
+        'and every one of them is closed in the journal',
     );
     unlike(
         $concise,
@@ -2680,13 +2685,20 @@ sub run_aggregate_confirmation {
         local *STDOUT = $stdout;
         $HOOKS->{preflight}->($info, { apply => 0 }, 0, $reopened, $files);
     }
-    my @open = grep { m/the rotation of 7 bootstrap and crash keys is open/ } split(/\n/, $later);
-    is(scalar(@open), 1, 'existing open tool records are summarized in one line as well');
+    my @closed = grep {
+        m/the rotation of 7 bootstrap and crash keys was still open; only Ceph's own tools read them and load the key afresh, so their records are closed/
+    } split(/\n/, $later);
+    is(scalar(@closed), 1, 'open tool records from an earlier version are closed, in one line');
     unlike(
         $later,
         qr/no live session predates the key rotation of 'client\.bootstrap/,
         'not per key',
     );
+    ok(
+        !(grep { !defined($reopened->{client_refresh}->{$_}->{cleared}) } @$tools),
+        'and none of them stays open to ask for a confirmation',
+    );
+    unlike($later, qr/--confirm-clients-refreshed client\.bootstrap/, 'so no command names them');
 }
 
 {
@@ -2965,6 +2977,59 @@ sub run_aggregate_confirmation {
         'a monitor that stays unanswered still refuses with the guidance',
     );
     is($rados->issued('config set'), 0, 'without touching the option');
+}
+
+# --- a rotated tool key closes its record itself --------------------------------------------------
+{
+    my $crash_picture = sub {
+        my (@ids) = @_;
+        return {
+            complete => 1,
+            clients =>
+                { 'client.crash' => [map { { global_id => $_, host => "node$_" } } @ids] },
+        };
+    };
+    my $state = { client_keys_seen => { 'client.crash' => key_fingerprint($OLD) } };
+    my $rados = ClientRotationRados->new($OLD);
+    my @snapshots = ($crash_picture->(), $crash_picture->());
+    my $snapshot = sub { return shift(@snapshots) // die "unexpected extra session snapshot\n" };
+    my $output = '';
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{migrate_client}->(
+            $rados, $state, { entity => 'client.crash', files => [] }, $snapshot,
+        );
+    }
+    my $mark = $state->{client_refresh}->{'client.crash'};
+    ok(
+        defined($mark->{cleared}) && defined($mark->{acknowledged}),
+        'the record of a rotated bootstrap or crash key is closed by the rotation itself',
+    );
+    like($output, qr/'client\.crash' now uses the 'aes256k' cipher/,
+        'and the rotation is reported');
+
+    my $returning = {
+        client_keys_seen => { 'client.crash' => key_fingerprint($NEW) },
+        client_refresh => { 'client.crash' => { rotated => 1, session_ids => [77] } },
+    };
+    my $info = migrated_info($crash_picture->(77));
+    $info->{exported} = { 'client.crash' => { key => $NEW } };
+    my $seen = '';
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$seen) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{preflight}->($info, { apply => 0 }, 0, $returning, {});
+    }
+    ok(
+        !defined($returning->{client_refresh}->{'client.crash'}->{cleared}),
+        'a returning recorded session keeps a tool record open',
+    );
+    like($seen, qr/may still hold its previous key/, 'and is reported as a consumer');
 }
 
 {

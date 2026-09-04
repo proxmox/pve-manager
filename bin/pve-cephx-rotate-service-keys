@@ -1524,17 +1524,25 @@ my sub restrict_wanted($info, $opts) {
 }
 
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
-# The bootstrap and crash keys have no long-running reader, so confirming them needs no refresh
-# first; every other client key does.
 my sub confirm_hint($entity) {
-    return "only Ceph's own tools read it and none keeps it loaded, so confirm with"
-        . " '--confirm-clients-refreshed $entity'"
-        if grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*;
     return
         "confirm with '--confirm-clients-refreshed $entity' once every consumer of it was refreshed";
 }
 
-# The bootstrap and crash records are one line by default; the identities come with '--verbose'.
+# Only Ceph's own tools read the bootstrap and crash keys, and they load the key afresh for
+# every call, so there is no consumer to refresh and nothing an operator could confirm beyond
+# what this script wrote. Their records close on their own; '--verbose' names them.
+my sub tool_key($entity) {
+    return scalar(grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? 1 : 0;
+}
+
+my sub close_tool_record($state, $entity, $now = time()) {
+    my $mark = $state->{client_refresh}->{$entity} //= {};
+    $mark->{cleared} = $now;
+    $mark->{acknowledged} = $now;
+    return;
+}
+
 my sub tool_keys_label($entities, $opts) {
     my $count = scalar(@$entities);
     return "the tool key '$entities->[0]'" if $count == 1;
@@ -1543,14 +1551,11 @@ my sub tool_keys_label($entities, $opts) {
     return $label;
 }
 
-my sub tool_keys_hint($entities) {
-    return "only Ceph's own tools read it and load the key afresh, so it needs no consumer"
-        . " refresh; confirm it with '--confirm-clients-refreshed $entities->[0]'"
-        if scalar(@$entities) == 1;
+my sub tool_keys_closed_note($entities) {
     return
-        "only Ceph's own tools read them and load the key afresh, so they need no consumer"
-        . " refresh; confirm them with '--confirm-clients-refreshed USER' or, once every open"
-        . " record is ready, '--confirm-all-clients-refreshed'";
+        scalar(@$entities) == 1
+        ? "only Ceph's own tools read it and load the key afresh, so its record is closed"
+        : "only Ceph's own tools read them and load the key afresh, so their records are closed";
 }
 
 my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files = {}) {
@@ -1588,7 +1593,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         ) {
             next if $state->{client_refresh}->{$entity};
             next if (key_cipher($info->{exported}->{$entity}->{key}) // -1) != $CIPHER_ID;
-            if (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) {
+            if (tool_key($entity)) {
                 push @seeded_tools, $entity;
             } else {
                 log_warn("the consumers of '$entity' predate this script's tracking; "
@@ -1605,12 +1610,13 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                 $info->{sessions}->{complete},
                 (ref($previous) eq 'HASH' ? $previous->{saved} : undef) // time(),
             );
+            close_tool_record($state, $entity) if tool_key($entity);
             $seeded = 1;
         }
-        log_warn("the rotation of "
+        log_info("the rotation of "
                 . tool_keys_label(\@seeded_tools, $opts)
                 . " predates this script's tracking; "
-                . tool_keys_hint(\@seeded_tools))
+                . tool_keys_closed_note(\@seeded_tools))
             if scalar(@seeded_tools);
         save_state($state) if $seeded && $opts->{apply};
     }
@@ -1619,6 +1625,22 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     my $stale_clients = reopen_returning_clients($state, $info->{sessions}, $info->{exported});
 
+    # a record of a tool key left open by an earlier version closes here, unless a recorded
+    # session of it is back, which then reads like any other consumer
+    my @closed_tools;
+    for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
+        next if !tool_key($entity) || $stale_clients->{$entity};
+        next if defined($state->{client_refresh}->{$entity}->{cleared});
+        close_tool_record($state, $entity);
+        push @closed_tools, $entity;
+    }
+    if (scalar(@closed_tools)) {
+        log_info("the rotation of "
+            . tool_keys_label(\@closed_tools, $opts)
+            . " was still open; "
+            . tool_keys_closed_note(\@closed_tools));
+        save_state($state) if $opts->{apply};
+    }
     my @possible_live;
     my $describe_for_section = sub {
         my ($live) = @_;
@@ -1816,25 +1838,15 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         );
     }
     if ($info->{sessions}->{complete}) {
-        my @open_tools;
         for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
             my $mark = $state->{client_refresh}->{$entity};
             next if $stale_clients->{$entity} || defined($mark->{cleared});
             next if $seeded_now->{$entity}; # said when the record was seeded above
-            if (grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) {
-                push @open_tools, $entity;
-                next;
-            }
             # a consumer can keep its IO on established connections without any monitor
             # session, so absence proves nothing; only the operator can close the record
             log_info(
                 "no live session predates the key rotation of '$entity'; " . confirm_hint($entity));
         }
-        log_info("the rotation of "
-                . tool_keys_label(\@open_tools, $opts)
-                . " is open; "
-                . tool_keys_hint(\@open_tools))
-            if scalar(@open_tools);
     }
 
     $print_possible_for_section->();
@@ -3724,6 +3736,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef) {
     }
 
     $state->{done}->{$entity} = time();
+    close_tool_record($state, $entity) if tool_key($entity);
     save_state($state);
 
     log_pass("'$entity' now uses the '$CIPHER' cipher");
