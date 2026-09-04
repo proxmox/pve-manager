@@ -2871,6 +2871,102 @@ sub run_aggregate_confirmation {
     );
 }
 
+# --- a monitor election right before staging is waited out, an old monitor is not ---------------
+{
+    local $main::MONITOR_PROBE_RETRY_DELAY = 0;
+    my $answers = sub { # a probe that sees a monitor outside the quorum for the first N calls
+        my ($unanswered_calls, %final) = @_;
+        my $calls = 0;
+        return (
+            sub {
+                $calls++;
+                return {
+                    manual_promotion => $calls <= $unanswered_calls
+                    ? {
+                        supported => 0,
+                        disabled => 0,
+                        unsupported => [],
+                        unanswered => ['due'],
+                        }
+                    : {
+                        supported => 1,
+                        disabled => 0,
+                        unsupported => [],
+                        unanswered => [],
+                        %final,
+                    },
+                };
+            },
+            \$calls,
+        );
+    };
+
+    my ($collect, $calls) = $answers->(2);
+    my $settled = $HOOKS->{manual_promotion_with_retries}->($collect, 5);
+    ok(
+        $settled->{manual_promotion}->{supported} && $$calls == 3,
+        'an unanswered monitor is asked again until it answers',
+    );
+
+    ($collect, $calls) = $answers->(99);
+    $settled = $HOOKS->{manual_promotion_with_retries}->($collect, 4);
+    is_deeply(
+        [$settled->{manual_promotion}->{unanswered}, $$calls],
+        [['due'], 4],
+        'one that never answers is given up on after the attempts',
+    );
+
+    my $old_calls = 0;
+    my $old = sub {
+        $old_calls++;
+        return { manual_promotion =>
+            { supported => 0, disabled => 0, unsupported => ['b'], unanswered => [] } };
+    };
+    $settled = $HOOKS->{manual_promotion_with_retries}->($old, 5);
+    is($old_calls, 1, 'a monitor that answered without the option is not asked again');
+
+    # the same through the staging path: staging goes ahead once the election passed
+    my $rados = StagedRotationRados->new(key => $OLD);
+    my $state = {};
+    my $probe_calls = 0;
+    my $election = sub {
+        $probe_calls++;
+        return {
+            manual_promotion => $probe_calls <= 2
+            ? { supported => 0, disabled => 0, unsupported => [], unanswered => ['due'] }
+            : {
+                supported => 1,
+                disabled => $rados->{disabled} ? 1 : 0,
+                unsupported => [],
+                unanswered => [],
+            },
+        };
+    };
+    my $err = run_staging($rados, $state, $election, picture(1), picture(1));
+    is($err, '', 'staging succeeds after a passing election');
+    ok(
+        $rados->issued('config set') >= 1 && $rados->issued('auth get-or-create-pending') == 1,
+        'the option is disabled and the key staged',
+    );
+
+    $rados = StagedRotationRados->new(key => $OLD);
+    $err = run_staging(
+        $rados,
+        {},
+        sub {
+            return { manual_promotion =>
+                { supported => 0, disabled => 0, unsupported => [], unanswered => ['due'] } };
+        },
+        picture(1),
+    );
+    like(
+        $err,
+        qr/monitors that did not answer: due\. Install Ceph/,
+        'a monitor that stays unanswered still refuses with the guidance',
+    );
+    is($rados->issued('config set'), 0, 'without touching the option');
+}
+
 {
     for my $record (
         { phase => 'staging' }, { phase => 'writing', key => key_fingerprint('foreign') },

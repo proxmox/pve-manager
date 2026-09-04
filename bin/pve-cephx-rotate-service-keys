@@ -568,6 +568,27 @@ my sub poll_manual_promotion($info) {
     return manual_promotion_support($reports, $info->{monmap_mons});
 }
 
+# The monitors hold an election after every change to the monitor map, and a run that follows one
+# can find a member outside the quorum for a few seconds. A monitor that did not answer is asked
+# again for a while; one that answered without the option is old, and that answer stands.
+our $MONITOR_PROBE_RETRY_DELAY = 3;
+
+my sub manual_promotion_with_retries($collect, $attempts = 10) {
+    my $collected;
+    for my $attempt (1 .. $attempts) {
+        $collected = $collect->() // {};
+        my $support = $collected->{manual_promotion} // {};
+        last if $support->{supported} || scalar(@{ $support->{unsupported} // [] });
+        last if $attempt == $attempts;
+        log_info("monitors that did not answer the probe: "
+                . join(', ', @{ $support->{unanswered} // [] })
+                . "; an election may be in progress, asking again")
+            if $attempt == 1;
+        sleep($MONITOR_PROBE_RETRY_DELAY);
+    }
+    return $collected;
+}
+
 # A rotation can follow a long daemon walk, so rediscover the monitors instead of trusting the
 # inventory and liveness recorded at startup. Every current monitor gets a result entry; missing
 # metadata, missing quorum membership, and a failed admin-socket query therefore make the summary
@@ -868,6 +889,15 @@ my sub collect_cluster_info($rados, $opts, $state) {
 
     $info->{sessions} = poll_client_sessions($info);
     $info->{manual_promotion} = poll_manual_promotion($info);
+    if (
+        !$info->{manual_promotion}->{supported}
+        && !scalar(@{ $info->{manual_promotion}->{unsupported} // [] })
+    ) {
+        my $again = manual_promotion_with_retries(
+            sub { collect_current_monitor_state($rados) }, 5,
+        );
+        $info->{manual_promotion} = $again->{manual_promotion} if $again->{manual_promotion};
+    }
 
     # 'auth ls' drops a staged pending key; only the JSON export keeps it apart from the active one
     my $exported = $rados->mon_command({ prefix => 'auth export', format => 'json' });
@@ -3196,14 +3226,11 @@ my sub refresh_cephfs_mounts($item, %opts) {
 # would end the grace period for the whole cluster.
 my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
     $collect //= sub { collect_current_monitor_state($rados) };
-    my $check = sub {
-        my $support = ($collect->() // {})->{manual_promotion} // {};
-        die "not every monitor can keep two client keys valid: "
-            . grace_support_guidance($support) . "\n"
-            if !$support->{supported};
-        return $support->{disabled};
-    };
-    return if $check->();
+    my $support = manual_promotion_with_retries($collect)->{manual_promotion} // {};
+    die "not every monitor can keep two client keys valid: "
+        . grace_support_guidance($support) . "\n"
+        if !$support->{supported};
+    return if $support->{disabled};
 
     if (!$state->{client_grace}) {
         # an explicit setting is what goes back at the end; without one the default is restored
@@ -3225,9 +3252,14 @@ my sub ensure_manual_promotion_disabled($rados, $state, $collect = undef) {
         value => 'false',
     });
 
-    # the config store hands the change to each monitor on its own
+    # the config store hands the change to each monitor on its own; a passing election in
+    # between reads as a monitor that did not answer and is asked again
     for (1 .. 30) {
-        return if $check->();
+        $support = ($collect->() // {})->{manual_promotion} // {};
+        die "not every monitor can keep two client keys valid: "
+            . grace_support_guidance($support) . "\n"
+            if scalar(@{ $support->{unsupported} // [] });
+        return if $support->{supported} && $support->{disabled};
         sleep(1);
     }
     die "not every monitor applied '$GRACE_OPTION = false' within 30 seconds\n";
@@ -4864,6 +4896,7 @@ sub key_migration_test_hooks {
         resume_live_swap => \&resume_live_swap,
         probe_nodes => \&probe_nodes,
         check_client_kernels => \&check_client_kernels,
+        manual_promotion_with_retries => \&manual_promotion_with_retries,
     };
 }
 
