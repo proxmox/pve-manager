@@ -18,7 +18,9 @@ use PVE::Ceph::KeyMigration qw(
     configured_daemon_locations resolve_configured_locations merge_configured_daemons
     resume_verdict classify_insecure_clients
     open_options open_actions
-    summarize_sessions session_hosts stale_consumers restrict_blockers cephfs_mount_storages
+    summarize_sessions session_hosts describe_sessions summarize_monitor_connections
+    possible_consumer_hints
+    stale_consumers restrict_blockers cephfs_mount_storages
     ack_decision finish_after_acks
     plan_lockbox_keys parse_lockbox_output
 );
@@ -2315,6 +2317,86 @@ my sub cluster {
         [map { $_->{entity} } @$plan],
         [qw(client.shared client.vm client.admin)],
         'client.admin joins only when asked for, and last',
+    );
+}
+
+# --- naming what holds a monitor connection on a host --------------------------------------------
+{
+    my $hint = summarize_monitor_connections([
+        { port => 3300, process => 'kvm', pid => 11, vmid => '102' },
+        { port => 3300, process => 'kvm', pid => 11, vmid => '102' },
+        { port => 3300, process => 'kvm', pid => 12, vmid => '9001' },
+        { port => 6789 },
+        { port => 6789 },
+        { port => 3300, process => 'ceph-osd', pid => 5 },
+        { port => 3300, process => 'ceph-mon', pid => 6 },
+        { port => 3300, process => 'pvestatd', pid => 9 },
+        { port => 3300, process => 'pvestatd', pid => 10 },
+        { port => 3300, process => 'rbd', pid => 13 },
+    ]);
+    is(
+        $hint,
+        'VM 102, VM 9001, possible kernel client,' . ' pvestatd (2), rbd',
+        'VMs are unique and processless sockets remain possible kernel clients',
+    );
+    is(
+        summarize_monitor_connections([{ port => 6789 }]),
+        'possible kernel client',
+        'one processless socket is not presented as a known mount',
+    );
+    is(
+        summarize_monitor_connections([
+            { port => 3300, process => 'ceph-mgr', pid => 2 },
+            { port => 3300, process => 'pverados', pid => 3 },
+        ]),
+        undef,
+        'daemons and the Proxmox VE RADOS workers alone give no hint',
+    );
+    is(summarize_monitor_connections('garbage'), undef, 'and so does a malformed answer');
+
+    my $live = [
+        { host => '10.0.0.2', global_id => 1 },
+        { host => '10.0.0.2', global_id => 2 },
+        { host => '198.51.100.8', global_id => 3 },
+    ];
+    my $hints = {
+        '10.0.0.2' => { node => 'due', consumers => 'VM 102' },
+    };
+    is(
+        describe_sessions($live, $hints),
+        '198.51.100.8: 1, due: 2 (possible consumers: VM 102)',
+        'known IPs become node names while unknown hosts remain visible',
+    );
+    is(describe_sessions($live), session_hosts($live), 'without hints the plain host list stays');
+    is_deeply(
+        possible_consumer_hints(
+            [@$live, { host => '10.0.0.2', global_id => 4 }], $hints,
+        ),
+        ['due: VM 102'],
+        'a host-wide hint shared by several sessions and users is returned once',
+    );
+
+    my $info = {
+        exported => { 'client.vm' => { key => $OLD } },
+        service_cipher => $CIPHER,
+        sessions =>
+            { complete => 1, clients => { 'client.vm' => [{ host => 'due', global_id => 3 }] } },
+        pve_mon_key => $NEW,
+        health_checks => {},
+    };
+    my ($blocker) = grep { m/live client/ } restrict_blockers(
+        $info,
+        {},
+        sub {
+            describe_sessions(
+                $_[0], { due => { node => 'due', consumers => 'VM 102' } },
+            );
+        },
+    )->@*;
+    like(
+        $blocker,
+        qr/1 live client\(s\) authenticate as 'client\.vm' \(due: 1 \(possible consumers: VM 102\)\)/,
+        'the restriction blocker labels host-wide hints as possible consumers',
     );
 }
 

@@ -31,7 +31,9 @@ use PVE::Ceph::KeyMigration qw(
     client_staging_needed touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
+    summarize_sessions session_hosts describe_sessions summarize_monitor_connections
+    possible_consumer_hints
+    merge_refresh_record stale_consumers restrict_blockers
     cephfs_mount_storages ack_decision classify_insecure_clients
     open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
@@ -183,6 +185,88 @@ my sub node_perl($node, $code, %opts) {
         input => $input,
         defined($opts{timeout}) ? (timeout => $opts{timeout}) : (),
     );
+}
+
+# What holds a monitor connection on a node: its addresses, so the monitors' view of a session
+# maps to it, and every established socket to a monitor with the owning process, a VM by its ID.
+my $MONITOR_CONNECTIONS = <<'PERL_EOF';
+use strict;
+use warnings;
+use JSON;
+my %ips;
+for (qx(ip -o -4 addr show scope global 2>/dev/null)) {
+    $ips{$1} = 1 if m{ inet (\d+\.\d+\.\d+\.\d+)/};
+}
+for (qx(ip -o -6 addr show scope global 2>/dev/null)) {
+    $ips{$1} = 1 if m{ inet6 ([0-9a-f:]+)/};
+}
+my @connections;
+for my $line (qx(ss -Htnp state established '( dport = :3300 or dport = :6789 )' 2>/dev/null)) {
+    my ($peer) = $line =~ m/^\s*\d+\s+\d+\s+\S+\s+(\S+)/ or next;
+    my ($port) = $peer =~ m/:(\d+)$/;
+    my $entry = { port => $port };
+    if (my ($name, $pid) = $line =~ m/users:\(\("([^"]+)",pid=(\d+)/) {
+        $entry->{process} = $name;
+        $entry->{pid} = $pid;
+        if ($name eq 'kvm' && open(my $fh, '<', "/proc/$pid/cmdline")) {
+            local $/;
+            my $cmdline = <$fh> // '';
+            close($fh);
+            $entry->{vmid} = $1 if $cmdline =~ m/\0-id\0(\d+)\0/;
+        }
+    }
+    push @connections, $entry;
+}
+print encode_json({ ips => [sort keys %ips], connections => \@connections });
+PERL_EOF
+
+# Asked once per run, and only when output names live sessions: one command per online node. A
+# node that does not answer leaves its sessions described by the monitor-reported host alone.
+my $consumer_hints;
+
+my sub consumer_hints($verbose = 0) {
+    if (!$consumer_hints) {
+        $consumer_hints = { concise => {}, verbose => {} };
+        PVE::Cluster::cfs_update();
+        my $members = PVE::Cluster::get_members() // {};
+        for my $node (sort keys %$members) {
+            next if !$members->{$node}->{online};
+            my $res = eval { decode_json(node_perl($node, $MONITOR_CONNECTIONS, timeout => 30)) };
+            next if ref($res) ne 'HASH';
+            my $concise = summarize_monitor_connections($res->{connections});
+            my $full = summarize_monitor_connections($res->{connections}, 1);
+            for my $ip (grep { defined($_) && !ref($_) } @{ $res->{ips} // [] }) {
+                $consumer_hints->{concise}->{$ip} = {
+                    node => $node,
+                    defined($concise) ? (consumers => $concise) : (),
+                };
+                $consumer_hints->{verbose}->{$ip} = {
+                    node => $node,
+                    defined($full) ? (consumers => $full) : (),
+                };
+            }
+        }
+    }
+    return $consumer_hints->{ $verbose ? 'verbose' : 'concise' };
+}
+
+my sub describe_live($live, $verbose = 0, $include_possible = 1) {
+    my $hints = consumer_hints($verbose);
+    if (!$include_possible) {
+        $hints = { map { $_ => { node => $hints->{$_}->{node} } } keys %$hints };
+    }
+    return describe_sessions($live, $hints);
+}
+
+my sub print_possible_consumers($live, $opts) {
+    my $lines = possible_consumer_hints($live, consumer_hints($opts->{verbose}));
+    return 0 if !scalar(@$lines);
+
+    log_text("Possible consumers (host-wide hints, not session attribution):");
+    log_text("Kernel hints mean sockets without an owning process.")
+        if !$opts->{verbose} && grep { /possible kernel client/ } @$lines;
+    log_steps($lines);
+    return scalar(@$lines);
 }
 
 my $WRITE_FILE = <<'PERL_EOF';
@@ -1412,7 +1496,7 @@ my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef
             push @$blockers,
                 scalar(@$held)
                 . " recorded live client(s) may still hold the previous key of '$entity' ("
-                . session_hosts($held) . ")";
+                . describe_live($held, $opts->{verbose}) . ")";
         } elsif (!defined($state->{client_refresh}->{$entity}->{cleared})) {
             push @$blockers, "the rotation of '$entity' is not confirmed refreshed yet";
         }
@@ -1533,6 +1617,17 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
 
     my $stale_clients = reopen_returning_clients($state, $info->{sessions});
 
+    my @possible_live;
+    my $describe_for_section = sub {
+        my ($live) = @_;
+        push @possible_live, @$live;
+        return describe_live($live, $opts->{verbose}, 0);
+    };
+    my $print_possible_for_section = sub {
+        print_possible_consumers(\@possible_live, $opts);
+        @possible_live = ();
+    };
+
     my $confirmation_refused = 0;
     my $confirm_all = $opts->{'confirm-all-clients-refreshed'};
     my $confirmation_seen = {};
@@ -1568,7 +1663,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                 log_fail("not accepting '--confirm-all-clients-refreshed': "
                     . scalar(@$held)
                     . " recorded client(s) of '$entity' are still connected ("
-                    . session_hosts($held)
+                    . $describe_for_section->($held)
                     . ")");
                 $confirmation_refused = 1;
             }
@@ -1585,7 +1680,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                     scalar(@$live)
                     ? scalar(@$live)
                     . " currently connected client(s) are now recorded ("
-                    . session_hosts($live) . ")"
+                    . $describe_for_section->($live) . ")"
                     : "no client is currently connected as it";
                 log_fail("not accepting '--confirm-all-clients-refreshed' yet: the rotation of"
                     . " '$entity' needed its first complete measurement; $detail. Repeat the"
@@ -1623,7 +1718,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                 log_fail("not accepting '$option': "
                     . scalar(@$held)
                     . " recorded client(s) of it are still connected ("
-                    . session_hosts($held)
+                    . $describe_for_section->($held)
                     . "). Refresh those first, the confirmation covers only what this run cannot"
                     . " see.");
                 $confirmation_refused = 1;
@@ -1652,7 +1747,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
                     ? "$count currently connected "
                     . ($count == 1 ? 'client is' : 'clients are')
                     . " now recorded as possibly holding the previous key ("
-                    . session_hosts($live) . ")"
+                    . $describe_for_section->($live) . ")"
                     : "no client is currently connected as it, and that complete empty measurement"
                     . " is now recorded";
                 log_fail("not accepting '$option' yet: its rotation needed a first complete"
@@ -1693,6 +1788,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         if $opts->{apply} && $info->{rados} && $state->{client_grace};
 
     # No later readiness or no-op verdict may turn a refused state-changing request into success.
+    $print_possible_for_section->();
     return -1 if $confirmation_refused;
 
     for my $entity (sort keys %$stale_clients) {
@@ -1706,7 +1802,7 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
         log_warn("Clients recorded around the rotation of '$entity' may still hold its previous"
             . " key: "
             . scalar(@$held) . " ("
-            . session_hosts($held)
+            . $describe_for_section->($held)
             . ").$reconnect_risk Existing data connections may work longer. Live-migrate those"
             . " VMs, remount CephFS mounts, or restart the consumers, then run this again and close"
             . " the record with '--confirm-clients-refreshed'.");
@@ -1733,6 +1829,8 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
             if scalar(@open_tools);
     }
 
+    $print_possible_for_section->();
+
     if ($opts->{'wipe-rotating-keys'} && (%$stale_clients || !$info->{sessions}->{complete})) {
         my $why =
             %$stale_clients
@@ -1749,17 +1847,19 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     }
 
     if (restrict_wanted($info, $opts)) {
-        my $blockers = restrict_blockers($info, $state);
+        my $blockers = restrict_blockers($info, $state, $describe_for_section);
         if (scalar(@$blockers)) {
             if (!$opts->{force}) {
                 log_fail("Not restricting the allowed ciphers to '$CIPHER': a client would be"
                     . " stopped. Resolve these first:");
                 log_steps($blockers);
+                $print_possible_for_section->();
                 return -1;
             }
             log_warn("Restricting the allowed ciphers although a client may be stopped, as"
                 . " '--force' was passed:");
             log_steps($blockers);
+            $print_possible_for_section->();
         }
     }
 
@@ -2332,25 +2432,30 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             my @kernel_read = map { $_->{entity} } grep { $_->{kernel} } $plan->{client_keys}->@*;
             log_step("an in-kernel client reads: " . (join(', ', @kernel_read) || 'none of them'));
         }
-        my $possibly_stale = [];
+        my ($possibly_stale, $live_for_hints) = ([], []);
         for my $item ($plan->{client_keys}->@*) {
             my $live = $info->{sessions}->{clients}->{ $item->{entity} } // [];
             next if !scalar(@$live);
+            push @$live_for_hints, @$live;
             if ($opts->{verbose}) {
                 log_step(
                     scalar(@$live)
                         . " live client(s) authenticate as '$item->{entity}' ("
-                        . session_hosts($live)
+                        . describe_live($live, $opts->{verbose}, 0)
                         . ") and keep the current key in memory");
             } else {
                 push @$possibly_stale,
-                    "'$item->{entity}': " . scalar(@$live) . " live client session(s)";
+                    "'$item->{entity}': "
+                    . scalar(@$live)
+                    . " live client session(s) ("
+                    . describe_live($live, $opts->{verbose}, 0) . ")";
             }
         }
         if (scalar(@$possibly_stale)) {
             log_step("currently connected consumers of the selected Ceph users:");
             log_steps($possibly_stale);
         }
+        print_possible_consumers($live_for_hints, $opts);
         if ($staged_count) {
             log_step("For staged keys, refresh running consumers after applying: live-migrate every"
                 . " VM, remount CephFS mounts, and restart other consumers; a dry run of this"
@@ -3743,7 +3848,8 @@ my sub restrict_ciphers(
         $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
     );
     reopen_returning_clients($state, $snapshot->{sessions});
-    my $blockers = restrict_blockers($snapshot, $state);
+    my $blockers =
+        restrict_blockers($snapshot, $state, sub { describe_live($_[0], $opts->{verbose}) });
 
     if (scalar(@$blockers)) {
         if (!$opts->{force}) {
@@ -4897,6 +5003,7 @@ sub key_migration_test_hooks {
         probe_nodes => \&probe_nodes,
         check_client_kernels => \&check_client_kernels,
         manual_promotion_with_retries => \&manual_promotion_with_retries,
+        describe_live => \&describe_live,
     };
 }
 

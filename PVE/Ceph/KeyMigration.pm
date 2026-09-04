@@ -24,7 +24,9 @@ our @EXPORT_OK = qw(
     bulk_storage_staging_needed client_staging_needed touched_daemons
     plan_client_keys plan_lockbox_keys build_plan configured_daemon_locations
     resolve_configured_locations merge_configured_daemons resume_verdict
-    summarize_sessions session_hosts merge_refresh_record stale_consumers restrict_blockers
+    summarize_sessions session_hosts describe_sessions summarize_monitor_connections
+    possible_consumer_hints
+    merge_refresh_record stale_consumers restrict_blockers
     cephfs_mount_storages ack_decision finish_after_acks
     classify_insecure_clients open_options open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
@@ -435,6 +437,83 @@ sub session_hosts($live) {
     return join(', ', map { "$_: $hosts->{$_}" } sort keys %$hosts);
 }
 
+# The same with node names and host-wide consumer hints when known. A hint describes every
+# monitor connection on that node, not the particular cephx session being reported.
+sub describe_sessions($live, $hints = {}) {
+    my ($hosts, $possible) = ({}, {});
+    for my $session (@$live) {
+        my $host = $session->{host};
+        my $entry = ($hints // {})->{$host};
+        my $label = ref($entry) eq 'HASH' ? ($entry->{node} // $host) : $host;
+        $hosts->{$label}++;
+        my $consumers = ref($entry) eq 'HASH' ? $entry->{consumers} : $entry;
+        $possible->{$label}->{$consumers} = 1 if defined($consumers) && length($consumers);
+    }
+    return join(
+        ', ',
+        map {
+            my $line = "$_: $hosts->{$_}";
+            my @possible = sort keys %{ $possible->{$_} // {} };
+            $line .= " (possible consumers: " . join('; ', @possible) . ")"
+                if scalar(@possible);
+            $line;
+        } sort keys %$hosts,
+    );
+}
+
+# One node can have sessions for many cephx users. Return each host-wide hint once so callers can
+# present it separately from per-user decisions instead of repeating an ambiguous attribution.
+sub possible_consumer_hints($live, $hints = {}) {
+    my $by_node = {};
+    for my $session (@$live) {
+        my $host = $session->{host};
+        my $entry = ($hints // {})->{$host};
+        next if ref($entry) ne 'HASH';
+        my $consumers = $entry->{consumers};
+        next if !defined($consumers) || !length($consumers);
+        my $node = $entry->{node} // $host;
+        $by_node->{$node}->{$consumers} = 1;
+    }
+    return [map { "$_: " . join('; ', sort keys $by_node->{$_}->%*) } sort keys %$by_node];
+}
+
+# What may hold monitor connections on one node. Monitor sockets do not identify which cephx
+# session or kernel mount owns them, so processless sockets remain possible kernel clients.
+sub summarize_monitor_connections($connections, $verbose = 0) {
+    return undef if ref($connections) ne 'ARRAY';
+    my ($vms, $others, $processless) = ({}, {}, 0);
+    for my $conn (@$connections) {
+        next if ref($conn) ne 'HASH';
+        my $process = $conn->{process};
+        if (!defined($process) || !length($process)) {
+            $processless++;
+        } elsif ($process =~ m/^ceph-(?:mon|osd|mds|mgr)$/) {
+            next;
+        } elsif ($process eq 'pverados') {
+            # the worker every Proxmox VE tool spawns per RADOS call, this run's own included;
+            # it reads the keyring afresh each time and never needs a refresh
+            next;
+        } elsif ($process eq 'kvm' && defined($conn->{vmid}) && $conn->{vmid} =~ m/^\d+$/) {
+            $vms->{ $conn->{vmid} } = 1;
+        } else {
+            $others->{$process}++;
+        }
+    }
+    my @vm_ids = sort { $a <=> $b } keys %$vms;
+    my $extra = !$verbose && scalar(@vm_ids) > 8 ? scalar(@vm_ids) - 8 : 0;
+    splice(@vm_ids, 8) if $extra;
+    my @parts = map { "VM $_" } @vm_ids;
+    push @parts, "$extra more VMs" if $extra;
+    if ($processless) {
+        push @parts,
+            !$verbose ? 'possible kernel client'
+            : $processless == 1 ? 'possible kernel client (socket without an owning process)'
+            : "possible kernel client ($processless sockets without an owning process)";
+    }
+    push @parts, map { $others->{$_} > 1 ? "$_ ($others->{$_})" : $_ } sort keys %$others;
+    return scalar(@parts) ? join(', ', @parts) : undef;
+}
+
 # Add every instance observed around a rotation without losing evidence from an earlier one.
 # The post-rotation sample closes the race where a client loaded the old key after the first
 # sample. It can also include a client that already loaded the new key, but retaining that ID is
@@ -524,7 +603,8 @@ sub ack_decision($entity, $state, $sessions, $stale) {
 }
 
 # what must be resolved before the old cipher can be disallowed without stopping a consumer
-sub restrict_blockers($info, $state) {
+sub restrict_blockers($info, $state, $describe = undef) {
+    $describe //= \&session_hosts;
     my $blockers = [];
     my $sessions = $info->{sessions} // {};
     push @$blockers,
@@ -568,7 +648,7 @@ sub restrict_blockers($info, $state) {
         push @$blockers,
             scalar(@{ $sessions->{clients}->{$entity} })
             . " live client(s) authenticate as '$entity' ("
-            . session_hosts($sessions->{clients}->{$entity})
+            . $describe->($sessions->{clients}->{$entity})
             . "), whose key they could then no longer use";
     }
     my $stale = stale_consumers($sessions, $state->{client_refresh});
@@ -578,7 +658,7 @@ sub restrict_blockers($info, $state) {
             push @$blockers,
                 scalar(@$held)
                 . " recorded live client(s) may still hold the previous key of '$entity' ("
-                . session_hosts($held) . ")";
+                . $describe->($held) . ")";
             next;
         }
         next if defined($mark->{cleared});
