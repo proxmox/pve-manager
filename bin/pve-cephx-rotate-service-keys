@@ -1813,18 +1813,17 @@ my sub preflight_cluster($info, $opts, $recovered_count, $state, $client_files =
     if (@elsewhere) {
         log_warn("A pending key is staged for "
             . join(', ', @elsewhere)
-            . ", which this run does not touch. Resolve it separately with"
-            . " 'ceph auth commit-pending' or 'ceph auth clear-pending'.");
+            . ", which this run leaves untouched. Identify the workflow that staged it before"
+            . " resolving it.");
     }
 
     if (@staged) {
         log_fail("A pending key is staged for "
             . join(', ', @staged)
-            . ", which this script does not rotate over. If the daemon already reads that key"
-            . " (the 'pending_key' of 'ceph auth get <entity>'), promote it with"
-            . " 'ceph auth commit-pending <entity>', otherwise drop it with"
-            . " 'ceph auth clear-pending <entity>'. An OSD needs 'ceph-bluestore-tool"
-            . " prime-osd-dir' after a commit.");
+            . ", but the journal cannot prove ownership. This can follow an interruption before"
+            . " the helper saved the key fingerprint, or another auth writer. The key is left"
+            . " unchanged; check its origin and managed copies before resolving it. See the"
+            . " recovery guidance in 'man pveceph'.");
         return -1;
     }
 
@@ -2596,8 +2595,10 @@ my sub resume_live_swap($rados, $state, $daemon, $commit = 0) {
     my $written = $decided->{restart};
 
     if ($decided->{verdict} eq 'foreign') {
-        die "the pending key for '$entity' does not match this run's journal. Resolve it with"
-            . " 'ceph auth commit-pending' or 'ceph auth clear-pending'.\n";
+        die "the journal cannot prove ownership of the pending key for '$entity'. This can follow"
+            . " interrupted helper staging before the fingerprint was saved, or another auth writer."
+            . " The key is left unchanged; verify its origin and managed copies before resolving it."
+            . " See the recovery guidance in 'man pveceph'.\n";
     }
 
     if ($decided->{verdict} eq 'commit' && !$commit) {
@@ -4763,6 +4764,7 @@ sub key_migration_test_hooks {
         set_service_cipher => \&set_service_cipher,
         restrict_ciphers => \&restrict_ciphers,
         print_plan => \&print_plan,
+        resume_live_swap => \&resume_live_swap,
     };
 }
 

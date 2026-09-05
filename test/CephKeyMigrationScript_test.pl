@@ -2448,4 +2448,24 @@ sub run_aggregate_confirmation {
     );
 }
 
+{
+    for my $record (
+        { phase => 'staging' }, { phase => 'writing', key => key_fingerprint('foreign') },
+    ) {
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $error = eval {
+            $HOOKS->{resume_live_swap}
+                ->($rados, { live_swap => { 'osd.1' => $record } }, { entity => 'osd.1' });
+            1;
+        } ? '' : $@;
+        like(
+            $error,
+            qr/cannot prove ownership.*interrupted helper staging.*another auth writer/s,
+            'ambiguous ownership includes the helper interruption window',
+        );
+        is($rados->issued('auth clear-pending'), 0, 'uncertain origin never authorizes clearing');
+        is($rados->issued('auth commit-pending'), 0, 'uncertain origin never authorizes promotion');
+    }
+}
+
 done_testing();

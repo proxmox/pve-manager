@@ -1416,20 +1416,20 @@ my sub cluster {
         'not even when a copy on disk holds one of ours: the staged key is not that one',
     );
 
-    # a journal entry written before fingerprints were recorded
+    # a journal entry written before fingerprints were recorded proves no ownership
     $case->(
         { phase => 'written' },
         $ours,
-        'commit',
-        1,
-        'an entry from an older version has no fingerprint, so the phase decides',
+        'foreign',
+        0,
+        'an entry from an older version preserves a pending key despite its durable phase',
     );
     $case->(
         { phase => 'staged' },
         $ours,
-        'clear',
+        'foreign',
         0,
-        'and it still distinguishes written from merely staged',
+        'and a non-durable phase cannot authorize dropping it either',
     );
 
     # The preflight uses the same verdict to decide whether a staged key is one it may resume or
@@ -1768,6 +1768,16 @@ my sub cluster {
         resume_verdict({ phase => 'staged', key => $fp }, $fp)->{verdict},
         'clear',
         'while nothing written yet is still safe to drop',
+    );
+    is(
+        resume_verdict({ phase => 'staging' }, $fp)->{verdict},
+        'foreign',
+        'a pending key without a journal fingerprint remains unowned',
+    );
+    is(
+        resume_verdict({ phase => 'writing' }, $fp)->{verdict},
+        'foreign',
+        'even a durable phase cannot claim a pending key without its fingerprint',
     );
     is(
         resume_verdict({ phase => 'writing', key => $fp }, undef)->{restart},
