@@ -4908,13 +4908,38 @@ my sub assert_abort_rotation_compatible($opts, $client_files) {
     return;
 }
 
-my sub run_migration($opts) {
+my sub confirm_apply_run(
+    $opts,
+    $interactive = $stdin_is_tty,
+    $read_answer = sub { scalar <STDIN> },
+) {
+    return 1 if !$opts->{apply} || $opts->{'assume-yes'};
+
+    print "\nApply this run, including recovery and any requested key confirmations? (y/N) ";
+    if (!$interactive) {
+        print "\nAssuming 'no' because standard input is not a terminal. Pass '--assume-yes'"
+            . " to continue anyway.\n";
+        return undef;
+    }
+    my $answer = $read_answer->();
+    if (!defined($answer) || $answer !~ m/^\s*y(?:es)?\s*$/i) {
+        log_info("No migration changes were applied.");
+        return 0;
+    }
+    return 1;
+}
+
+my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
 
     # Resolve contradictions before connecting to Ceph or resuming journalled work.
     my $client_files = client_key_files();
     assert_abort_rotation_compatible($opts, $client_files);
+
+    # Recovery and key confirmations can mutate the cluster before the rotation plan is built.
+    my $accepted = $confirm->($opts);
+    return defined($accepted) ? 0 : 1 if !$accepted;
 
     # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
     local $SIG{INT} = local $SIG{TERM} = local $SIG{HUP} = sub {
@@ -5236,20 +5261,6 @@ my sub run_migration($opts) {
         return 0;
     }
 
-    if (!$opts->{'assume-yes'}) {
-        print "\nCarry this plan out now? (y/N) ";
-        if (!$stdin_is_tty) {
-            print "\nAssuming 'no' because standard input is not a terminal. Pass '--assume-yes'"
-                . " to continue anyway.\n";
-            return 1;
-        }
-        my $answer = <STDIN>;
-        if (!defined($answer) || $answer !~ m/^\s*y(?:es)?\s*$/i) {
-            log_info("The plan was not carried out.");
-            return 0; # declining is a choice, not a failure
-        }
-    }
-
     $state->{created} //= time();
     $state->{fsid} = $info->{fsid};
     # before any side effect: a stopped manager or metadata server drops out of Ceph's metadata
@@ -5454,6 +5465,7 @@ sub key_migration_test_hooks {
         parse_options => \&parse_options,
         main => \&main,
         run_migration => \&run_migration,
+        confirm_apply_run => \&confirm_apply_run,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,
         wipe_rotating_keys => \&wipe_rotating_keys,

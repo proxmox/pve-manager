@@ -4793,4 +4793,74 @@ sub run_aggregate_confirmation {
     }
 }
 
+# Consent covers recovery and confirmations, not only the daemon plan printed after them.
+{
+    for my $request (
+        { apply => 1, 'confirm-all-clients-refreshed' => 1, 'restrict-ciphers' => 1 },
+        { apply => 1, 'abort-staged-key' => ['client.app'] },
+        { apply => 1, 'confirm-abort-clients-refreshed' => ['client.app'] },
+        { apply => 1, 'rotate-cluster-keys' => 1 },
+    ) {
+        my ($result, $error, $output);
+        my $locked = 0;
+        my $asked = 0;
+        {
+            no warnings qw(once redefine);
+            local *PVE::RPCEnvironment::setup_default_cli_env = sub { };
+            local *PVE::Ceph::Tools::check_ceph_inited = sub { };
+            local *PVE::Ceph::Tools::get_config = sub { '/etc/pve/ceph.conf' };
+            local *PVE::Storage::config = sub { return { ids => {} }; };
+            local *PVE::Ceph::KeyMigration::ClusterLock::take = sub {
+                $locked++;
+                die "execution reached the cluster lock after cancellation\n";
+            };
+            local *STDOUT;
+            open(STDOUT, '>', \$output) or die $!;
+            eval {
+                $result = $HOOKS->{run_migration}->(
+                    $request,
+                    sub {
+                        $asked++;
+                        return $HOOKS->{confirm_apply_run}->($_[0], 1, sub { "n\n" });
+                    },
+                );
+            };
+            $error = $@;
+        }
+        is($error, '', 'declining an apply run does not reach execution');
+        is($result, 0, 'declining is a successful cancellation');
+        is($asked, 1, 'the whole invocation requires consent once');
+        is($locked, 0, 'cancellation precedes journal loading, recovery, and key confirmation');
+        like($output, qr/No migration changes were applied/, 'cancellation reports its full scope');
+    }
+
+    for my $case (
+        [{ apply => 1 }, 1, "yes\n", 1],
+        [{ apply => 1 }, 1, " Y \n", 1],
+        [{ apply => 1 }, 1, "\n", 0],
+        [{ apply => 1 }, 1, undef, 0],
+        [{ apply => 1 }, 1, "maybe\n", 0],
+        [{ apply => 1 }, 0, "yes\n", undef],
+        [{ apply => 1, 'assume-yes' => 1 }, 0, undef, 1],
+        [{}, 0, undef, 1],
+    ) {
+        my ($opts, $interactive, $answer, $expected) = @$case;
+        my ($result, $output);
+        my $read = 0;
+        {
+            local *STDOUT;
+            open(STDOUT, '>', \$output) or die $!;
+            $result = $HOOKS->{confirm_apply_run}->(
+                $opts, $interactive, sub { $read++; return $answer; },
+            );
+        }
+        is($result, $expected, 'only an explicit yes or --assume-yes authorizes an apply run');
+        is(
+            $read,
+            $opts->{apply} && !$opts->{'assume-yes'} && $interactive ? 1 : 0,
+            'dry runs, --assume-yes, and non-terminal input do not read an answer',
+        );
+    }
+}
+
 done_testing();
