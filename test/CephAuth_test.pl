@@ -6,7 +6,9 @@ use warnings;
 use lib ('.', '..');
 
 use Test::More;
+use JSON qw(encode_json);
 use PVE::Ceph::Services;
+use PVE::CLI::pveceph;
 
 # The cipher landed mid-release, so $AES256K_MIN_CEPH_RELEASE has to answer per major and
 # not just compare against one minimum. Both the full 'ceph versions' string and the bare
@@ -98,9 +100,12 @@ is(
 );
 is(scalar(grep { /quorum features could not be/ } @$noquorum), 1, 'says the quorum is unknown');
 
-# and the healthy path still reads as before
 my $ok = $verdicts->(entities => { service => {}, client => {}, complete => 1 });
-is(scalar(grep { /No rolling restart needed/ } @$ok), 1, 'a healthy cluster still says so');
+is(
+    scalar(grep { /Every reported Ceph daemon version supports aes256k/ } @$ok),
+    1,
+    'the verdict states the reported cipher capability, not staged-key readiness',
+);
 
 # The verdict tests above build their input directly, so they cannot catch a bug in the
 # collector. Drive the collector itself with a fake RADOS: a failed 'quorum_status' has to
@@ -131,7 +136,7 @@ is(scalar(grep { /No rolling restart needed/ } @$ok), 1, 'a healthy cluster stil
             if $prefix eq 'versions';
         return { quorum_names => ['a'], features => { quorum_mon => ['cephx_auth_aes256k'] } }
             if $prefix eq 'quorum_status';
-        return { data => { secrets => [] } } if $prefix eq 'auth dump-keys';
+        return $self->{dump} // { data => { secrets => [] } } if $prefix eq 'auth dump-keys';
         return [] if $prefix =~ m/metadata$/;
         return {};
     }
@@ -155,10 +160,191 @@ is(
 
 my $nokeys = PVE::Ceph::Services::get_cephx_auth_status(FakeRados->new('auth dump-keys' => 1));
 is($nokeys->{entities}->{complete}, 0, 'an unreadable key list is marked incomplete');
+ok(!$nokeys->{entities}->{'pending-keys-known'}, 'the pending-key inventory is also unknown');
 is(
     scalar(grep { m/No service key left/ } $nokeys->{conclusion}->@*),
     0,
     'an unreadable key list does not read as an all-clear',
+);
+
+my $secret = 'AQ-this-must-not-be-displayed';
+my $with_pending = PVE::Ceph::Services::get_cephx_auth_status(bless(
+    {
+        fail => {},
+        dump => {
+            data => {
+                secrets => [
+                    {
+                        entity => { type_str => 'client', id => 'store' },
+                        auth => {
+                            key => { type_str => 'aes', secret => $secret },
+                            pending_key => { type_str => 'aes256k', secret => $secret },
+                        },
+                    },
+                    {
+                        entity => { type_str => 'osd', id => '0' },
+                        auth => { key => { type_str => 'aes256k', secret => $secret } },
+                    },
+                ],
+            },
+        },
+    },
+    'FakeRados',
+));
+is_deeply(
+    $with_pending->{entities}->{details}->{'client.store'},
+    { class => 'client', 'current-cipher' => 'aes', 'pending-cipher' => 'aes256k' },
+    'the safe entity detail names both current and pending ciphers',
+);
+ok($with_pending->{entities}->{'pending-keys-known'}, 'the pending-key inventory is known');
+is($with_pending->{entities}->{'pending-keys'}, 1, 'the pending-key count remains compatible');
+unlike(encode_json($with_pending), qr/\Q$secret\E/, 'the status response retains no key material');
+like(
+    join("\n", $with_pending->{conclusion}->@*),
+    qr/pending key.*workflow that staged it is known/s,
+    'pending-key advice does not assume that the migration helper owns it',
+);
+
+my $old_kernel = $verdicts->(
+    entities => { service => {}, client => { aes => ['client.bootstrap-osd'] }, complete => 1 },
+    nodes => {
+        due => {
+            kernel => '6.14.11-1-pve',
+            source => 'ceph daemon metadata',
+            'supports-aes256k' => 0,
+        },
+    },
+);
+my $old_kernel_text = join("\n", @$old_kernel);
+like(
+    $old_kernel_text,
+    qr/Kernel compatibility constrains only keys read by kernel RBD or CephFS clients/,
+    'an old kernel does not block every client key',
+);
+like(
+    $old_kernel_text,
+    qr/metadata can be stale.*Verify 'uname -r'/s,
+    'remote daemon metadata carries its freshness caveat',
+);
+unlike($old_kernel_text, qr/Client keys have to stay/, 'the old categorical verdict is gone');
+
+my $current_kernel = $verdicts->(
+    entities => { service => {}, client => { aes => ['client.admin'] }, complete => 1 },
+    nodes => {
+        due => {
+            kernel => '7.0.14-2-pve',
+            source => 'ceph daemon metadata',
+            'supports-aes256k' => 1,
+        },
+    },
+);
+my $current_kernel_text = join("\n", @$current_kernel);
+unlike(
+    $current_kernel_text,
+    qr/metadata can be stale/,
+    'supported metadata avoids a routine caveat',
+);
+like(
+    $current_kernel_text,
+    qr/pve-cephx-rotate-service-keys --rotate-all-storage-keys --rotate-admin-key/,
+    'status prints the concrete documented client-key preview',
+);
+unlike(
+    $current_kernel_text,
+    qr/appropriate option/,
+    'status does not send readers to infer an option',
+);
+
+my $first_step = $verdicts->(
+    entities => { service => { aes => ['osd.0'] }, client => {}, complete => 1 },
+);
+like(
+    join("\n", @$first_step),
+    qr{/pve-cephx-rotate-service-keys --rotate-cluster-keys},
+    'the first migration preview selects all cluster-owned keys',
+);
+unlike(join("\n", @$first_step), qr/then again with '--apply'/, 'it does not suggest bare apply');
+
+my @users = map { sprintf('client.storage%02d', $_) } 1 .. 50;
+my $formatted = '';
+{
+    open(my $stdout, '>', \$formatted) or die $!;
+    local *STDOUT = $stdout;
+    PVE::CLI::pveceph::format_auth_status(
+        {
+            conclusion => ["50 client keys still need migration. Preview the selected action."],
+            quorum => {},
+            monmap => {},
+            daemons => {},
+            entities => {
+                source => 'auth dump-keys',
+                complete => 1,
+                client => { aes => \@users },
+                service => {},
+                details => {
+                    map {
+                        $_ => {
+                            class => 'client',
+                            'current-cipher' => 'aes',
+                            (
+                                $_ eq 'client.storage01'
+                                ? ('pending-cipher' => 'aes256k')
+                                : ()
+                            ),
+                        }
+                    } @users
+                },
+                'pending-keys-known' => 1,
+                'pending-keys' => 1,
+            },
+            nodes => {},
+            checks => {},
+        },
+        {},
+        { 'output-format' => 'text' },
+    );
+}
+like(
+    $formatted,
+    qr/^Cephx key cipher status\n\nCurrent state and next step\n/s,
+    'the text formatter leads with conclusions and actions',
+);
+like(
+    $formatted,
+    qr/Pending key ciphers\n  'ceph auth ls' omits pending keys;/,
+    'the text formatter explains why auth status has a separate pending-key inventory',
+);
+like(
+    $formatted,
+    qr/client\.storage01: current aes, pending aes256k/,
+    'the text formatter names the cipher identity of a pending key',
+);
+like(
+    $formatted,
+    qr/client on aes \(50\):.*\.\.\. 26 more/s,
+    'a 50-user current-cipher inventory is bounded but keeps its exact count',
+);
+cmp_ok(
+    (sort { $b <=> $a } map { length($_) } split(/\n/, $formatted))[0],
+    '<=',
+    100,
+    'the synthetic 50-user text output stays within 100 columns',
+);
+
+my $fallback_output = '';
+{
+    open(my $stdout, '>', \$fallback_output) or die $!;
+    local *STDOUT = $stdout;
+    PVE::CLI::pveceph::format_auth_status(
+        { %$nokeys, conclusion => [] },
+        {},
+        { 'output-format' => 'text' },
+    );
+}
+like(
+    $fallback_output,
+    qr/Pending key ciphers.*unavailable because 'auth dump-keys' could not be read/s,
+    'fallback text says that pending-cipher knowledge is unavailable',
 );
 
 done_testing();

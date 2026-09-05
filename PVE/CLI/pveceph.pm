@@ -404,29 +404,53 @@ my $format_osddetails = sub {
     }
 };
 
-my sub print_wrapped_bullet {
-    my ($text) = @_;
-
-    # 92 plus the four-space continuation indent stays inside the 100 columns the rest of
-    # the 'pveceph auth status' output uses
-    my $width = 92;
+my sub wrapped_lines {
+    my ($text, $first_width, $next_width) = @_;
+    $next_width //= $first_width;
     my $lines = [''];
     for my $word (split(/\s+/, $text)) {
+        my $width = $#$lines ? $next_width : $first_width;
         if (length($lines->[-1]) + length($word) + 1 > $width) {
             push @$lines, $word;
         } else {
             $lines->[-1] .= (length($lines->[-1]) ? ' ' : '') . $word;
         }
     }
+    return $lines;
+}
 
+my sub print_wrapped_bullet {
+    my ($text) = @_;
+
+    # 92 plus the four-space continuation indent stays inside the 100 columns the rest of
+    # the 'pveceph auth status' output uses
+    my $lines = wrapped_lines($text, 92);
     print "  * $lines->[0]\n";
     print "    $_\n" for $lines->@[1 .. $#$lines];
+}
+
+my sub print_wrapped_values {
+    my ($label, $values) = @_;
+    my $prefix = "  $label: ";
+    my $indent = ' ' x length($prefix);
+    my $width = 100 - length($prefix);
+    my $lines = [''];
+    for my $value (@$values) {
+        my $separator = length($lines->[-1]) ? ', ' : '';
+        if (length($lines->[-1]) + length($separator) + length($value) > $width) {
+            push @$lines, $value;
+        } else {
+            $lines->[-1] .= "$separator$value";
+        }
+    }
+    print "$prefix$lines->[0]\n";
+    print "$indent$_\n" for $lines->@[1 .. $#$lines];
 }
 
 # Long entity lists are unhelpful in a terminal; the JSON output has all of them.
 my $AUTH_STATUS_ENTITY_LIMIT = 24;
 
-my $format_auth_status = sub {
+sub format_auth_status {
     my ($data, $schema, $options) = @_;
 
     $options->{'output-format'} //= 'text';
@@ -436,6 +460,9 @@ my $format_auth_status = sub {
     }
 
     print "Cephx key cipher status\n";
+
+    print "\nCurrent state and next step\n";
+    print_wrapped_bullet($_) for ($data->{conclusion} // [])->@*;
 
     my $quorum = $data->{quorum} // {};
     my $members = $quorum->{members} // [];
@@ -499,18 +526,34 @@ my $format_auth_status = sub {
                 $shown = [$list->@[0 .. $AUTH_STATUS_ENTITY_LIMIT - 1]];
                 $extra = scalar(@$list) - $AUTH_STATUS_ENTITY_LIMIT;
             }
-            printf(
-                "  %s on %s (%d): %s%s\n",
-                $class,
-                $cipher,
-                scalar(@$list),
-                join(', ', @$shown),
-                $extra ? ", ... $extra more" : '',
-            );
+            my @values = @$shown;
+            push @values, "... $extra more" if $extra;
+            print_wrapped_values("$class on $cipher (" . scalar(@$list) . ")", \@values);
         }
     }
-    printf("  entities with a pending key: %d\n", $entities->{'pending-keys'})
-        if $entities->{'pending-keys'};
+    print "\nPending key ciphers\n";
+    print "  'ceph auth ls' omits pending keys; this section includes them when available\n";
+    if (!$entities->{'pending-keys-known'}) {
+        print "  unavailable because 'auth dump-keys' could not be read\n";
+    } elsif (!$entities->{'pending-keys'}) {
+        print "  none\n";
+    } else {
+        my @pending = grep {
+            defined(($entities->{details}->{$_} // {})->{'pending-cipher'})
+        } sort keys %{ $entities->{details} // {} };
+        my $shown = @pending > $AUTH_STATUS_ENTITY_LIMIT ? $AUTH_STATUS_ENTITY_LIMIT : @pending;
+        for my $entity (@pending[0 .. $shown - 1]) {
+            my $detail = $entities->{details}->{$entity};
+            printf(
+                "  %s: current %s, pending %s\n",
+                $entity,
+                $detail->{'current-cipher'} // 'unknown',
+                $detail->{'pending-cipher'},
+            );
+        }
+        printf("  ... %d more, use '--output-format json' for the full list\n", @pending - $shown)
+            if @pending > $shown;
+    }
 
     my $nodes = $data->{nodes} // {};
     print "\nNode kernels (kernel Ceph clients need 7.0 or newer)\n";
@@ -545,15 +588,14 @@ my $format_auth_status = sub {
     print "  none of these block a rolling restart of the Ceph services\n"
         if scalar(keys %$checks) && !$blocking;
 
-    print "\nWhat remains\n";
-    print_wrapped_bullet($_) for ($data->{conclusion} // [])->@*;
-};
+}
 
 __PACKAGE__->register_method({
     name => 'auth_status',
     path => 'auth-status',
     method => 'GET',
-    description => "Show cephx key ciphers and aes256k migration prerequisites.",
+    description =>
+        "Show current and pending cephx key ciphers and aes256k migration prerequisites.",
     protected => 1,
     permissions => {
         check => ['perm', '/', ['Sys.Audit', 'Datastore.Audit'], any => 1],
@@ -648,7 +690,7 @@ our $cmddef = {
             'auth_status',
             [],
             {},
-            $format_auth_status,
+            \&format_auth_status,
             $PVE::RESTHandler::standard_output_options,
         ],
     },

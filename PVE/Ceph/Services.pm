@@ -856,7 +856,13 @@ my sub collect_entity_ciphers {
     my ($rados, $checks) = @_;
 
     # 'mon.' lives in the monitor keyring, not the auth database, so it shows up only once rotated
-    my $res = { service => {}, client => {}, complete => 1 };
+    my $res = {
+        service => {},
+        client => {},
+        details => {},
+        complete => 1,
+        'pending-keys-known' => 0,
+    };
 
     # Ceph classifies this as a write command though it changes nothing, so it is the one command
     # here that needs a reachable leader, and it refuses any format but json.
@@ -872,12 +878,20 @@ my sub collect_entity_ciphers {
             my $auth = $secret->{auth} // {};
             my $cipher = cipher_name($auth->{key}) // 'unknown';
             my $class = $type eq 'client' ? 'client' : 'service';
-            push $res->{$class}->{$cipher}->@*, "$type.$id";
+            my $entity = "$type.$id";
+            push $res->{$class}->{$cipher}->@*, $entity;
 
-            $pending++ if (cipher_name($auth->{pending_key}) // 'none') ne 'none';
+            my $pending_cipher = cipher_name($auth->{pending_key}) // 'none';
+            $res->{details}->{$entity} = {
+                class => $class,
+                'current-cipher' => $cipher,
+                $pending_cipher ne 'none' ? ('pending-cipher' => $pending_cipher) : (),
+            };
+            $pending++ if $pending_cipher ne 'none';
         }
         $res->{source} = 'auth dump-keys';
         $res->{'pending-keys'} = $pending;
+        $res->{'pending-keys-known'} = 1;
     } else {
         for my $class (sort keys %$INSECURE_KEY_TYPE_CHECKS) {
             my $detail = ($checks->{ $INSECURE_KEY_TYPE_CHECKS->{$class} } // {})->{detail};
@@ -885,6 +899,10 @@ my sub collect_entity_ciphers {
                 my $message = $entry->{message} // '';
                 next if $message !~ m/^entity (\S+) using insecure key type: (\S+)$/;
                 push $res->{$class}->{$2}->@*, $1;
+                $res->{details}->{$1} = {
+                    class => $class,
+                    'current-cipher' => $2,
+                };
             }
         }
         $res->{source} = 'health check detail';
@@ -956,7 +974,19 @@ sub cephx_migration_verdicts {
             "Every Ceph daemon runs a version with aes256k support, but the monitor quorum does"
             . " not advertise '$AES256K_MON_FEATURE' yet, so restart the monitors.";
     } else {
-        push @$res, "No rolling restart needed, every Ceph daemon supports aes256k.";
+        push @$res, "Every reported Ceph daemon version supports aes256k.";
+    }
+
+    my $pending_known = $status->{entities}->{'pending-keys-known'};
+    my $pending = $status->{entities}->{'pending-keys'} // 0;
+    if ($pending_known && $pending) {
+        push @$res,
+            "$pending listed cephx "
+            . ($pending == 1 ? 'entity has' : 'entities have')
+            . " a pending key. Review the current and pending cipher rows below. Do not commit"
+            . " or clear a pending key until the workflow that staged it is known. Client keys"
+            . " staged by the migration helper remain pending while their consumers refresh and"
+            . " until explicit confirmation.";
     }
 
     if (!$old_service && !$entities_known) {
@@ -979,9 +1009,10 @@ sub cephx_migration_verdicts {
             . " authenticate with an aes256k key.";
     } else {
         push @$res,
-            "Service keys can be migrated now, $old_service of them still use an old cipher."
-            . " Run '$CEPHX_MIGRATION_HELPER' to see what it would do, then again with"
-            . " '--apply'.";
+            "$old_service listed service "
+            . ($old_service == 1 ? 'key still uses' : 'keys still use')
+            . " an old cipher. Preview the first migration step with"
+            . " '$CEPHX_MIGRATION_HELPER --rotate-cluster-keys'.";
     }
 
     my @old_kernel = sort grep {
@@ -993,37 +1024,53 @@ sub cephx_migration_verdicts {
         push @$res, "Cannot tell which client keys still use an old cipher, as the key list"
             . " could not be read and the health checks named none.";
     } elsif (!$old_client) {
-        push @$res, "No client key left on an old cipher.";
+        push @$res,
+            "No listed client key uses an old cipher. This does not verify disconnected"
+            . " consumers or external key copies.";
     } elsif (!defined($quorum_ok)) {
         push @$res,
-            "Client keys cannot be judged yet, the monitor quorum features could not be read.";
+            "$old_client listed client "
+            . ($old_client == 1 ? 'key uses' : 'keys use')
+            . " an old cipher, but the monitor quorum features could not be read. Client-key"
+            . " migration cannot be judged yet.";
     } elsif (!$quorum_ok) {
         push @$res,
-            "Client keys cannot be migrated yet, the monitor quorum does not support aes256k.";
-    } elsif (scalar(@old_kernel)) {
-        push @$res,
-            "Client keys have to stay on the old cipher, the kernel ceph clients only speak"
-            . " aes256k from kernel 7.0 on and these nodes still run an older one: "
-            . join(', ', @old_kernel) . ".";
-        push @$res,
-            "The running kernel is also unknown for these nodes, check them with 'uname -r'"
-            . " before migrating any client key: "
-            . join(', ', @unknown_kernel) . "."
-            if scalar(@unknown_kernel);
-    } elsif (scalar(@unknown_kernel)) {
-        push @$res,
-            "Cannot tell whether the client keys may be migrated, the running kernel is unknown"
-            . " for these nodes as they run no Ceph daemon that would report one: "
-            . join(', ', @unknown_kernel)
-            . ". Check them with 'uname -r' first, a node below"
-            . " kernel 7.0 loses access to every RBD image and CephFS mount it maps itself.";
+            "$old_client listed client "
+            . ($old_client == 1 ? 'key uses' : 'keys use')
+            . " an old cipher. The monitor quorum does not support aes256k, so none can be"
+            . " migrated yet.";
     } else {
         push @$res,
-            "Client keys can be migrated as far as this cluster's own nodes go, but check every"
-            . " consumer outside of it first (librados or librbd on external hosts, guests"
-            . " that map RBD themselves), those are not visible from here. The"
-            . " '--rotate-client-keys', '--rotate-admin-key', '--rotate-all-storage-keys' and"
-            . " '--rotate-storage-key' options of the migration helper cover them.";
+            "$old_client listed client "
+            . ($old_client == 1 ? 'key still uses' : 'keys still use')
+            . " an old cipher. Kernel compatibility constrains only keys read by kernel RBD or"
+            . " CephFS clients; it does not block userspace-only client keys.";
+
+        push @$res,
+            "Kernel-backed client keys cannot move while these nodes report a kernel older than"
+            . " 7.0: "
+            . join(', ', @old_kernel)
+            . ". Userspace-only keys can be selected separately."
+            if scalar(@old_kernel);
+        push @$res,
+            "Kernel compatibility is unknown on these nodes: "
+            . join(', ', @unknown_kernel)
+            . ". Check them with 'uname -r' before rotating a key used by a kernel client."
+            if scalar(@unknown_kernel);
+
+        my @metadata = sort grep {
+            ($nodes->{$_}->{source} // '') eq 'ceph daemon metadata'
+        } @old_kernel;
+        push @$res,
+            "Remote kernel values from Ceph daemon metadata can be stale until those daemons"
+            . " restart. Verify 'uname -r' on affected nodes before rotating a kernel-backed key: "
+            . join(', ', @metadata) . "."
+            if scalar(@metadata);
+
+        push @$res,
+            "The cluster cannot verify disconnected consumers or external key copies. Preview"
+            . " managed client-key migration with '$CEPHX_MIGRATION_HELPER"
+            . " --rotate-all-storage-keys --rotate-admin-key'.";
     }
 
     my $allowed = $status->{monmap}->{auth_allowed_ciphers};
