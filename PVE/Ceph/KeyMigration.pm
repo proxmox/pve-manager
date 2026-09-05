@@ -27,8 +27,9 @@ our @EXPORT_OK = qw(
     summarize_sessions session_hosts describe_sessions summarize_monitor_connections
     possible_consumer_hints
     merge_refresh_record stale_consumers session_key_targets sessions_judged_by_key
+    reverse_session_status session_key_support_hint mount_refresh_hint
     restrict_blockers
-    cephfs_mount_storages ack_decision finish_after_acks
+    cephfs_mount_storages mount_refresh_pending mount_refresh_required ack_decision finish_after_acks
     classify_insecure_clients open_options open_actions parse_lockbox_output
     manual_promotion_support client_key_stageable staged_records
 );
@@ -432,8 +433,10 @@ sub summarize_sessions($per_mon, $expected_mons = undef) {
             push $summary->{clients}->{$entity}->@*, $client;
         }
     }
-    if ($expected && scalar(keys %$seen) != scalar(keys %$expected)) {
-        $summary->{complete} = 0;
+    if ($expected) {
+        my @unanswered = sort grep { !$seen->{$_} } keys %$expected;
+        $summary->{unanswered} = \@unanswered;
+        $summary->{complete} = 0 if scalar(@unanswered);
     }
     return $summary;
 }
@@ -603,6 +606,55 @@ sub sessions_judged_by_key($held) {
     return scalar(@{ $held // [] }) && !scalar(grep { !$_->{judged_by_key} } @$held) ? 1 : 0;
 }
 
+# Reverse refresh retires the pending key. Every visible session must therefore prove that it uses
+# the active key. A complete collection without fingerprints still leaves those sessions unknown.
+sub reverse_session_status($sessions, $exported, $entity) {
+    my $entry = ($exported // {})->{$entity};
+    my $status = { current => [], pending => [], unknown => [], other => [] };
+    return $status if ref($entry) ne 'HASH' || !defined($entry->{key});
+
+    my $active = key_fingerprint($entry->{key});
+    my $pending =
+        defined($entry->{pending_key})
+        && length($entry->{pending_key})
+        ? key_fingerprint($entry->{pending_key})
+        : undef;
+    for my $session (@{ ($sessions->{clients} // {})->{$entity} // [] }) {
+        my $fingerprint = $session->{key_fingerprint};
+        if (!defined($fingerprint) || !length($fingerprint)) {
+            push $status->{unknown}->@*, $session;
+        } elsif ($fingerprint eq $active) {
+            push $status->{current}->@*, $session;
+        } elsif (defined($pending) && $fingerprint eq $pending) {
+            push $status->{pending}->@*, $session;
+        } else {
+            push $status->{other}->@*, $session;
+        }
+    }
+    return $status;
+}
+
+sub session_key_support_hint() {
+    return
+        "Session-key identification requires Ceph 19.2.6-pve4, 20.2.4-pve4, or newer"
+        . " and a restart of each monitor. Upgrade older monitors, or disconnect this user's"
+        . " consumers before confirming.";
+}
+
+sub mount_refresh_hint($state, $entity, $files = []) {
+    my $pending = (($state->{mount_refresh} // {})->{$entity} // {})->{pending} // {};
+    my @mounts;
+    for my $store (sort keys %$pending) {
+        push @mounts, map { "'$store' on node '$_'" } sort keys %{ $pending->{$store} // {} };
+    }
+    my $scope =
+        scalar(@mounts)
+        ? 'CephFS refresh pending: ' . join(', ', @mounts)
+        : 'CephFS mounts need inspection: '
+        . join(', ', @{ cephfs_mount_storages({ files => $files }) });
+    return "$scope. Free busy mounts and resolve node or mount errors, then rerun with '--apply'.";
+}
+
 # The CephFS storages whose mount reads a rotated key. The kernel holds the key a mount was
 # made with and cannot take a new one, so such a mount is a consumer of its own.
 sub cephfs_mount_storages($item) {
@@ -614,19 +666,65 @@ sub cephfs_mount_storages($item) {
     return [sort keys %$stores];
 }
 
+sub mount_refresh_pending($state, $entity) {
+    my $pending = (($state->{mount_refresh} // {})->{$entity} // {})->{pending};
+    return 0 if ref($pending) ne 'HASH';
+    return scalar(grep { ref($_) eq 'HASH' && scalar(keys %$_) } values %$pending) ? 1 : 0;
+}
+
+# A previous helper could mark file distribution complete without recording mount work. For a
+# staged key with managed CephFS mounts, only an explicit finished marker proves that the pairs
+# were inspected. Existing pending work remains required even if the storage mapping changed.
+sub mount_refresh_required($state, $entity, $item, $target = undef) {
+    return 1 if mount_refresh_pending($state, $entity);
+    return 0 if !scalar(cephfs_mount_storages($item)->@*);
+
+    my $work = ($state->{mount_refresh} // {})->{$entity};
+    return 1 if ref($work) ne 'HASH';
+    return 1 if defined($target) && ($work->{target} // '') ne $target;
+    return $work->{finished} ? 0 : 1;
+}
+
 # Whether the cipher restriction would go through once exactly the confirmations a run offers
 # are given. Asking the blocker set itself, on a copy of the state with those records closed,
 # keeps the offer honest: an empty option list says nothing about a key nobody manages, a
 # service key still on the old cipher, or a rotation this very run is about to make.
 sub finish_after_acks($info, $state, $ready) {
-    my $records = { ($state->{client_refresh} // {})->%* };
+    my $records = {
+        map { $_ => { ($state->{client_refresh}->{$_} // {})->%* } }
+            keys %{ $state->{client_refresh} // {} }
+    };
+    my $staged = {
+        map { $_ => { ($state->{staged}->{$_} // {})->%* } }
+            keys %{ $state->{staged} // {} }
+    };
+    my $exported = {
+        map { $_ => { ($info->{exported}->{$_} // {})->%* } }
+            keys %{ $info->{exported} // {} }
+    };
     for my $entity (@$ready) {
         $records->{$entity} = { ($records->{$entity} // {})->%*, cleared => time() };
+        my $record = $staged->{$entity} // next;
+        next if $record->{aborting} || !$record->{written};
+        next if mount_refresh_pending($state, $entity);
+        my $entry = $exported->{$entity} // next;
+        my $pending = $entry->{pending_key};
+        next
+            if !defined($pending)
+            || !length($pending)
+            || key_fingerprint($pending) ne ($record->{key} // '');
+        $entry->{key} = $pending;
+        delete $entry->{pending_key};
+        delete $staged->{$entity};
     }
 
-    return scalar(@{ restrict_blockers($info, { %$state, client_refresh => $records }) })
-        ? 0
-        : 1;
+    my $simulated_info = { %$info, exported => $exported };
+    my $simulated_state = {
+        %$state,
+        client_refresh => $records,
+        staged => $staged,
+    };
+    return scalar(@{ restrict_blockers($simulated_info, $simulated_state) }) ? 0 : 1;
 }
 
 # What a requested confirmation can do, from the records and the session picture alone. Only
@@ -678,6 +776,12 @@ sub restrict_blockers($info, $state, $describe = undef) {
         my $record = $records->{$entity};
         if ($old_active && $staged_open->{$entity} && $record && !defined($record->{cleared})) {
             $covered->{$entity} = 1;
+            if ($staged_open->{$entity}->{aborting}) {
+                push @$blockers,
+                    "the staged key of '$entity' is in rollback and remains valid until its"
+                    . " reverse refresh is confirmed";
+                next;
+            }
             my $live = $clients->{$entity} // [];
             my $line = "the new key of '$entity' is staged";
             if (my $held = $stale->{$entity}) {
@@ -893,6 +997,7 @@ sub open_options(
     $state = {},
     $sessions = undef,
     $exported = undef,
+    $files = {},
 ) {
     my $clients = classify_insecure_clients($checks, $storage_entities, $exported);
     my $done = $opts->{'rotate-storage-key'} // [];
@@ -950,17 +1055,40 @@ sub open_options(
     my $picture = $sessions // { complete => 0, clients => {} };
     my $stale = stale_consumers($picture, $records, session_key_targets($exported));
     my (@waiting, @ready);
+    my ($waiting_details, $waiting_sessions) = ({}, {});
+    my $key_states =
+        ref($exported) eq 'HASH'
+        ? staged_records({ exported => $exported }, $state)
+        : {};
     my $all_ready_for_aggregate = 1;
-    for my $entity (sort keys %$records) {
-        my $cleared = defined($records->{$entity}->{cleared});
-        # a confirmed record only becomes visible again when one of its retained IDs returns
-        next if $cleared && !$stale->{$entity};
 
-        my $verdict = ack_decision($entity, $state, $picture, $stale)->{verdict};
+    my $entities = { %$records, %{ $state->{staged} // {} } };
+    for my $entity (sort keys %$entities) {
+        my $cleared = defined(($records->{$entity} // {})->{cleared});
+        next if $cleared && !$stale->{$entity} && !$state->{staged}->{$entity};
+
+        my $decision = ack_decision($entity, $state, $picture, $stale);
+        my $verdict = $decision->{verdict};
         # a staged key whose copies are not all written yet must not be committed: the
         # confirmation would drop the key those copies still hold
-        my $unwritten = $state->{staged}->{$entity} && !$state->{staged}->{$entity}->{written};
-        if (!$cleared && $verdict eq 'accept' && !$unwritten) {
+        my $staged = $state->{staged}->{$entity};
+        my $aborting = $staged && $staged->{aborting};
+        my $key_state = $staged ? ($key_states->{$entity} // 'unknown') : 'none';
+        my $target = $aborting ? $staged->{abort_key} : ($staged // {})->{key};
+        my $mounts = $staged
+            && (
+                mount_refresh_pending($state, $entity)
+                || (
+                    defined($target)
+                    && mount_refresh_required(
+                        $state, $entity, { files => $files->{$entity} // [] }, $target,
+                    )
+                )
+            );
+        my $unwritten = $staged && (!$staged->{written} || $mounts);
+        my $unresolved_key = $staged && $key_state !~ m/^(?:waiting|committed)$/;
+
+        if (!$cleared && $verdict eq 'accept' && !$unwritten && !$aborting && !$unresolved_key) {
             push @ready, $entity;
             $all_ready_for_aggregate = 0
                 if $records->{$entity}->{measurement_incomplete}
@@ -968,6 +1096,108 @@ sub open_options(
         } else {
             push @waiting, $entity;
             $all_ready_for_aggregate = 0;
+
+            my $both = $key_state eq 'waiting' ? ' Both keys remain valid.' : '';
+            if ($key_state eq 'unknown') {
+                $waiting_details->{$entity} =
+                    "the staged key cannot be matched to the current auth database."
+                    . " Resolve its recorded state before confirming.";
+            } elsif ($key_state eq 'lost') {
+                $waiting_details->{$entity} =
+                    $aborting
+                    ? "the recorded staged key is no longer pending. Run this with '--apply'"
+                    . " to reconcile the rollback and managed copies."
+                    : "the recorded staged key is neither pending nor active. Rerun its rotation"
+                    . " option with '--apply' after resolving any unrelated pending key.";
+            } elsif ($key_state eq 'committed' && ($aborting || $unwritten)) {
+                $waiting_details->{$entity} =
+                    "the staged key is already active; the previous key no longer authenticates."
+                    . " Run this with '--apply' to finish managed copies and CephFS refreshes.";
+            } elsif ($aborting) {
+                my $reverse = reverse_session_status($picture, $exported, $entity);
+                my @held = map { $reverse->{$_}->@* } qw(pending unknown other);
+                $waiting_sessions->{$entity} = \@held if @held;
+                my @problems;
+                push @problems,
+                    scalar($reverse->{pending}->@*) . ' session(s) still use the staged key'
+                    if $reverse->{pending}->@*;
+                push @problems,
+                    scalar($reverse->{unknown}->@*) . ' session(s) have no key fingerprint'
+                    if $reverse->{unknown}->@*;
+                push @problems, scalar($reverse->{other}->@*) . ' session(s) use an unexpected key'
+                    if $reverse->{other}->@*;
+                my $detail;
+
+                if (!$staged->{abort_written} || !defined($staged->{abort_key})) {
+                    $detail = "rollback preparation is incomplete.$both Run this with '--apply'"
+                        . " to restore managed copies.";
+                } elsif (key_fingerprint($exported->{$entity}->{key}) ne $staged->{abort_key}) {
+                    $detail = "the active key changed after rollback preparation. Run this with"
+                        . " '--apply' to restore managed copies before confirming.";
+                } elsif ($mounts) {
+                    $detail = "rollback is prepared.$both "
+                        . mount_refresh_hint($state, $entity, $files->{$entity} // []);
+                } elsif (!$picture->{complete}) {
+                    $detail =
+                        "rollback verification is incomplete.$both Retry after every monitor answers.";
+                    my $missing = join(', ', @{ $picture->{unanswered} // [] });
+                    $detail .= " Monitors that did not answer: $missing." if length($missing);
+                } elsif (@problems) {
+                    $detail =
+                        "rollback is prepared.$both "
+                        . join('; ', @problems) . ' ('
+                        . session_hosts(\@held) . ').';
+                    $detail .= ' Refresh consumers using another key to the restored key.'
+                        if $reverse->{pending}->@* || $reverse->{other}->@*;
+                    $detail .= ' ' . session_key_support_hint() if $reverse->{unknown}->@*;
+                } else {
+                    $detail = "rollback is prepared.$both "
+                        . (
+                            $reverse->{current}->@*
+                            ? 'All visible sessions use the restored key.'
+                            : 'No session is currently visible.'
+                        )
+                        . " After refreshing disconnected consumers and external copies, use"
+                        . " '--confirm-abort-clients-refreshed $entity --apply'.";
+                }
+                $waiting_details->{$entity} = $detail;
+            } elsif ($unwritten) {
+                $waiting_details->{$entity} =
+                    $mounts
+                    ? "the new key is staged.$both "
+                    . mount_refresh_hint($state, $entity, $files->{$entity} // [])
+                    : "the new key is not written to every managed copy.$both"
+                    . " Rerun its rotation option with '--apply' to finish distribution.";
+            } elsif ($verdict eq 'incomplete') {
+                my $which = join(', ', @{ $picture->{unanswered} // [] });
+                my $reason =
+                    length($which)
+                    ? "Monitors that did not answer: $which."
+                    : "Not every monitor answered.";
+                $waiting_details->{$entity} = "consumer verification is incomplete. $reason$both"
+                    . " Retry after every monitor answers.";
+            } elsif ($verdict eq 'measure') {
+                $waiting_details->{$entity} =
+                    "the first complete consumer measurement is"
+                    . " pending.$both After refreshing every consumer, run"
+                    . " '--confirm-clients-refreshed $entity --apply'; the first attempt records"
+                    . " the measurement without committing the key.";
+            } elsif ($verdict eq 'connected') {
+                my $count = scalar($decision->{held}->@*);
+                my $held = $decision->{held};
+                $waiting_sessions->{$entity} = $held;
+                my $why =
+                    sessions_judged_by_key($held)
+                    ? 'still authenticate with a previous key'
+                    : 'may still hold the previous key';
+                $waiting_details->{$entity} =
+                    "$count session(s) $why ("
+                    . session_hosts($held)
+                    . ").$both Refresh these consumers, then retry the dry run.";
+            } else {
+                $waiting_details->{$entity} = "consumer refresh is not confirmed.$both Refresh"
+                    . " every consumer, then retry the dry run.";
+            }
         }
     }
 
@@ -1004,6 +1234,8 @@ sub open_options(
         next => $next,
         together => $together,
         waiting => \@waiting,
+        waiting_details => $waiting_details,
+        waiting_sessions => $waiting_sessions,
         ready => \@ready,
         all_ready_for_aggregate => $all_ready_for_aggregate,
         stuck => [$clients->{other}->@*], # a lockbox key has an option, so it is not stuck
@@ -1029,6 +1261,7 @@ sub open_actions(
         $state,
         $info ? $info->{sessions} : undef,
         $info ? $info->{exported} : undef,
+        ($info // {})->{client_files} // {},
     );
     my $allowed = $info ? $info->{allowed_ciphers} : undef;
     my $preferred = $info ? $info->{preferred_cipher} : undef;
@@ -1062,6 +1295,45 @@ sub open_actions(
         $open->{command} =
             "$program --apply $confirmations" . ($finish ? ' --restrict-ciphers' : '');
     }
+
+    # A missing next action is not completion: current auth, settings, and recovery state must
+    # agree, and no invisible-consumer confirmation may still be outstanding.
+    my @unfinished = unfinished_entities($state);
+    my $visible = ($info // {})->{sessions}->{clients} // {};
+    my @unmatched = grep {
+        my $entry = (($info // {})->{exported} // {})->{$_};
+        !$entry || grep {
+            my $fingerprint = $_->{key_fingerprint};
+            defined($fingerprint)
+                && length($fingerprint)
+                && $fingerprint ne key_fingerprint($entry->{key});
+        } $visible->{$_}->@*;
+    } keys %$visible;
+    $open->{complete} =
+        $info
+        && ref($info->{exported}) eq 'HASH'
+        && ref($allowed) eq 'ARRAY'
+        && scalar(@$allowed)
+        && !$restriction_needed
+        && defined($preferred)
+        && $preferred eq $CIPHER
+        && !scalar($open->{next}->@*)
+        && !scalar($open->{waiting}->@*)
+        && !scalar($open->{ready}->@*)
+        && !scalar($open->{stuck}->@*)
+        && !scalar(keys %{ $state->{staged} // {} })
+        && !scalar(keys %{ $state->{lockbox} // {} })
+        && !scalar(@unfinished)
+        && !scalar(@unmatched)
+        && !$state->{client_grace}
+        && !defined($state->{preferred_cipher_was})
+        && !$state->{noout_owned}
+        && !
+        scalar(grep { mount_refresh_pending($state, $_) } keys %{ $state->{mount_refresh} // {} })
+        && !
+        scalar(grep { defined($_->{pending_key}) && length($_->{pending_key}) }
+            values %{ $info->{exported} })
+        && !scalar(@{ restrict_blockers($info, $state) }) ? 1 : 0;
 
     return $open;
 }
@@ -1124,22 +1396,35 @@ sub plan_client_keys($info, $state, $opts, $files) {
         # consumers are confirmed; one whose copies are not all written is planned again, and the
         # staging reuses the pending key rather than staging a second one over it. An aborting key
         # only follows the explicit rollback path.
+        my $existing = $state->{staged}->{$entity};
+        my $mine = $files->{$entity} // [];
+        my $mount_refresh = mount_refresh_pending($state, $entity);
+        if (
+            !$mount_refresh
+            && ($staged->{$entity} // '') eq 'waiting'
+            && $existing->{written}
+        ) {
+            $mount_refresh =
+                mount_refresh_required($state, $entity, { files => $mine }, $existing->{key});
+        }
         next
             if ($staged->{$entity} // '') eq 'waiting'
-            && ($state->{staged}->{$entity}->{written}
-                || $state->{staged}->{$entity}->{aborting});
+            && ($existing->{aborting} || ($existing->{written} && !$mount_refresh));
         # 'rotated' without 'done' means copies are missing; with 'done' the kernel check below
         # would refuse a key nobody is changing
-        next if !needs_rotation($info, $entity) && !migration_unfinished($state, $entity);
+        next
+            if !needs_rotation($info, $entity)
+            && !migration_unfinished($state, $entity)
+            && !$mount_refresh;
 
         # a key this script staged is finished on the staged path whatever the monitors report
         # now: replacing it at once would leave a third key state behind the copies
         my $owned = ($staged->{$entity} // '') eq 'waiting';
-        my $mine = $files->{$entity} // [];
         my $bulk =
             $opts->{'rotate-all-storage-keys'}
             && $entity ne $ADMIN_ENTITY
             && grep { defined($_->{store}) } @$mine;
+        my $refresh_only = $owned && $existing->{written} && $mount_refresh ? 1 : 0;
         my $new_staging =
             !$owned && needs_rotation($info, $entity) && client_key_stageable($entity) ? 1 : 0;
         my $bulk_new_staging = $bulk && $new_staging ? 1 : 0;
@@ -1150,13 +1435,17 @@ sub plan_client_keys($info, $state, $opts, $files) {
             kernel => (grep { $_->{kernel} } @$mine) ? 1 : 0,
             reason => $wanted->{$entity},
             staged => $staged,
+            refresh_only => $refresh_only,
             new_staging => $new_staging,
             bulk_new_staging => $bulk_new_staging,
             # A replacement started by an older helper may already have changed the active key.
             # Finish its managed copies without creating or replacing another key.
-            resume_only =>
-                !$owned && !$staged && !needs_rotation($info, $entity)
-                && migration_unfinished($state, $entity) ? 1 : 0,
+            resume_only => !$owned
+                && !$staged
+                && !needs_rotation($info, $entity)
+                && (migration_unfinished($state, $entity) || $mount_refresh)
+            ? 1
+            : 0,
         };
     }
 

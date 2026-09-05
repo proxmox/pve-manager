@@ -706,6 +706,61 @@ sub wipe_monitor_picture {
 }
 
 {
+    my $rados = CurrentMonitorRados->new(
+        exported => [{ entity => 'client.app', key => $NEW }],
+    );
+    my $state = {
+        client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
+        client_refresh => {
+            'client.app' => {
+                rotated => 1,
+                session_ids => [100],
+                cleared => 2,
+                acknowledged => 2,
+            },
+        },
+    };
+    my @saved;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        eval {
+            $HOOKS->{assert_consumers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                'wipe the rotating service keys',
+                sub {
+                    return {
+                        service_cipher => 'aes256k',
+                        sessions => {
+                            complete => 1,
+                            clients => {
+                                'client.app' => [{
+                                    global_id => 999,
+                                    host => 'node-new',
+                                    key_fingerprint => key_fingerprint($OLD),
+                                }],
+                            },
+                        },
+                    };
+                },
+            );
+        };
+    }
+    like(
+        $@,
+        qr/refusing to wipe.*recorded live client/s,
+        'a new session positively using the old key refuses the wipe',
+    );
+    my $persisted = decode_json($saved[-1]->[1]);
+    ok(
+        !defined($persisted->{client_refresh}->{'client.app'}->{cleared}),
+        'old-key fingerprint evidence reopens a previously cleared record',
+    );
+}
+
+{
     my $rados = CurrentMonitorRados->new(exported => []);
     my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
     eval {
@@ -1069,6 +1124,189 @@ sub wipe_monitor_picture {
 
 # --- staged client keys ------------------------------------------------------------------------
 {
+    my $script = $HOOKS->{cephfs_remount_script};
+    unlike($script, qr/\['umount', '-[fl]'/, 'the CephFS refresh never force or lazy unmounts');
+    like(
+        $script,
+        qr/my \$state = \$failure =~ m\/timeout.*'timed out'/s,
+        'an ordinary unmount timeout leaves the mount in place',
+    );
+
+    my $state = {};
+    my $item = {
+        entity => 'client.cp',
+        files => [{ store => 'cp', format => 'secret' }],
+    };
+    my @calls;
+    my $run = sub {
+        my ($node, $storeid, $phase) = @_;
+        push @calls, "$node/$storeid/$phase";
+        return "mounted\n" if $phase eq 'inspect';
+        return $node eq 'a' ? "remounted\n" : "timed out, left alone\n";
+    };
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $state,
+            $item,
+            target => key_fingerprint($NEW),
+            reads => 'the staged key',
+            nodes => [qw(a b)],
+            run => $run,
+        );
+    }
+    is_deeply(
+        \@calls,
+        ['a/cp/inspect', 'a/cp/remount', 'b/cp/inspect', 'b/cp/remount'],
+        'the first refresh records mounted storage before ordinary remounts',
+    );
+    ok(
+        $state->{mount_refresh}->{'client.cp'}->{completed}->{cp}->{a}
+            && $state->{mount_refresh}->{'client.cp'}->{pending}->{cp}->{b},
+        'completed and unresolved mount refreshes are journalled separately',
+    );
+
+    @calls = ();
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $state,
+            $item,
+            target => key_fingerprint($NEW),
+            reads => 'the staged key',
+            nodes => [qw(a b)],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @calls, "$node/$storeid/$phase";
+                return "remounted\n";
+            },
+        );
+    }
+    is_deeply(
+        \@calls,
+        ['b/cp/remount'],
+        'a later apply retries only activation of the unresolved mount',
+    );
+    ok(
+        !PVE::Ceph::KeyMigration::mount_refresh_pending($state, 'client.cp'),
+        'the mount work is complete after that retry',
+    );
+
+    my $activation = {};
+    @calls = ();
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $activation,
+            $item,
+            target => key_fingerprint($NEW),
+            nodes => ['a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @calls, $phase;
+                return $phase eq 'inspect' ? "mounted\n" : "unmounted, but not mounted again\n";
+            },
+        );
+    }
+    is_deeply(\@calls, [qw(inspect remount)], 'failed activation follows a durable mounted probe');
+    is(
+        $activation->{mount_refresh}->{'client.cp'}->{pending}->{cp}->{a}->{phase},
+        'remount',
+        'failed activation retains the reactivation phase',
+    );
+    @calls = ();
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $activation,
+            $item,
+            target => key_fingerprint($NEW),
+            nodes => ['a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @calls, $phase;
+                return "remounted\n";
+            },
+        );
+    }
+    is_deeply(\@calls, ['remount'], 'an absent mount caused by this helper is reactivated');
+    ok(
+        !PVE::Ceph::KeyMigration::mount_refresh_pending($activation, 'client.cp'),
+        'successful reactivation completes the pending pair',
+    );
+
+    my $interrupted = {};
+    my @durable;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub {
+            my ($path, $content) = @_;
+            push @durable, decode_json($content);
+        };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $interrupted,
+            $item,
+            target => key_fingerprint($NEW),
+            nodes => ['a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                return "mounted\n" if $phase eq 'inspect';
+                die "connection lost after ordinary unmount\n";
+            },
+        );
+    }
+    is(
+        $durable[-1]->{mount_refresh}->{'client.cp'}->{pending}->{cp}->{a}->{phase},
+        'remount',
+        'the journal requires reactivation before the unmounting call can be interrupted',
+    );
+    @calls = ();
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $interrupted,
+            $item,
+            target => key_fingerprint($NEW),
+            nodes => ['a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @calls, $phase;
+                return "remounted\n";
+            },
+        );
+    }
+    is_deeply(\@calls, ['remount'], 'interrupted activation resumes without an absence probe');
+
+    my $absent = {};
+    @calls = ();
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $absent,
+            $item,
+            target => key_fingerprint($NEW),
+            nodes => ['a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @calls, $phase;
+                return "not mounted\n";
+            },
+        );
+    }
+    is_deeply(\@calls, ['inspect'], 'an originally unmounted storage is never activated');
+    ok(
+        !PVE::Ceph::KeyMigration::mount_refresh_pending($absent, 'client.cp'),
+        'an originally absent pair is complete',
+    );
+}
+
+{
 
     package StagedRotationRados;
 
@@ -1088,6 +1326,13 @@ sub wipe_monitor_picture {
                 key => $self->{key},
                 (defined($self->{pending}) ? (pending_key => $self->{pending}) : ()),
                 caps => { mon => 'allow r' },
+            }];
+        }
+        if ($prefix eq 'auth export') {
+            return [{
+                entity => $args->{entity} // 'client.cp',
+                key => $self->{key},
+                (defined($self->{pending}) ? (pending_key => $self->{pending}) : ()),
             }];
         }
         if ($prefix eq 'auth get-or-create-pending') {
@@ -1261,6 +1506,9 @@ sub run_staging {
         if ($args->{prefix} eq 'auth get') {
             return [{ $self->{entries}->{$entity}->%* }];
         }
+        if ($args->{prefix} eq 'auth export') {
+            return [map { { $self->{entries}->{$_}->%* } } sort keys $self->{entries}->%*];
+        }
         if ($args->{prefix} eq 'auth commit-pending') {
             if (($self->{fail_commit} // '') eq $entity) {
                 delete $self->{fail_commit} if $self->{fail_once};
@@ -1292,6 +1540,224 @@ sub aggregate_fixture {
     $info->{exported} = { map { $_ => { $rados->{entries}->{$_}->%* } } @entities };
     $info->{rados} = $rados;
     return ($rados, $info, $state);
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    $info->{manual_promotion} = {
+        supported => 1,
+        disabled => 1,
+        unsupported => [],
+        unanswered => [],
+    };
+    my $files = {
+        'client.app' => [{
+            store => 'fs',
+            format => 'secret',
+            scope => 'cluster',
+            path => '/unused/fs.secret',
+        }],
+    };
+    my $opts = { 'rotate-storage-key' => ['fs'] };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{settle_staged}->($rados, $info, $state, { apply => 0 }, $files);
+        $HOOKS->{print_open_options}->({}, {}, $state, $info, 0, $files);
+    }
+    like(
+        $output,
+        qr/CephFS mounts need inspection: fs.*[Ff]ree busy mounts.*--apply/s,
+        'a dry run exposes uninitialized CephFS work from an older written journal',
+    );
+    ok(
+        !exists($state->{mount_refresh}->{'client.app'}),
+        'the dry run does not claim that unknown mount work was initialized',
+    );
+    my ($plan) = PVE::Ceph::KeyMigration::plan_client_keys($info, $state, $opts, $files);
+    ok(
+        scalar(@$plan) == 1 && $plan->[0]->{refresh_only},
+        'the planner selects the older journal for mount refresh without restaging',
+    );
+
+    my $commands = scalar($rados->{commands}->@*);
+    my @remote;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        local *PVE::Cluster::cfs_update = sub { };
+        local *PVE::Cluster::get_nodelist = sub { return [PVE::INotify::nodename()] };
+        local *main::run_command = sub {
+            my ($command, %param) = @_;
+            push @remote, [@$command];
+            $param{outfunc}->('not mounted');
+        };
+        $HOOKS->{settle_staged}->(
+            $rados,
+            $info,
+            $state,
+            { apply => 1 },
+            $files,
+            sub { return { manual_promotion => $info->{manual_promotion} } },
+        );
+    }
+    ok(
+        $state->{mount_refresh}->{'client.app'}->{finished},
+        'apply initializes and completes the previously unknown managed pair',
+    );
+    is(scalar($rados->{commands}->@*), $commands, 'mount initialization changes no auth key');
+    is(scalar(@remote), 1, 'the unknown managed pair is inspected once');
+    ($plan) = PVE::Ceph::KeyMigration::plan_client_keys($info, $state, $opts, $files);
+    is(scalar(@$plan), 0, 'completed mount work is not planned again');
+
+    my ($rbd_rados, $rbd_info, $rbd_state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    $rbd_info->{manual_promotion} = $info->{manual_promotion};
+    my $rbd_files = {
+        'client.app' => [{
+            store => 'rbd',
+            format => 'keyring',
+            scope => 'cluster',
+            path => '/unused/rbd.keyring',
+        }],
+    };
+    $HOOKS->{settle_staged}->(
+        $rbd_rados, $rbd_info, $rbd_state, { apply => 0 }, $rbd_files,
+    );
+    ok(
+        !exists($rbd_state->{mount_refresh}->{'client.app'}),
+        'an older RBD-only staged record acquires no mount work',
+    );
+    ($plan) = PVE::Ceph::KeyMigration::plan_client_keys(
+        $rbd_info, $rbd_state, { 'rotate-storage-key' => ['rbd'] }, $rbd_files,
+    );
+    is(scalar(@$plan), 0, 'RBD-only staged work remains waiting for confirmation');
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    $rados->{entries}->{'client.app'} = { entity => 'client.app', key => $NEW };
+    $info->{exported}->{'client.app'} = { $rados->{entries}->{'client.app'}->%* };
+    delete $state->{staged}->{'client.app'}->{written};
+    my $files = {
+        'client.app' => [{
+            store => 'fs',
+            format => 'secret',
+            scope => 'cluster',
+            path => '/unused/fs.secret',
+        }],
+    };
+    my $durable;
+    my $err;
+    {
+        no warnings qw(once redefine);
+        local *PVE::Cluster::cfs_update = sub { };
+        local *PVE::Cluster::get_nodelist = sub { return [PVE::INotify::nodename()] };
+        local *main::file_set_contents = sub {
+            my ($path, $content) = @_;
+            return if $path !~ m/cephx-key-migration\.json$/;
+            $durable = decode_json($content);
+            die "simulated interruption after durable mount queue\n"
+                if $durable->{mount_refresh}->{'client.app'}->{pending};
+        };
+        eval { $HOOKS->{settle_staged}->($rados, $info, $state, { apply => 1 }, $files); };
+        $err = $@;
+    }
+    like($err, qr/interruption after durable mount queue/, 'the queue save is interruptible');
+    ok(
+        !$durable->{staged}->{'client.app'}->{written}
+            && PVE::Ceph::KeyMigration::mount_refresh_pending($durable, 'client.app'),
+        'the durable queue precedes the promoted-key written marker',
+    );
+
+    my @remote;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        local *PVE::Cluster::cfs_update = sub { };
+        local *PVE::Cluster::get_nodelist = sub { return [PVE::INotify::nodename()] };
+        local *main::run_command = sub {
+            my ($command, %param) = @_;
+            push @remote, [@$command];
+            $param{outfunc}->('not mounted');
+        };
+        $HOOKS->{settle_staged}->($rados, $info, $durable, { apply => 1 }, $files);
+    }
+    is(scalar(@remote), 1, 'resumed promoted-key recovery inspects the queued mount');
+    ok(
+        !exists($durable->{staged}->{'client.app'}),
+        'the promoted record closes only after queued mount work completes',
+    );
+}
+
+{
+    my $target = key_fingerprint($NEW);
+    my $state = {
+        mount_refresh => {
+            'client.app' => {
+                target => $target,
+                pending => { fs => { 'node-a' => { phase => 'remount' } } },
+                completed => {},
+            },
+        },
+    };
+    my $durable = decode_json(encode_json($state));
+    my $item = {
+        entity => 'client.app',
+        files => [{ store => 'fs', format => 'secret' }],
+    };
+    my $err;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub {
+            my ($path, $content) = @_;
+            die "simulated mount completion journal failure\n"
+                if !PVE::Ceph::KeyMigration::mount_refresh_pending($state, 'client.app');
+        };
+        eval {
+            $HOOKS->{refresh_cephfs_mounts}->(
+                $state,
+                $item,
+                target => $target,
+                nodes => ['node-a'],
+                run => sub { return "remounted\n" },
+            );
+        };
+        $err = $@;
+    }
+    like(
+        $err,
+        qr/mount completion journal failure/,
+        'completion remains interruptible after the remote remount succeeds',
+    );
+    ok(
+        PVE::Ceph::KeyMigration::mount_refresh_pending($durable, 'client.app'),
+        'the last durable state still requires the remount after completion-save failure',
+    );
+    my @phases;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{refresh_cephfs_mounts}->(
+            $durable,
+            $item,
+            target => $target,
+            nodes => ['node-a'],
+            run => sub {
+                my ($node, $storeid, $phase) = @_;
+                push @phases, $phase;
+                return "remounted\n";
+            },
+        );
+    }
+    is_deeply(\@phases, ['remount'], 'recovery retries an unjournalled remote completion');
+    ok(
+        !PVE::Ceph::KeyMigration::mount_refresh_pending($durable, 'client.app'),
+        'the retried completion is durable',
+    );
 }
 
 sub run_aggregate_confirmation {
@@ -1395,6 +1861,253 @@ sub run_aggregate_confirmation {
         !defined($state->{client_refresh}->{'client.store'}->{cleared}),
         'its refresh record remains open',
     );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    my $fresh = sub {
+        my ($entity, $fingerprint) = @_;
+        return {
+            sessions => {
+                complete => 1,
+                clients => {
+                    $entity => [{
+                        global_id => 900,
+                        host => 'node-new',
+                        key_fingerprint => $fingerprint,
+                    }],
+                },
+            },
+        };
+    };
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+            0,
+            $state,
+            {},
+            sub { return $fresh->('client.b', key_fingerprint($OLD)) },
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a fresh aggregate precheck catches a newly visible stale session');
+    is_deeply($rados->{committed}, [], 'the aggregate precheck commits no ready key');
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    $rados->{entries}->{'client.b'} = { entity => 'client.b', key => $NEW };
+    $info->{exported}->{'client.b'} = { $rados->{entries}->{'client.b'}->%* };
+    delete $state->{staged}->{'client.b'};
+    $state->{client_keys_seen}->{'client.b'} = key_fingerprint($NEW);
+    $state->{client_refresh}->{'client.b'}->{cleared} = 2;
+    $state->{client_refresh}->{'client.b'}->{acknowledged} = 2;
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+            0,
+            $state,
+            {},
+            sub {
+                return {
+                    sessions => {
+                        complete => 1,
+                        clients => {
+                            'client.b' => [{
+                                global_id => 901,
+                                host => 'node-returned',
+                                key_fingerprint => key_fingerprint($OLD),
+                            }],
+                        },
+                    },
+                };
+            },
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'fresh aggregate selection includes a reopened record');
+    is_deeply($rados->{committed}, [], 'a blocker in the reopened record prevents every commit');
+    ok(
+        !defined($state->{client_refresh}->{'client.a'}->{cleared})
+            && !defined($state->{client_refresh}->{'client.b'}->{cleared}),
+        'both aggregate records remain open after the refusal',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    my $poll = 0;
+    my $collector = sub {
+        $poll++;
+        my $sessions = { complete => 1, clients => {} };
+        if ($poll == 3) {
+            $sessions->{clients}->{'client.b'} = [{
+                global_id => 901,
+                host => 'node-returned',
+                key_fingerprint => key_fingerprint($OLD),
+            }];
+        }
+        return { sessions => $sessions };
+    };
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+            0,
+            $state,
+            {},
+            $collector,
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a session appearing inside the commit batch refuses its key');
+    is_deeply($rados->{committed}, ['client.a'], 'an earlier completed promotion stays committed');
+    ok(
+        exists($state->{staged}->{'client.b'})
+            && !defined($state->{client_refresh}->{'client.b'}->{cleared}),
+        'the newly blocked key and its refresh record remain open',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    $info->{allowed_ciphers} = [qw(aes aes256k)];
+    $info->{health_checks} = { AUTH_INSECURE_KEYS_ALLOWED => {} };
+    my $restriction = sub {
+        return {
+            sessions => { complete => 1, clients => {} },
+            exported =>
+                { map { $_ => { $rados->{entries}->{$_}->%* } } keys $rados->{entries}->%* },
+            pve_mon_key => $NEW,
+            service_cipher => 'aes256k',
+            preferred_cipher => 'aes256k',
+            allowed_ciphers => [qw(aes aes256k)],
+            health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        };
+    };
+    my $files = {
+        'client.app' => [{
+            store => 'data',
+            format => 'keyring',
+            scope => 'cluster',
+            path => '/unused/data.keyring',
+        }],
+    };
+    my $opts = {
+        apply => 1,
+        'confirm-all-clients-refreshed' => 1,
+        'rotate-storage-key' => ['data'],
+        'restrict-ciphers' => 1,
+    };
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            $opts,
+            0,
+            $state,
+            $files,
+            sub { return { sessions => { complete => 1, clients => {} } } },
+            $restriction,
+        );
+    }
+    cmp_ok($verdict, '>=', 0, 'combined confirmation recollects before restriction preflight');
+    is_deeply($rados->{committed}, ['client.app'], 'the real staged promotion succeeds');
+    is(
+        $info->{exported}->{'client.app'}->{key},
+        $NEW,
+        'the caller receives the post-promotion auth export',
+    );
+    ok(!exists($info->{exported}->{'client.app'}->{pending_key}), 'the stale pending key is gone');
+    is($info->{rados}, $rados, 'snapshot replacement preserves caller-only cluster information');
+    my ($plan) = PVE::Ceph::KeyMigration::plan_client_keys($info, $state, $opts, $files);
+    is(scalar(@$plan), 0, 'the subsequent planner does not stage the promoted key again');
+    ok(
+        !scalar(PVE::Ceph::KeyMigration::restrict_blockers($info, $state)->@*),
+        'the shared post-promotion state is ready for restriction',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+            0,
+            $state,
+            {},
+            sub { return { sessions => { complete => 1, clients => {} } } },
+        );
+    }
+    cmp_ok($verdict, '>=', 0, 'confirmation without restriction completes normally');
+    is(
+        $info->{exported}->{'client.app'}->{key},
+        $NEW,
+        'non-restriction confirmation also refreshes the caller auth export',
+    );
+    ok(
+        !exists($info->{exported}->{'client.app'}->{pending_key}),
+        'non-restriction preflight does not retain the committed pending entry',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
+    $info->{allowed_ciphers} = [qw(aes aes256k)];
+    $info->{health_checks} = { AUTH_INSECURE_KEYS_ALLOWED => {} };
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            {
+                apply => 1,
+                'confirm-all-clients-refreshed' => 1,
+                'restrict-ciphers' => 1,
+            },
+            0,
+            $state,
+            {},
+            sub { return { sessions => { complete => 1, clients => {} } } },
+            sub {
+                $rados->{entries}->{'client.app'}->{pending_key} = $OLD;
+                return {
+                    sessions => { complete => 1, clients => {} },
+                    exported => {
+                        'client.app' => { $rados->{entries}->{'client.app'}->%* },
+                    },
+                    pve_mon_key => $NEW,
+                    service_cipher => 'aes256k',
+                    preferred_cipher => 'aes256k',
+                    allowed_ciphers => [qw(aes aes256k)],
+                    health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
+                };
+            },
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'a blocker appearing after promotion refuses restriction preflight');
+    is($rados->{entries}->{'client.app'}->{pending_key}, $OLD, 'the new pending key is retained');
 }
 
 {
@@ -1578,16 +2291,133 @@ sub run_aggregate_confirmation {
         local *main::file_set_contents = sub { };
         $HOOKS->{abort_staged}->($rados, $state, 'client.cp', { 'client.cp' => [] });
     }
-    is($rados->issued('auth clear-pending'), 1, 'aborting drops the staged key');
+    is($rados->issued('auth clear-pending'), 0, 'preparing the abort retires no key');
     is($rados->{key}, $OLD, 'and leaves the current key active');
+    ok(
+        $state->{staged}->{'client.cp'}->{aborting}
+            && $state->{staged}->{'client.cp'}->{abort_written}
+            && $state->{previous_keys}->{'client.cp'}->{key} eq $OLD,
+        'the prepared rollback and both recoverable keys remain journalled',
+    );
+
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{retire_aborted}->(
+            $rados, $state, ['client.cp'], sub { return { sessions => cp_picture(1) } },
+        );
+    }
+    is($rados->issued('auth clear-pending'), 1, 'reverse-refresh confirmation retires the key');
     ok(
         !exists($state->{staged}->{'client.cp'})
             && !exists($state->{client_refresh}->{'client.cp'}),
-        'its records are gone with it',
+        'successful retirement closes the rollback records',
     );
+}
 
-    my $err = eval { $HOOKS->{abort_staged}->($rados, $state, 'client.cp', {}); 1 } ? '' : $@;
-    like($err, qr/no key is staged/, 'there is nothing to abort twice');
+{
+    my $fp = key_fingerprint($NEW);
+    my $prepared = sub {
+        return {
+            staged => {
+                'client.cp' => {
+                    key => $fp,
+                    aborting => 1,
+                    abort_written => 1,
+                    abort_key => key_fingerprint($OLD),
+                },
+            },
+            previous_keys => { 'client.cp' => { key => $OLD } },
+            client_refresh => { 'client.cp' => { session_ids => [] } },
+        };
+    };
+    my $reverse_picture = sub {
+        my ($fingerprint) = @_;
+        my $session = { global_id => 70, host => 'node-a' };
+        $session->{key_fingerprint} = $fingerprint if defined($fingerprint);
+        return { sessions => { complete => 1, clients => { 'client.cp' => [$session] } } };
+    };
+
+    {
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $state = $prepared->();
+        delete $state->{staged}->{'client.cp'}->{abort_written};
+        my $err = eval {
+            $HOOKS->{retire_aborted}->(
+                $rados,
+                $state,
+                ['client.cp'],
+                sub { return $reverse_picture->(key_fingerprint($OLD)) },
+            );
+            1;
+        } ? '' : $@;
+        like($err, qr/not every managed copy/, 'unrestored managed copies refuse retirement');
+        is($rados->issued('auth clear-pending'), 0, 'the unwritten preparation retires no key');
+    }
+
+    for my $case (
+        ['pending', key_fingerprint($NEW), qr/still use the staged key/],
+        ['unknown', undef, qr/have no key fingerprint/],
+    ) {
+        my ($label, $fingerprint, $expected) = @$case;
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $state = $prepared->();
+        my $err;
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            eval {
+                $HOOKS->{retire_aborted}->(
+                    $rados,
+                    $state,
+                    ['client.cp'],
+                    sub { return $reverse_picture->($fingerprint) },
+                );
+            };
+            $err = $@;
+        }
+        like($err, $expected, "a $label-key session refuses pending-key retirement");
+        like(
+            $err,
+            qr/19\.2\.6-pve4.*20\.2\.4-pve4.*restart/s,
+            'unknown-key refusal names the monitor upgrade and restart requirement',
+        ) if $label eq 'unknown';
+        is($rados->issued('auth clear-pending'), 0, 'the refusal retires no key');
+        ok(
+            exists($state->{previous_keys}->{'client.cp'})
+                && exists($state->{staged}->{'client.cp'}),
+            'both recoverable keys remain journalled after refusal',
+        );
+    }
+
+    my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+    my $state = $prepared->();
+    my $poll = 0;
+    my $err;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        eval {
+            $HOOKS->{retire_aborted}->(
+                $rados,
+                $state,
+                ['client.cp'],
+                sub {
+                    $poll++;
+                    return $reverse_picture->(
+                        $poll == 1 ? key_fingerprint($OLD) : key_fingerprint($NEW),
+                    );
+                },
+            );
+        };
+        $err = $@;
+    }
+    like(
+        $err,
+        qr/still use the staged key/,
+        'a staged-key session appearing after preflight blocks',
+    );
+    is($rados->issued('auth clear-pending'), 0, 'the immediate mutation check preserves the key');
 }
 
 {
@@ -1833,7 +2663,7 @@ sub run_aggregate_confirmation {
         'client.cp' =>
             [{ path => '/etc/pve/priv/ceph/cp.keyring', format => 'keyring', scope => 'cluster' }],
     };
-    my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW, promote_on_clear => 1);
+    my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
     my $state = {
         staged => { 'client.cp' => { key => $fp, written => 1 } },
         previous_keys => { 'client.cp' => { key => $OLD } },
@@ -1844,9 +2674,11 @@ sub run_aggregate_confirmation {
         no warnings qw(once redefine);
         local *main::file_set_contents = sub { push @saved, [@_] };
         $HOOKS->{abort_staged}->($rados, $state, 'client.cp', $files);
+        $rados->{key} = delete $rados->{pending};
+        $HOOKS->{abort_staged}->($rados, $state, 'client.cp', $files);
     }
     my @copies = map { $_->[1] } grep { $_->[0] =~ m/cp\.keyring/ } @saved;
-    is(scalar(@copies), 2, 'the copies are written twice: the current key, then the promoted one');
+    is(scalar(@copies), 2, 'the copies are written once for preparation and once after promotion');
     like($copies[0], qr/\Q$OLD\E/, 'first with the key that was current');
     like($copies[1], qr/\Q$NEW\E/, 'then with the key the monitors promoted meanwhile');
     ok(
@@ -1877,9 +2709,13 @@ sub run_aggregate_confirmation {
         is($rados->issued('auth clear-pending'), 0, 'a dry run leaves an interrupted abort alone');
         $HOOKS->{settle_staged}->($rados, $info, $state, { apply => 1 }, $files);
     }
-    is($rados->issued('auth clear-pending'), 1, 'an apply run finishes the interrupted abort');
-    ok(!exists($state->{staged}->{'client.cp'}), 'and drops its record');
-    is($rados->issued('config rm'), 1, 'then hands automatic promotion back');
+    is($rados->issued('auth clear-pending'), 0, 'an apply run retires no key without confirmation');
+    ok(
+        $state->{staged}->{'client.cp'}->{aborting}
+            && $state->{staged}->{'client.cp'}->{abort_written},
+        'and resumes only rollback preparation',
+    );
+    is($rados->issued('config rm'), 0, 'the grace option remains while both keys are valid');
 }
 
 {
@@ -2096,6 +2932,11 @@ sub run_aggregate_confirmation {
         'per-user help explains how staged keys are committed',
     );
     like($help, qr/--confirm-all-clients-refreshed/, 'help names the aggregate confirmation');
+    like(
+        $help,
+        qr/--abort-staged-key USER.*Both keys remain valid.*--confirm-abort-clients-refreshed USER.*does not\s+report a key fingerprint.*Retires the staged key/s,
+        'help separates rollback preparation from pending-key retirement',
+    );
     my ($aggregate_help) =
         $help =~ m/(--confirm-all-clients-refreshed.*?)(?=\n  --restrict-ciphers)/s;
     like(
@@ -2139,6 +2980,11 @@ sub run_aggregate_confirmation {
             qr/confirm-all-clients-refreshed.*needs.*--apply/s,
             'the aggregate confirmation requires apply',
         ],
+        [
+            [qw(--confirm-abort-clients-refreshed client.cp)],
+            qr/confirm-abort-clients-refreshed.*needs '--apply'/,
+            'the reverse-refresh confirmation requires apply',
+        ],
     ) {
         local @ARGV = $case->[0]->@*;
         my $err = eval { $HOOKS->{parse_options}->(); 1 } ? '' : $@;
@@ -2163,6 +3009,22 @@ sub run_aggregate_confirmation {
             )],
             qr/cannot be combined with '--abort-staged-key'/,
             'aggregate plus abort',
+        ],
+        [
+            [qw(
+                --apply --confirm-clients-refreshed client.cp
+                --confirm-abort-clients-refreshed client.cp
+            )],
+            qr/cannot be combined with forward confirmation/,
+            'forward plus reverse confirmation',
+        ],
+        [
+            [qw(
+                --apply --abort-staged-key client.cp
+                --confirm-abort-clients-refreshed client.cp
+            )],
+            qr/preparation and reverse-refresh confirmation need separate runs/,
+            'rollback preparation plus its confirmation',
         ],
     ) {
         my ($entered_run, $connected, $locked) = (0, 0, 0);
@@ -2552,7 +3414,7 @@ sub run_aggregate_confirmation {
     };
     like(
         $bulk_abort->('client.vm', $files),
-        qr/'--abort-staged-key client\.vm' contradicts the rotation option/,
+        qr/rollback option for 'client\.vm' contradicts the rotation option/,
         'aborting a user the bulk option selects is refused',
     );
     is($bulk_abort->('client.admin', $files), '', 'client.admin is not selected by it');
@@ -3176,6 +4038,7 @@ sub run_aggregate_confirmation {
         open(my $stdout, '>', \$seen) or die $!;
         local *STDOUT = $stdout;
         $HOOKS->{preflight}->($info, { apply => 0 }, 0, $returning, {});
+        $HOOKS->{print_open_options}->({}, {}, $returning, $info);
     }
     ok(
         !defined($returning->{client_refresh}->{'client.crash'}->{cleared}),
@@ -3225,6 +4088,33 @@ sub run_aggregate_confirmation {
         $output,
         qr/Not touched by this run/,
         'a migrated cluster with one staged user left gets no list of untouched categories',
+    );
+}
+
+{
+    my $state = {
+        staged => { 'client.app' => { key => key_fingerprint($NEW), written => 1 } },
+        client_refresh => {
+            'client.app' => { session_ids => [], measurement_incomplete => 1 },
+        },
+    };
+    my $snapshot = {
+        health_checks => { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        service_cipher => 'aes256k',
+        pve_mon_key => $NEW,
+        exported => { 'client.app' => { key => $OLD, pending_key => $NEW } },
+        sessions => { complete => 0, clients => {}, unanswered => ['mon-b'] },
+    };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_open_options}->({}, {}, $state, $snapshot);
+    }
+    like(
+        $output,
+        qr/Client key rotations awaiting action:.*'client\.app': consumer verification is incomplete\. Monitors that did not answer: mon-b\. Both keys\s+remain valid\. Retry after every monitor answers\./s,
+        'a plain dry run explains a staged key hidden by an incomplete session picture',
     );
 }
 
@@ -3319,16 +4209,17 @@ sub run_aggregate_confirmation {
         open(my $stdout, '>', \$ordinary) or die $!;
         local *STDOUT = $stdout;
         $HOOKS->{preflight}->($info, { apply => 0 }, 0, $state, {});
+        $HOOKS->{print_open_options}->({}, {}, $state, $info);
     }
     is(
         scalar(() = $ordinary =~ m/A connected client can keep existing data connections/g),
-        1,
-        'several stale users share one ticket and data-connection rationale',
+        0,
+        'routine waiting output omits the recurring ticket explanation',
     );
     is(
-        scalar(() = $ordinary =~ m/unresolved session\(s\)/g),
+        scalar(() = $ordinary =~ m/session\(s\) may still hold the previous key/g),
         2,
-        'the shared warning retains one compact row per stale user',
+        'the final waiting list retains one compact row per stale user',
     );
 
     $info->{health_checks}->{AUTH_INSECURE_KEYS_ALLOWED} = {};
@@ -3356,6 +4247,288 @@ sub run_aggregate_confirmation {
 }
 
 {
+    my $state = {
+        staged => {
+            'client.app' => {
+                key => key_fingerprint($NEW),
+                written => 1,
+                aborting => 1,
+                abort_written => 2,
+                abort_retired => 3,
+            },
+        },
+    };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{settle_staged}->(
+            undef,
+            { exported => { 'client.app' => { key => $OLD } } },
+            $state,
+            { apply => 0 },
+            {},
+        );
+        $HOOKS->{print_open_options}->(
+            {},
+            {},
+            $state,
+            { exported => { 'client.app' => { key => $OLD } }, sessions => picture(1) },
+        );
+    }
+    like(
+        $output,
+        qr/no longer pending.*--apply'.*reconcile/s,
+        'dry rollback recovery names reconciliation',
+    );
+    unlike(
+        $output,
+        qr/both keys remain valid/i,
+        'dry recovery does not promise a retired credential',
+    );
+    unlike(
+        $output,
+        qr/confirm-abort-clients-refreshed/,
+        'dry recovery does not offer a second retirement',
+    );
+}
+
+{
+    for my $case (qw(enabled unsupported abort)) {
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW, disabled => 0);
+        my $support = {
+            supported => $case eq 'unsupported' ? 0 : 1,
+            disabled => 0,
+            unsupported => $case eq 'unsupported' ? ['mon-old'] : [],
+            unanswered => [],
+        };
+        my $state = { staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } } };
+        my $info = {
+            exported => { 'client.cp' => { key => $OLD, pending_key => $NEW } },
+            manual_promotion => $support,
+        };
+        my $files = { 'client.cp' => [{ store => 'fs', format => 'secret' }] };
+        my @remote_grace;
+        my $err;
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            local *PVE::Cluster::cfs_update = sub { };
+            local *PVE::Cluster::get_nodelist = sub { return [PVE::INotify::nodename()] };
+            local *main::run_command = sub {
+                my ($command, %param) = @_;
+                push @remote_grace, $rados->{disabled};
+                $param{outfunc}->($command->[-1] eq 'inspect' ? 'mounted' : 'remounted');
+            };
+            eval {
+                $HOOKS->{settle_staged}->(
+                    $rados,
+                    $info,
+                    $state,
+                    {
+                        apply => 1,
+                        $case eq 'abort' ? ('abort-staged-key' => ['client.cp']) : (),
+                    },
+                    $files,
+                    grace_collect(
+                        $rados,
+                        supported => $support->{supported},
+                        unsupported => $support->{unsupported},
+                    ),
+                );
+            };
+            $err = $@;
+        }
+        if ($case eq 'enabled') {
+            is($err, '', 'forward refresh restores the grace setting when needed');
+            is_deeply(
+                \@remote_grace,
+                [1, 1],
+                'grace is restored before any managed mount uses the pending key',
+            );
+        } elsif ($case eq 'unsupported') {
+            like(
+                $err,
+                qr/not every monitor can keep two client keys valid/,
+                'unsupported grace refuses forward refresh',
+            );
+            is_deeply(\@remote_grace, [], 'unsupported monitors cause no forward mount operation');
+        } else {
+            is($err, '', 'rollback preparation may proceed without a forward refresh');
+            is_deeply(
+                \@remote_grace,
+                [],
+                'a requested rollback does not first remount with the pending key',
+            );
+        }
+    }
+}
+
+{
+    my $user = 'client.cp';
+    for my $retire (0, 1) {
+        my $sessions = {
+            complete => 1,
+            clients => {
+                $user => [{
+                    global_id => 7,
+                    host => 'node-a',
+                    key_fingerprint => key_fingerprint($OLD),
+                }],
+            },
+        };
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $state = {
+            client_keys_seen => { $user => key_fingerprint($OLD) },
+            client_refresh => { $user => { session_ids => [7] } },
+            staged => {
+                $user => {
+                    key => key_fingerprint($NEW),
+                    written => 1,
+                    aborting => 1,
+                    abort_written => 1,
+                    abort_key => key_fingerprint($OLD),
+                },
+            },
+        };
+        my $info = migrated_info($sessions);
+        $info->{exported} = { $user => { key => $OLD, pending_key => $NEW } };
+        $info->{rados} = $rados;
+        my $opts = $retire ? { apply => 1, 'confirm-abort-clients-refreshed' => [$user] } : {};
+        my $output = '';
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            local *PVE::Cluster::cfs_update = sub { };
+            local *PVE::Cluster::get_members = sub { return {} };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{settle_staged}->($rados, $info, $state, $opts, {});
+            $HOOKS->{preflight}->($info, $opts, 0, $state, {});
+
+            if ($retire) {
+                $HOOKS->{retire_aborted}
+                    ->($rados, $state, [$user], sub { return { sessions => $sessions } });
+                $info->{exported} = { $user => { key => $OLD } };
+            }
+            $HOOKS->{print_open_options}->($opts, {}, $state, $info);
+        }
+        unlike(
+            $output,
+            qr/previous key|--confirm-clients-refreshed/,
+            'restored-key sessions never get forward-stale or promotion advice during rollback',
+        );
+        is(
+            scalar(() = $output =~ /rollback is prepared/g),
+            $retire ? 0 : 1,
+            'prepared rollback state appears once, and not before its requested retirement',
+        );
+        is(
+            scalar(() = $output =~ /--confirm-abort-clients-refreshed/g),
+            $retire ? 0 : 1,
+            'the reverse command is offered only when it remains an operator action',
+        );
+        if ($retire) {
+            like(
+                $output,
+                qr/rollback of 'client.cp' is complete/,
+                'retirement keeps its outcome proof',
+            );
+            is($rados->issued('auth clear-pending'), 1, 'one requested retirement still happens');
+        }
+    }
+}
+
+{
+    my $info = migrated_info(picture(1));
+    $info->{manual_promotion} = { supported => 1, disabled => 1 };
+    $info->{exported} = { 'client.app' => { key => $OLD, pending_key => $NEW } };
+    my $state = {
+        client_keys_seen => { 'client.app' => key_fingerprint($OLD) },
+        client_refresh => { 'client.app' => { session_ids => [] } },
+        staged => { 'client.app' => { key => key_fingerprint($NEW), written => 1 } },
+        mount_refresh => {
+            'client.app' => {
+                target => key_fingerprint($NEW),
+                pending => { cephfs => { tre => { phase => 'remount' } } },
+            },
+        },
+    };
+    my $output = '';
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{settle_staged}->(undef, $info, $state, {}, {});
+        $HOOKS->{preflight}->($info, {}, 0, $state, {});
+        $HOOKS->{print_open_options}->({}, {}, $state, $info);
+    }
+    like(
+        $output,
+        qr/'cephfs' on\s+node 'tre'/,
+        'the dry run names the actual queued mount and node',
+    );
+    like(
+        $output,
+        qr/Free busy mounts.*--apply/s,
+        'the mount must be released before a plain apply retry',
+    );
+    unlike(
+        $output,
+        qr/rotation option|older journal|--confirm-clients-refreshed/,
+        'mount guidance neither obscures the action nor offers premature retirement',
+    );
+    is(scalar(() = $output =~ /CephFS refresh pending/g), 1, 'the queued mount is reported once');
+}
+
+{
+    my $snapshot = {
+        health_checks => {},
+        service_cipher => 'aes256k',
+        preferred_cipher => 'aes256k',
+        allowed_ciphers => ['aes256k'],
+        pve_mon_key => $NEW,
+        exported => { 'mon.' => { key => $NEW }, 'client.app' => { key => $NEW } },
+        sessions => picture(1),
+    };
+    my $output = '';
+    {
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_closing_notes}->(undef, {}, {}, 0, 0, {}, 1, {}, $snapshot);
+    }
+    like(
+        $output,
+        qr/Cephx migration is complete/,
+        'the fully migrated state has an explicit summary',
+    );
+    unlike($output, qr/\n\n\nWARN: Keep/, 'journal retention has no double blank separator');
+    like(
+        $output,
+        qr/Keep \S+ until access verification\./,
+        'completion leaves access verification as the journal retention condition',
+    );
+    unlike(
+        $output,
+        qr/until migration completion/,
+        'completed migration is not described as pending',
+    );
+    for my $state (
+        { client_refresh => { 'client.app' => { session_ids => [] } } },
+        { staged => { 'client.app' => { key => key_fingerprint($NEW) } } },
+    ) {
+        my $text = '';
+        open(my $stdout, '>', \$text) or die $!;
+        {
+            local *STDOUT = $stdout;
+            $HOOKS->{print_open_options}->({}, {}, $state, $snapshot);
+        }
+        unlike($text, qr/migration is complete/, 'unfinished records cannot inherit the summary');
+    }
+}
+
+{
     for my $record (
         { phase => 'staging' }, { phase => 'writing', key => key_fingerprint('foreign') },
     ) {
@@ -3372,6 +4545,71 @@ sub run_aggregate_confirmation {
         );
         is($rados->issued('auth clear-pending'), 0, 'uncertain origin never authorizes clearing');
         is($rados->issued('auth commit-pending'), 0, 'uncertain origin never authorizes promotion');
+    }
+}
+
+{
+    my $check = 'AUTH_INSECURE_CLIENT_KEY_TYPE';
+    for my $case (
+        ['current clients', { 'client.app' => { key => $NEW } }, 1, 0],
+        ['old client', { 'client.app' => { key => $OLD } }, 0, 1],
+        ['unknown client key', { 'client.app' => { key => 'invalid' } }, 0, 0],
+        ['missing client key', { 'client.app' => {} }, 0, 0],
+        ['missing export', undef, 0, 0],
+        ['no clients', { 'osd.1' => { key => $OLD } }, 1, 0],
+        ['pending new key', { 'client.app' => { key => $OLD, pending_key => $NEW } }, 0, 0],
+        ['pending old key', { 'client.app' => { key => $NEW, pending_key => $OLD } }, 1, 0],
+        [
+            'unmanaged old client',
+            { 'client.app' => { key => $NEW }, 'client.external' => { key => $OLD } },
+            0,
+            1,
+        ],
+    ) {
+        my ($name, $exported, $current, $mute) = @$case;
+        my $snapshot = {
+            health_checks => {
+                $check => {
+                    severity => 'HEALTH_WARN',
+                    summary => { message => '1 auth client entities with insecure key types' },
+                },
+            },
+            service_cipher => 'aes256k',
+            preferred_cipher => 'aes256k',
+            allowed_ciphers => ['aes256k'],
+            pve_mon_key => $NEW,
+            exported => $exported,
+            sessions => picture(1),
+        };
+        my $output = '';
+        {
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{print_closing_notes}->(undef, {}, {}, 0, 0, {}, 1, {}, $snapshot);
+        }
+        like(
+            $output,
+            qr/$check: 1 auth client entities/,
+            "$name: the reported warning stays visible",
+        );
+        is(
+            scalar(
+                () =
+                    $output =~ /$check:.*current client keys use 'aes256k', not recomputed yet/g
+            ),
+            $current,
+            "$name: the current-key annotation follows the export",
+        );
+        is(
+            scalar(() = $output =~ /ceph health mute/g),
+            $mute,
+            "$name: mute advice requires an old client key without a staged successor",
+        );
+        like(
+            $output,
+            qr/until migration completion and access verification/,
+            "$name: retain recovery keys",
+        ) if $name ne 'current clients';
     }
 }
 

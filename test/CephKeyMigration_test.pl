@@ -20,7 +20,8 @@ use PVE::Ceph::KeyMigration qw(
     open_options open_actions
     summarize_sessions session_hosts describe_sessions summarize_monitor_connections
     possible_consumer_hints
-    stale_consumers session_key_targets sessions_judged_by_key restrict_blockers
+    stale_consumers session_key_targets sessions_judged_by_key reverse_session_status
+    restrict_blockers
     cephfs_mount_storages
     ack_decision finish_after_acks
     plan_lockbox_keys parse_lockbox_output
@@ -483,10 +484,9 @@ is(
 
     my $expected = summarize_sessions($mons, [qw(a b)]);
     ok($expected->{complete}, 'every expected monitor returned one result');
-    ok(
-        !summarize_sessions([$mons->[0]], [qw(a b)])->{complete},
-        'an omitted monitor result marks the picture incomplete',
-    );
+    my $missing = summarize_sessions([$mons->[0]], [qw(a b)]);
+    ok(!$missing->{complete}, 'an omitted monitor result marks the picture incomplete');
+    is_deeply($missing->{unanswered}, ['b'], 'the missing monitor remains available to output');
     ok(
         !summarize_sessions([], [])->{complete},
         'an empty expected monitor inventory cannot prove completeness',
@@ -808,6 +808,11 @@ is(
         !(grep { m/restrict-ciphers/ } $open->{next}->@*),
         'nor the restriction, as a consumer could be connected unseen',
     );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/consumer verification is incomplete\. Not every monitor answered\./,
+        'an incomplete session picture explains the waiter',
+    );
     ok(
         !(
             grep { m/restrict-ciphers/ } open_actions(
@@ -815,6 +820,96 @@ is(
             )->{next}->@*
         ),
         'which holds with no record at all, the sweep is what is missing',
+    );
+
+    my $staged = {
+        client_refresh => {
+            'client.admin' => { session_ids => [], measurement_incomplete => 1 },
+        },
+        staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } },
+    };
+    my $exported = { 'client.admin' => { key => $OLD, pending_key => $NEW } };
+    $open = open_options(
+        $checks,
+        {},
+        {},
+        $CIPHER,
+        $staged,
+        { complete => 0, clients => {}, unanswered => ['mon-b'] },
+        $exported,
+    );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/Monitors that did not answer: mon-b\. Both keys remain valid\./,
+        'a staged waiter names unanswered monitors and retained access',
+    );
+
+    $staged->{staged}->{'client.admin'}->{written} = 0;
+    $open = open_options(
+        $checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} }, $exported,
+    );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/not written to every managed copy.*Both keys remain valid/s,
+        'an unwritten staged key reports its distribution reason',
+    );
+
+    $staged->{staged}->{'client.admin'} = {
+        key => key_fingerprint($NEW),
+        written => 1,
+        aborting => 1,
+        abort_written => 1,
+        abort_key => key_fingerprint($OLD),
+    };
+    $open = open_options(
+        $checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} }, $exported,
+    );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/rollback is prepared.*Both keys remain valid.*--confirm-abort-clients-refreshed/s,
+        'a prepared rollback reports its reverse-refresh state',
+    );
+    $staged->{staged}->{'client.admin'}->{abort_retired} = 2;
+    delete $exported->{'client.admin'}->{pending_key};
+    $open = open_options(
+        $checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} }, $exported,
+    );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/no longer pending.*reconcile the rollback/,
+        'an interrupted retirement needs reconciliation, not another retirement',
+    );
+    unlike(
+        $open->{waiting_details}->{'client.admin'},
+        qr/Both keys remain valid|confirm-abort-clients-refreshed/,
+        'retirement is not described as retaining both credentials',
+    );
+    $staged->{staged}->{'client.admin'} = { key => key_fingerprint($NEW), written => 1 };
+    delete $staged->{client_refresh}->{'client.admin'}->{measurement_incomplete};
+    $open = open_options(
+        $checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} }, $exported,
+    );
+    is_deeply($open->{ready}, [], 'a lost staged key cannot be offered for confirmation');
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/neither pending nor active/,
+        'the lost key is named',
+    );
+    $exported->{'client.admin'}->{key} = $NEW;
+    $staged->{staged}->{'client.admin'}->{written} = 0;
+    $open = open_options(
+        $checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} }, $exported,
+    );
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/already active; the previous key no longer authenticates.*finish managed copies/,
+        'promoted-key copy recovery does not claim that the previous key still works',
+    );
+    $open = open_options($checks, {}, {}, $CIPHER, $staged, { complete => 1, clients => {} });
+    like(
+        $open->{waiting_details}->{'client.admin'},
+        qr/cannot be matched to the current auth database/,
+        'missing auth state stays unknown',
     );
 }
 
@@ -851,6 +946,43 @@ is(
         $actions->{command},
         '/helper --apply --confirm-all-clients-refreshed --restrict-ciphers',
         'an all-ready command uses the aggregate and carries the guarded final step',
+    );
+
+    my $staged_state = {
+        client_refresh => { 'client.admin' => { session_ids => [99] } },
+        staged => {
+            'client.admin' => { key => key_fingerprint($NEW), written => 1 },
+        },
+    };
+    my $staged_info = {
+        %$clean, exported => { 'client.admin' => { key => $OLD, pending_key => $NEW } },
+    };
+    ok(
+        finish_after_acks($staged_info, $staged_state, ['client.admin']),
+        'a ready staged promotion is simulated before testing restriction readiness',
+    );
+    is(
+        $staged_info->{exported}->{'client.admin'}->{key},
+        $OLD,
+        'the simulation does not mutate the collected auth export',
+    );
+    ok(
+        exists($staged_state->{staged}->{'client.admin'}),
+        'the simulation does not close the real staged record',
+    );
+    $actions = open_actions(
+        '/helper',
+        { AUTH_INSECURE_KEYS_ALLOWED => {} },
+        {},
+        {},
+        $CIPHER,
+        $staged_state,
+        $staged_info,
+    );
+    like(
+        $actions->{command},
+        qr/--confirm-all-clients-refreshed --restrict-ciphers$/,
+        'the offered staged completion includes the now-valid restriction step',
     );
 
     my $mixed = {
@@ -2102,6 +2234,17 @@ my sub cluster {
     ($plan) = plan_client_keys($waiting, $state, $opts, $files);
     is(scalar(@$plan), 0, 'a key waiting for its confirmation is not staged again');
 
+    $state->{mount_refresh}->{'client.admin'} = {
+        target => $fp,
+        pending => { cp => { due => 1 } },
+    };
+    ($plan) = plan_client_keys($waiting, $state, $opts, $files);
+    ok(
+        scalar(@$plan) == 1 && $plan->[0]->{refresh_only},
+        'an unresolved mount is planned again without staging another key',
+    );
+    delete $state->{mount_refresh};
+
     delete $state->{staged}->{'client.admin'}->{written};
     ($plan) = plan_client_keys($waiting, $state, $opts, $files);
     is_deeply(
@@ -2139,6 +2282,7 @@ my sub cluster {
         $CIPHER,
         { client_refresh => $records, staged => { 'client.admin' => { key => $fp } } },
         $picture,
+        $waiting->{exported},
     );
     is_deeply(
         [$open->{ready}, $open->{waiting}],
@@ -2155,8 +2299,22 @@ my sub cluster {
             staged => { 'client.admin' => { key => $fp, written => 1 } },
         },
         $picture,
+        $waiting->{exported},
     );
     is_deeply([$open->{ready}], [['client.admin']], 'once every copy is written it is offered');
+    my $mount_wait = {
+        client_refresh => $records,
+        staged => { 'client.admin' => { key => $fp, written => 1 } },
+        mount_refresh => {
+            'client.admin' => { target => $fp, pending => { cp => { due => 1 } } },
+        },
+    };
+    $open = open_options({}, {}, {}, $CIPHER, $mount_wait, $picture, $waiting->{exported});
+    is_deeply(
+        [$open->{ready}, $open->{waiting}],
+        [[], ['client.admin']],
+        'pending managed mount refreshes withhold confirmation independently of file writes',
+    );
 
     my $insecure = {
         AUTH_INSECURE_CLIENT_KEY_TYPE => {
@@ -2438,6 +2596,82 @@ my sub cluster {
     );
 }
 
+# --- restriction blockers read as one decision per user -----------------------------------------
+{
+    my $tools = $PVE::Ceph::KeyMigration::TOOL_CLIENT_KEYS;
+    my $info = {
+        exported =>
+            { 'client.admin' => { key => $OLD }, map { $_ => { key => $NEW } } @$tools },
+        service_cipher => $CIPHER,
+        sessions => {
+            complete => 1,
+            clients => {
+                'client.admin' => [map { { global_id => $_, host => 'due' } } 200 .. 209],
+            },
+        },
+        pve_mon_key => $NEW,
+        health_checks => {},
+    };
+    my $state = {
+        staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } },
+        client_refresh => {
+            'client.admin' => { rotated => 1, session_ids => [200 .. 203] },
+            map { $_ => { rotated => 1, session_ids => [] } } @$tools,
+        },
+    };
+    my $blockers = restrict_blockers($info, $state);
+    ok(
+        !grep({ m/active or pending keys still use another cipher/ } @$blockers),
+        'an old active key with a staged successor is not listed as a bare old key',
+    );
+    my @admin = grep { m/client\.admin'/ } @$blockers;
+    is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
+    like(
+        $admin[0],
+        qr/^the new key of 'client\.admin' is staged; 4 of its 10 live client\(s\) were recorded before the rotation \(due: 4\), refresh those, then commit it with '--confirm-clients-refreshed client\.admin'$/,
+        'which counts the live sessions, the recorded subset and names the confirmation',
+    );
+    my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
+    $unrecorded->{client_refresh}->{'client.admin'} = { rotated => 1, session_ids => [] };
+    $blockers = restrict_blockers($info, $unrecorded);
+    @admin = grep { m/client\.admin'/ } @$blockers;
+    is(scalar(@admin), 1, 'a staged user with live but unrecorded sessions gets one line too');
+    like(
+        $admin[0],
+        qr/^the new key of 'client\.admin' is staged; once every consumer of it is refreshed \(10 live: due: 10\), commit it with '--confirm-clients-refreshed client\.admin'$/,
+        'which names the live sessions and the confirmation',
+    );
+    my @tools = grep { m/bootstrap and crash keys/ } @$blockers;
+    is(scalar(@tools), 1, 'the open bootstrap and crash records are one line');
+    like(
+        $tools[0],
+        qr/the rotations of 7 bootstrap and crash keys await their confirmation, which needs no consumer refresh; '--confirm-all-clients-refreshed' closes them/,
+        'saying why no refresh is needed and how to close them',
+    );
+    ok(!(grep { m/bootstrap-mds' awaits/ } @$blockers), 'and no line per tool key');
+
+    my $one_tool =
+        { %$state, client_refresh => { 'client.crash' => { rotated => 1, session_ids => [] } } };
+    like(
+        (grep { m/tool key/ } restrict_blockers($info, $one_tool)->@*)[0],
+        qr/the rotation of the tool key 'client\.crash' awaits '--confirm-clients-refreshed client\.crash'/,
+        'a single open tool record keeps its exact command',
+    );
+
+    my $connections =
+        [map { { port => 3300, process => 'kvm', pid => $_, vmid => 100 + $_ } } 1 .. 10];
+    is(
+        summarize_monitor_connections($connections),
+        'VM 101, VM 102, VM 103, VM 104, VM 105, VM 106, VM 107, VM 108, 2 more VMs',
+        'a concise host hint is summarized after the first eight VMs',
+    );
+    is(
+        summarize_monitor_connections($connections, 1),
+        join(', ', map { "VM $_" } 101 .. 110),
+        'verbose output includes every VM identity',
+    );
+}
+
 # --- a monitor that names the key behind a session settles what a recorded ID only guessed ------
 {
     my $summary = summarize_sessions([{
@@ -2507,6 +2741,20 @@ my sub cluster {
         [map { $_->{global_id} } stale_consumers($sessions, $refresh)->{'client.vm'}->@*],
         [2, 4],
         'without targets only the recorded IDs count, as before',
+    );
+
+    my $reverse = reverse_session_status(
+        $sessions, { 'client.vm' => { key => $OLD, pending_key => $NEW } }, 'client.vm',
+    );
+    is_deeply(
+        [map { $_->{global_id} } $reverse->{pending}->@*],
+        [2],
+        'reverse refresh identifies sessions that still use the key to retire',
+    );
+    is_deeply(
+        [map { $_->{global_id} } $reverse->{unknown}->@*],
+        [4, 5],
+        'a complete collection does not resolve sessions without key fingerprints',
     );
 }
 
@@ -2590,80 +2838,174 @@ my sub cluster {
     );
 }
 
-# --- restriction blockers read as one decision per user -----------------------------------------
 {
-    my $tools = $PVE::Ceph::KeyMigration::TOOL_CLIENT_KEYS;
-    my $info = {
-        exported =>
-            { 'client.admin' => { key => $OLD }, map { $_ => { key => $NEW } } @$tools },
-        service_cipher => $CIPHER,
-        sessions => {
-            complete => 1,
-            clients => {
-                'client.admin' => [map { { global_id => $_, host => 'due' } } 200 .. 209],
+    my $user = 'client.admin';
+    my $state = {
+        client_refresh => { $user => { session_ids => [7] } },
+        staged => {
+            $user => {
+                key => key_fingerprint($NEW),
+                written => 1,
+                aborting => 1,
+                abort_written => 1,
+                abort_key => key_fingerprint($OLD),
             },
         },
+    };
+    my $auth = { $user => { key => $OLD, pending_key => $NEW } };
+    for my $case (
+        ['restored', key_fingerprint($OLD), qr/visible sessions use the restored key/],
+        ['pending', key_fingerprint($NEW), qr/1 session\(s\) still use the staged key/],
+        ['unknown', undef, qr/1 session\(s\) have no key fingerprint.*19\.2\.6-pve4/s],
+        ['other', key_fingerprint('unrelated'), qr/1 session\(s\) use an unexpected key/],
+    ) {
+        my ($name, $fp, $expected) = @$case;
+        my $sessions = {
+            complete => 1,
+            clients =>
+                { $user => [{ global_id => 7, host => 'node-a', key_fingerprint => $fp }] },
+        };
+        my $open = open_options({}, {}, {}, $CIPHER, $state, $sessions, $auth);
+        my $text = $open->{waiting_details}->{$user};
+        like($text, $expected, "$name rollback sessions have direction-specific guidance");
+        unlike(
+            $text,
+            qr/Refresh consumers/,
+            'unknown sessions need identification, not another refresh',
+        ) if $name eq 'unknown';
+        unlike(
+            $text,
+            qr/--confirm-clients-refreshed|previous key/,
+            'rollback never offers promotion',
+        );
+        is_deeply($open->{ready}, [], 'reverse refresh never joins forward confirmations');
+        is(
+            scalar(@{ $open->{waiting_sessions}->{$user} // [] }),
+            $name eq 'restored' ? 0 : 1,
+            'only unresolved reverse sessions contribute consumer hints',
+        );
+    }
+    my $changed = open_options(
+        {},
+        {},
+        {},
+        $CIPHER,
+        $state,
+        { complete => 1, clients => {} },
+        { $user => { key => 'changed-key', pending_key => $NEW } },
+    );
+    like(
+        $changed->{waiting_details}->{$user},
+        qr/active key changed after rollback preparation/,
+        'a changed active key is not described as the restored credential',
+    );
+    unlike(
+        $changed->{waiting_details}->{$user},
+        qr/confirm-abort-clients-refreshed/,
+        'changed managed credentials need reconciliation before a retirement command',
+    );
+    delete $state->{staged}->{$user}->{abort_key};
+    my $unknown_copy = open_options(
+        {}, {}, {}, $CIPHER, $state, { complete => 1, clients => {} }, $auth,
+    );
+    like(
+        $unknown_copy->{waiting_details}->{$user},
+        qr/rollback preparation is incomplete/,
+        'missing restored-key evidence does not establish prepared rollback',
+    );
+    $state->{staged}->{$user}->{abort_key} = key_fingerprint($OLD);
+
+    my $partial = open_options(
+        {},
+        {},
+        {},
+        $CIPHER,
+        $state,
+        { complete => 0, clients => {}, unanswered => ['mon-b'] },
+        $auth,
+    );
+    like(
+        $partial->{waiting_details}->{$user},
+        qr/incomplete.*mon-b/s,
+        'rollback reports incomplete collection instead of readiness',
+    );
+    $state->{mount_refresh}->{$user} = {
+        pending => { cephfs => { tre => { phase => 'remount' } } },
+    };
+    my $mount = open_options({}, {}, {}, $CIPHER, $state, { complete => 1, clients => {} }, $auth);
+    like(
+        $mount->{waiting_details}->{$user},
+        qr/cephfs.*tre.*[Ff]ree busy mounts.*--apply/s,
+        'queued rollback mounts name the storage, node, and action before retry',
+    );
+}
+
+{
+    my $info = {
+        exported => { 'mon.' => { key => $NEW }, 'client.admin' => { key => $NEW } },
         pve_mon_key => $NEW,
-        health_checks => {},
+        sessions => { complete => 1, clients => {} },
+        service_cipher => $CIPHER,
+        preferred_cipher => $CIPHER,
+        allowed_ciphers => [$CIPHER],
     };
-    my $state = {
-        staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } },
-        client_refresh => {
-            'client.admin' => { rotated => 1, session_ids => [200 .. 203] },
-            map { $_ => { rotated => 1, session_ids => [] } } @$tools,
-        },
-    };
-    my $blockers = restrict_blockers($info, $state);
     ok(
-        !grep({ m/active or pending keys still use another cipher/ } @$blockers),
-        'an old active key with a staged successor is not listed as a bare old key',
+        open_actions('/helper', {}, {}, {}, $CIPHER, {}, $info)->{complete},
+        'complete current state permits a migration completion summary',
     );
-    my @admin = grep { m/client\.admin'/ } @$blockers;
-    is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
-    like(
-        $admin[0],
-        qr/^the new key of 'client\.admin' is staged; 4 of its 10 live client\(s\) were recorded before the rotation \(due: 4\), refresh those, then commit it with '--confirm-clients-refreshed client\.admin'$/,
-        'which counts the live sessions, the recorded subset and names the confirmation',
-    );
-    my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
-    $unrecorded->{client_refresh}->{'client.admin'} = { rotated => 1, session_ids => [] };
-    $blockers = restrict_blockers($info, $unrecorded);
-    @admin = grep { m/client\.admin'/ } @$blockers;
-    is(scalar(@admin), 1, 'a staged user with live but unrecorded sessions gets one line too');
-    like(
-        $admin[0],
-        qr/^the new key of 'client\.admin' is staged; once every consumer of it is refreshed \(10 live: due: 10\), commit it with '--confirm-clients-refreshed client\.admin'$/,
-        'which names the live sessions and the confirmation',
-    );
-    my @tools = grep { m/bootstrap and crash keys/ } @$blockers;
-    is(scalar(@tools), 1, 'the open bootstrap and crash records are one line');
-    like(
-        $tools[0],
-        qr/the rotations of 7 bootstrap and crash keys await their confirmation, which needs no consumer refresh; '--confirm-all-clients-refreshed' closes them/,
-        'saying why no refresh is needed and how to close them',
-    );
-    ok(!(grep { m/bootstrap-mds' awaits/ } @$blockers), 'and no line per tool key');
-
-    my $one_tool =
-        { %$state, client_refresh => { 'client.crash' => { rotated => 1, session_ids => [] } } };
-    like(
-        (grep { m/tool key/ } restrict_blockers($info, $one_tool)->@*)[0],
-        qr/the rotation of the tool key 'client\.crash' awaits '--confirm-clients-refreshed client\.crash'/,
-        'a single open tool record keeps its exact command',
-    );
-
-    my $connections =
-        [map { { port => 3300, process => 'kvm', pid => $_, vmid => 100 + $_ } } 1 .. 10];
-    is(
-        summarize_monitor_connections($connections),
-        'VM 101, VM 102, VM 103, VM 104, VM 105, VM 106, VM 107, VM 108, 2 more VMs',
-        'a concise host hint is summarized after the first eight VMs',
-    );
-    is(
-        summarize_monitor_connections($connections, 1),
-        join(', ', map { "VM $_" } 101 .. 110),
-        'verbose output includes every VM identity',
-    );
+    for my $case (
+        ['missing auth', { exported => undef }],
+        ['unknown session collection', { sessions => { complete => 0, clients => {} } }],
+        ['old creation default', { preferred_cipher => 'aes' }],
+        [
+            'untracked old-key session',
+            {
+                sessions => {
+                    complete => 1,
+                    clients => {
+                        'client.admin' =>
+                            [{ global_id => 77, key_fingerprint => key_fingerprint($OLD) }],
+                    },
+                },
+            },
+        ],
+        [
+            'session without an auth entry',
+            {
+                sessions => {
+                    complete => 1,
+                    clients => {
+                        'client.removed' =>
+                            [{ global_id => 78, key_fingerprint => key_fingerprint($NEW) }],
+                    },
+                },
+            },
+        ],
+        ['unknown allowed ciphers', { allowed_ciphers => [] }],
+        [
+            'foreign pending key',
+            { exported => { 'client.admin' => { key => $NEW, pending_key => $NEW } } },
+        ],
+    ) {
+        my ($name, $changes) = @$case;
+        ok(
+            !open_actions('/helper', {}, {}, {}, $CIPHER, {}, { %$info, %$changes })->{complete},
+            "$name prevents a completion claim",
+        );
+    }
+    for my $state (
+        { staged => { 'client.admin' => { key => key_fingerprint($NEW) } } },
+        { client_refresh => { 'client.admin' => { session_ids => [] } } },
+        { rotated => { 'osd.0' => 1 } },
+        { preferred_cipher_was => 'aes' },
+        { client_grace => {} },
+        { lockbox => { 'client.osd-lockbox.x' => {} } },
+    ) {
+        ok(
+            !open_actions('/helper', {}, {}, {}, $CIPHER, $state, $info)->{complete},
+            'unfinished work prevents a completion claim',
+        );
+    }
 }
 
 done_testing();
