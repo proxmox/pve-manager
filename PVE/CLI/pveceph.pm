@@ -460,123 +460,86 @@ sub format_auth_status {
     }
 
     print "Cephx key cipher status\n";
+    print "  Counts are Ceph authentication identities, not guests, mounts, or sessions.\n";
 
-    print "\nCurrent state and next step\n";
-    print_wrapped_bullet($_) for ($data->{conclusion} // [])->@*;
-
-    my $quorum = $data->{quorum} // {};
-    my $members = $quorum->{members} // [];
-    print "\nMonitor quorum\n";
-    printf("  members: %s\n", scalar(@$members) ? join(', ', @$members) : 'unknown');
-    my $quorum_capable = $quorum->{'supports-aes256k'};
-    printf(
-        "  aes256k capable: %s (from %s)\n",
-        defined($quorum_capable) ? ($quorum_capable ? 'yes' : 'no') : 'unknown',
-        $quorum->{'feature-source'} // 'unknown',
-    );
-    printf("  monitor versions would support it: %s\n",
-        $quorum->{'versions-support-aes256k'} ? 'yes' : 'no')
-        if !defined($quorum_capable);
-
-    my $monmap = $data->{monmap} // {};
-    print "\nMonmap cipher settings\n";
-    if (!scalar(keys %$monmap)) {
-        print "  none reported, this Ceph release has no cipher settings\n";
+    my $entities = $data->{entities} // {};
+    my $details = $entities->{details} // {};
+    my $attention = {};
+    for my $class (qw(service client)) {
+        my $by_cipher = $entities->{$class} // {};
+        for my $cipher (keys %$by_cipher) {
+            for my $entity ($by_cipher->{$cipher}->@*) {
+                my $detail = $details->{$entity} // {};
+                next if $cipher eq 'aes256k' && !defined($detail->{'pending-cipher'});
+                $attention->{$entity} = { 'current-cipher' => $cipher, %$detail };
+            }
+        }
     }
-    for my $key (sort keys %$monmap) {
-        my $value = $monmap->{$key};
-        printf("  %s: %s\n", $key, ref($value) eq 'ARRAY' ? join(', ', @$value) : $value);
+    my @attention = sort {
+        defined($attention->{$b}->{'pending-cipher'}) <=>
+            defined($attention->{$a}->{'pending-cipher'})
+            || ($attention->{$b}->{'current-cipher'} eq 'unknown')
+            <=> ($attention->{$a}->{'current-cipher'} eq 'unknown')
+            || $a cmp $b
+    } keys %$attention;
+    if (@attention || !$entities->{complete}) {
+        printf(
+            "\nKeys needing attention (%d listed %s)\n",
+            scalar(@attention),
+            @attention == 1 ? 'identity' : 'identities',
+        );
     }
+    print "  full inventory unavailable; the listed keys may be incomplete\n"
+        if !$entities->{complete};
+    my $shown = @attention > $AUTH_STATUS_ENTITY_LIMIT ? $AUTH_STATUS_ENTITY_LIMIT : @attention;
+    for my $entity (@attention[0 .. $shown - 1]) {
+        my $detail = $attention->{$entity};
+        my $current = $detail->{'current-cipher'} // 'unknown';
+        printf(
+            "  %s: current %s%s, pending %s\n",
+            $entity,
+            $current,
+            $current ne 'aes256k' && $current ne 'unknown' ? ' (old)' : '',
+            $detail->{'pending-cipher'}
+                // ($entities->{'pending-keys-known'} ? 'none' : 'unknown'),
+        );
+    }
+    printf("  ... %d more identities needing attention; see the full JSON inventory below\n",
+        @attention - $shown)
+        if @attention > $shown;
 
-    my $daemons = $data->{daemons} // {};
-    print "\nDaemon versions\n";
-    print "  unknown\n" if !scalar(keys %$daemons);
-    for my $type (qw(mon mgr osd mds)) {
-        for my $entry (($daemons->{$type} // [])->@*) {
-            my $supported = $entry->{'supports-aes256k'};
-            printf(
-                "  %s: %d on %s - %s\n",
-                $type,
-                $entry->{count},
-                $entry->{'version-short'} // $entry->{version},
-                !defined($supported) ? 'aes256k support unknown'
-                : $supported ? 'supports aes256k'
-                : 'no aes256k support, needs a restart onto a newer binary',
-            );
+    print "\nNext step\n";
+    for my $line (($data->{conclusion} // [])->@*) {
+        # Keep suggested commands intact so they can be copied without joining wrapped lines.
+        if ($line =~ m{^(?:/usr/share/pve-manager/migrations/|pveceph auth status$)}) {
+            print "  $line\n";
+        } else {
+            print_wrapped_bullet($line);
         }
     }
 
-    my $entities = $data->{entities} // {};
-    print "\nCephx entities by cipher\n";
+    print "\nListed current keys\n";
     printf(
         "  source: %s%s\n",
         $entities->{source} // 'unknown',
-        $entities->{complete} ? '' : ' (only entities on an old cipher are listed)',
+        $entities->{complete} ? '' : ' (partial inventory)',
     );
     for my $class (qw(service client)) {
         my $by_cipher = $entities->{$class} // {};
-        if (!scalar(keys %$by_cipher)) {
-            printf("  %s: none\n", $class);
-            next;
-        }
-        for my $cipher (sort keys %$by_cipher) {
-            my $list = $by_cipher->{$cipher};
-            my ($shown, $extra) = ($list, 0);
-            if (scalar(@$list) > $AUTH_STATUS_ENTITY_LIMIT) {
-                $shown = [$list->@[0 .. $AUTH_STATUS_ENTITY_LIMIT - 1]];
-                $extra = scalar(@$list) - $AUTH_STATUS_ENTITY_LIMIT;
-            }
-            my @values = @$shown;
-            push @values, "... $extra more" if $extra;
-            print_wrapped_values("$class on $cipher (" . scalar(@$list) . ")", \@values);
-        }
+        my @counts = map { scalar($by_cipher->{$_}->@*) . " $_" } sort keys %$by_cipher;
+        push @counts, $entities->{complete} ? 'none' : 'unknown, none named' if !@counts;
+        print_wrapped_values($class, \@counts);
     }
-    print "\nPending key ciphers\n";
-    print "  'ceph auth ls' omits pending keys; this section includes them when available\n";
-    if (!$entities->{'pending-keys-known'}) {
-        print "  unavailable because 'auth dump-keys' could not be read\n";
-    } elsif (!$entities->{'pending-keys'}) {
-        print "  none\n";
-    } else {
-        my @pending = grep {
-            defined(($entities->{details}->{$_} // {})->{'pending-cipher'})
-        } sort keys %{ $entities->{details} // {} };
-        my $shown = @pending > $AUTH_STATUS_ENTITY_LIMIT ? $AUTH_STATUS_ENTITY_LIMIT : @pending;
-        for my $entity (@pending[0 .. $shown - 1]) {
-            my $detail = $entities->{details}->{$entity};
-            printf(
-                "  %s: current %s, pending %s\n",
-                $entity,
-                $detail->{'current-cipher'} // 'unknown',
-                $detail->{'pending-cipher'},
-            );
-        }
-        printf("  ... %d more, use '--output-format json' for the full list\n", @pending - $shown)
-            if @pending > $shown;
-    }
-
-    my $nodes = $data->{nodes} // {};
-    print "\nNode kernels (kernel Ceph clients need 7.0 or newer)\n";
-    for my $node (sort keys %$nodes) {
-        my $supported = $nodes->{$node}->{'supports-aes256k'};
-        printf(
-            "  %s: %s (%s) - %s\n",
-            $node,
-            $nodes->{$node}->{kernel} // 'unknown',
-            $nodes->{$node}->{source} // 'no ceph daemon on this node',
-            !defined($supported) ? 'unknown'
-            : $supported ? 'ok'
-            : 'too old for aes256k client keys',
-        );
-    }
+    printf("  pending keys: %s\n",
+        $entities->{'pending-keys-known'} ? ($entities->{'pending-keys'} // 0) : 'unknown');
+    print "  Full key inventories:\n  pveceph auth status --output-format json-pretty\n";
 
     my $checks = $data->{checks} // {};
     print "\nCephx health checks\n";
-    print "  none active\n" if !scalar(keys %$checks);
-    my $blocking = 0;
+    print "  unknown: health checks could not be read\n" if !$data->{'checks-known'};
+    print "  none active\n" if $data->{'checks-known'} && !scalar(keys %$checks);
     for my $name (sort keys %$checks) {
         my $check = $checks->{$name};
-        $blocking++ if grep { $_ } values %{ $check->{'blocks-restart'} // {} };
         printf(
             "  [%-4s] %s: %s%s\n",
             ($check->{severity} // 'unknown') =~ s/^HEALTH_//r,
@@ -585,9 +548,78 @@ sub format_auth_status {
             $check->{muted} ? ' (muted)' : '',
         );
     }
-    print "  none of these block a rolling restart of the Ceph services\n"
-        if scalar(keys %$checks) && !$blocking;
 
+    my $monmap = $data->{monmap} // {};
+    print "\nCipher settings (mon dump)\n";
+    my $settings = {
+        auth_service_cipher => 'service tickets',
+        auth_preferred_cipher => 'default for new keys',
+        auth_allowed_ciphers => 'permitted for authentication',
+    };
+    for my $key (qw(auth_service_cipher auth_allowed_ciphers auth_preferred_cipher)) {
+        my $value = $monmap->{$key} // 'unknown';
+        printf("  %s: %s (%s)\n",
+            $key,
+            ref($value) eq 'ARRAY' ? join(', ', @$value) : $value,
+            $settings->{$key});
+    }
+    if ($checks->{AUTH_INSECURE_KEYS_CREATABLE}) {
+        print "  The default for new keys does not restrict which key types may be created.\n";
+    }
+
+    my $quorum = $data->{quorum} // {};
+    my $members = $quorum->{members} // [];
+    print "\nMonitor quorum\n";
+    print_wrapped_values('members', scalar(@$members) ? $members : ['unknown']);
+    my $quorum_capable = $quorum->{'supports-aes256k'};
+    printf(
+        "  aes256k capable: %s (from %s)\n",
+        defined($quorum_capable) ? ($quorum_capable ? 'yes' : 'no') : 'unknown',
+        $quorum->{'feature-source'} // 'unknown',
+    );
+
+    my $daemons = $data->{daemons} // {};
+    my $versions = {};
+    for my $type (qw(mon mgr osd mds)) {
+        for my $entry (($daemons->{$type} // [])->@*) {
+            my $supported = $entry->{'supports-aes256k'};
+            my $version = $entry->{'version-short'} // $entry->{version};
+            my $label = "$version - "
+                . (
+                    !defined($supported) ? 'aes256k support unknown'
+                    : $supported ? 'supports aes256k'
+                    : 'too old, upgrade/restart required'
+                );
+            push $versions->{$label}->@*, "$entry->{count} $type";
+        }
+    }
+    print "\nReported daemon versions\n";
+    print "  unknown\n" if !scalar(keys %$versions);
+    print_wrapped_values($_, $versions->{$_}) for sort keys %$versions;
+
+    my $nodes = $data->{nodes} // {};
+    print "\nReported node kernels (kernel RBD/CephFS clients need 7.0 or newer)\n";
+    print "  unknown\n" if !scalar(keys %$nodes);
+    for my $node (sort keys %$nodes) {
+        my $supported = $nodes->{$node}->{'supports-aes256k'};
+        my $source = $nodes->{$node}->{source} // 'no kernel report';
+        $source = 'at Ceph daemon start' if $source eq 'ceph daemon metadata';
+        printf(
+            "  %s: %s (%s)%s\n",
+            $node,
+            $nodes->{$node}->{kernel} // 'unknown',
+            $source,
+            !defined($supported) ? ' - compatibility unknown'
+            : $supported ? ''
+            : ' - too old for aes256k kernel clients',
+        );
+    }
+    if (!scalar(keys %$nodes) || grep { !$_->{'supports-aes256k'} } values %$nodes) {
+        print "  Verify uname -r on affected nodes before rotating kernel-client keys.\n";
+        print "  This does not block userspace-only keys.\n";
+    }
+    print
+        "\nConsumer refresh, including disconnected consumers and external copies, is not verified here.\n";
 }
 
 __PACKAGE__->register_method({
@@ -627,7 +659,7 @@ __PACKAGE__->register_method({
             monmap => {
                 type => 'object',
                 description => "The cipher settings from 'ceph mon dump', under their Ceph"
-                    . " names. Empty on a release that has none.",
+                    . " names. Empty if unavailable or absent on this release.",
                 additionalProperties => 1,
             },
             daemons => {
@@ -649,9 +681,13 @@ __PACKAGE__->register_method({
             },
             nodes => {
                 type => 'object',
-                description => "Running kernel release per node, as kernel Ceph clients only"
-                    . " support aes256k from kernel 7.0 on.",
+                description => "Kernel release per node from local uname or remote Ceph daemon"
+                    . " metadata recorded at daemon start. Kernel Ceph clients need kernel 7.0 for aes256k.",
                 additionalProperties => 1,
+            },
+            'checks-known' => {
+                type => 'boolean',
+                description => "Whether the Ceph health checks could be read.",
             },
             checks => {
                 type => 'object',

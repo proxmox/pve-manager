@@ -6,7 +6,8 @@ use warnings;
 use lib ('.', '..');
 
 use Test::More;
-use JSON qw(encode_json);
+use JSON qw(encode_json decode_json);
+use Storable qw(dclone);
 use PVE::Ceph::Services;
 use PVE::CLI::pveceph;
 
@@ -38,8 +39,6 @@ for my $test (@$versions) {
     is(PVE::Ceph::Services::ceph_version_supports_aes256k($version), $expected, $name);
 }
 
-# Only kernel 7.0 and later speak aes256k, and this decides whether client keys may migrate
-# at all, so a wrong answer here costs a node its RBD and CephFS access.
 my $kernels = [
     ['7.0.14-2-pve', 1, 'the first kernel with support, as uname reports it'],
     ['6.14.11-1-pve', 0, 'a 6.14 kernel, which must not compare as newer than 7.0'],
@@ -54,297 +53,546 @@ for my $test (@$kernels) {
     is(PVE::Ceph::Services::kernel_supports_aes256k($release), $expected, $name);
 }
 
-# The verdicts are what an operator acts on, so pin the branch matrix and not just the
-# lookup tables. Two false all-clear bugs came out of these branches: an unreadable key list
-# reading as "nothing left", and an unreadable quorum reading as "not supported yet".
-my $base = {
-    monmap => { auth_service_cipher => 'aes' },
-    daemons => { mon => [{ 'supports-aes256k' => 1 }] },
-    'daemons-without-aes256k' => [],
-    quorum => { 'supports-aes256k' => 1 },
-    entities => { service => {}, client => {}, complete => 1 },
-    nodes => {},
-};
-my $verdicts = sub { PVE::Ceph::Services::cephx_migration_verdicts({ $base->%*, @_ }) };
-
-is_deeply(
-    [grep { /predates the aes256k cipher/ } $verdicts->(monmap => {})->@*],
-    [
-        "The monitors report no cipher settings, so either this cluster's Ceph release predates"
-            . " the aes256k cipher or 'mon dump' did not answer. Nothing about the key migration"
-            . " can be judged before that is resolved."
-    ],
-    'a release without cipher settings yields one cannot-judge verdict',
-);
-
-# an unreadable key list must not read as "nothing is left"
-my $incomplete = $verdicts->(entities => { service => {}, client => {}, complete => 0 });
-is(scalar(grep { /No service key left/ } @$incomplete), 0, 'no false all-clear for service keys');
-is(scalar(grep { /No client key left/ } @$incomplete), 0, 'no false all-clear for client keys');
-is(
-    scalar(grep { /Cannot tell which service keys/ } @$incomplete),
-    1,
-    'says the service list is unknown',
-);
-
-# an unreadable quorum must not claim the monitors need a restart, nor that keys can move
-my $noquorum = $verdicts->(
-    quorum => { 'feature-source' => 'unknown, could not read the quorum features' },
-    entities => { service => { aes => ['osd.0'] }, client => {}, complete => 1 },
-);
-is(scalar(grep { /restart the monitors/ } @$noquorum), 0, 'no restart advice on an unknown quorum');
-is(
-    scalar(grep { /can be migrated now/ } @$noquorum),
-    0,
-    'no migrate-now advice on an unknown quorum',
-);
-is(scalar(grep { /quorum features could not be/ } @$noquorum), 1, 'says the quorum is unknown');
-
-my $ok = $verdicts->(entities => { service => {}, client => {}, complete => 1 });
-is(
-    scalar(grep { /Every reported Ceph daemon version supports aes256k/ } @$ok),
-    1,
-    'the verdict states the reported cipher capability, not staged-key readiness',
-);
-
-# The verdict tests above build their input directly, so they cannot catch a bug in the
-# collector. Drive the collector itself with a fake RADOS: a failed 'quorum_status' has to
-# leave the feature unknown. Reporting it as unsupported would turn a quorum that cannot be
-# read into a confident "restart the monitors".
 {
 
     package FakeRados;
 
     sub new {
-        my ($class, %fail) = @_;
-        return bless { fail => \%fail }, $class;
+        my ($class, $replies, $fail) = @_;
+        return bless { replies => $replies, fail => $fail // {}, commands => [] }, $class;
     }
 
     sub mon_command {
         my ($self, $cmd) = @_;
         my $prefix = $cmd->{prefix};
+        push $self->{commands}->@*, $prefix;
         die "$prefix unavailable\n" if $self->{fail}->{$prefix};
-        return { checks => {} } if $prefix eq 'health';
-        return {
-            epoch => 9,
-            auth_service_cipher => { name => 'aes' },
-            auth_preferred_cipher => { name => 'aes' },
-            auth_allowed_ciphers => [{ name => 'aes' }, { name => 'aes256k' }],
-            }
-            if $prefix eq 'mon dump';
-        return { mon => { 'ceph version 19.2.6 (0) squid (stable)' => 3 } }
-            if $prefix eq 'versions';
-        return { quorum_names => ['a'], features => { quorum_mon => ['cephx_auth_aes256k'] } }
-            if $prefix eq 'quorum_status';
-        return $self->{dump} // { data => { secrets => [] } } if $prefix eq 'auth dump-keys';
-        return [] if $prefix =~ m/metadata$/;
-        return {};
+        die "unexpected command $prefix\n" if !exists($self->{replies}->{$prefix});
+        return $self->{replies}->{$prefix};
     }
 
     sub mon_cmd { my $self = shift; return $self->mon_command(@_); }
 }
 
-my $status = PVE::Ceph::Services::get_cephx_auth_status(FakeRados->new());
-is($status->{quorum}->{'supports-aes256k'}, 1, 'a readable quorum reports the feature');
-
-my $blind = PVE::Ceph::Services::get_cephx_auth_status(FakeRados->new('quorum_status' => 1));
-ok(
-    !exists $blind->{quorum}->{'supports-aes256k'},
-    'an unreadable quorum leaves the feature absent rather than reporting it unsupported',
-);
-is(
-    scalar(grep { m/restart the monitors/ } $blind->{conclusion}->@*),
-    0,
-    'an unreadable quorum does not advise restarting the monitors',
-);
-
-my $nokeys = PVE::Ceph::Services::get_cephx_auth_status(FakeRados->new('auth dump-keys' => 1));
-is($nokeys->{entities}->{complete}, 0, 'an unreadable key list is marked incomplete');
-ok(!$nokeys->{entities}->{'pending-keys-known'}, 'the pending-key inventory is also unknown');
-is(
-    scalar(grep { m/No service key left/ } $nokeys->{conclusion}->@*),
-    0,
-    'an unreadable key list does not read as an all-clear',
-);
-
 my $secret = 'AQ-this-must-not-be-displayed';
-my $with_pending = PVE::Ceph::Services::get_cephx_auth_status(bless(
-    {
-        fail => {},
-        dump => {
-            data => {
-                secrets => [
-                    {
-                        entity => { type_str => 'client', id => 'store' },
-                        auth => {
-                            key => { type_str => 'aes', secret => $secret },
-                            pending_key => { type_str => 'aes256k', secret => $secret },
-                        },
-                    },
-                    {
-                        entity => { type_str => 'osd', id => '0' },
-                        auth => { key => { type_str => 'aes256k', secret => $secret } },
-                    },
-                ],
-            },
+my $key = sub {
+    my ($entity, $current, $pending) = @_;
+    my ($type, $id) = split(/\./, $entity, 2);
+    return {
+        entity => { type_str => $type, id => $id },
+        auth => {
+            key => { defined($current) ? (type_str => $current) : (), secret => $secret },
+            defined($pending)
+            ? (pending_key => { type_str => $pending, secret => $secret })
+            : (),
         },
+    };
+};
+my $base = {
+    health => { checks => {} },
+    'mon dump' => {
+        auth_service_cipher => { name => 'aes256k' },
+        auth_preferred_cipher => { name => 'aes256k' },
+        auth_allowed_ciphers => [{ name => 'aes256k' }],
     },
-    'FakeRados',
-));
+    versions => {
+        map {
+            $_ => { 'ceph version 20.2.4 (0000) tentacle (stable)' => ($_ eq 'osd' ? 18 : 3) }
+        } qw(mon mgr osd mds)
+    },
+    quorum_status => {
+        quorum_names => [qw(mits6 mits7 mits8)],
+        features => { quorum_mon => ['cephx_auth_aes256k'] },
+    },
+    'auth dump-keys' => {
+        data => { secrets => [$key->('client.admin', 'aes256k'), $key->('osd.0', 'aes256k')] },
+    },
+    'mon metadata' =>
+        [map { { hostname => $_, kernel_version => '7.0.14-16-pve' } } qw(mits6 mits7 mits8)],
+    map { ("$_ metadata" => []) } qw(mgr mds osd),
+};
+my $collect = sub {
+    my ($replies, $fail) = @_;
+    my $rados = FakeRados->new($replies // dclone($base), $fail);
+    no warnings 'redefine';
+    local *PVE::Cluster::get_nodelist = sub { [qw(mits6 mits7 mits8)] };
+    local *PVE::INotify::nodename = sub { 'mits8' };
+    local *POSIX::uname = sub { ('Linux', 'mits8', '7.0.14-16-pve') };
+    my $status = PVE::Ceph::Services::get_cephx_auth_status($rados);
+    unlike(encode_json($status), qr/\Q$secret\E/, 'collector retains no key material');
+    is_deeply(
+        [sort $rados->{commands}->@*],
+        [sort keys %$base],
+        'collector uses only the existing read-only commands, with no workload inventory',
+    );
+    return $status;
+};
+my $render = sub {
+    my ($data, $format) = @_;
+    my $out = '';
+    open(my $stdout, '>', \$out) or die $!;
+    local *STDOUT = $stdout;
+    PVE::CLI::pveceph::format_auth_status($data, {}, { 'output-format' => $format // 'text' });
+    return $out;
+};
+my $conclusions = sub { join("\n", $_[0]->{conclusion}->@*) };
+my $helper = '/usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys';
+
+my $current = $collect->();
+my $current_text = $render->($current);
+like(
+    $current_text,
+    qr/All listed current keys use aes256k; no pending keys reported\./,
+    'current keys receive a scoped all-current statement',
+);
+unlike($current_text, qr/client\.admin|osd\.0/, 'healthy identity names do not crowd the output');
+like($current_text, qr/service: 1 aes256k\n  client: 1 aes256k/,
+    'healthy groups have exact counts');
+like($current_text, qr/not guests, mounts, or sessions/, 'counts are not workload counts');
+like($current_text, qr/none active/, 'a successful empty health read says none active');
+unlike(
+    $current_text,
+    qr/--rotate-|--restrict|migration complete|consumers (?:are )?refreshed/,
+    'current keys do not imply further rotations, restriction safety, or refreshed consumers',
+);
+like($current_text, qr/^  \Q$helper\E$/m, 'the all-current helper readiness command is standalone');
+like(
+    $current_text,
+    qr/20\.2\.4 - supports aes256k: 3 mon, 3 mgr, 18 osd, 3 mds/,
+    'identical daemon versions keep per-role counts without repeated support claims',
+);
+like($current_text, qr/members: mits6, mits7, mits8/, 'quorum members remain visible');
+like(
+    $current_text,
+    qr/mits6: 7\.0\.14-16-pve \(at Ceph daemon start\)/,
+    'remote kernel evidence keeps its version and provenance',
+);
+like($current_text, qr/mits8: 7\.0\.14-16-pve \(uname\)/, 'local uname overrides metadata');
+is(
+    $current->{nodes}->{mits6}->{source},
+    'ceph daemon metadata',
+    'JSON retains the original kernel source label',
+);
+unlike(
+    $current_text,
+    qr/Keys needing attention/,
+    'a complete healthy inventory needs no empty exception section',
+);
+
+# A staged admin key can coexist with genuine ALLOWED and CREATABLE warnings.
+my $admin_replies = dclone($base);
+$admin_replies->{'mon dump'}->{auth_allowed_ciphers} = [{ name => 'aes' }, { name => 'aes256k' }];
+$admin_replies->{'auth dump-keys'}->{data}->{secrets} = [
+    $key->('client.admin', 'aes', 'aes256k'),
+    (map { $key->("osd.$_", 'aes256k') } 0 .. 24),
+    (
+        map {
+            $key->(
+                sprintf('client.osd-lockbox.%08x-4a86-4fa4-b0b7-ad193ece2f24', $_),
+                'aes256k',
+            )
+        } 1 .. 25
+    ),
+];
+my $health_messages = {
+    AUTH_INSECURE_CLIENT_KEY_TYPE => '1 auth client entities with insecure key types',
+    AUTH_INSECURE_KEYS_ALLOWED =>
+        'Monitors are configured to allow auth using insecure key types',
+    AUTH_INSECURE_KEYS_CREATABLE =>
+        'Monitors are configured to allow creation of insecure key types',
+};
+$admin_replies->{health}->{checks} = {
+    map {
+        $_ => { severity => 'HEALTH_WARN', summary => { message => $health_messages->{$_} } }
+        }
+        keys %$health_messages
+};
+my $admin = $collect->($admin_replies);
+my $admin_text = $render->($admin);
+is($admin->{entities}->{'pending-keys'}, 1, 'collector counts pending keys');
+ok($admin->{entities}->{'pending-keys-known'}, 'collector knows the complete pending inventory');
 is_deeply(
-    $with_pending->{entities}->{details}->{'client.store'},
+    $admin->{entities}->{details}->{'client.admin'},
     { class => 'client', 'current-cipher' => 'aes', 'pending-cipher' => 'aes256k' },
-    'the safe entity detail names both current and pending ciphers',
+    'collector keeps safe current/pending details',
 );
-ok($with_pending->{entities}->{'pending-keys-known'}, 'the pending-key inventory is known');
-is($with_pending->{entities}->{'pending-keys'}, 1, 'the pending-key count remains compatible');
-unlike(encode_json($with_pending), qr/\Q$secret\E/, 'the status response retains no key material');
 like(
-    join("\n", $with_pending->{conclusion}->@*),
-    qr/pending key.*workflow that staged it is known/s,
-    'pending-key advice does not assume that the migration helper owns it',
+    $admin_text,
+    qr/Keys needing attention \(1 listed identity\).*client\.admin: current aes \(old\), pending aes256k/s,
+    'the pending admin exception leads the report',
 );
+is(scalar(() = $admin_text =~ /client\.admin/g), 1, 'admin appears only once');
+like(
+    $admin_text,
+    qr/service: 25 aes256k\n  client: 1 aes, 25 aes256k/,
+    'long healthy inventories are exact counts',
+);
+unlike($admin_text, qr/client\.osd-lockbox\./, 'healthy UUIDs are absent from text');
 
-my $old_kernel = $verdicts->(
-    entities => { service => {}, client => { aes => ['client.bootstrap-osd'] }, complete => 1 },
-    nodes => {
-        due => {
-            kernel => '6.14.11-1-pve',
-            source => 'ceph daemon metadata',
-            'supports-aes256k' => 0,
-        },
-    },
-);
-my $old_kernel_text = join("\n", @$old_kernel);
-like(
-    $old_kernel_text,
-    qr/Kernel compatibility constrains only keys read by kernel RBD or CephFS clients/,
-    'an old kernel does not block every client key',
-);
-like(
-    $old_kernel_text,
-    qr/metadata can be stale.*Verify 'uname -r'/s,
-    'remote daemon metadata carries its freshness caveat',
-);
-unlike($old_kernel_text, qr/Client keys have to stay/, 'the old categorical verdict is gone');
-
-my $current_kernel = $verdicts->(
-    entities => { service => {}, client => { aes => ['client.admin'] }, complete => 1 },
-    nodes => {
-        due => {
-            kernel => '7.0.14-2-pve',
-            source => 'ceph daemon metadata',
-            'supports-aes256k' => 1,
-        },
-    },
-);
-my $current_kernel_text = join("\n", @$current_kernel);
-unlike(
-    $current_kernel_text,
-    qr/metadata can be stale/,
-    'supported metadata avoids a routine caveat',
-);
-like(
-    $current_kernel_text,
-    qr/pve-cephx-rotate-service-keys --rotate-all-storage-keys --rotate-admin-key/,
-    'status prints the concrete documented client-key preview',
-);
-unlike(
-    $current_kernel_text,
-    qr/appropriate option/,
-    'status does not send readers to infer an option',
-);
-
-my $first_step = $verdicts->(
-    entities => { service => { aes => ['osd.0'] }, client => {}, complete => 1 },
-);
-like(
-    join("\n", @$first_step),
-    qr{/pve-cephx-rotate-service-keys --rotate-cluster-keys},
-    'the first migration preview selects all cluster-owned keys',
-);
-unlike(join("\n", @$first_step), qr/then again with '--apply'/, 'it does not suggest bare apply');
-
-my @users = map { sprintf('client.storage%02d', $_) } 1 .. 50;
-my $formatted = '';
-{
-    open(my $stdout, '>', \$formatted) or die $!;
-    local *STDOUT = $stdout;
-    PVE::CLI::pveceph::format_auth_status(
-        {
-            conclusion => ["50 client keys still need migration. Preview the selected action."],
-            quorum => {},
-            monmap => {},
-            daemons => {},
-            entities => {
-                source => 'auth dump-keys',
-                complete => 1,
-                client => { aes => \@users },
-                service => {},
-                details => {
-                    map {
-                        $_ => {
-                            class => 'client',
-                            'current-cipher' => 'aes',
-                            (
-                                $_ eq 'client.storage01'
-                                ? ('pending-cipher' => 'aes256k')
-                                : ()
-                            ),
-                        }
-                    } @users
-                },
-                'pending-keys-known' => 1,
-                'pending-keys' => 1,
-            },
-            nodes => {},
-            checks => {},
-        },
-        {},
-        { 'output-format' => 'text' },
+for my $name (sort keys %$health_messages) {
+    like(
+        $admin_text,
+        qr/\Q$name: $health_messages->{$name}\E/,
+        "raw $name health evidence remains visible",
+    );
+    is_deeply(
+        $admin->{checks}->{$name}->{'blocks-restart'},
+        { map { $_ => 0 } qw(mon mgr osd mds) },
+        'JSON restart annotations are unchanged',
     );
 }
 like(
-    $formatted,
-    qr/^Cephx key cipher status\n\nCurrent state and next step\n/s,
-    'the text formatter leads with conclusions and actions',
+    $admin_text,
+    qr/auth_preferred_cipher: aes256k \(default for new keys\)/,
+    'preferred cipher is labeled as a default',
 );
 like(
-    $formatted,
-    qr/Pending key ciphers\n  'ceph auth ls' omits pending keys;/,
-    'the text formatter explains why auth status has a separate pending-key inventory',
+    $admin_text,
+    qr/The default for new keys does not restrict which key types may be created/,
+    'CREATABLE is not inferred from the preferred cipher',
+);
+unlike(
+    $admin_text,
+    qr/stale|recomputed|rolling restart/,
+    'no stale-warning claim or restart reassurance',
 );
 like(
-    $formatted,
-    qr/client\.storage01: current aes, pending aes256k/,
-    'the text formatter names the cipher identity of a pending key',
+    $admin_text,
+    qr/Continue the migration or rollback that staged it/,
+    'status does not infer the staging owner or direction',
 );
 like(
-    $formatted,
-    qr/client on aes \(50\):.*\.\.\. 26 more/s,
-    'a 50-user current-cipher inventory is bounded but keeps its exact count',
+    $admin_text,
+    qr/^  \Q$helper\E$/m,
+    'pending admin gets the bare helper command on its own line',
 );
-cmp_ok(
-    (sort { $b <=> $a } map { length($_) } split(/\n/, $formatted))[0],
-    '<=',
-    100,
-    'the synthetic 50-user text output stays within 100 columns',
+unlike(
+    $admin_text,
+    qr/--rotate-|--confirm|--abort|--restrict|auth (?:commit|clear)/,
+    'pending admin gets no new rotation, promotion, rollback, or retirement command',
 );
 
-my $fallback_output = '';
-{
-    open(my $stdout, '>', \$fallback_output) or die $!;
-    local *STDOUT = $stdout;
-    PVE::CLI::pveceph::format_auth_status(
-        { %$nokeys, conclusion => [] },
-        {},
-        { 'output-format' => 'text' },
+my $json = $render->($admin, 'json');
+is_deeply(
+    decode_json($json),
+    $admin,
+    'JSON formatting preserves every collected field and full inventory',
+);
+is(
+    scalar(decode_json($json)->{entities}->{client}->{aes256k}->@*),
+    25,
+    'healthy UUID inventory remains complete in JSON',
+);
+unlike($admin_text . $json, qr/\Q$secret\E/, 'neither text nor JSON exposes key material');
+
+# A pending daemon or unrelated client is not necessarily helper-owned, and the cipher pair
+# cannot distinguish forward staging from rollback. Any pending key suppresses new selections.
+for my $case (
+    [
+        'mixed clients',
+        [$key->('client.admin', 'aes', 'aes256k'), $key->('client.store', 'aes')],
+    ],
+    ['pending daemon', [$key->('osd.0', 'aes256k', 'aes')]],
+    ['unknown owner', [$key->('client.external', 'aes', 'aes256k')]],
+) {
+    my ($name, $keys) = @$case;
+    my $replies = dclone($base);
+    $replies->{'auth dump-keys'}->{data}->{secrets} = $keys;
+    my $status = $collect->($replies);
+    my $text = $render->($status);
+    like($text, qr/^  \Q$helper\E$/m, "$name uses the bare helper conditionally");
+    like($text, qr/For a helper-managed migration/, "$name does not presume helper ownership");
+    unlike(
+        $text,
+        qr/--rotate-|--confirm|--abort|--restrict/,
+        "$name does not suggest a new selection",
+    );
+    like(
+        $text,
+        qr/client\.store: current aes \(old\), pending none/,
+        'unrotated client stays visible beside pending admin',
+    ) if $name eq 'mixed clients';
+}
+
+for my $case (
+    ['old service tickets', [], 'aes', '--rotate-cluster-keys'],
+    ['old service key', [$key->('osd.1', 'aes')], 'aes256k', '--rotate-cluster-keys'],
+    [
+        'old client key',
+        [$key->('client.admin', 'aes')],
+        'aes256k',
+        '--rotate-all-storage-keys --rotate-admin-key',
+    ],
+) {
+    my ($name, $keys, $tickets, $selection) = @$case;
+    my $replies = dclone($base);
+    $replies->{'auth dump-keys'}->{data}->{secrets} =
+        [$key->('client.healthy', 'aes256k'), $key->('osd.0', 'aes256k'), @$keys];
+    $replies->{'mon dump'}->{auth_service_cipher} = { name => $tickets };
+    my $status = $collect->($replies);
+    my $text = $render->($status);
+    like($text, qr/^  \Q$helper $selection\E$/m, "$name gets an intact, relevant preview command");
+    like(
+        $text,
+        qr/Service tickets still use aes, independently of the identity keys/,
+        'old tickets are actionable even with all keys current',
+    ) if $tickets eq 'aes';
+}
+
+my $kernel_replies = dclone($base);
+$kernel_replies->{'mon metadata'} = [
+    { hostname => 'mits6', kernel_version => '6.14.11-1-pve' },
+    { hostname => 'mits7', kernel_version => 'unparseable' },
+];
+my $kernel_status = $collect->($kernel_replies);
+my $kernel_text = $render->($kernel_status);
+is(
+    $kernel_status->{nodes}->{mits6}->{'supports-aes256k'},
+    0,
+    'collector recognizes old metadata kernel',
+);
+ok(
+    !exists($kernel_status->{nodes}->{mits7}->{'supports-aes256k'}),
+    'unparseable kernel support stays unknown',
+);
+like(
+    $kernel_text,
+    qr/mits6: 6\.14\.11-1-pve .*too old for aes256k kernel clients/,
+    'old kernels remain concrete problems',
+);
+like(
+    $kernel_text,
+    qr/mits7: unparseable .*compatibility unknown/,
+    'unknown kernel is not called old',
+);
+like(
+    $kernel_text,
+    qr/Verify uname -r on affected nodes.*does not block userspace-only keys/s,
+    'kernel guidance has an explicit command and the correct client scope',
+);
+
+my $unknown_replies = dclone($base);
+$unknown_replies->{'auth dump-keys'}->{data}->{secrets} = [$key->('client.unknown', undef)];
+my $unknown = $collect->($unknown_replies);
+like(
+    $conclusions->($unknown),
+    qr/1 listed current key has an unknown cipher, not a known old cipher/,
+    'unknown cipher is not counted as old',
+);
+unlike(
+    $conclusions->($unknown),
+    qr/All listed|--rotate-/,
+    'unknown keys prevent an all-current verdict or selection',
+);
+like(
+    $render->($unknown),
+    qr/client\.unknown: current unknown, pending none/,
+    'unknown identity is named',
+);
+$unknown_replies->{'auth dump-keys'}->{data}->{secrets}->[0]->{auth}->{pending_key} =
+    { secret => $secret };
+my $unknown_pending = $collect->($unknown_replies);
+is(
+    $unknown_pending->{entities}->{'pending-keys'},
+    1,
+    'an unrecognized pending cipher is not absence',
+);
+like(
+    $render->($unknown_pending),
+    qr/current unknown, pending unknown/,
+    'unknown pending cipher remains visible',
+);
+like(
+    $conclusions->($unknown_pending),
+    qr/^\Q$helper\E$/m,
+    'unknown pending cipher also routes to staging',
+);
+
+for my $prefix ('health', 'auth dump-keys', 'quorum_status', 'mon dump', 'versions') {
+    my $status = $collect->(dclone($base), { $prefix => 1 });
+    my $text = $render->($status);
+    if ($prefix eq 'health') {
+        is($status->{'checks-known'}, 0, 'failed health read is explicit');
+        like($text, qr/health checks could not be read/, 'failed health read renders unknown');
+        unlike($text, qr/none active/, 'failed health read never renders none active');
+    } elsif ($prefix eq 'auth dump-keys') {
+        is($status->{entities}->{complete}, 0, 'failed key read marks inventory incomplete');
+        ok(!$status->{entities}->{'pending-keys-known'},
+            'failed key read cannot know pending keys');
+        like(
+            $text,
+            qr/service: unknown, none named\n  client: unknown, none named/,
+            'empty partial inventories are not none',
+        );
+        unlike(
+            $text,
+            qr/All listed|--rotate-/,
+            'partial inventory does not select another rotation',
+        );
+    } elsif ($prefix eq 'quorum_status') {
+        ok(
+            !exists($status->{quorum}->{'supports-aes256k'}),
+            'failed quorum read is not unsupported',
+        );
+        like($text, qr/Monitor quorum features could not be read/, 'unknown quorum is explicit');
+        unlike(
+            $text,
+            qr/restart monitors|--rotate-/,
+            'unknown quorum gets no restart or rotation advice',
+        );
+    } elsif ($prefix eq 'mon dump') {
+        like(
+            $text,
+            qr/unavailable or lacks cipher settings/,
+            'missing monmap is not proof of an old release',
+        );
+        like($text, qr/auth_service_cipher: unknown/, 'missing settings are individually unknown');
+    } else {
+        like($text, qr/Daemon versions are unavailable/, 'unknown daemon versions are explicit');
+    }
+}
+
+my $partial_replies = dclone($base);
+$partial_replies->{health}->{checks}->{AUTH_INSECURE_CLIENT_KEY_TYPE} = {
+    severity => 'HEALTH_WARN',
+    summary => { message => $health_messages->{AUTH_INSECURE_CLIENT_KEY_TYPE} },
+    detail => [{ message => 'entity client.admin using insecure key type: aes' }],
+};
+my $partial = $collect->($partial_replies, { 'auth dump-keys' => 1, quorum_status => 1 });
+my $partial_text = $render->($partial);
+like(
+    $partial_text,
+    qr/client\.admin: current aes \(old\), pending unknown/,
+    'health fallback preserves known old key and unknown pending state',
+);
+like(
+    $partial_text,
+    qr/source: health check detail \(partial inventory\)/,
+    'fallback provenance is explicit',
+);
+like(
+    $partial_text,
+    qr/Pending keys are unknown/,
+    'fallback does not mistake auth health details for staged keys',
+);
+like($partial_text, qr/^  pveceph auth status$/m, 'partial read gets a standalone recheck command');
+my $unreadable =
+    $collect->(dclone($base), { health => 1, 'auth dump-keys' => 1, quorum_status => 1 });
+unlike(
+    $render->($unreadable),
+    qr/none active|none reported|All listed|--rotate-/,
+    'simultaneous failed reads cannot produce an all-clear',
+);
+my $malformed = dclone($base);
+$malformed->{health} = {};
+$malformed->{'auth dump-keys'}->{data}->{secrets} =
+    [{ entity => {} }, $key->('client.admin', 'aes', 'aes256k')];
+my $malformed_status = $collect->($malformed);
+ok(!$malformed_status->{'checks-known'}, 'missing checks object is not a successful health read');
+ok(
+    !$malformed_status->{entities}->{complete},
+    'skipped malformed identity makes inventory incomplete',
+);
+like(
+    $conclusions->($malformed_status),
+    qr/^\Q$helper\E$/m,
+    'observed pending key wins even in an incomplete inventory',
+);
+
+for my $version ('19.2.5', 'unparseable') {
+    my $replies = dclone($base);
+    $replies->{versions}->{osd} = { $version => 18 };
+    my $status = $collect->($replies);
+    my $text = $render->($status);
+    like(
+        $text,
+        qr/\Q$version\E - .*: 18 osd/,
+        'problematic daemon version and count remain concrete',
+    );
+    unlike($text, qr/--rotate-/, 'old or unknown daemon versions suppress rotation selection');
+    like($text, qr/aes256k support unknown/, 'unknown daemon version is not described as known old')
+        if $version eq 'unparseable';
+}
+my $no_feature = dclone($base);
+$no_feature->{quorum_status}->{features}->{quorum_mon} = [];
+my $unsupported = $collect->($no_feature);
+is($unsupported->{quorum}->{'supports-aes256k'}, 0, 'known missing quorum feature is unsupported');
+like(
+    $conclusions->($unsupported),
+    qr/upgrade\/restart monitors first/,
+    'known unsupported quorum gets prerequisite advice',
+);
+
+my $many = dclone($base);
+$many->{'auth dump-keys'}->{data}->{secrets} = [
+    map {
+        $key->(
+            sprintf('client.storage%02d', $_),
+            $_ == 2 ? undef : 'aes',
+            $_ == 50 ? 'aes256k' : undef,
+        )
+    } 1 .. 50
+];
+my $many_status = $collect->($many);
+my $many_text = $render->($many_status);
+like(
+    $many_text,
+    qr/Keys needing attention \(50 listed identities\)\n  client\.storage50:/,
+    'pending identity is prioritized even when it sorts after many old keys',
+);
+like(
+    $many_text,
+    qr/client\.storage02: current unknown, pending none/,
+    'unknown identity remains named among old keys',
+);
+like(
+    $many_text,
+    qr/client: 49 aes, 1 unknown/,
+    'large unresolved inventory keeps exact cipher counts',
+);
+is(scalar(() = $many_text =~ /^  client\.storage\d+: current/gm), 24, 'exception rows are bounded');
+like($many_text, qr/26 more identities needing attention/, 'truncation gives an exact remainder');
+like(
+    $many_text,
+    qr/^  pveceph auth status --output-format json-pretty$/m,
+    'the full-inventory command is complete and standalone',
+);
+is(
+    scalar(keys %{ decode_json($render->($many_status, 'json'))->{entities}->{details} }),
+    50,
+    'JSON preserves all unresolved identities',
+);
+
+for my $text ($admin_text, $current_text, $partial_text, $many_text) {
+    cmp_ok(
+        (
+            sort { $b <=> $a } map { length($_) }
+            grep { !m{^  (?:\[|/usr/share/pve-manager/migrations/)} } split(/\n/, $text)
+        )[0],
+        '<=',
+        100,
+        'routine text stays within 100 columns, excluding raw health evidence and commands',
     );
 }
-like(
-    $fallback_output,
-    qr/Pending key ciphers.*unavailable because 'auth dump-keys' could not be read/s,
-    'fallback text says that pending-cipher knowledge is unavailable',
-);
+
+my $schema = PVE::CLI::pveceph->map_method_by_name('auth_status')->{returns};
+ok($schema->{properties}->{'checks-known'}, 'CLI return schema declares the availability field');
+for my $status ($current, $admin, $partial, $unreadable, $unknown_pending) {
+    eval { PVE::JSONSchema::validate($status, $schema); };
+    is($@, '', 'collector response matches CLI schema');
+}
+
+# Optional rendered fixtures let reviewers inspect the same cases exercised by the tests.
+if (my $dir = $ENV{CEPH_AUTH_EXAMPLE_DIR}) {
+    for my $example (
+        ['pending-admin', $admin_text],
+        ['all-current', $current_text],
+        ['partial-read', $partial_text],
+    ) {
+        open(my $fh, '>', "$dir/$example->[0].txt") or die $!;
+        print {$fh} $example->[1];
+        close($fh) or die $!;
+    }
+}
 
 done_testing();

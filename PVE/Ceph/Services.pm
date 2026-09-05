@@ -873,7 +873,10 @@ my sub collect_entity_ciphers {
         my $pending = 0;
         for my $secret (@$secrets) {
             my ($type, $id) = ($secret->{entity} // {})->@{ 'type_str', 'id' };
-            next if !defined($type) || !defined($id);
+            if (!defined($type) || !defined($id)) {
+                $res->{complete} = 0;
+                next;
+            }
 
             my $auth = $secret->{auth} // {};
             my $cipher = cipher_name($auth->{key}) // 'unknown';
@@ -881,7 +884,10 @@ my sub collect_entity_ciphers {
             my $entity = "$type.$id";
             push $res->{$class}->{$cipher}->@*, $entity;
 
-            my $pending_cipher = cipher_name($auth->{pending_key}) // 'none';
+            my $pending_cipher =
+                defined($auth->{pending_key})
+                ? (cipher_name($auth->{pending_key}) // 'unknown')
+                : 'none';
             $res->{details}->{$entity} = {
                 class => $class,
                 'current-cipher' => $cipher,
@@ -891,7 +897,7 @@ my sub collect_entity_ciphers {
         }
         $res->{source} = 'auth dump-keys';
         $res->{'pending-keys'} = $pending;
-        $res->{'pending-keys-known'} = 1;
+        $res->{'pending-keys-known'} = $res->{complete};
     } else {
         for my $class (sort keys %$INSECURE_KEY_TYPE_CHECKS) {
             my $detail = ($checks->{ $INSECURE_KEY_TYPE_CHECKS->{$class} } // {})->{detail};
@@ -923,162 +929,97 @@ my sub count_old_cipher_entities {
 
     my $count = 0;
     for my $cipher (keys %$by_cipher) {
-        next if $cipher eq $AES256K_CIPHER;
+        next if $cipher eq $AES256K_CIPHER || $cipher eq 'unknown';
         $count += scalar($by_cipher->{$cipher}->@*);
     }
     return $count;
 }
 
-# Turns the collected facts into the three verdicts an operator acts on: is a rolling restart
-# still due, can the service keys move now, can the client keys move at all.
+# This view has no staging journal or consumer inventory. Pending keys take precedence over
+# rotation previews, regardless of who staged them or which cipher they would restore.
 sub cephx_migration_verdicts {
     my ($status) = @_;
 
+    my $entities = $status->{entities};
+    my $old_service = count_old_cipher_entities($entities->{service});
+    my $old_client = count_old_cipher_entities($entities->{client});
+    my $unknown = scalar(($entities->{service}->{unknown} // [])->@*) +
+        scalar(($entities->{client}->{unknown} // [])->@*);
+    my $pending = $entities->{'pending-keys'} // 0;
+    my $pending_known = $entities->{'pending-keys-known'};
     my $quorum_ok = $status->{quorum}->{'supports-aes256k'};
     my $outdated = $status->{'daemons-without-aes256k'};
-    my $nodes = $status->{nodes};
-
-    my $old_service = count_old_cipher_entities($status->{entities}->{service});
-    my $old_client = count_old_cipher_entities($status->{entities}->{client});
-
-    # The fallback source only names what ceph currently reports, so an empty list means "nothing
-    # was reported", not "nothing is left". Otherwise a failed command reads as an all-clear.
-    my $entities_known = $status->{entities}->{complete} ? 1 : 0;
-
+    my $service_cipher = $status->{monmap}->{auth_service_cipher} // 'unknown';
+    my $old_tickets = $service_cipher ne 'unknown' && $service_cipher ne $AES256K_CIPHER;
     my $res = [];
 
-    # A pre-cipher release still answers 'versions', 'quorum_status' and 'health', so the missing
-    # monmap cipher settings are the tell. Return early, or empty lists read as 'nothing left'.
-    if (!scalar($status->{monmap}->%*)) {
-        return ["The monitors report no cipher settings, so either this cluster's Ceph release"
-            . " predates the aes256k cipher or 'mon dump' did not answer. Nothing about the key"
-            . " migration can be judged before that is resolved."
-        ];
-    }
+    push @$res,
+        "$pending "
+        . ($pending == 1 ? 'identity has' : 'identities have')
+        . " a pending key. Continue the migration or rollback that staged it."
+        if $pending;
+    push @$res,
+        "The key inventory is incomplete; missing entries are not evidence of migrated keys."
+        if !$entities->{complete};
+    push @$res,
+        "Pending keys are unknown because the full 'auth dump-keys' inventory is unavailable."
+        if !$pending_known;
+    push @$res,
+        "$unknown listed current "
+        . ($unknown == 1 ? 'key has' : 'keys have')
+        . " an unknown cipher, not a known old cipher."
+        if $unknown;
+    push @$res, "All listed current keys use aes256k; no pending keys reported."
+        if $entities->{complete}
+        && $pending_known
+        && !$pending
+        && !$unknown
+        && !$old_service
+        && !$old_client;
+    push @$res, "Service tickets still use $service_cipher, independently of the identity keys."
+        if $old_tickets;
+    push @$res, "Service-ticket cipher unknown: 'mon dump' is unavailable or lacks cipher settings."
+        if $service_cipher eq 'unknown';
 
-    if (!scalar($status->{daemons}->%*)) {
-        push @$res,
-            "Could not read the daemon versions, so whether a rolling restart is still needed"
-            . " is unknown.";
+    my $daemons_known = scalar(grep { scalar(@$_) } values $status->{daemons}->%*);
+    if (!$daemons_known) {
+        push @$res, "Daemon versions are unavailable; aes256k compatibility is unknown.";
     } elsif (scalar(@$outdated)) {
-        push @$res,
-            "Rolling restart still needed, these daemons do not support aes256k: "
-            . join('; ', @$outdated) . ".";
-    } elsif (!defined($quorum_ok)) {
-        push @$res,
-            "Every Ceph daemon runs a version with aes256k support, but whether the monitor"
-            . " quorum advertises '$AES256K_MON_FEATURE' could not be read, so whether a"
-            . " rolling restart is still needed is unknown.";
+        push @$res, "Resolve the old or unknown daemon versions below before rotating keys.";
+    }
+    if (!defined($quorum_ok)) {
+        push @$res, "Monitor quorum features could not be read; rotation support is unknown.";
     } elsif (!$quorum_ok) {
         push @$res,
-            "Every Ceph daemon runs a version with aes256k support, but the monitor quorum does"
-            . " not advertise '$AES256K_MON_FEATURE' yet, so restart the monitors.";
+            "The monitor quorum does not advertise aes256k; upgrade/restart monitors first.";
+    }
+
+    if ($pending) {
+        push @$res, "For a helper-managed migration, check the next step:", $CEPHX_MIGRATION_HELPER;
+    } elsif (
+        !$entities->{complete}
+        || !$pending_known
+        || $unknown
+        || $service_cipher eq 'unknown'
+        || !$daemons_known
+        || scalar(@$outdated)
+        || !$quorum_ok
+    ) {
+        push @$res, "Resolve the missing or incompatible evidence, then recheck:",
+            "pveceph auth status";
+    } elsif ($old_service || $old_tickets) {
+        push @$res, "Preview cluster-owned key and service-ticket migration:",
+            "$CEPHX_MIGRATION_HELPER --rotate-cluster-keys";
+    } elsif ($old_client) {
+        push @$res,
+            "Preview managed storage and administrative key migration; the helper identifies"
+            . " any keys outside that selection:",
+            "$CEPHX_MIGRATION_HELPER --rotate-all-storage-keys --rotate-admin-key";
     } else {
-        push @$res, "Every reported Ceph daemon version supports aes256k.";
-    }
-
-    my $pending_known = $status->{entities}->{'pending-keys-known'};
-    my $pending = $status->{entities}->{'pending-keys'} // 0;
-    if ($pending_known && $pending) {
+        # Current keys do not prove that consumers refreshed or that cipher restriction is safe.
         push @$res,
-            "$pending listed cephx "
-            . ($pending == 1 ? 'entity has' : 'entities have')
-            . " a pending key. Review the current and pending cipher rows below. Do not commit"
-            . " or clear a pending key until the workflow that staged it is known. Client keys"
-            . " staged by the migration helper remain pending while their consumers refresh and"
-            . " until explicit confirmation.";
-    }
-
-    if (!$old_service && !$entities_known) {
-        push @$res,
-            "Cannot tell which service keys still use an old cipher, as the key list could"
-            . " not be read and the health checks named none. Retry once the monitors answer"
-            . " 'auth dump-keys' again.";
-    } elsif (!$old_service) {
-        push @$res, "No service key left on an old cipher.";
-    } elsif (!defined($quorum_ok)) {
-        push @$res,
-            "Service keys cannot be judged yet, the monitor quorum features could not be"
-            . " read, and only they decide whether Ceph accepts a rotation.";
-    } elsif (!$quorum_ok) {
-        push @$res,
-            "Service keys cannot be migrated yet, the monitor quorum does not support aes256k.";
-    } elsif (scalar(@$outdated)) {
-        push @$res,
-            "Service keys cannot be migrated yet, the daemons above could no longer"
-            . " authenticate with an aes256k key.";
-    } else {
-        push @$res,
-            "$old_service listed service "
-            . ($old_service == 1 ? 'key still uses' : 'keys still use')
-            . " an old cipher. Preview the first migration step with"
-            . " '$CEPHX_MIGRATION_HELPER --rotate-cluster-keys'.";
-    }
-
-    my @old_kernel = sort grep {
-        defined($nodes->{$_}->{'supports-aes256k'}) && !$nodes->{$_}->{'supports-aes256k'}
-    } keys %$nodes;
-    my @unknown_kernel = sort grep { !defined($nodes->{$_}->{'supports-aes256k'}) } keys %$nodes;
-
-    if (!$old_client && !$entities_known) {
-        push @$res, "Cannot tell which client keys still use an old cipher, as the key list"
-            . " could not be read and the health checks named none.";
-    } elsif (!$old_client) {
-        push @$res,
-            "No listed client key uses an old cipher. This does not verify disconnected"
-            . " consumers or external key copies.";
-    } elsif (!defined($quorum_ok)) {
-        push @$res,
-            "$old_client listed client "
-            . ($old_client == 1 ? 'key uses' : 'keys use')
-            . " an old cipher, but the monitor quorum features could not be read. Client-key"
-            . " migration cannot be judged yet.";
-    } elsif (!$quorum_ok) {
-        push @$res,
-            "$old_client listed client "
-            . ($old_client == 1 ? 'key uses' : 'keys use')
-            . " an old cipher. The monitor quorum does not support aes256k, so none can be"
-            . " migrated yet.";
-    } else {
-        push @$res,
-            "$old_client listed client "
-            . ($old_client == 1 ? 'key still uses' : 'keys still use')
-            . " an old cipher. Kernel compatibility constrains only keys read by kernel RBD or"
-            . " CephFS clients; it does not block userspace-only client keys.";
-
-        push @$res,
-            "Kernel-backed client keys cannot move while these nodes report a kernel older than"
-            . " 7.0: "
-            . join(', ', @old_kernel)
-            . ". Userspace-only keys can be selected separately."
-            if scalar(@old_kernel);
-        push @$res,
-            "Kernel compatibility is unknown on these nodes: "
-            . join(', ', @unknown_kernel)
-            . ". Check them with 'uname -r' before rotating a key used by a kernel client."
-            if scalar(@unknown_kernel);
-
-        my @metadata = sort grep {
-            ($nodes->{$_}->{source} // '') eq 'ceph daemon metadata'
-        } @old_kernel;
-        push @$res,
-            "Remote kernel values from Ceph daemon metadata can be stale until those daemons"
-            . " restart. Verify 'uname -r' on affected nodes before rotating a kernel-backed key: "
-            . join(', ', @metadata) . "."
-            if scalar(@metadata);
-
-        push @$res,
-            "The cluster cannot verify disconnected consumers or external key copies. Preview"
-            . " managed client-key migration with '$CEPHX_MIGRATION_HELPER"
-            . " --rotate-all-storage-keys --rotate-admin-key'.";
-    }
-
-    my $allowed = $status->{monmap}->{auth_allowed_ciphers};
-    if (ref($allowed) eq 'ARRAY' && grep { $_ ne $AES256K_CIPHER } @$allowed) {
-        push @$res,
-            "The monitors still allow an old cipher, so the AUTH_INSECURE_KEYS_ALLOWED and"
-            . " AUTH_INSECURE_KEYS_CREATABLE checks stay until every key is migrated and"
-            . " the old cipher is dropped from auth_allowed_ciphers.";
+            "For a helper-managed migration, check whether anything remains:",
+            $CEPHX_MIGRATION_HELPER;
     }
 
     return $res;
@@ -1100,7 +1041,7 @@ sub get_cephx_auth_status {
     # report and the restart endpoints can never disagree, and both report the same shape
     my $blocking = restart_blocking_by_type($rados, $health);
 
-    my $res = { checks => {} };
+    my $res = { checks => {}, 'checks-known' => ref($health->{checks}) eq 'HASH' ? 1 : 0 };
     for my $name (sort keys %$checks) {
         next if $name !~ m/^AUTH_/ || ref($checks->{$name}) ne 'HASH';
         $res->{checks}->{$name} = {
