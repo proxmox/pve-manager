@@ -1,3 +1,31 @@
+pve-manager (9.2.17) trixie; urgency=medium
+
+  * ceph: Cephx key migration:
+    - add '--rotate-all-storage-keys' to rotate dedicated users of local RBD
+      and CephFS storages together, excluding external clusters and keeping
+      'client.admin' a separate choice
+    - refuse administrative and storage-user key rotation if any monitor
+      cannot keep both keys valid while consumers refresh
+    - keep both keys valid during rollback until consumers return to the
+      restored key and the operator confirms with
+      '--confirm-abort-clients-refreshed'
+    - detect returning old-key consumers using monitor session fingerprints
+      and recheck consumers before retiring keys or invalidating tickets
+    - refresh CephFS mounts without forced or lazy unmounts; retry busy
+      mounts on a later apply run
+    - leave pending daemon keys untouched when their ownership is unclear,
+      and wait for monitor elections to finish before staging
+    - complete bootstrap and crash key rotations without asking operators
+      to confirm refreshes for Ceph's own tools
+    - make new keys use the new cipher before disabling the old cipher
+    - show next steps based on current keys and settings, with concise
+      consumer hints, storage inventories, and recovery instructions
+
+  * ceph: auth status: show current and pending key ciphers without exposing
+    secrets, and lead with the next migration command.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 05 Sep 2026 16:24:10 +0200
+
 pve-manager (9.2.16) trixie; urgency=medium
 
   * ceph: Cephx key migration:
