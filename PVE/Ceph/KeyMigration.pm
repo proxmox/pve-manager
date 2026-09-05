@@ -647,12 +647,16 @@ sub mount_refresh_hint($state, $entity, $files = []) {
     for my $store (sort keys %$pending) {
         push @mounts, map { "'$store' on node '$_'" } sort keys %{ $pending->{$store} // {} };
     }
-    my $scope =
-        scalar(@mounts)
-        ? 'CephFS refresh pending: ' . join(', ', @mounts)
-        : 'CephFS mounts need inspection: '
-        . join(', ', @{ cephfs_mount_storages({ files => $files }) });
-    return "$scope. Free busy mounts and resolve node or mount errors, then rerun with '--apply'.";
+    if (@mounts) {
+        return
+            'CephFS refresh pending: '
+            . join(', ', @mounts)
+            . ". Free busy mounts and resolve node or mount errors, then rerun with '--apply'.";
+    }
+    return
+        'CephFS mounts need inspection: '
+        . join(', ', @{ cephfs_mount_storages({ files => $files }) })
+        . ". Run with '--apply' to inspect and refresh these mounts; busy mounts are left alone.";
 }
 
 # The CephFS storages whose mount reads a rotated key. The kernel holds the key a mount was
@@ -745,7 +749,7 @@ sub ack_decision($entity, $state, $sessions, $stale) {
 }
 
 # what must be resolved before the old cipher can be disallowed without stopping a consumer
-sub restrict_blockers($info, $state, $describe = undef) {
+sub restrict_blockers($info, $state, $describe = undef, $files = {}) {
     $describe //= \&session_hosts;
     my $blockers = [];
     my $sessions = $info->{sessions} // {};
@@ -760,6 +764,25 @@ sub restrict_blockers($info, $state, $describe = undef) {
     my $records = $state->{client_refresh} // {};
     my $stale = stale_consumers($sessions, $records, session_key_targets($info->{exported}));
     my $clients = $sessions->{clients} // {};
+    my $readiness;
+    my $refresh_detail = sub($entity) {
+        # Share the explanation, not the restriction decision: an open staged key still blocks.
+        $readiness //= open_options(
+            $info->{health_checks} // {},
+            {},
+            {},
+            $info->{service_cipher},
+            {%$state},
+            $sessions,
+            $info->{exported},
+            $files,
+            $describe,
+        );
+        return $readiness->{waiting_details}->{$entity}
+            // "consumer refresh awaits your confirmation with '--confirm-clients-refreshed"
+            . " $entity --apply'. Confirm only after refreshing every consumer, including"
+            . " disconnected ones and external key copies.";
+    };
 
     # A key with an open staged record is resolved by its confirmation, so its one line names
     # what holds that up; a key without one needs its rotation option first.
@@ -776,37 +799,7 @@ sub restrict_blockers($info, $state, $describe = undef) {
         my $record = $records->{$entity};
         if ($old_active && $staged_open->{$entity} && $record && !defined($record->{cleared})) {
             $covered->{$entity} = 1;
-            if ($staged_open->{$entity}->{aborting}) {
-                push @$blockers,
-                    "the staged key of '$entity' is in rollback and remains valid until its"
-                    . " reverse refresh is confirmed";
-                next;
-            }
-            my $live = $clients->{$entity} // [];
-            my $line = "the new key of '$entity' is staged";
-            if (my $held = $stale->{$entity}) {
-                $line .= "; "
-                    . scalar(@$held)
-                    . " of its "
-                    . scalar(@$live)
-                    . " live client(s) "
-                    . (
-                        sessions_judged_by_key($held)
-                        ? "still authenticate with the previous key ("
-                        : "were recorded before the rotation ("
-                    )
-                    . $describe->($held)
-                    . "), refresh those, then";
-            } elsif (scalar(@$live)) {
-                $line .=
-                    "; once every consumer of it is refreshed ("
-                    . scalar(@$live)
-                    . " live: "
-                    . $describe->($live) . "),";
-            } else {
-                $line .= "; once every consumer of it is refreshed,";
-            }
-            push @$blockers, "$line commit it with '--confirm-clients-refreshed $entity'";
+            push @$blockers, "'$entity': " . $refresh_detail->($entity);
             next;
         }
         push @old_keys, "$entity (active)" if $old_active;
@@ -871,9 +864,7 @@ sub restrict_blockers($info, $state, $describe = undef) {
         }
         # a consumer can keep its IO on established connections without any monitor session,
         # so its absence from the sweep proves nothing; only the operator closes a record
-        push @$blockers,
-            "the rotation of '$entity' awaits '--confirm-clients-refreshed $entity' once every consumer"
-            . " of it was refreshed";
+        push @$blockers, "'$entity': " . $refresh_detail->($entity);
     }
     if (scalar(@open_tools) == 1) {
         push @$blockers,
@@ -992,12 +983,15 @@ sub classify_insecure_clients($checks, $storage_entities = {}, $exported = undef
 # Only the options that can still change something. 'stuck' holds the keys none of them reach, for
 # the caller to report rather than offer.
 sub open_options(
-    $checks, $opts, $storage_entities,
+    $checks,
+    $opts,
+    $storage_entities,
     $service_cipher = $CIPHER,
     $state = {},
     $sessions = undef,
     $exported = undef,
     $files = {},
+    $describe = \&session_hosts,
 ) {
     my $clients = classify_insecure_clients($checks, $storage_entities, $exported);
     my $done = $opts->{'rotate-storage-key'} // [];
@@ -1146,7 +1140,7 @@ sub open_options(
                     $detail =
                         "rollback is prepared.$both "
                         . join('; ', @problems) . ' ('
-                        . session_hosts(\@held) . ').';
+                        . $describe->(\@held) . ').';
                     $detail .= ' Refresh consumers using another key to the restored key.'
                         if $reverse->{pending}->@* || $reverse->{other}->@*;
                     $detail .= ' ' . session_key_support_hint() if $reverse->{unknown}->@*;
@@ -1192,7 +1186,7 @@ sub open_options(
                     : 'may still hold the previous key';
                 $waiting_details->{$entity} =
                     "$count session(s) $why ("
-                    . session_hosts($held)
+                    . $describe->($held)
                     . ").$both Refresh these consumers, then retry the dry run.";
             } else {
                 $waiting_details->{$entity} = "consumer refresh is not confirmed.$both Refresh"

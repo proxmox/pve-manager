@@ -125,11 +125,15 @@ sub log_fail($line) { $log_line->('fail', $line); }
 sub log_text($line) { print "$line\n"; }
 sub log_step($line) { print "  $line\n"; }
 
-sub log_steps($lines) {
+sub log_steps($lines, $wrap = 0) {
     my $total = scalar(@$lines);
     my $shown = $total > 10 ? 10 : $total;
 
-    log_step($lines->[$_]) for 0 .. $shown - 1;
+    local $Text::Wrap::columns = 100;
+    local $Text::Wrap::huge = 'overflow';
+    for my $line (@$lines[0 .. $shown - 1]) {
+        $wrap ? log_text(Text::Wrap::wrap('  ', '    ', $line)) : log_step($line);
+    }
     log_step("and " . ($total - $shown) . " more") if $total > $shown;
 }
 
@@ -1565,11 +1569,11 @@ my sub tool_keys_label($entities, $opts) {
     return $label;
 }
 
-my sub tool_keys_closed_note($entities) {
-    return
-        scalar(@$entities) == 1
-        ? "only Ceph's own tools read it and load the key afresh, so its record is closed"
-        : "only Ceph's own tools read them and load the key afresh, so their records are closed";
+my sub tool_keys_closed_note($entities, $apply) {
+    my $records =
+        scalar(@$entities) == 1 ? 'its confirmation record' : 'their confirmation records';
+    my $action = $apply ? 'closed' : 'will be closed on apply';
+    return "$records $action; Ceph's tools load keys afresh";
 }
 
 # A client-key retirement needs a fresh monitor sweep and auth export. Keep this narrower than the
@@ -1671,11 +1675,9 @@ my sub preflight_cluster(
             close_tool_record($state, $entity) if tool_key($entity);
             $seeded = 1;
         }
-        log_info("the rotation of "
-                . tool_keys_label(\@seeded_tools, $opts)
-                . " predates this script's tracking; "
-                . tool_keys_closed_note(\@seeded_tools))
-            if scalar(@seeded_tools);
+        log_info(tool_keys_label(\@seeded_tools, $opts) . ': '
+                . tool_keys_closed_note(\@seeded_tools, $opts->{apply}))
+            if scalar(@seeded_tools) && $opts->{verbose};
         save_state($state) if $seeded && $opts->{apply};
     }
 
@@ -1693,10 +1695,9 @@ my sub preflight_cluster(
         push @closed_tools, $entity;
     }
     if (scalar(@closed_tools)) {
-        log_info("the rotation of "
-            . tool_keys_label(\@closed_tools, $opts)
-            . " was still open; "
-            . tool_keys_closed_note(\@closed_tools));
+        log_info(tool_keys_label(\@closed_tools, $opts) . ': '
+                . tool_keys_closed_note(\@closed_tools, $opts->{apply}))
+            if $opts->{verbose};
         save_state($state) if $opts->{apply};
     }
 
@@ -1966,12 +1967,11 @@ my sub preflight_cluster(
     }
 
     if (restrict_wanted($info, $opts)) {
-        my $blockers = restrict_blockers($info, $state, $describe_for_section);
+        my $blockers = restrict_blockers($info, $state, $describe_for_section, $client_files);
         if (scalar(@$blockers)) {
             if (!$opts->{force}) {
-                log_fail("Not restricting the allowed ciphers to '$CIPHER': a client would be"
-                    . " stopped. Resolve these first:");
-                log_steps($blockers);
+                log_fail("Cannot restrict the allowed ciphers to '$CIPHER' yet:");
+                log_steps($blockers, 1);
                 $print_possible_for_section->();
                 return -1;
             }
@@ -4175,9 +4175,8 @@ my sub restrict_ciphers(
     if (scalar(@$blockers)) {
         if (!$opts->{force}) {
             die "refusing to restrict the allowed ciphers: "
-                . join('; ', @$blockers)
-                . ". Refresh the consumers, close each record with '--confirm-clients-refreshed', or pass"
-                . " '--force' to continue anyway.\n";
+                . join('; ', map { s/\.$//r } @$blockers)
+                . ". Run this without options to check the remaining steps.\n";
         }
         log_warn("Restricting the allowed ciphers although a client may be stopped, as"
             . " '--force' was passed: "
@@ -4273,17 +4272,22 @@ my sub print_open_options(
             log_text(
                 "Ready for their confirmation after this plan: " . join(', ', $open->{ready}->@*));
         } else {
-            log_text("Ready once you confirm that disconnected consumers and external key copies"
-                . " of "
-                . join(', ', $open->{ready}->@*)
-                . " were refreshed:");
+            local $Text::Wrap::columns = 100;
+            local $Text::Wrap::huge = 'overflow';
+            log_text(Text::Wrap::wrap(
+                '',
+                '  ',
+                'Ready for confirmation: ' . join(', ', $open->{ready}->@*),
+            ));
+            log_text("Confirm only after refreshing every consumer, including disconnected ones"
+                . " and external key copies:");
             log_step($open->{command});
         }
     }
 
     if (scalar($open->{waiting}->@*)) {
         log_text("");
-        log_text("Client key rotations awaiting action:");
+        log_text("Client keys awaiting action:");
         local $Text::Wrap::columns = 100;
         local $Text::Wrap::huge = 'overflow';
         my @live;
@@ -4306,7 +4310,7 @@ my sub print_open_options(
 
     if (scalar($open->{next}->@*) && !$planned) {
         log_text("");
-        log_text("Options that address what is still reported, combinable in one '--apply' run:");
+        log_text("Remaining migration steps:");
         for my $option ($open->{next}->@*) {
             if ($option =~ /^--rotate-all-storage-keys:/) {
                 my $inline = '--rotate-all-storage-keys: ' . join('; ', $open->{storage_scope}->@*);
@@ -4324,7 +4328,7 @@ my sub print_open_options(
             }
         }
         if (scalar($open->{together}->@*)) {
-            log_text("The ones that need no decision of yours, in one command:");
+            log_text("Next command:");
             log_step("$PROGRAM --apply " . join(' ', $open->{together}->@*));
         }
         if ($open->{hedge}) {

@@ -1067,7 +1067,7 @@ sub wipe_monitor_picture {
     };
     like(
         $@,
-        qr/refusing to restrict.*awaits '--confirm-clients-refreshed client\.app'/s,
+        qr/refusing to restrict.*awaits your confirmation with '--confirm-clients-refreshed client\.app --apply'/s,
         'a later no-session restriction cannot reuse the superseded acknowledgment',
     );
 }
@@ -1749,7 +1749,7 @@ sub aggregate_fixture {
     }
     like(
         $output,
-        qr/CephFS mounts need inspection: fs.*[Ff]ree busy mounts.*--apply/s,
+        qr/CephFS mounts need inspection: fs.*--apply.*inspect and refresh.*busy mounts are left alone/s,
         'a dry run exposes uninitialized CephFS work from an older written journal',
     );
     ok(
@@ -3723,7 +3723,7 @@ sub run_aggregate_confirmation {
         'client.admin' => [{ path => '/etc/pve/priv/ceph.client.admin.keyring' }],
     };
     my $preflight = sub {
-        my ($verbose) = @_;
+        my ($verbose, $apply) = @_;
         my $state = {};
         my $output = '';
         {
@@ -3734,7 +3734,7 @@ sub run_aggregate_confirmation {
             $HOOKS->{preflight}->(
                 $info,
                 {
-                    apply => 0,
+                    apply => $apply // 0,
                     verbose => $verbose,
                     'rotate-admin-key' => 1,
                     'rotate-storage-key' => ['store'],
@@ -3753,16 +3753,11 @@ sub run_aggregate_confirmation {
         'every tool key still gets its own refresh record',
     );
     my @summaries = grep { m/7 bootstrap and crash keys/ } split(/\n/, $concise);
-    is(scalar(@summaries), 1, 'the seven records are one line by default');
-    like(
-        $summaries[0],
-        qr/^INFO: the rotation of 7 bootstrap and crash keys predates this script's tracking; only Ceph's own tools read them and load the key afresh, so their records are closed$/,
-        'which says why they are closed rather than asking for a confirmation',
-    );
+    is(scalar(@summaries), 0, 'routine tool-key bookkeeping stays out of the default output');
     is(
         scalar(grep { defined($state->{client_refresh}->{$_}->{cleared}) } @$tools),
         7,
-        'and every one of them is closed in the journal',
+        'every tool record is closed in the in-memory preview',
     );
     unlike(
         $concise,
@@ -3774,6 +3769,17 @@ sub run_aggregate_confirmation {
         $verbose,
         qr/7 bootstrap and crash keys \(client\.bootstrap-mds, client\.bootstrap-mgr, client\.bootstrap-osd, client\.bootstrap-rbd, client\.bootstrap-rbd-mirror, client\.bootstrap-rgw, client\.crash\)/,
         'verbose output keeps every identity',
+    );
+    like(
+        $verbose,
+        qr/confirmation records will be closed on apply/,
+        'a verbose dry run does not claim that it persisted the cleanup',
+    );
+    my ($applied) = $preflight->(1, 1);
+    like(
+        $applied,
+        qr/confirmation records closed; Ceph's tools load keys afresh/,
+        'verbose apply reports the completed bookkeeping, not another key rotation',
     );
 
     # the same records, already open, on a later run with every monitor answering
@@ -3789,10 +3795,11 @@ sub run_aggregate_confirmation {
         local *STDOUT = $stdout;
         $HOOKS->{preflight}->($info, { apply => 0 }, 0, $reopened, $files);
     }
-    my @closed = grep {
-        m/the rotation of 7 bootstrap and crash keys was still open; only Ceph's own tools read them and load the key afresh, so their records are closed/
-    } split(/\n/, $later);
-    is(scalar(@closed), 1, 'open tool records from an earlier version are closed, in one line');
+    unlike(
+        $later,
+        qr/bootstrap and crash keys/,
+        'routine cleanup of existing tool records is also quiet by default',
+    );
     unlike(
         $later,
         qr/no live session predates the key rotation of 'client\.bootstrap/,
@@ -3845,7 +3852,7 @@ sub run_aggregate_confirmation {
     my $output = $print->(0);
     like(
         $output,
-        qr/Ready once you confirm that disconnected consumers and external key copies of client\.store were refreshed:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
+        qr/Ready for confirmation: client\.store\nConfirm only after refreshing every consumer, including disconnected ones and external key copies:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
         'a ready record gets the direct heading and the exact confirmation command',
     );
     unlike($output, qr/only you can vouch for/, 'without the old phrase');
@@ -3914,14 +3921,14 @@ sub run_aggregate_confirmation {
     }
     like(
         $output,
-        qr/Options that address what is still reported.*--rotate-lockbox-keys/s,
+        qr/Remaining migration steps:.*--rotate-lockbox-keys/s,
         'and the remaining options are offered',
     );
 
     my $planned = $print->(1);
     unlike(
         $planned,
-        qr/--apply|Ready once you confirm|Options that address/,
+        qr/--apply|Ready for confirmation|Remaining migration steps/,
         'a dry run with a plan prints neither a confirmation command nor further options',
     );
     like(
@@ -4293,7 +4300,7 @@ sub run_aggregate_confirmation {
     }
     like(
         $output,
-        qr/Client key rotations awaiting action:.*'client\.app': consumer verification is incomplete\. Monitors that did not answer: mon-b\. Both keys\s+remain valid\. Retry after every monitor answers\./s,
+        qr/Client keys awaiting action:.*'client\.app': consumer verification is incomplete\. Monitors that did not answer: mon-b\. Both keys\s+remain valid\. Retry after every monitor answers\./s,
         'a plain dry run explains a staged key hidden by an incomplete session picture',
     );
 }
@@ -4861,6 +4868,57 @@ sub run_aggregate_confirmation {
             'dry runs, --assume-yes, and non-terminal input do not read an answer',
         );
     }
+}
+
+{
+    my $entity = 'client.admin';
+    my $target = key_fingerprint($NEW);
+    my $info = migrated_info({
+        complete => 1,
+        clients => {
+            $entity => [
+                map {
+                    { global_id => $_, host => 'mits8', key_fingerprint => $target }
+                } 1 .. 64
+            ],
+        },
+    });
+    $info->{allowed_ciphers} = ['aes', 'aes256k'];
+    $info->{exported}->{$entity} = { key => $OLD, pending_key => $NEW };
+    my $state = {
+        client_keys_seen => { $entity => key_fingerprint($OLD) },
+        staged => { $entity => { key => $target, written => 1 } },
+        client_refresh => { $entity => { rotated => 1, session_ids => [] } },
+    };
+    my $files = { $entity => [{ format => 'secret', store => 'cephfs' }] };
+    my ($result, $output);
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        local *main::run_command = sub { die "unexpected host-wide consumer probe\n"; };
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        $result = $HOOKS->{preflight}->(
+            $info, { 'restrict-ciphers' => 1 }, 0, $state, $files,
+        );
+    }
+    is($result, -1, 'restriction remains blocked by the staged key');
+    like(
+        $output,
+        qr/FAIL: Cannot restrict the allowed ciphers to 'aes256k' yet:/,
+        'the refusal does not assert that it found a consumer that would stop',
+    );
+    like(
+        $output,
+        qr/CephFS mounts need inspection:\s+cephfs.*--apply.*inspect and refresh/s,
+        'preflight supplies its storage mapping to the shared prerequisite report',
+    );
+    unlike(
+        $output,
+        qr/64 live|Possible consumers|a client would be stopped|--confirm-clients-refreshed/,
+        'no broad guest inventory or premature confirmation obscures the required inspection',
+    );
+    ok(!(grep { length($_) > 100 } split(/\n/, $output)), 'the refusal wraps at 100 columns');
 }
 
 done_testing();

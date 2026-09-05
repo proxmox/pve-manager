@@ -6,6 +6,7 @@ use warnings;
 use lib ('.', '..');
 
 use Test::More;
+use Storable qw(dclone);
 
 use FindBin;
 use PVE::Ceph::KeyMigration qw(
@@ -2600,8 +2601,10 @@ my sub cluster {
 {
     my $tools = $PVE::Ceph::KeyMigration::TOOL_CLIENT_KEYS;
     my $info = {
-        exported =>
-            { 'client.admin' => { key => $OLD }, map { $_ => { key => $NEW } } @$tools },
+        exported => {
+            'client.admin' => { key => $OLD, pending_key => $NEW },
+            map { $_ => { key => $NEW } } @$tools,
+        },
         service_cipher => $CIPHER,
         sessions => {
             complete => 1,
@@ -2628,8 +2631,8 @@ my sub cluster {
     is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
     like(
         $admin[0],
-        qr/^the new key of 'client\.admin' is staged; 4 of its 10 live client\(s\) were recorded before the rotation \(due: 4\), refresh those, then commit it with '--confirm-clients-refreshed client\.admin'$/,
-        'which counts the live sessions, the recorded subset and names the confirmation',
+        qr/^'client\.admin': 4 session\(s\) may still hold the previous key \(due: 4\).*Refresh these consumers, then retry the dry run\.$/,
+        'only the recorded subset is reported as needing refresh',
     );
     my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
     $unrecorded->{client_refresh}->{'client.admin'} = { rotated => 1, session_ids => [] };
@@ -2638,8 +2641,8 @@ my sub cluster {
     is(scalar(@admin), 1, 'a staged user with live but unrecorded sessions gets one line too');
     like(
         $admin[0],
-        qr/^the new key of 'client\.admin' is staged; once every consumer of it is refreshed \(10 live: due: 10\), commit it with '--confirm-clients-refreshed client\.admin'$/,
-        'which names the live sessions and the confirmation',
+        qr/^'client\.admin': consumer refresh awaits your confirmation with '--confirm-clients-refreshed client\.admin --apply'/,
+        'confirmation remains explicit without labelling every live session stale',
     );
     my @tools = grep { m/bootstrap and crash keys/ } @$blockers;
     is(scalar(@tools), 1, 'the open bootstrap and crash records are one line');
@@ -3006,6 +3009,110 @@ my sub cluster {
             'unfinished work prevents a completion claim',
         );
     }
+}
+
+# Restriction reports the same prerequisite as the ordinary status view without changing guards.
+{
+    my $entity = 'client.admin';
+    my $target = key_fingerprint($NEW);
+    my $info = {
+        exported => { $entity => { key => $OLD, pending_key => $NEW } },
+        service_cipher => $CIPHER,
+        pve_mon_key => $NEW,
+        health_checks => {},
+        sessions => {
+            complete => 1,
+            clients => {
+                $entity => [
+                    map {
+                        { global_id => $_, host => 'mits8', key_fingerprint => $target }
+                    } 1 .. 64
+                ],
+            },
+        },
+    };
+    my $state = {
+        staged => { $entity => { key => $target, written => 1 } },
+        client_refresh => { $entity => { rotated => 1, session_ids => [] } },
+    };
+    my $files = { $entity => [{ format => 'secret', store => 'cephfs' }] };
+    my $unchanged = dclone($state);
+    my @described;
+    my $describe = sub { push @described, @{ $_[0] }; return session_hosts($_[0]); };
+    my $blockers = restrict_blockers($info, $state, $describe, $files);
+    my $open = open_options(
+        {}, {}, {}, $CIPHER, dclone($state), $info->{sessions}, $info->{exported}, $files,
+    );
+    is_deeply(
+        $blockers,
+        ["'$entity': $open->{waiting_details}->{$entity}"],
+        'both views give exactly the same pending inspection and next action',
+    );
+    like(
+        $blockers->[0],
+        qr/CephFS mounts need inspection: cephfs.*--apply.*inspect and refresh/,
+        'restriction points to inspection rather than premature confirmation',
+    );
+    unlike(
+        $blockers->[0],
+        qr/Free busy mounts|--confirm-clients-refreshed|64 live/,
+        'unperformed inspection is not an observed busy mount or a confirmation opportunity',
+    );
+    is_deeply($state, $unchanged, 'deriving the explanation does not change the journal');
+    is(scalar(@described), 0, 'current-key sessions do not trigger possible-consumer inventories');
+
+    $state->{mount_refresh}->{$entity} = {
+        target => $target,
+        pending => { cephfs => { mits8 => 1 } },
+    };
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    like(
+        $blockers->[0],
+        qr/CephFS refresh pending: 'cephfs' on node 'mits8'.*--apply/,
+        'recorded mount work identifies the storage and node',
+    );
+
+    $state->{mount_refresh}->{$entity} = { target => $target, finished => 1 };
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    is(scalar(@$blockers), 1, 'completed mount work does not implicitly confirm the staged key');
+    like(
+        $blockers->[0],
+        qr/awaits your confirmation.*--confirm-clients-refreshed client.admin --apply/,
+        'a ready record gets the explicit confirmation action',
+    );
+    unlike(
+        $blockers->[0],
+        qr/64|mits8|refresh those|inspection/,
+        'connected sessions are not mistaken for remaining refresh work',
+    );
+    is(scalar(@described), 0, 'no host-wide hints are requested just because sessions exist');
+
+    $info->{sessions}->{clients}->{$entity}->[0]->{key_fingerprint} = key_fingerprint($OLD);
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    like(
+        $blockers->[0],
+        qr/1 session\(s\) still authenticate with a previous key/,
+        'positive stale evidence is reported as one stale session, not 64 consumers',
+    );
+    is(scalar(@described), 1, 'only the stale subset supplies consumer hints');
+    $info->{sessions}->{clients}->{$entity}->[0]->{key_fingerprint} = $target;
+
+    $info->{sessions}->{complete} = 0;
+    $info->{sessions}->{unanswered} = ['mon-b'];
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    like(
+        join(' ', @$blockers),
+        qr/consumer verification is incomplete.*mon-b/,
+        'restriction distinguishes incomplete observation from missing confirmation',
+    );
+    $info->{sessions}->{complete} = 1;
+    delete $state->{client_refresh}->{$entity}->{session_ids};
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    like(
+        $blockers->[0],
+        qr/first complete consumer measurement.*first attempt records/,
+        'a missing measurement does not look ready for retirement',
+    );
 }
 
 done_testing();
