@@ -227,6 +227,10 @@ sub run_client_rotation {
         if ($args->{prefix} eq 'mon set') {
             $self->{service_cipher} = $args->{value}
                 if $args->{name} eq 'auth_service_cipher';
+            $self->{preferred_cipher} = $args->{value}
+                if $args->{name} eq 'auth_preferred_cipher' && !$self->{ignore_preferred};
+            $self->{allowed_ciphers} = [$args->{value}]
+                if $args->{name} eq 'auth_allowed_ciphers';
             return {};
         }
         if ($args->{prefix} eq 'auth wipe-rotating-service-keys') {
@@ -1073,11 +1077,76 @@ sub wipe_monitor_picture {
         mons => ['a'],
         quorum => ['a'],
         metadata => [{ name => 'a', hostname => 'node-a' }],
+        preferred_cipher => 'aes',
+        allowed_ciphers => [qw(aes aes256k)],
         exported => [{ entity => 'client.app', key => $NEW, pending_key => $OLD }],
     );
     my $monitor = current_monitor_picture('aes256k');
     my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
-    eval {
+    my @saved;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, [@_] };
+        eval {
+            $HOOKS->{restrict_ciphers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                sub { return $monitor },
+                sub { return $NEW },
+            );
+        };
+    }
+    like(
+        $@,
+        qr/refusing to restrict.*pending/s,
+        'an old pending key staged after preflight is caught by the action-time auth export',
+    );
+    ok(
+        (
+            grep {
+                $_->{prefix} eq 'mon set' && $_->{name} eq 'auth_preferred_cipher'
+            } $rados->{commands}->@*
+            )
+            && !(
+                grep {
+                    $_->{prefix} eq 'mon set' && $_->{name} eq 'auth_allowed_ciphers'
+                } $rados->{commands}->@*
+            ),
+        'the refusal happens after the preferred setting but before cipher restriction',
+    );
+    is(
+        $state->{preferred_cipher_was},
+        'aes',
+        'a refusal leaves durable intent to restore the preferred cipher',
+    );
+    my $durable = decode_json($saved[-1]->[1]);
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{release_preferred}->($rados, $durable);
+    }
+    is($rados->{preferred_cipher}, 'aes', 'recovery restores the default after a refusal');
+    ok(
+        !defined($durable->{preferred_cipher_was}),
+        'verified restoration consumes the durable intent',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        preferred_cipher => 'aes',
+        allowed_ciphers => [qw(aes aes256k)],
+        exported => [{ entity => 'client.app', key => $NEW }],
+    );
+    my $monitor = current_monitor_picture('aes256k');
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
         $HOOKS->{restrict_ciphers}->(
             $rados,
             $state,
@@ -1085,16 +1154,127 @@ sub wipe_monitor_picture {
             sub { return $monitor },
             sub { return $NEW },
         );
-    };
-    like(
-        $@,
-        qr/refusing to restrict.*pending/s,
-        'an old pending key staged after preflight is caught by the action-time auth export',
+    }
+    my @commands = $rados->{commands}->@*;
+    my ($preferred) = grep {
+        $commands[$_]->{prefix} eq 'mon set'
+            && $commands[$_]->{name} eq 'auth_preferred_cipher'
+    } 0 .. $#commands;
+    my ($export) = grep { $commands[$_]->{prefix} eq 'auth export' } 0 .. $#commands;
+    my ($allowed) = grep {
+        $commands[$_]->{prefix} eq 'mon set'
+            && $commands[$_]->{name} eq 'auth_allowed_ciphers'
+    } 0 .. $#commands;
+    cmp_ok($preferred, '<', $export, 'the preferred cipher is set before the final auth export');
+    cmp_ok($allowed, '>', $export, 'the allowed cipher changes only after fresh validation');
+    ok(!defined($state->{preferred_cipher_was}), 'successful restriction consumes restore intent');
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        preferred_cipher => 'aes',
+        allowed_ciphers => [qw(aes aes256k)],
+        exported => [{ entity => 'client.app', key => $NEW }],
+    );
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
+    my $durable;
+    my $err;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub {
+            my ($path, $content) = @_;
+            die "simulated final journal failure\n"
+                if $rados->{allowed_ciphers}->@* == 1;
+            $durable = decode_json($content);
+        };
+        eval {
+            $HOOKS->{restrict_ciphers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                sub { return current_monitor_picture('aes256k') },
+                sub { return $NEW },
+            );
+        };
+        $err = $@;
+    }
+    like($err, qr/simulated final journal failure/,
+        'the final restriction save can be interrupted');
+    is($durable->{preferred_cipher_was}, 'aes', 'the last durable state retains restore intent');
+    is_deeply($rados->{allowed_ciphers}, ['aes256k'], 'cipher restriction was already applied');
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{release_preferred}->($rados, $durable);
+    }
+    is(
+        $rados->{preferred_cipher},
+        'aes256k',
+        'recovery does not restore an incompatible default after restriction',
+    );
+    ok(
+        !defined($durable->{preferred_cipher_was}),
+        'verified applied restriction consumes stale restoration intent',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        preferred_cipher => 'aes256k',
+        allowed_ciphers => ['aes256k'],
+        fail_prefix => 'mon dump',
+    );
+    my $state = { preferred_cipher_was => 'aes' };
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{release_preferred}->($rados, $state);
+    }
+    is(
+        $state->{preferred_cipher_was},
+        'aes',
+        'an unreadable applied setting retains restoration intent',
     );
     ok(
         !(grep { $_->{prefix} eq 'mon set' } $rados->{commands}->@*),
-        'the action-time pending-key refusal happens before either cipher setting changes',
+        'query failure does not guess at a preferred-cipher restoration',
     );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        preferred_cipher => 'aes',
+        ignore_preferred => 1,
+        exported => [{ entity => 'client.app', key => $NEW }],
+    );
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
+    my $err;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        eval {
+            $HOOKS->{restrict_ciphers}->(
+                $rados,
+                $state,
+                { apply => 1, force => 0 },
+                sub { return current_monitor_picture('aes256k') },
+                sub { return $NEW },
+            );
+        };
+        $err = $@;
+    }
+    like($err, qr/did not apply 'auth_preferred_cipher/, 'an unapplied default fails closed');
+    ok(
+        !(grep { $_->{prefix} eq 'auth export' } $rados->{commands}->@*),
+        'validation does not start before the preferred setting is verified',
+    );
+    is($state->{preferred_cipher_was}, 'aes', 'the failed verification keeps restore intent');
 }
 
 {

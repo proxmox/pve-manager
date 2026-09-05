@@ -2867,15 +2867,35 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     return;
 }
 
-# A pending key takes its cipher from this setting and nothing can ask for one explicitly. undef on
-# a failed read, never a placeholder: the caller records the value to put back.
-my sub current_preferred_cipher($rados) {
+# A pending key takes its cipher from the preferred setting and nothing can ask for one explicitly.
+# Failed or malformed reads return undef, never placeholders that recovery could apply.
+my sub current_cipher_settings($rados) {
     my $dump = eval { $rados->mon_command({ prefix => 'mon dump', format => 'json' }) };
     return undef if $@ || ref($dump) ne 'HASH';
 
-    my $name = ($dump->{auth_preferred_cipher} // {})->{name};
+    my $preferred = ($dump->{auth_preferred_cipher} // {})->{name};
+    my $raw_allowed = $dump->{auth_allowed_ciphers};
+    return undef
+        if !defined($preferred)
+        || !exists($CIPHER_IDS->{$preferred})
+        || ref($raw_allowed) ne 'ARRAY'
+        || !scalar(@$raw_allowed);
 
-    return defined($name) && exists($CIPHER_IDS->{$name}) ? $name : undef;
+    my @allowed;
+    my $seen = {};
+    for my $entry (@$raw_allowed) {
+        my $name = ref($entry) eq 'HASH' ? $entry->{name} : undef;
+        return undef
+            if !defined($name)
+            || !exists($CIPHER_IDS->{$name})
+            || $seen->{$name}++;
+        push @allowed, $name;
+    }
+    return { preferred => $preferred, allowed => \@allowed };
+}
+
+my sub current_preferred_cipher($rados) {
+    return (current_cipher_settings($rados) // {})->{preferred};
 }
 
 my sub claim_preferred_cipher($rados, $state) {
@@ -2893,6 +2913,9 @@ my sub claim_preferred_cipher($rados, $state) {
     }
 
     $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
+    my $applied = current_preferred_cipher($rados);
+    die "the monitors did not apply 'auth_preferred_cipher = $CIPHER'\n"
+        if !defined($applied) || $applied ne $CIPHER;
 
     return;
 }
@@ -2901,18 +2924,41 @@ my sub release_preferred_cipher($rados, $state) {
     my $previous = $state->{preferred_cipher_was};
     return if !defined($previous);
 
+    my $settings = current_cipher_settings($rados);
+    if (!$settings) {
+        log_warn("could not read the applied authentication cipher settings, so the unfinished"
+            . " preferred-cipher transition is left alone for a later apply run");
+        return;
+    }
+
+    my $restricted =
+        scalar($settings->{allowed}->@*) == 1 && $settings->{allowed}->[0] eq $CIPHER;
+    my $restore = $restricted ? $CIPHER : $previous;
     eval {
-        $rados->mon_command({
-            prefix => 'mon set',
-            name => 'auth_preferred_cipher',
-            value => $previous,
-        });
+        if ($settings->{preferred} ne $restore) {
+            $rados->mon_command({
+                prefix => 'mon set',
+                name => 'auth_preferred_cipher',
+                value => $restore,
+            });
+        }
     };
     if (my $err = $@) {
         chomp $err;
-        log_warn("could not put 'auth_preferred_cipher' back to '$previous' ($err). Set it by hand"
-            . " with 'ceph mon set auth_preferred_cipher $previous', or new client keys keep being"
-            . " created with the '$CIPHER' cipher.");
+        log_warn("could not set 'auth_preferred_cipher' to '$restore' ($err). Set it by hand with"
+            . " 'ceph mon set auth_preferred_cipher $restore', then run this again.");
+        return;
+    }
+
+    my $applied = current_cipher_settings($rados);
+    if (
+        !$applied
+        || $applied->{preferred} ne $restore
+        || ($restricted
+            && !(scalar($applied->{allowed}->@*) == 1 && $applied->{allowed}->[0] eq $CIPHER))
+    ) {
+        log_warn("could not verify the reconciled authentication cipher settings, so the journal"
+            . " retains the unfinished transition for a later apply run");
         return;
     }
 
@@ -4112,8 +4158,12 @@ my sub set_service_cipher($rados, $state) {
 my sub restrict_ciphers(
     $rados, $state, $opts, $collect = undef, $read_mon_key = undef,
 ) {
-    # a run can be long and the cluster lock does not serialize other 'ceph auth' commands, so
-    # the verdict is taken again on a snapshot collected right before the switch
+    # Set and verify the creation default before the final snapshot. This closes the normal writer
+    # race, while direct auth commands remain an operator-controlled maintenance boundary.
+    claim_preferred_cipher($rados, $state);
+
+    # A run can be long and the cluster lock does not serialize direct 'ceph auth' commands, so
+    # the verdict is taken again on a snapshot collected right before the allowed-cipher switch.
     my $snapshot = collect_restriction_snapshot($rados, $collect, $read_mon_key);
     reconcile_client_fingerprints(
         $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
@@ -4136,7 +4186,6 @@ my sub restrict_ciphers(
 
     log_heading("Restricting the allowed ciphers");
 
-    $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
     $rados->mon_command({ prefix => 'mon set', name => 'auth_allowed_ciphers', value => $CIPHER });
 
     # nothing may put the old cipher back after this
@@ -4978,12 +5027,12 @@ my sub run_migration($opts) {
 
     # or every client key created from now on keeps getting the new cipher
     if (defined($state->{preferred_cipher_was})) {
-        my $what = "An earlier run left 'auth_preferred_cipher' pointed at '$CIPHER', it should"
-            . " be '$state->{preferred_cipher_was}'.";
+        my $what = "An earlier run left an unfinished 'auth_preferred_cipher' transition from"
+            . " '$state->{preferred_cipher_was}'.";
         log_warn(
             $opts->{apply}
-            ? "$what This run puts it back."
-            : "$what Run this with '--apply' to put it back."
+            ? "$what This run reconciles it with the applied allowed ciphers."
+            : "$what Run this with '--apply' to reconcile it with the applied allowed ciphers."
         );
     }
 
@@ -5396,6 +5445,7 @@ sub key_migration_test_hooks {
         cephfs_remount_script => $CEPHFS_REMOUNT_SCRIPT,
         settle_staged => \&settle_staged_records,
         release_grace => \&release_manual_promotion,
+        release_preferred => \&release_preferred_cipher,
         admin_rotation_unfinished => \&admin_rotation_unfinished,
         usage => \&usage,
         expand_cluster_key_option => \&expand_cluster_key_option,
