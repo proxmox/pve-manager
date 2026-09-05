@@ -21,7 +21,7 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
                 minValue: 1,
                 maxValue: 4294967295,
                 value: 65000,
-                fieldLabel: 'ASN #',
+                fieldLabel: 'ASN',
                 allowBlank: false,
             },
             {
