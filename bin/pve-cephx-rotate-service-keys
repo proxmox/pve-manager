@@ -4964,10 +4964,43 @@ my sub confirm_apply_run(
     }
     my $answer = $read_answer->();
     if (!defined($answer) || $answer !~ m/^\s*y(?:es)?\s*$/i) {
-        log_info("No migration changes were applied.");
+        log_info("Requested changes were not applied.");
         return 0;
     }
     return 1;
+}
+
+my sub preplan_changes_pending($opts, $state) {
+    return 1 if $opts->{'confirm-all-clients-refreshed'};
+    for my $option (
+        qw(confirm-clients-refreshed abort-staged-key confirm-abort-clients-refreshed)
+    ) {
+        return 1 if scalar(@{ $opts->{$option} // [] });
+    }
+    return 1 if admin_rotation_unfinished({%$state});
+    return
+        $state->{noout_owned}
+        || defined($state->{preferred_cipher_was})
+        || $state->{client_grace}
+        || scalar(keys %{ $state->{staged} // {} })
+        || scalar(keys %{ $state->{lockbox} // {} })
+        || exists($state->{new_keys})
+        || exists($state->{admin_recovery});
+}
+
+# Ordinary runs ask after displaying the plan. Recovery and confirmations need consent earlier;
+# their effects determine the remaining plan. Session bookkeeping follows the dry-run rules.
+my sub apply_consent_gate($opts, $confirm = \&confirm_apply_run, $interactive = $stdin_is_tty) {
+    my ($asked, $answer);
+    return sub($state = {}, $plan_ready = 0) {
+        return 1 if !$opts->{apply} || $opts->{'assume-yes'};
+        return $answer if $asked;
+        return 1 if !$plan_ready && $interactive && !preplan_changes_pending($opts, $state);
+        log_info("Recovery and confirmations may run before the remaining plan can be shown.")
+            if !$plan_ready && $interactive;
+        $asked = 1;
+        return $answer = $confirm->($opts);
+    };
 }
 
 my sub run_migration($opts, $confirm = \&confirm_apply_run) {
@@ -4978,8 +5011,8 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     my $client_files = client_key_files();
     assert_abort_rotation_compatible($opts, $client_files);
 
-    # Recovery and key confirmations can mutate the cluster before the rotation plan is built.
-    my $accepted = $confirm->($opts);
+    my $consent = apply_consent_gate($opts, $confirm);
+    my $accepted = $consent->();
     return defined($accepted) ? 0 : 1 if !$accepted;
 
     # around the locks, not inside: an interrupt would otherwise kill perl and leave one held
@@ -5002,6 +5035,8 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
 
     # once the cluster lock is held: a run that waited for another one needs that run's final state
     my $state = load_state();
+    $accepted = $consent->($state);
+    return defined($accepted) ? 0 : 1 if !$accepted;
     if ($opts->{apply}) {
         repair_admin_keyring($state);
     } elsif (admin_rotation_unfinished($state)) {
@@ -5302,6 +5337,9 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
         return 0;
     }
 
+    $accepted = $consent->($state, 1);
+    return defined($accepted) ? 0 : 1 if !$accepted;
+
     $state->{created} //= time();
     $state->{fsid} = $info->{fsid};
     # before any side effect: a stopped manager or metadata server drops out of Ceph's metadata
@@ -5509,6 +5547,7 @@ sub key_migration_test_hooks {
         main => \&main,
         run_migration => \&run_migration,
         confirm_apply_run => \&confirm_apply_run,
+        apply_consent_gate => \&apply_consent_gate,
         preflight => \&preflight_cluster,
         assert_consumers => \&assert_consumers_current,
         wipe_rotating_keys => \&wipe_rotating_keys,

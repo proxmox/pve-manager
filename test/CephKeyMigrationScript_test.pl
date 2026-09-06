@@ -4806,7 +4806,7 @@ sub run_aggregate_confirmation {
         { apply => 1, 'confirm-all-clients-refreshed' => 1, 'restrict-ciphers' => 1 },
         { apply => 1, 'abort-staged-key' => ['client.app'] },
         { apply => 1, 'confirm-abort-clients-refreshed' => ['client.app'] },
-        { apply => 1, 'rotate-cluster-keys' => 1 },
+        { apply => 1, 'confirm-clients-refreshed' => ['client.app'] },
     ) {
         my ($result, $error, $output);
         my $locked = 0;
@@ -4838,7 +4838,7 @@ sub run_aggregate_confirmation {
         is($result, 0, 'declining is a successful cancellation');
         is($asked, 1, 'the whole invocation requires consent once');
         is($locked, 0, 'cancellation precedes journal loading, recovery, and key confirmation');
-        like($output, qr/No migration changes were applied/, 'cancellation reports its full scope');
+        like($output, qr/Requested changes were not applied/, 'cancellation reports its scope');
     }
 
     for my $case (
@@ -5088,6 +5088,80 @@ for my $aggregate (0, 1) {
         !$state->{client_refresh}->{'client.cp'}->{measurement_incomplete},
         'successful retries avoid an unnecessary later first measurement',
     );
+}
+
+{
+    for my $state (
+        {},
+        { client_refresh => { 'client.admin' => { session_ids => [1], cleared => 2 } } },
+        { rotated => { 'client.admin' => 1 }, done => { 'client.admin' => 2 } },
+        { plan => { 'mgr.a' => { type => 'mgr', id => 'a', node => 'node-a' } } },
+    ) {
+        my $asked = 0;
+        my $gate = $HOOKS->{apply_consent_gate}->(
+            { apply => 1, 'rotate-cluster-keys' => 1 }, sub { $asked++; return 0; }, 1,
+        );
+        ok($gate->(), 'ordinary interactive apply can reach journal inspection without asking');
+        ok($gate->($state), 'ordinary journal state permits planning before consent');
+        is($asked, 0, 'ordinary apply has not asked before the plan is shown');
+        is($gate->($state, 1), 0, 'declining the displayed plan prevents its execution');
+        is($gate->($state, 1), 0, 'cancellation remains effective at later consent checks');
+        is($asked, 1, 'a cancelled plan does not ask again');
+    }
+    for my $state (
+        { rotated => { 'client.admin' => 1 } },
+        { live_swap => { 'client.admin' => {} } },
+        { noout_owned => ['osd.1'] },
+        { preferred_cipher_was => 'aes' },
+        { client_grace => { previous => 1 } },
+        { staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } } },
+        { staged => { 'client.app' => { aborting => 1 } } },
+        { lockbox => { 'client.osd-lockbox.abc' => {} } },
+        { new_keys => {} },
+        { admin_recovery => {} },
+    ) {
+        my ($asked, $output) = (0, '');
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        my $gate = $HOOKS->{apply_consent_gate}->(
+            { apply => 1 }, sub { $asked++; return 0; }, 1,
+        );
+        ok($gate->(), 'journal-dependent recovery consent waits for the locked journal');
+        is($gate->($state), 0, 'declining prevents pre-plan recovery');
+        is($asked, 1, 'recovery requires consent before the plan');
+        like(
+            $output,
+            qr/before the remaining plan can be shown/,
+            'the early question explains why recovery precedes the plan',
+        );
+    }
+    for my $opts ({}, { apply => 1, 'assume-yes' => 1 }) {
+        my $gate = $HOOKS->{apply_consent_gate}->($opts, sub { die "unexpected question\n"; }, 0);
+        ok($gate->(), 'dry runs and explicit noninteractive authorization do not ask');
+        ok(
+            $gate->({ client_grace => {} }),
+            'recovery does not add a question after explicit consent',
+        );
+        ok($gate->({}, 1), 'the plan does not add a question after explicit consent');
+    }
+    my $asked = 0;
+    my $gate = $HOOKS->{apply_consent_gate}->(
+        { apply => 1 }, sub { $asked++; return undef; }, 0,
+    );
+    is($gate->(), undef, 'noninteractive refusal occurs before journal inspection');
+    is($gate->({}, 1), undef, 'noninteractive refusal cannot become plan approval');
+    is($asked, 1, 'noninteractive refusal is final for this invocation');
+    my $output;
+    local *STDOUT;
+    open(STDOUT, '>', \$output) or die $!;
+    $asked = 0;
+    $gate = $HOOKS->{apply_consent_gate}->(
+        { apply => 1, 'confirm-all-clients-refreshed' => 1 }, sub { $asked++; return 1; }, 1,
+    );
+    ok($gate->(), 'explicit confirmations require consent before journal inspection');
+    ok($gate->({ staged => { 'client.admin' => {} } }), 'accepted consent covers recovery');
+    ok($gate->({}, 1), 'accepted consent covers the remaining plan');
+    is($asked, 1, 'an accepted invocation asks only once');
 }
 
 done_testing();
