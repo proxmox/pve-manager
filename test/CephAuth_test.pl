@@ -179,6 +179,71 @@ unlike(
     'a complete healthy inventory needs no empty exception section',
 );
 
+my $fresh_replies = dclone($base);
+$fresh_replies->{'auth dump-keys'}->{data}->{secrets} = [
+    (map { $key->("osd.$_", 'aes') } 0 .. 17),
+    (map { $key->("client.storage$_", 'aes') } 1 .. 12),
+];
+$fresh_replies->{'mon dump'} = {
+    auth_service_cipher => { name => 'aes' },
+    auth_preferred_cipher => { name => 'aes' },
+    auth_allowed_ciphers => [{ name => 'aes' }, { name => 'aes256k' }],
+};
+my $fresh = $collect->($fresh_replies);
+my $fresh_text = $render->($fresh);
+unlike(
+    $fresh_text,
+    qr/Keys needing attention|osd\.\d|client\.storage\d|more identities/,
+    'homogeneous old keys are grouped without redundant names or omission claims',
+);
+like($fresh_text, qr/service: 18 aes\n  client: 12 aes/, 'all 30 old keys remain counted');
+like(
+    $fresh_text,
+    qr/^  \Q$helper --rotate-cluster-keys\E$/m,
+    'homogeneous old keys retain the cluster-owned preview command',
+);
+is_deeply(
+    decode_json($render->($fresh, 'json')),
+    $fresh,
+    'grouping homogeneous old keys leaves the full JSON inventory intact',
+);
+like(
+    $fresh_text,
+    qr/Listed current keys \(Ceph identities, not guests, mounts, or sessions\)/,
+    'the count scope belongs to the inventory heading',
+);
+is(
+    scalar(() = $fresh_text =~ /not guests, mounts, or sessions/g),
+    1,
+    'identity scope is stated once',
+);
+like(
+    $fresh_text,
+    qr/Consumer refresh, including disconnected consumers and external copies, is not verified here/,
+    'grouped old keys retain consumer and saved-copy limits',
+);
+
+my $mixed_replies = dclone($fresh_replies);
+$mixed_replies->{'auth dump-keys'}->{data}->{secrets} = [
+    $key->('osd.0', 'aes'),
+    (map { $key->("osd.$_", 'aes256k') } 1 .. 17),
+    $key->('client.storage1', 'aes'),
+    (map { $key->("client.storage$_", 'aes256k') } 2 .. 12),
+];
+my $mixed = $collect->($mixed_replies);
+my $mixed_text = $render->($mixed);
+like(
+    $mixed_text,
+    qr/Keys needing attention \(2 listed identities\)\n  client\.storage1: current aes \(old\), pending none\n  osd\.0: current aes \(old\), pending none/,
+    'mixed inventories name the remaining old identities',
+);
+like(
+    $mixed_text,
+    qr/service: 1 aes, 17 aes256k\n  client: 1 aes, 11 aes256k/,
+    'mixed inventories preserve exact counts for both ciphers and classes',
+);
+unlike($mixed_text, qr/osd\.1:|client\.storage2:/, 'mixed inventories omit healthy names');
+
 # A staged admin key can coexist with genuine ALLOWED and CREATABLE warnings.
 my $admin_replies = dclone($base);
 $admin_replies->{'mon dump'}->{auth_allowed_ciphers} = [{ name => 'aes' }, { name => 'aes256k' }];
@@ -293,6 +358,7 @@ for my $case (
         [$key->('client.admin', 'aes', 'aes256k'), $key->('client.store', 'aes')],
     ],
     ['pending daemon', [$key->('osd.0', 'aes256k', 'aes')]],
+    ['pending current client', [$key->('client.admin', 'aes256k', 'aes256k')]],
     ['unknown owner', [$key->('client.external', 'aes', 'aes256k')]],
 ) {
     my ($name, $keys) = @$case;
@@ -367,8 +433,65 @@ like(
 );
 like(
     $kernel_text,
-    qr/Verify uname -r on affected nodes.*does not block userspace-only keys/s,
+    qr/Verify uname -r on affected nodes.*does not\s+block userspace-only\s+keys/s,
     'kernel guidance has an explicit command and the correct client scope',
+);
+
+my %kernel_examples;
+for my $case (
+    ['old-kernel', '6.14.11-1-pve', 'old'], ['unknown-kernel', undef, 'unknown'],
+) {
+    my ($name, $release, $issue) = @$case;
+    my $replies = dclone($base);
+    $replies->{'mon metadata'}->[0] = {
+        hostname => 'mits6',
+        defined($release) ? (kernel_version => $release) : (),
+    };
+    my $status = $collect->($replies);
+    my $before = dclone($status);
+    my $text = $render->($status);
+    $kernel_examples{$name} = $text;
+    like(
+        $text,
+        qr/Next step\n  \* Some reported node kernels are \Q$issue\E\./,
+        "$name has an explicit conclusion before the helper advice",
+    );
+    like(
+        $text =~ s/\s+/ /gr,
+        qr/Verify uname -r on affected nodes; kernel RBD\/CephFS clients need a running kernel 7\.0 or newer before key rotation/,
+        "$name identifies the check and running-kernel prerequisite",
+    );
+    is(scalar(() = $text =~ /Verify uname -r/g), 1, "$name has no repeated kernel advice");
+    like(
+        $text =~ s/\s+/ /gr,
+        qr/does not block userspace-only keys/,
+        "$name keeps the userspace-only scope",
+    );
+    like(
+        $text,
+        defined($release)
+        ? qr/mits6: 6\.14\.11-1-pve \(at Ceph daemon start\)/
+        : qr/mits6: unknown \(no kernel report\) - compatibility unknown/,
+        "$name retains the evidence source rather than claiming a live remote kernel check",
+    );
+    is_deeply($status, $before, "$name formatting does not alter collected verdicts or evidence");
+}
+like(
+    $kernel_text,
+    qr/Next step\n  \* Some reported node kernels are old or unknown\./,
+    'combined old and unknown evidence has a scoped conclusion',
+);
+my $no_nodes = dclone($current);
+$no_nodes->{nodes} = {};
+like(
+    $render->($no_nodes),
+    qr/Next step\n  \* No node kernel versions were reported\./,
+    'an empty node inventory is unknown, not compatible',
+);
+unlike(
+    $current_text,
+    qr/Some reported node kernels are|Verify uname -r|does not block userspace-only/,
+    'supported kernel reports need no compatibility caveat',
 );
 
 my $unknown_replies = dclone($base);
@@ -542,8 +665,8 @@ like(
 );
 like(
     $many_text,
-    qr/client\.storage02: current unknown, pending none/,
-    'unknown identity remains named among old keys',
+    qr/client\.storage50: current aes \(old\), pending aes256k\n  client\.storage02: current unknown, pending none/,
+    'unknown identity takes priority over ordinary old keys after the pending identity',
 );
 like(
     $many_text,
@@ -563,7 +686,10 @@ is(
     'JSON preserves all unresolved identities',
 );
 
-for my $text ($admin_text, $current_text, $partial_text, $many_text) {
+for my $text (
+    $admin_text, $current_text, $partial_text, $many_text, $fresh_text, $mixed_text,
+    $kernel_text, values %kernel_examples,
+) {
     cmp_ok(
         (
             sort { $b <=> $a } map { length($_) }
@@ -585,9 +711,12 @@ for my $status ($current, $admin, $partial, $unreadable, $unknown_pending) {
 # Optional rendered fixtures let reviewers inspect the same cases exercised by the tests.
 if (my $dir = $ENV{CEPH_AUTH_EXAMPLE_DIR}) {
     for my $example (
+        ['fresh-old', $fresh_text],
+        ['mixed-old-current', $mixed_text],
         ['pending-admin', $admin_text],
         ['all-current', $current_text],
         ['partial-read', $partial_text],
+        (map { [$_, $kernel_examples{$_}] } sort keys %kernel_examples),
     ) {
         open(my $fh, '>', "$dir/$example->[0].txt") or die $!;
         print {$fh} $example->[1];

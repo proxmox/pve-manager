@@ -460,21 +460,32 @@ sub format_auth_status {
     }
 
     print "Cephx key cipher status\n";
-    print "  Counts are Ceph authentication identities, not guests, mounts, or sessions.\n";
 
     my $entities = $data->{entities} // {};
     my $details = $entities->{details} // {};
     my $attention = {};
+    my %ciphers;
+    my $has_pending = 0;
     for my $class (qw(service client)) {
         my $by_cipher = $entities->{$class} // {};
         for my $cipher (keys %$by_cipher) {
             for my $entity ($by_cipher->{$cipher}->@*) {
                 my $detail = $details->{$entity} // {};
+                $ciphers{$cipher} = 1;
+                $has_pending ||= defined($detail->{'pending-cipher'});
                 next if $cipher eq 'aes256k' && !defined($detail->{'pending-cipher'});
                 $attention->{$entity} = { 'current-cipher' => $cipher, %$detail };
             }
         }
     }
+    # Homogeneous inventories need counts, not repeated names. Partial reads and mixed or
+    # staged keys still need named exceptions, without implying a migration direction.
+    $attention = {}
+        if $entities->{complete}
+        && $entities->{'pending-keys-known'}
+        && !$has_pending
+        && scalar(keys %ciphers) == 1
+        && !$ciphers{unknown};
     my @attention = sort {
         defined($attention->{$b}->{'pending-cipher'}) <=>
             defined($attention->{$a}->{'pending-cipher'})
@@ -508,7 +519,24 @@ sub format_auth_status {
         @attention - $shown)
         if @attention > $shown;
 
+    my $nodes = $data->{nodes} // {};
+    my $old_kernels = grep {
+        defined($_->{'supports-aes256k'}) && !$_->{'supports-aes256k'}
+    } values %$nodes;
+    my $unknown_kernels = !scalar(keys %$nodes)
+        || grep { !defined($_->{'supports-aes256k'}) } values %$nodes;
+
     print "\nNext step\n";
+    if ($old_kernels || $unknown_kernels) {
+        my $issue = $old_kernels ? ($unknown_kernels ? 'old or unknown' : 'old') : 'unknown';
+        my $summary =
+            scalar(keys %$nodes)
+            ? "Some reported node kernels are $issue."
+            : 'No node kernel versions were reported.';
+        print_wrapped_bullet("$summary Verify uname -r on affected nodes; kernel"
+            . " RBD/CephFS clients need a running kernel 7.0 or newer before key rotation."
+            . " This does not block userspace-only keys.");
+    }
     for my $line (($data->{conclusion} // [])->@*) {
         # Keep suggested commands intact so they can be copied without joining wrapped lines.
         if ($line =~ m{^(?:/usr/share/pve-manager/migrations/|pveceph auth status$)}) {
@@ -518,7 +546,7 @@ sub format_auth_status {
         }
     }
 
-    print "\nListed current keys\n";
+    print "\nListed current keys (Ceph identities, not guests, mounts, or sessions)\n";
     printf(
         "  source: %s%s\n",
         $entities->{source} // 'unknown',
@@ -597,7 +625,6 @@ sub format_auth_status {
     print "  unknown\n" if !scalar(keys %$versions);
     print_wrapped_values($_, $versions->{$_}) for sort keys %$versions;
 
-    my $nodes = $data->{nodes} // {};
     print "\nReported node kernels (kernel RBD/CephFS clients need 7.0 or newer)\n";
     print "  unknown\n" if !scalar(keys %$nodes);
     for my $node (sort keys %$nodes) {
@@ -613,10 +640,6 @@ sub format_auth_status {
             : $supported ? ''
             : ' - too old for aes256k kernel clients',
         );
-    }
-    if (!scalar(keys %$nodes) || grep { !$_->{'supports-aes256k'} } values %$nodes) {
-        print "  Verify uname -r on affected nodes before rotating kernel-client keys.\n";
-        print "  This does not block userspace-only keys.\n";
     }
     print
         "\nConsumer refresh, including disconnected consumers and external copies, is not verified here.\n";
