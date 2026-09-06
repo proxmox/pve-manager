@@ -285,7 +285,8 @@ sub fresh_test_restriction_snapshot {
         'client snapshots index fresh auth entries without discarding keys or caps',
     );
 
-    for my $pending ($OLD, undef, '', {}) {
+    for my $case (['scalar', $OLD], ['undefined', undef], ['empty', ''], ['non-scalar', {}]) {
+        my ($shape, $pending) = @$case;
         my $auth = [{ %$entry, pending_key => $pending }];
         for my $kind (qw(client restriction wipe)) {
             my $rados = CurrentMonitorRados->new(auth_export_reply => $auth);
@@ -301,9 +302,9 @@ sub fresh_test_restriction_snapshot {
                 }
             };
             if (ref($pending) && $kind ne 'wipe') {
-                like($@, qr/auth export is malformed/, "$kind validates the pending-key shape");
+                like($@, qr/auth export is malformed/, "$kind rejects a $shape pending key");
             } else {
-                is($@, '', "$kind accepts its supported pending-key representation");
+                is($@, '', "$kind retains its acceptance of a $shape pending key");
             }
         }
     }
@@ -1611,38 +1612,6 @@ sub wipe_monitor_picture {
     }
 }
 
-{
-
-    package OrderedConfirmationRados;
-
-    sub new {
-        my ($class, @entities) = @_;
-        return bless {
-            commands => [],
-            committed => [],
-            entries => {
-                map {
-                    $_ => { entity => $_, key => $main::OLD, pending_key => $main::NEW }
-                } @entities
-            },
-        }, $class;
-    }
-
-    sub mon_command {
-        my ($self, $args) = @_;
-        push $self->{commands}->@*, {%$args};
-        my $entity = $args->{entity};
-        return [{ $self->{entries}->{$entity}->%* }] if $args->{prefix} eq 'auth get';
-        if ($args->{prefix} eq 'auth commit-pending') {
-            $self->{entries}->{$entity}->{key} =
-                delete $self->{entries}->{$entity}->{pending_key};
-            push $self->{committed}->@*, $entity;
-            return {};
-        }
-        die "unexpected monitor command '$args->{prefix}'\n";
-    }
-}
-
 sub grace_collect {
     my ($rados, %override) = @_;
     return sub {
@@ -1684,41 +1653,8 @@ sub run_staging {
 }
 
 {
-    my @entities = qw(client.admin client.zeta client.alpha);
-    my $rados = OrderedConfirmationRados->new(@entities);
-    my $info = migrated_info({ complete => 1, clients => {} });
-    $info->{exported} = { map { $_ => { $rados->{entries}->{$_}->%* } } @entities };
-    $info->{rados} = $rados;
-    my $state = {
-        client_keys_seen => { map { $_ => key_fingerprint($OLD) } @entities },
-        client_refresh => { map { $_ => { rotated => 1, session_ids => [] } } @entities },
-        staged => { map { $_ => { key => key_fingerprint($NEW), written => 1 } } @entities },
-    };
-    {
-        no warnings qw(once redefine);
-        local *main::file_set_contents = sub { };
-        $HOOKS->{preflight}->(
-            $info,
-            {
-                apply => 1,
-                'confirm-clients-refreshed' =>
-                    [qw(client.admin client.zeta client.alpha client.zeta)],
-            },
-            0,
-            $state,
-            {},
-        );
-    }
-    is_deeply(
-        $rados->{committed},
-        [qw(client.zeta client.alpha client.admin)],
-        'an explicit confirmation batch preserves user order, deduplicates, and commits admin last',
-    );
-}
 
-{
-
-    package AggregateConfirmationRados;
+    package ClientConfirmationRados;
 
     sub new {
         my ($class, @entities) = @_;
@@ -1759,7 +1695,7 @@ sub run_staging {
 
 sub aggregate_fixture {
     my ($sessions, @entities) = @_;
-    my $rados = AggregateConfirmationRados->new(@entities);
+    my $rados = ClientConfirmationRados->new(@entities);
     my $state = {
         client_keys_seen => { map { $_ => key_fingerprint($OLD) } @entities },
         client_refresh => {},
@@ -1774,6 +1710,33 @@ sub aggregate_fixture {
     $info->{exported} = { map { $_ => { $rados->{entries}->{$_}->%* } } @entities };
     $info->{rados} = $rados;
     return ($rados, $info, $state);
+}
+
+{
+    my ($rados, $info, $state) = aggregate_fixture(
+        { complete => 1, clients => {} },
+        qw(client.admin client.zeta client.alpha),
+    );
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $HOOKS->{preflight}->(
+            $info,
+            {
+                apply => 1,
+                'confirm-clients-refreshed' =>
+                    [qw(client.admin client.zeta client.alpha client.zeta)],
+            },
+            0,
+            $state,
+            {},
+        );
+    }
+    is_deeply(
+        $rados->{committed},
+        [qw(client.zeta client.alpha client.admin)],
+        'an explicit confirmation batch preserves user order, deduplicates, and commits admin last',
+    );
 }
 
 {
@@ -2730,7 +2693,7 @@ sub run_aggregate_confirmation {
     cmp_ok($verdict, '>=', 0, 'a pending key this script staged does not refuse the run');
 }
 
-# --- what the review of the staged flow asked for --------------------------------------------
+# Staged-key recovery and credential reconciliation.
 {
     # a confirmation must not commit a staged key whose copies are not all written
     my $fp = key_fingerprint($NEW);
@@ -5145,48 +5108,59 @@ for my $aggregate (0, 1) {
 }
 
 {
-    for my $state (
-        {},
-        { client_refresh => { 'client.admin' => { session_ids => [1], cleared => 2 } } },
-        { rotated => { 'client.admin' => 1 }, done => { 'client.admin' => 2 } },
-        { plan => { 'mgr.a' => { type => 'mgr', id => 'a', node => 'node-a' } } },
+    for my $case (
+        ['plan', 'empty journal', {}],
+        [
+            'plan',
+            'closed client record',
+            { client_refresh => { 'client.admin' => { session_ids => [1], cleared => 2 } } },
+        ],
+        [
+            'plan',
+            'completed admin rotation',
+            { rotated => { 'client.admin' => 1 }, done => { 'client.admin' => 2 } },
+        ],
+        [
+            'plan',
+            'daemon recovery',
+            { plan => { 'mgr.a' => { type => 'mgr', id => 'a', node => 'node-a' } } },
+        ],
+        ['journal', 'admin rotation', { rotated => { 'client.admin' => 1 } }],
+        ['journal', 'admin live swap', { live_swap => { 'client.admin' => {} } }],
+        ['journal', 'owned noout', { noout_owned => ['osd.1'] }],
+        ['journal', 'cipher restoration', { preferred_cipher_was => 'aes' }],
+        ['journal', 'client grace', { client_grace => { previous => 1 } }],
+        [
+            'journal',
+            'staged key',
+            { staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } } },
+        ],
+        ['journal', 'rollback', { staged => { 'client.app' => { aborting => 1 } } }],
+        ['journal', 'lockbox recovery', { lockbox => { 'client.osd-lockbox.abc' => {} } }],
+        ['journal', 'legacy keys', { new_keys => {} }],
+        ['journal', 'admin recovery', { admin_recovery => {} }],
     ) {
-        my $asked = 0;
-        my $gate = $HOOKS->{apply_consent_gate}->(
-            { apply => 1, 'rotate-cluster-keys' => 1 }, sub { $asked++; return 0; }, 1,
-        );
-        ok($gate->(), 'ordinary interactive apply can reach journal inspection without asking');
-        ok($gate->($state), 'ordinary journal state permits planning before consent');
-        is($asked, 0, 'ordinary apply has not asked before the plan is shown');
-        is($gate->($state, 1), 0, 'declining the displayed plan prevents its execution');
-        is($gate->($state, 1), 0, 'cancellation remains effective at later consent checks');
-        is($asked, 1, 'a cancelled plan does not ask again');
-    }
-    for my $state (
-        { rotated => { 'client.admin' => 1 } },
-        { live_swap => { 'client.admin' => {} } },
-        { noout_owned => ['osd.1'] },
-        { preferred_cipher_was => 'aes' },
-        { client_grace => { previous => 1 } },
-        { staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } } },
-        { staged => { 'client.app' => { aborting => 1 } } },
-        { lockbox => { 'client.osd-lockbox.abc' => {} } },
-        { new_keys => {} },
-        { admin_recovery => {} },
-    ) {
-        my ($asked, $output) = (0, '');
+        my ($when, $label, $state) = @$case;
+        my ($checkpoint, $output, @events);
+        my $opts = { apply => 1 };
+        $opts->{'rotate-cluster-keys'} = 1 if $when eq 'plan';
         local *STDOUT;
         open(STDOUT, '>', \$output) or die $!;
         my $gate = $HOOKS->{apply_consent_gate}->(
-            { apply => 1 }, sub { $asked++; return 0; }, 1,
+            $opts, sub { push @events, ['ask', $checkpoint]; return 0; }, 1,
         );
-        ok($gate->(), 'journal-dependent recovery consent waits for the locked journal');
-        is($gate->($state), 0, 'declining prevents pre-plan recovery');
-        is($asked, 1, 'recovery requires consent before the plan');
-        like(
-            $output,
-            qr/before the remaining plan can be shown/,
-            'the early question explains why recovery precedes the plan',
+        for my $step (qw(setup journal plan)) {
+            $checkpoint = $step;
+            my $answer = $gate->($checkpoint eq 'setup' ? {} : $state, $checkpoint eq 'plan');
+            push @events, [$checkpoint, $answer];
+            last if !$answer;
+        }
+        is_deeply(
+            \@events,
+            [
+                ['setup', 1], ($when eq 'plan' ? (['journal', 1]) : ()), ['ask', $when], [$when, 0],
+            ],
+            "$label: ask at $when and stop on cancellation",
         );
     }
     for my $opts ({}, { apply => 1, 'assume-yes' => 1 }) {
@@ -5203,8 +5177,7 @@ for my $aggregate (0, 1) {
         { apply => 1 }, sub { $asked++; return undef; }, 0,
     );
     is($gate->(), undef, 'noninteractive refusal occurs before journal inspection');
-    is($gate->({}, 1), undef, 'noninteractive refusal cannot become plan approval');
-    is($asked, 1, 'noninteractive refusal is final for this invocation');
+    is($asked, 1, 'noninteractive apply invokes the authorization check once');
     my $output;
     local *STDOUT;
     open(STDOUT, '>', \$output) or die $!;

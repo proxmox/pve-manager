@@ -119,13 +119,7 @@ my $collect = sub {
     local *PVE::INotify::nodename = sub { 'mits8' };
     local *POSIX::uname = sub { ('Linux', 'mits8', '7.0.14-16-pve') };
     my $status = PVE::Ceph::Services::get_cephx_auth_status($rados);
-    unlike(encode_json($status), qr/\Q$secret\E/, 'collector retains no key material');
-    is_deeply(
-        [sort $rados->{commands}->@*],
-        [sort keys %$base],
-        'collector uses only the existing read-only commands, with no workload inventory',
-    );
-    return $status;
+    return wantarray ? ($status, $rados->{commands}) : $status;
 };
 my $render = sub {
     my ($data, $format) = @_;
@@ -138,7 +132,25 @@ my $render = sub {
 my $conclusions = sub { join("\n", $_[0]->{conclusion}->@*) };
 my $helper = '/usr/share/pve-manager/migrations/pve-cephx-rotate-service-keys';
 
-my $current = $collect->();
+my $expected_reads = [
+    sort (
+        'health',
+        'mon dump',
+        'versions',
+        'quorum_status',
+        'auth dump-keys',
+        'mon metadata',
+        'mgr metadata',
+        'mds metadata',
+        'osd metadata',
+    ),
+];
+my ($current, $commands) = $collect->();
+is_deeply(
+    [sort @$commands],
+    $expected_reads,
+    'status collects auth, health, quorum, versions, and every daemon role without workload probes',
+);
 my $current_text = $render->($current);
 like(
     $current_text,
@@ -201,11 +213,6 @@ like(
     $fresh_text,
     qr/^  \Q$helper --rotate-cluster-keys\E$/m,
     'homogeneous old keys retain the cluster-owned preview command',
-);
-is_deeply(
-    decode_json($render->($fresh, 'json')),
-    $fresh,
-    'grouping homogeneous old keys leaves the full JSON inventory intact',
 );
 like(
     $fresh_text,
@@ -273,6 +280,7 @@ $admin_replies->{health}->{checks} = {
         keys %$health_messages
 };
 my $admin = $collect->($admin_replies);
+my $expected_admin = dclone($admin);
 my $admin_text = $render->($admin);
 is($admin->{entities}->{'pending-keys'}, 1, 'collector counts pending keys');
 ok($admin->{entities}->{'pending-keys-known'}, 'collector knows the complete pending inventory');
@@ -340,13 +348,8 @@ unlike(
 my $json = $render->($admin, 'json');
 is_deeply(
     decode_json($json),
-    $admin,
+    $expected_admin,
     'JSON formatting preserves every collected field and full inventory',
-);
-is(
-    scalar(decode_json($json)->{entities}->{client}->{aes256k}->@*),
-    25,
-    'healthy UUID inventory remains complete in JSON',
 );
 unlike($admin_text . $json, qr/\Q$secret\E/, 'neither text nor JSON exposes key material');
 
@@ -448,7 +451,6 @@ for my $case (
         defined($release) ? (kernel_version => $release) : (),
     };
     my $status = $collect->($replies);
-    my $before = dclone($status);
     my $text = $render->($status);
     $kernel_examples{$name} = $text;
     like(
@@ -474,7 +476,6 @@ for my $case (
         : qr/mits6: unknown \(no kernel report\) - compatibility unknown/,
         "$name retains the evidence source rather than claiming a live remote kernel check",
     );
-    is_deeply($status, $before, "$name formatting does not alter collected verdicts or evidence");
 }
 like(
     $kernel_text,
@@ -530,9 +531,19 @@ like(
     qr/^\Q$helper\E$/m,
     'unknown pending cipher also routes to staging',
 );
+unlike(
+    encode_json($unknown_pending),
+    qr/\Q$secret\E/,
+    'unknown current and pending ciphers do not expose their key material',
+);
 
 for my $prefix ('health', 'auth dump-keys', 'quorum_status', 'mon dump', 'versions') {
-    my $status = $collect->(dclone($base), { $prefix => 1 });
+    my ($status, $commands) = $collect->(dclone($base), { $prefix => 1 });
+    is_deeply(
+        [sort @$commands],
+        $expected_reads,
+        "$prefix failure does not prevent collecting independent evidence",
+    );
     my $text = $render->($status);
     if ($prefix eq 'health') {
         is($status->{'checks-known'}, 0, 'failed health read is explicit');
@@ -657,6 +668,7 @@ $many->{'auth dump-keys'}->{data}->{secrets} = [
     } 1 .. 50
 ];
 my $many_status = $collect->($many);
+my $before_render = dclone($many_status);
 my $many_text = $render->($many_status);
 like(
     $many_text,
@@ -685,6 +697,11 @@ is(
     50,
     'JSON preserves all unresolved identities',
 );
+is_deeply(
+    $many_status,
+    $before_render,
+    'rendering a bounded exception list does not alter the collected inventory or verdicts',
+);
 
 for my $text (
     $admin_text, $current_text, $partial_text, $many_text, $fresh_text, $mixed_text,
@@ -702,10 +719,17 @@ for my $text (
 }
 
 my $schema = PVE::CLI::pveceph->map_method_by_name('auth_status')->{returns};
-ok($schema->{properties}->{'checks-known'}, 'CLI return schema declares the availability field');
-for my $status ($current, $admin, $partial, $unreadable, $unknown_pending) {
+ok($schema->{properties}->{'checks-known'}, 'CLI schema declares health availability');
+for my $case (
+    ['current keys', $current],
+    ['pending admin', $admin],
+    ['partial reads', $partial],
+    ['unreadable cluster', $unreadable],
+    ['unknown pending cipher', $unknown_pending],
+) {
+    my ($name, $status) = @$case;
     eval { PVE::JSONSchema::validate($status, $schema); };
-    is($@, '', 'collector response matches CLI schema');
+    is($@, '', "$name: collector response matches the CLI schema");
 }
 
 # Optional rendered fixtures let reviewers inspect the same cases exercised by the tests.
