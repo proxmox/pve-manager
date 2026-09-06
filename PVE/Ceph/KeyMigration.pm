@@ -525,19 +525,30 @@ sub summarize_monitor_connections($connections, $verbose = 0) {
     return scalar(@parts) ? join(', ', @parts) : undef;
 }
 
-# Add every instance observed around a rotation without losing evidence from an earlier one.
-# The post-rotation sample closes the race where a client loaded the old key after the first
-# sample. It can also include a client that already loaded the new key, but retaining that ID is
-# the safe ambiguity: refreshing one extra consumer is preferable to accepting an old key.
-sub merge_refresh_record($record, $sessions, $entity, $measurement_complete, $rotated = undef) {
+# Retain old or unidentified instances observed around a rotation, including partial retry samples.
+# A session already authenticated with the target key adds no stale evidence. Existing recorded IDs
+# remain evidence even if a later observation names the target key.
+sub merge_refresh_record(
+    $record, $sessions, $entity, $measurement_complete,
+    $rotated = undef,
+    $target = undef,
+) {
     my $merged = { %{ $record // {} } };
     my $ids = {};
     for my $id (@{ $merged->{session_ids} // [] }) {
         $ids->{"$id"} = $id;
     }
-    for my $session (@{ ($sessions->{clients} // {})->{$entity} // [] }) {
-        my $id = $session->{global_id} // next;
-        $ids->{"$id"} = $id;
+    for my $sample ($sessions, @{ $sessions->{observations} // [] }) {
+        for my $session (@{ ($sample->{clients} // {})->{$entity} // [] }) {
+            my $id = $session->{global_id} // next;
+            my $fingerprint = $session->{key_fingerprint};
+            next
+                if defined($target)
+                && length($target)
+                && defined($fingerprint)
+                && $fingerprint eq $target;
+            $ids->{"$id"} = $id;
+        }
     }
     $merged->{session_ids} = [sort { "$a" cmp "$b" } values %$ids]
         if scalar(keys %$ids) || defined($merged->{session_ids}) || $measurement_complete;

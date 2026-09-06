@@ -598,7 +598,7 @@ sub migrated_info {
     );
     like(
         $output,
-        qr/needed a first complete measurement; no client is currently connected.*complete empty measurement is now recorded.*Repeat the confirmation/s,
+        qr/needed a first complete measurement; no possibly stale session is currently visible.*complete measurement is now recorded.*Repeat the confirmation/s,
         'the refusal describes an empty measurement grammatically',
     );
 
@@ -4919,6 +4919,175 @@ sub run_aggregate_confirmation {
         'no broad guest inventory or premature confirmation obscures the required inspection',
     );
     ok(!(grep { length($_) > 100 } split(/\n/, $output)), 'the refusal wraps at 100 columns');
+}
+
+{
+    local $main::MONITOR_PROBE_RETRY_DELAY = 0;
+    my $calls = 0;
+    my $snapshot;
+    my $output;
+    {
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        $snapshot = $HOOKS->{session_snapshot_with_retries}->(
+            sub {
+                $calls++;
+                return picture(0, 1) if $calls == 1;
+                die "monitor election\n" if $calls == 2;
+                return picture(1, 2);
+            },
+            4,
+        );
+    }
+    is($calls, 3, 'session sampling retries incomplete and failed election sweeps');
+    ok($snapshot->{complete}, 'a complete retry supplies the measurement boundary');
+    is_deeply(
+        $snapshot->{clients},
+        picture(1, 2)->{clients},
+        'the current session picture does not include disconnected retry observations',
+    );
+    my $record = PVE::Ceph::KeyMigration::merge_refresh_record(
+        undef, $snapshot, 'client.app', 1,
+    );
+    is_deeply(
+        $record->{session_ids},
+        [1, 2],
+        'the baseline retains a session seen only in an incomplete retry',
+    );
+    {
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        $snapshot = $HOOKS->{session_snapshot_with_retries}->(sub { picture(0, 3) }, 2);
+    }
+    ok(
+        !$snapshot->{complete},
+        'exhausting retries does not turn a partial sweep into a complete one',
+    );
+    like(
+        $output,
+        qr/confirmation needs a complete measurement/,
+        'exhausted observations keep the confirmation prerequisite visible',
+    );
+}
+
+for my $aggregate (0, 1) {
+    my $target = key_fingerprint($NEW);
+    my @entities = ($aggregate ? ('client.store') : (), 'client.admin');
+    my ($rados, $info, $state) = aggregate_fixture({ complete => 1, clients => {} }, @entities);
+    my $old_id = $state->{client_refresh}->{'client.admin'}->{session_ids}->[0];
+    my $fresh_mounts = [
+        map {
+            { global_id => $_, host => "node-$_", key_fingerprint => $target }
+        } 201 .. 203
+    ];
+    $info->{sessions}->{clients}->{'client.admin'} = [
+        @$fresh_mounts,
+        {
+            global_id => $old_id,
+            host => 'old-client',
+            key_fingerprint => key_fingerprint($OLD),
+        },
+    ];
+    $info->{allowed_ciphers} = ['aes', 'aes256k'];
+    $state->{client_refresh}->{'client.admin'}->{measurement_incomplete} = 1;
+    $state->{mount_refresh}->{'client.admin'} = { target => $target, finished => 1 };
+    my $files = { 'client.admin' => [{ format => 'secret', store => 'cephfs' }] };
+    my $opts = {
+        apply => 1,
+        'restrict-ciphers' => 1,
+        $aggregate
+        ? ('confirm-all-clients-refreshed' => 1)
+        : ('confirm-clients-refreshed' => ['client.admin']),
+    };
+    my $output;
+    my $run = sub {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        local *main::run_command = sub { die "unexpected host probe\n"; };
+        $output = '';
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        return $HOOKS->{preflight}->(
+            $info,
+            $opts,
+            0,
+            $state,
+            $files,
+            sub { { sessions => $info->{sessions} } },
+            sub {
+                return {
+                    %$info,
+                    exported => { map { $_ => { %{ $rados->{entries}->{$_} } } } @entities },
+                };
+            },
+        );
+    };
+    is($run->(), -1, 'the first complete measurement still refuses premature confirmation');
+    is_deeply($rados->{committed}, [], 'no ready key is committed before the batch is ready');
+    is_deeply(
+        $state->{client_refresh}->{'client.admin'}->{session_ids},
+        [$old_id],
+        'measurement does not mark the three refreshed mount sessions as stale',
+    );
+    $info->{sessions}->{clients}->{'client.admin'} = $fresh_mounts;
+    is($run->(), -1, 'singular confirmation measures only after the connected blocker clears')
+        if !$aggregate;
+    ok(
+        !$state->{client_refresh}->{'client.admin'}->{measurement_incomplete},
+        'the complete measurement does not require refreshing the target-key mounts',
+    );
+    my $verdict = $run->();
+    diag($output) if $verdict <= 0;
+    cmp_ok(
+        $verdict,
+        '>',
+        0,
+        'the same finishing command passes after only the stale consumer refreshes',
+    );
+    is_deeply(
+        $rados->{committed},
+        \@entities,
+        'the unchanged mount sessions do not prevent committing the selected keys',
+    );
+}
+
+{
+    local $main::MONITOR_PROBE_RETRY_DELAY = 0;
+    my $rados = StagedRotationRados->new(key => $OLD);
+    my $state = {};
+    my $new_session = cp_picture(1, 4);
+    $new_session->{clients}->{'client.cp'}->[0]->{key_fingerprint} = key_fingerprint($NEW);
+    my @samples = (cp_picture(0, 1), cp_picture(1, 2), cp_picture(0, 3), $new_session);
+    my ($error, $output);
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        local *STDOUT;
+        open(STDOUT, '>', \$output) or die $!;
+        eval {
+            $HOOKS->{stage_client}->(
+                $rados,
+                $state,
+                { entity => 'client.cp', files => [] },
+                sub {
+                    $HOOKS->{session_snapshot_with_retries}->(sub { shift @samples }, 3);
+                },
+                grace_collect($rados),
+            );
+        };
+        $error = $@;
+    }
+    is($error, '', 'staging survives incomplete pre- and post-stage session sweeps');
+    is(scalar(@samples), 0, 'both staging snapshots wait for their complete sweep');
+    is_deeply(
+        $state->{client_refresh}->{'client.cp'}->{session_ids},
+        [1, 2, 3],
+        'staging retains every ambiguous retry observation but not a target-key session',
+    );
+    ok(
+        !$state->{client_refresh}->{'client.cp'}->{measurement_incomplete},
+        'successful retries avoid an unnecessary later first measurement',
+    );
 }
 
 done_testing();

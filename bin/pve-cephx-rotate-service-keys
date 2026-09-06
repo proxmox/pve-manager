@@ -12,6 +12,7 @@ use Digest::SHA qw(sha256_hex);
 use MIME::Base64 qw(decode_base64);
 use Term::ANSIColor;
 use Text::Wrap ();
+use Storable qw(dclone);
 
 use PVE::INotify;
 use PVE::RPCEnvironment;
@@ -689,6 +690,26 @@ my sub manual_promotion_with_retries($collect, $attempts = 10) {
     return $collected;
 }
 
+# Keep observations from failed sweeps as well as the final complete sweep. Otherwise a consumer
+# seen before an election could disappear during the retry and escape the rotation's baseline.
+my sub session_snapshot_with_retries($collect, $attempts = 10) {
+    my $observations = [];
+    my $latest;
+    for my $attempt (1 .. $attempts) {
+        $latest = eval { $collect->() };
+        $latest = { complete => 0, clients => {} }
+            if ref($latest) ne 'HASH' || ref($latest->{clients}) ne 'HASH';
+        push @$observations, dclone($latest);
+        last if $latest->{complete} || $attempt == $attempts;
+        log_info("Session query incomplete; retrying through a possible monitor election.")
+            if $attempt == 1;
+        sleep($MONITOR_PROBE_RETRY_DELAY);
+    }
+    log_warn("Session observations remain incomplete; confirmation needs a complete measurement.")
+        if !$latest->{complete};
+    return { %$latest, observations => $observations };
+}
+
 # A rotation can follow a long daemon walk, so rediscover the monitors instead of trusting the
 # inventory and liveness recorded at startup. Every current monitor gets a result entry; missing
 # metadata, missing quorum membership, and a failed admin-socket query therefore make the summary
@@ -1327,14 +1348,15 @@ my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
     ) {
         my $fp = key_fingerprint($exported->{$entity}->{key});
         if (defined($seen->{$entity}) && $seen->{$entity} ne $fp) {
-            log_warn("the key of '$entity' changed outside this script; retaining every recorded"
-                . " or currently visible instance because its loaded key cannot be determined");
+            log_warn("the key of '$entity' changed outside this script; retaining recorded"
+                . " instances and observed sessions not identified with the target key");
             $state->{client_refresh}->{$entity} = merge_refresh_record(
                 $state->{client_refresh}->{$entity},
                 $sessions,
                 $entity,
                 0,
                 time(),
+                session_key_targets($exported)->{$entity},
             );
         }
         $seen_changed = 1 if ($seen->{$entity} // '') ne $fp;
@@ -1615,6 +1637,23 @@ my sub update_cluster_info($info, $snapshot) {
     return $info;
 }
 
+my sub complete_client_measurement($state, $info, $entity) {
+    die "cannot measure client refresh without a complete session query\n"
+        if !$info->{sessions}->{complete};
+    my $targets = session_key_targets($info->{exported});
+    $state->{client_refresh}->{$entity} = merge_refresh_record(
+        $state->{client_refresh}->{$entity},
+        $info->{sessions},
+        $entity,
+        1,
+        undef,
+        $targets->{$entity},
+    );
+    return stale_consumers(
+        $info->{sessions}, { $entity => $state->{client_refresh}->{$entity} }, $targets,
+    )->{$entity} // [];
+}
+
 my sub preflight_cluster(
     $info, $opts, $recovered_count, $state,
     $client_files = {},
@@ -1671,6 +1710,7 @@ my sub preflight_cluster(
                 $entity,
                 $info->{sessions}->{complete},
                 (ref($previous) eq 'HASH' ? $previous->{saved} : undef) // time(),
+                session_key_targets($info->{exported})->{$entity},
             );
             close_tool_record($state, $entity) if tool_key($entity);
             $seeded = 1;
@@ -1775,17 +1815,14 @@ my sub preflight_cluster(
             my $needs_measurement =
                 $mark->{measurement_incomplete} || !defined($mark->{session_ids});
             if ($needs_measurement && $info->{sessions}->{complete}) {
-                my $live = $info->{sessions}->{clients}->{$entity} // [];
-                $state->{client_refresh}->{$entity} = merge_refresh_record(
-                    $mark, $info->{sessions}, $entity, 1,
-                );
+                my $live = complete_client_measurement($state, $info, $entity);
                 $measured = 1;
                 my $detail =
                     scalar(@$live)
                     ? scalar(@$live)
-                    . " currently connected client(s) are now recorded ("
+                    . " possibly stale connected client(s) are recorded ("
                     . $describe_for_section->($live) . ")"
-                    : "no client is currently connected as it";
+                    : "no possibly stale session is currently visible";
                 log_fail("not accepting '--confirm-all-clients-refreshed' yet: the rotation of"
                     . " '$entity' needed its first complete measurement; $detail. Repeat the"
                     . " confirmation after refreshing any recorded clients.");
@@ -1847,16 +1884,10 @@ my sub preflight_cluster(
                 $confirmation_refused = 1;
                 next;
             }
-            # A record without a measurement, from an interrupted run or a rotation done
-            # elsewhere, cannot tell an old consumer from a new one. Measuring first turns
-            # everything visible into a named consumer, so the confirmation cannot wave one
-            # through.
+            # An interrupted or externally performed rotation may lack a complete baseline. Record
+            # old-key and unidentified sessions before accepting attestations for unseen consumers.
             if ($verdict eq 'measure') {
-                my $live = $decision->{live};
-                $state->{client_refresh}->{$entity} = merge_refresh_record(
-                    $state->{client_refresh}->{$entity},
-                    $info->{sessions}, $entity, 1,
-                );
+                my $live = complete_client_measurement($state, $info, $entity);
                 save_state($state);
                 my $count = scalar(@$live);
                 my $measurement =
@@ -1865,7 +1896,7 @@ my sub preflight_cluster(
                     . ($count == 1 ? 'client is' : 'clients are')
                     . " now recorded as possibly holding the previous key ("
                     . $describe_for_section->($live) . ")"
-                    : "no client is currently connected as it, and that complete empty measurement"
+                    : "no possibly stale session is currently visible, and that complete measurement"
                     . " is now recorded";
                 log_fail("not accepting '$option' yet: its rotation needed a first complete"
                     . " measurement; $measurement. Repeat the confirmation after refreshing any"
@@ -3617,7 +3648,11 @@ my sub stage_client_key(
     $rados, $state, $item, $snapshot = undef, $collect = undef, $verbose = 0,
 ) {
     my $entity = $item->{entity};
-    $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
+    $snapshot //= sub {
+        session_snapshot_with_retries(sub {
+            collect_current_monitor_state($rados)->{sessions};
+        });
+    };
 
     my $current = auth_entry($rados, $entity);
     if ($entity eq $ADMIN_ENTITY) {
@@ -3719,6 +3754,7 @@ my sub stage_client_key(
             $entity,
             $before->{complete} && $after->{complete},
             $started,
+            key_fingerprint($pending),
         );
         save_state($state);
     }
@@ -3977,6 +4013,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0
             $entity,
             $before->{complete} && $after->{complete},
             $started,
+            key_fingerprint($entry->{key}),
         );
         # Reconciliation must not mistake this helper-owned change for another external rotation.
         $state->{client_keys_seen}->{$entity} = key_fingerprint($entry->{key});
@@ -5454,6 +5491,8 @@ sub key_migration_test_hooks {
         abort_staged => \&abort_staged_key,
         retire_aborted => \&retire_aborted_keys,
         collect_client_snapshot => \&collect_client_snapshot,
+        session_snapshot_with_retries => \&session_snapshot_with_retries,
+        complete_client_measurement => \&complete_client_measurement,
         refresh_cephfs_mounts => \&refresh_cephfs_mounts,
         write_client_key_copies => \&write_client_key_copies,
         journal_retention_note => \&journal_retention_note,

@@ -3115,4 +3115,59 @@ my sub cluster {
     );
 }
 
+{
+    my $target = key_fingerprint($NEW);
+    my $sessions = {
+        complete => 1,
+        clients => {
+            'client.app' => [
+                { global_id => 1, key_fingerprint => $target },
+                { global_id => 2, key_fingerprint => $target },
+                { global_id => 3, key_fingerprint => key_fingerprint($OLD) },
+                { global_id => 4 },
+            ],
+        },
+        observations => [{
+            clients => {
+                'client.app' => [
+                    { global_id => 5, key_fingerprint => key_fingerprint($OLD) },
+                    { global_id => 6, key_fingerprint => $target },
+                ],
+            },
+        }],
+    };
+    my $record = { session_ids => [1], measurement_incomplete => 1 };
+    my $merged = PVE::Ceph::KeyMigration::merge_refresh_record(
+        $record, $sessions, 'client.app', 1, undef, $target,
+    );
+    is_deeply(
+        $merged->{session_ids},
+        [1, 3, 4, 5],
+        'record old and unknown observations, but not newly observed target-key sessions',
+    );
+    is_deeply(
+        $record,
+        { session_ids => [1], measurement_incomplete => 1 },
+        'merging does not modify the original record',
+    );
+    ok(!$merged->{measurement_incomplete}, 'a complete sweep completes the measurement');
+    is_deeply(
+        [
+            map { $_->{global_id} } @{
+                stale_consumers(
+                    $sessions,
+                    { 'client.app' => $merged },
+                    { 'client.app' => $target },
+                )->{'client.app'}
+            }
+        ],
+        [1, 3, 4],
+        'matching fingerprints do not erase genuine retained ID evidence',
+    );
+    my $unidentified = PVE::Ceph::KeyMigration::merge_refresh_record(
+        undef, $sessions, 'client.app', 1,
+    );
+    is_deeply($unidentified->{session_ids}, [1 .. 6], 'without a target, every observation counts');
+}
+
 done_testing();
