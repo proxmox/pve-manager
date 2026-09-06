@@ -526,8 +526,8 @@ sub summarize_monitor_connections($connections, $verbose = 0) {
 }
 
 # Retain old or unidentified instances observed around a rotation, including partial retry samples.
-# A session already authenticated with the target key adds no stale evidence. Existing recorded IDs
-# remain evidence even if a later observation names the target key.
+# A session already authenticated with the target key adds no stale evidence. Retain existing IDs
+# as fallback evidence for observations that cannot identify the key.
 sub merge_refresh_record(
     $record, $sessions, $entity, $measurement_complete,
     $rotated = undef,
@@ -587,9 +587,9 @@ sub session_key_targets($exported) {
     return $targets;
 }
 
-# A session is stale when the key the monitor names for it is not the target, or when its ID
-# was recorded around the rotation: both signals count, so a monitor that names keys adds the
-# clients it can prove without dropping the ones the record vouches for.
+# A known fingerprint identifies the key used for the session's latest accepted authentication,
+# even when its global ID predates the rotation. Fall back to recorded IDs without that evidence.
+# Judge each observation separately: another monitor may report the same ID on an old or unknown key.
 sub stale_consumers($sessions, $refresh, $targets = undef) {
     my $stale = {};
     for my $entity (sort keys %{ $refresh // {} }) {
@@ -600,11 +600,11 @@ sub stale_consumers($sessions, $refresh, $targets = undef) {
             my $fingerprint = $session->{key_fingerprint};
             my $by_key =
                 defined($target)
+                && length($target)
                 && defined($fingerprint)
-                && length($fingerprint)
-                && $fingerprint ne $target;
-            my $by_record = $recorded->{ $session->{global_id} };
-            next if !$by_key && !$by_record;
+                && length($fingerprint);
+            my $is_stale = $by_key ? $fingerprint ne $target : $recorded->{ $session->{global_id} };
+            next if !$is_stale;
             push @held, { %$session, judged_by_key => $by_key ? 1 : 0 };
         }
         $stale->{$entity} = \@held if scalar(@held);

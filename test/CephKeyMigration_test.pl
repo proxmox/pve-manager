@@ -2725,14 +2725,12 @@ my sub cluster {
     my $held = stale_consumers($sessions, $refresh, $targets)->{'client.vm'};
     is_deeply(
         [sort map { $_->{global_id} } @$held],
-        [1, 2, 3, 4],
-        'a session on the previous key is stale whether or not it was recorded, a recorded one'
-            . ' stays stale even on the target key, and one without a fingerprint goes by its'
-            . ' record',
+        [1, 3, 4],
+        'a known key overrides recorded IDs; unidentified sessions fall back to their record',
     );
     is_deeply(
         { map { $_->{global_id} => $_->{judged_by_key} } @$held },
-        { 1 => 1, 2 => 0, 3 => 1, 4 => 0 },
+        { 1 => 1, 3 => 1, 4 => 0 },
         'each held session says whether its key or its record made it stale',
     );
     ok(!sessions_judged_by_key($held), 'a mixed list is not judged by key alone');
@@ -2744,6 +2742,55 @@ my sub cluster {
         [map { $_->{global_id} } stale_consumers($sessions, $refresh)->{'client.vm'}->@*],
         [2, 4],
         'without targets only the recorded IDs count, as before',
+    );
+
+    is_deeply(
+        $refresh,
+        { 'client.vm' => { session_ids => [2, 4] } },
+        'classification retains IDs for later observations without fingerprints',
+    );
+    for my $other (undef, '', key_fingerprint($OLD)) {
+        my $observations = {
+            complete => 1,
+            clients => {
+                'client.vm' => [
+                    { global_id => 2, host => 'a', key_fingerprint => key_fingerprint($NEW) },
+                    { global_id => 2, host => 'b', key_fingerprint => $other },
+                ],
+            },
+        };
+        for my $order (0, 1) {
+            my $held = stale_consumers($observations, $refresh, $targets)->{'client.vm'};
+            is_deeply(
+                [map { $_->{host} } @$held],
+                ['b'],
+                'a matching observation cannot clear an old or unidentified observation of the same ID',
+            );
+            $observations->{clients}->{'client.vm'} =
+                [reverse $observations->{clients}->{'client.vm'}->@*];
+        }
+    }
+    my $matching = {
+        complete => 0,
+        clients => {
+            'client.vm' => [{ global_id => 2, key_fingerprint => key_fingerprint($NEW) }],
+        },
+    };
+    my $matching_stale = stale_consumers($matching, $refresh, $targets);
+    is_deeply($matching_stale, {}, 'a target-key session is not itself stale in a partial sweep');
+    is(
+        ack_decision('client.vm', { client_refresh => $refresh }, $matching, $matching_stale)
+            ->{verdict},
+        'incomplete',
+        'positive key evidence does not authorize confirmation from a partial sweep',
+    );
+    is_deeply(
+        [
+            map { $_->{global_id} }
+                stale_consumers($matching, $refresh, { 'client.vm' => '' })->{'client.vm'}->@*
+        ],
+        [2],
+        'an empty target fingerprint leaves recorded evidence authoritative',
     );
 
     my $reverse = reverse_session_status(
@@ -3161,8 +3208,8 @@ my sub cluster {
                 )->{'client.app'}
             }
         ],
-        [1, 3, 4],
-        'matching fingerprints do not erase genuine retained ID evidence',
+        [3, 4],
+        'a matching fingerprint supersedes a retained ID without erasing it',
     );
     my $unidentified = PVE::Ceph::KeyMigration::merge_refresh_record(
         undef, $sessions, 'client.app', 1,

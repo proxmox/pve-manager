@@ -4987,7 +4987,8 @@ sub run_aggregate_confirmation {
     );
 }
 
-for my $aggregate (0, 1) {
+for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
+    my ($aggregate, $recorded_mounts) = @$case;
     my $target = key_fingerprint($NEW);
     my @entities = ($aggregate ? ('client.store') : (), 'client.admin');
     my ($rados, $info, $state) = aggregate_fixture({ complete => 1, clients => {} }, @entities);
@@ -5006,7 +5007,9 @@ for my $aggregate (0, 1) {
         },
     ];
     $info->{allowed_ciphers} = ['aes', 'aes256k'];
-    $state->{client_refresh}->{'client.admin'}->{measurement_incomplete} = 1;
+    my $expected_ids = [$old_id, ($recorded_mounts ? (201 .. 203) : ())];
+    $state->{client_refresh}->{'client.admin'}->{session_ids} = [@$expected_ids];
+    $state->{client_refresh}->{'client.admin'}->{measurement_incomplete} = 1 if !$recorded_mounts;
     $state->{mount_refresh}->{'client.admin'} = { target => $target, finished => 1 };
     my $files = { 'client.admin' => [{ format => 'secret', store => 'cephfs' }] };
     my $opts = {
@@ -5043,12 +5046,12 @@ for my $aggregate (0, 1) {
     is_deeply($rados->{committed}, [], 'no ready key is committed before the batch is ready');
     is_deeply(
         $state->{client_refresh}->{'client.admin'}->{session_ids},
-        [$old_id],
-        'measurement does not mark the three refreshed mount sessions as stale',
+        $expected_ids,
+        'measurement adds no target-key IDs and preserves previously recorded history',
     );
     $info->{sessions}->{clients}->{'client.admin'} = $fresh_mounts;
     is($run->(), -1, 'singular confirmation measures only after the connected blocker clears')
-        if !$aggregate;
+        if !$aggregate && !$recorded_mounts;
     ok(
         !$state->{client_refresh}->{'client.admin'}->{measurement_incomplete},
         'the complete measurement does not require refreshing the target-key mounts',
@@ -5059,7 +5062,9 @@ for my $aggregate (0, 1) {
         $verdict,
         '>',
         0,
-        'the same finishing command passes after only the stale consumer refreshes',
+        $recorded_mounts
+        ? 'finishing accepts the recorded target-key mounts without another remount'
+        : 'the same finishing command passes after only the stale consumer refreshes',
     );
     is_deeply(
         $rados->{committed},
