@@ -1,3 +1,19 @@
+pve-manager (9.2.18) trixie; urgency=medium
+
+  * ceph: Cephx key migration:
+    - prevent client-key retirement or recovery changes before consent
+    - avoid unnecessary client reconnects and CephFS remounts caused by
+      monitor elections or older migration records
+    - clarify remaining refresh steps and identify affected nodes and mounts
+
+  * ceph: auth status:
+    - show compact key summaries and next steps for pending keys,
+      service tickets, and kernel compatibility
+    - mark unavailable data as unknown and distinguish cipher defaults
+      from authentication permissions
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 06 Sep 2026 19:55:30 +0200
+
 pve-manager (9.2.17) trixie; urgency=medium
 
   * ceph: Cephx key migration:
