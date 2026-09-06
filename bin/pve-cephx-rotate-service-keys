@@ -1141,6 +1141,25 @@ my sub pve_mon_keyring_key {
     return undef;
 }
 
+my sub auth_export($rados) {
+    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
+    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
+    my $exported = {};
+    for my $entry (@$auth) {
+        die "the cephx auth export is malformed\n"
+            if ref($entry) ne 'HASH'
+            || !defined($entry->{entity})
+            || ref($entry->{entity})
+            || !length($entry->{entity})
+            || exists($exported->{ $entry->{entity} })
+            || !defined($entry->{key})
+            || ref($entry->{key})
+            || !length($entry->{key});
+        $exported->{ $entry->{entity} } = $entry;
+    }
+    return $exported;
+}
+
 # A restriction decision needs this complete set of current inputs. The JSON auth export is
 # required because the shorter auth listing omits pending keys.
 my sub collect_restriction_snapshot(
@@ -1172,22 +1191,9 @@ my sub collect_restriction_snapshot(
         || scalar(keys %$snapshot_quorum) != scalar($monitor->{quorum}->@*)
         || grep { !$snapshot_mons->{$_} } $monitor->{quorum}->@*;
 
-    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
-    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
-    my $exported = {};
-    for my $entry (@$auth) {
-        die "the cephx auth export is malformed\n"
-            if ref($entry) ne 'HASH'
-            || !defined($entry->{entity})
-            || ref($entry->{entity})
-            || !length($entry->{entity})
-            || exists($exported->{ $entry->{entity} })
-            || !defined($entry->{key})
-            || ref($entry->{key})
-            || !length($entry->{key})
-            || (defined($entry->{pending_key}) && ref($entry->{pending_key}));
-        $exported->{ $entry->{entity} } = $entry;
-    }
+    my $exported = auth_export($rados);
+    die "the cephx auth export is malformed\n"
+        if grep { defined($_->{pending_key}) && ref($_->{pending_key}) } values %$exported;
 
     my $health = $rados->mon_command({ prefix => 'health', detail => 'detail', format => 'json' });
     die "could not refresh the cluster health for the cipher restriction\n"
@@ -1506,21 +1512,7 @@ my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef
         . " '$monitor->{service_cipher}' cipher\n"
         if $monitor->{service_cipher} ne $CIPHER;
 
-    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
-    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
-    my $exported = {};
-    for my $entry (@$auth) {
-        die "the cephx auth export is malformed\n"
-            if ref($entry) ne 'HASH'
-            || !defined($entry->{entity})
-            || ref($entry->{entity})
-            || !length($entry->{entity})
-            || exists($exported->{ $entry->{entity} })
-            || !defined($entry->{key})
-            || ref($entry->{key})
-            || !length($entry->{key});
-        $exported->{ $entry->{entity} } = $entry;
-    }
+    my $exported = auth_export($rados);
     reconcile_client_fingerprints($state, $exported, $fresh, $opts);
     my $stale = reopen_returning_clients($state, $fresh, $exported);
     my $blockers = [];
@@ -1609,22 +1601,9 @@ my sub collect_client_snapshot($rados, $collect = undef) {
         || ref($monitor->{sessions}->{clients}) ne 'HASH'
         || !defined($monitor->{sessions}->{complete});
 
-    my $auth = $rados->mon_command({ prefix => 'auth export', format => 'json' });
-    die "could not export the cephx auth database\n" if ref($auth) ne 'ARRAY';
-    my $exported = {};
-    for my $entry (@$auth) {
-        die "the cephx auth export is malformed\n"
-            if ref($entry) ne 'HASH'
-            || !defined($entry->{entity})
-            || ref($entry->{entity})
-            || !length($entry->{entity})
-            || exists($exported->{ $entry->{entity} })
-            || !defined($entry->{key})
-            || ref($entry->{key})
-            || !length($entry->{key})
-            || (defined($entry->{pending_key}) && ref($entry->{pending_key}));
-        $exported->{ $entry->{entity} } = $entry;
-    }
+    my $exported = auth_export($rados);
+    die "the cephx auth export is malformed\n"
+        if grep { defined($_->{pending_key}) && ref($_->{pending_key}) } values %$exported;
 
     return { sessions => $monitor->{sessions}, exported => $exported };
 }

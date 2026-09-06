@@ -255,6 +255,60 @@ sub fresh_test_restriction_snapshot {
     );
 }
 
+{
+    my $entry =
+        { entity => 'client.app', key => $NEW, pending_key => $OLD, caps => { mon => 'allow r' } };
+    my @invalid = (
+        ['missing export', undef, qr/could not export/],
+        ['non-array export', {}, qr/could not export/],
+        ['non-object entry', [undef], qr/auth export is malformed/],
+        ['duplicate identity', [$entry, $entry], qr/auth export is malformed/],
+    );
+    for my $field (qw(entity key)) {
+        for my $case (['missing', undef], ['empty', ''], ['non-scalar', {}]) {
+            my ($label, $value) = @$case;
+            push @invalid,
+                ["$label $field", [{ %$entry, $field => $value }], qr/auth export is malformed/];
+        }
+    }
+    for my $case (@invalid) {
+        my ($label, $reply, $error) = @$case;
+        my $rados = CurrentMonitorRados->new(auth_export_reply => $reply);
+        eval { $HOOKS->{collect_client_snapshot}->($rados, \&current_monitor_picture); };
+        like($@, $error, "client snapshot rejects $label");
+    }
+    my $rados = CurrentMonitorRados->new(auth_export_reply => [$entry]);
+    my $snapshot = $HOOKS->{collect_client_snapshot}->($rados, \&current_monitor_picture);
+    is_deeply(
+        $snapshot->{exported},
+        { 'client.app' => $entry },
+        'client snapshots index fresh auth entries without discarding keys or caps',
+    );
+
+    for my $pending ($OLD, undef, '', {}) {
+        my $auth = [{ %$entry, pending_key => $pending }];
+        for my $kind (qw(client restriction wipe)) {
+            my $rados = CurrentMonitorRados->new(auth_export_reply => $auth);
+            eval {
+                if ($kind eq 'client') {
+                    $HOOKS->{collect_client_snapshot}->($rados, \&current_monitor_picture);
+                } elsif ($kind eq 'restriction') {
+                    $HOOKS->{restriction_snapshot}
+                        ->($rados, \&current_monitor_picture, sub { $NEW });
+                } else {
+                    $HOOKS->{assert_consumers}
+                        ->($rados, {}, {}, 'wipe', \&current_monitor_picture);
+                }
+            };
+            if (ref($pending) && $kind ne 'wipe') {
+                like($@, qr/auth export is malformed/, "$kind validates the pending-key shape");
+            } else {
+                is($@, '', "$kind accepts its supported pending-key representation");
+            }
+        }
+    }
+}
+
 sub restriction_is_offered {
     my ($open) = @_;
     return 1 if grep { m/--restrict-ciphers/ } $open->{next}->@*;
