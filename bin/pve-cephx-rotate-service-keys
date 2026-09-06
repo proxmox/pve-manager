@@ -4290,6 +4290,7 @@ my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
         $snapshot->{service_cipher},
         $state,
         $snapshot,
+        sub { describe_live($_[0], $opts->{verbose}, 0) },
     );
 }
 

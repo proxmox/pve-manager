@@ -2631,7 +2631,7 @@ my sub cluster {
     is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
     like(
         $admin[0],
-        qr/^'client\.admin': 4 session\(s\) may still hold the previous key \(due: 4\).*Refresh these consumers, then retry the dry run\.$/,
+        qr/^'client\.admin': 4 session\(s\) may still hold the previous key \(due: 4\).*Refresh these consumers, then rerun without options\.$/,
         'only the recorded subset is reported as needing refresh',
     );
     my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
@@ -3168,6 +3168,51 @@ my sub cluster {
         undef, $sessions, 'client.app', 1,
     );
     is_deeply($unidentified->{session_ids}, [1 .. 6], 'without a target, every observation counts');
+}
+
+{
+    my $state = { client_refresh => { 'client.app' => { session_ids => [1] } } };
+    my $info = {
+        exported => { 'client.app' => { key => $NEW } },
+        sessions => {
+            complete => 1,
+            clients => {
+                'client.app' => [{
+                    global_id => 1,
+                    host => '192.0.2.1',
+                }],
+            },
+        },
+    };
+    my $described;
+    my $open = open_actions(
+        '/helper',
+        {},
+        {},
+        {},
+        $CIPHER,
+        $state,
+        $info,
+        sub {
+            $described = $_[0];
+            return 'node-a: 1';
+        },
+    );
+    is_deeply(
+        [map { $_->{global_id} } @$described],
+        [1],
+        'next steps pass only the stale subset to the node-label formatter',
+    );
+    like(
+        $open->{waiting_details}->{'client.app'},
+        qr/\(node-a: 1\)/,
+        'next-step waiting details use the same node labels as restriction refusals',
+    );
+    like(
+        $open->{waiting_details}->{'client.app'},
+        qr/then rerun without options\./,
+        'refresh guidance selects a fresh status check instead of repeating old options',
+    );
 }
 
 done_testing();

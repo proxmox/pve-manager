@@ -1198,10 +1198,10 @@ sub open_options(
                 $waiting_details->{$entity} =
                     "$count session(s) $why ("
                     . $describe->($held)
-                    . ").$both Refresh these consumers, then retry the dry run.";
+                    . ").$both Refresh these consumers, then rerun without options.";
             } else {
                 $waiting_details->{$entity} = "consumer refresh is not confirmed.$both Refresh"
-                    . " every consumer, then retry the dry run.";
+                    . " every consumer, then rerun without options.";
             }
         }
     }
@@ -1257,6 +1257,7 @@ sub open_options(
 # details alone do not cover unmanaged clients, service keys, or work requested by the current run.
 sub open_actions(
     $program, $checks, $opts, $storage_entities, $service_cipher, $state, $info,
+    $describe = \&session_hosts,
 ) {
     my $open = open_options(
         $checks,
@@ -1267,6 +1268,7 @@ sub open_actions(
         $info ? $info->{sessions} : undef,
         $info ? $info->{exported} : undef,
         ($info // {})->{client_files} // {},
+        $describe,
     );
     my $allowed = $info ? $info->{allowed_ciphers} : undef;
     my $preferred = $info ? $info->{preferred_cipher} : undef;
