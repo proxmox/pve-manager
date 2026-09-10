@@ -77,7 +77,19 @@ my $bindir = "$tmp/bin";
 mkdir($bindir) or die "mkdir '$bindir': $!";
 my $db = "$tmp/lvs";
 my $lvm_log = "$tmp/lvm.log";
-my $argv_log = "$tmp/python.argv";
+my $argv_log = "$tmp/lvm.argv";
+my $home_log = "$tmp/lvm.home";
+
+# The helper runs as root on OSD nodes; use the test directory for unprivileged test runs.
+my $run_command = \&main::run_command;
+no warnings qw(once redefine);
+local *main::run_command = sub {
+    my ($cmd, %param) = @_;
+    $param{input} =~ s{DIR => '/run'}{DIR => '$tmp'}g if defined($param{input});
+    return $run_command->($cmd, %param);
+};
+use warnings;
+like($HOOKS->{script}, qr/DIR => '\/run'/, 'the private LVM home belongs on tmpfs');
 
 sub write_executable {
     my ($path, $content) = @_;
@@ -105,10 +117,11 @@ if (defined($path)) {
 PERL
 );
 
-# The production helper starts python with source code in argv and sends the complete LVM command
-# on stdin. This stand-in records both and applies the tag update to the fake LVM inventory.
+# The production helper starts the LVM shell and sends the complete command on its stdin. This
+# stand-in records its arguments and that command, then applies the tag update to the fake LVM
+# inventory. Like the real shell it reports a failed command on stderr and still exits zero.
 write_executable(
-    "$bindir/python3",
+    "$bindir/lvm",
     <<'PERL',
 #!/usr/bin/perl
 use strict;
@@ -116,10 +129,17 @@ use warnings;
 open(my $afh, '>>', $ENV{LOCKBOX_ARGV_LOG}) or die $!;
 print {$afh} join("\0", @ARGV), "\n";
 close($afh) or die $!;
-my $command = do { local $/; <STDIN> } // '';
+chomp(my $command = do { local $/; <STDIN> } // '');
 open(my $lfh, '>>', $ENV{LOCKBOX_LVM_LOG}) or die $!;
 print {$lfh} "$command\n";
 close($lfh) or die $!;
+open(my $hfh, '>>', $ENV{LOCKBOX_HOME_LOG}) or die $!;
+printf {$hfh} "%s %04o\n", $ENV{HOME}, (stat($ENV{HOME}))[2] & 07777;
+close($hfh) or die $!;
+open(my $history, '>', "$ENV{HOME}/.lvm_history") or die $!;
+print {$history} "$command\n";
+close($history) or die $!;
+print "\n";
 my @args = split(/ /, $command);
 die "not lvchange\n" if shift(@args) ne 'lvchange';
 my (@delete, $add, $path);
@@ -135,9 +155,13 @@ while (@args) {
 }
 die "incomplete command\n" if !defined($add) || !defined($path);
 if ($ENV{LOCKBOX_LVM_FAIL}) {
+    # Exceed the pipe capacity while stdout is still open; a regression must not hang the test.
+    alarm(10);
+    print STDERR 'x' x 131072, "\n";
+    alarm(0);
     print STDERR "  Failed to remove tag $_ from vg/osd-block\n" for @delete;
     print STDERR "  Failed to add tag $add to vg/osd-block\n";
-    exit(5);
+    exit(0);
 }
 open(my $in, '<', $ENV{LOCKBOX_LVS_DB}) or die $!;
 my @rows = <$in>;
@@ -161,13 +185,18 @@ local $ENV{PATH} = "$bindir:$ENV{PATH}";
 local $ENV{LOCKBOX_LVS_DB} = $db;
 local $ENV{LOCKBOX_LVM_LOG} = $lvm_log;
 local $ENV{LOCKBOX_ARGV_LOG} = $argv_log;
+local $ENV{LOCKBOX_HOME_LOG} = $home_log;
+# the stub writes history below the HOME it is given, so a helper that stops isolating the shell
+# must fail here without touching the history of whoever runs the tests
+mkdir("$tmp/caller-home") or die "mkdir '$tmp/caller-home': $!";
+local $ENV{HOME} = "$tmp/caller-home";
 
 sub set_rows {
     my (@rows) = @_;
     open(my $fh, '>', $db) or die "open '$db': $!";
     print {$fh} join("\t", @$_), "\n" for @rows;
     close($fh) or die "close '$db': $!";
-    unlink($lvm_log, $argv_log);
+    unlink($lvm_log, $argv_log, $home_log);
 }
 
 sub read_file {
@@ -176,6 +205,14 @@ sub read_file {
     open(my $fh, '<', $path) or die "open '$path': $!";
     return do { local $/; <$fh> }
         // '';
+}
+
+sub check_private_home {
+    my ($home, $mode) = split(/ /, read_file($home_log));
+    chomp($mode);
+    isnt($home, $ENV{HOME}, 'the LVM shell does not use the caller home');
+    is($mode, '0700', 'only the owner can access LVM history while the shell runs');
+    ok(!-e $home, 'the private home and its history are removed after the shell exits');
 }
 
 sub tag_for {
@@ -243,15 +280,16 @@ sub info_for {
     like($commands[0], qr/--deltag .* --addtag /, 'the single LVM call carries both changes');
     unlike(read_file($argv_log), qr/\Q$NEW\E/, 'the lockbox key is absent from process arguments');
     ok($state->{done}->{$ENTITY}, 'successful migration records completion');
+    check_private_home();
 
     # LVM applies '--deltag X --addtag X' as a removal, so a key the tag already holds stays put,
-    # and only base64 may reach the command string liblvm parses
+    # and only base64 may reach the command string the LVM shell parses
     my $node_err = '';
     my $node_script = sub {
         my ($payload, @args) = @_;
         my $out = '';
         $node_err = '';
-        PVE::Tools::run_command(
+        main::run_command(
             ['perl', '-', @args],
             input => $HOOKS->{script} . "__END__\n$payload",
             outfunc => sub { $out .= "$_[0]\n" },
@@ -279,12 +317,19 @@ sub info_for {
         'by deleting the other',
     );
     unlike($repair, qr/--deltag ceph\.cephx_lockbox_secret=\Q$NEW\E/, 'and not the key itself');
-    # liblvm names the whole tag in some of its errors
+    # LVM names the whole tag in some of its errors, and its shell reports them without a failing
+    # exit status, so the re-read of the tag is what fails the write
     {
         local $ENV{LOCKBOX_LVM_FAIL} = 1;
         set_rows(['/dev/vg/osd-block', base_tags('block', $OLD)]);
         eval { $node_script->("$NEW\n", $FSID) };
         like($@, qr/exit code/, 'an LVM failure fails the write');
+        cmp_ok(length($node_err), '>', 131072, 'large stderr is drained while stdout stays open');
+        like(
+            $node_err,
+            qr/does not hold the requested key/,
+            'caught by re-reading the tag, not by the shell exit status',
+        );
         like(
             $node_err,
             qr/Failed to add tag ceph\.cephx_lockbox_secret=<key>/,
@@ -292,6 +337,7 @@ sub info_for {
         );
         unlike($node_err, qr/\Q$NEW\E|\Q$OLD\E/, 'without either key in it');
         is(tag_for('/dev/vg/osd-block'), $OLD, 'the tag is as it was');
+        check_private_home();
 
         my $tags = base_tags('block', 'QUJD') . ',ceph.cephx_lockbox_secret=QUJDREVG';
         set_rows(['/dev/vg/osd-block', $tags]);
@@ -426,7 +472,7 @@ sub info_for {
     like(
         $info->{lockbox}->{$ENTITY}->{missing},
         qr/malformed lockbox tag/,
-        'discovery refuses a tag that liblvm could parse as command syntax, before staging',
+        'discovery refuses a tag the LVM shell could parse as command syntax, before staging',
     );
 
     # two encrypted OSDs on one node are asked about in one go, and one that no OSD in the map

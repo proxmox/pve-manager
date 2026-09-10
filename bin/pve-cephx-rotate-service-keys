@@ -495,6 +495,7 @@ my $LOCKBOX_TAG_SCRIPT = <<'PERL';
 use strict;
 use warnings;
 
+use File::Temp ();
 use IPC::Open3;
 use MIME::Base64 qw(decode_base64);
 use Symbol qw(gensym);
@@ -556,7 +557,7 @@ for my $fsid (@fsids) {
     my @secrets = secrets_in($tags);
 
     if (length($write)) {
-        # the command reaches liblvm as one string, so only base64 may go into it
+        # the command reaches the LVM shell as one string, so only base64 may go into it
         die "the key to write is not a cephx key\n" if !is_cephx_key($write);
         die "an existing lockbox tag is not base64\n"
             if grep { !m{^[A-Za-z0-9+/]*={0,2}$} } @secrets;
@@ -567,55 +568,37 @@ for my $fsid (@fsids) {
     my @stale = grep { $_ ne $write } @secrets;
     if (length($write) && (scalar(@stale) || !grep { $_ eq $write } @secrets)) {
         # one metadata update: a delete and a separate add would leave no tag at all in between,
-        # and the OSD is then unable to unlock at its next activation. The command goes to liblvm
-        # over stdin so the key does not appear in this node's process arguments.
+        # and the OSD is then unable to unlock at its next activation. The command goes to the LVM
+        # shell over stdin so the key does not appear in this node's process arguments.
         my @cmd = ('lvchange');
         push @cmd, '--deltag', "ceph.cephx_lockbox_secret=$_" for @stale;
         push @cmd, '--addtag', "ceph.cephx_lockbox_secret=$write", $path;
         die "an LVM argument contains whitespace\n" if grep { m/\s/ } @cmd;
 
-        my $python = <<'PYTHON';
-import ctypes
-import ctypes.util
-import sys
-
-command = sys.stdin.buffer.read()
-if not command or b'\0' in command:
-    raise SystemExit(3)
-name = ctypes.util.find_library('lvm2cmd')
-if not name:
-    raise SystemExit(4)
-lib = ctypes.CDLL(name)
-lib.lvm2_init.restype = ctypes.c_void_p
-lib.lvm2_log_level.argtypes = (ctypes.c_void_p, ctypes.c_int)
-lib.lvm2_run.argtypes = (ctypes.c_void_p, ctypes.c_char_p)
-lib.lvm2_run.restype = ctypes.c_int
-lib.lvm2_exit.argtypes = (ctypes.c_void_p,)
-handle = lib.lvm2_init()
-if not handle:
-    raise SystemExit(4)
-try:
-    lib.lvm2_log_level(handle, 3)  # errors only, and those go to stderr for the caller
-    status = lib.lvm2_run(handle, command)
-finally:
-    lib.lvm2_exit(handle)
-raise SystemExit(0 if status == 1 else status)
-PYTHON
-        # some liblvm errors name the whole tag, so its output passes a redaction first
-        my ($stdin, $errors) = (undef, gensym());
-        my $pid = eval { open3($stdin, '>&STDOUT', $errors, 'python3', '-c', $python) };
-        die "could not start the LVM command helper: $@" if !$pid;
-        print {$stdin} join(' ', @cmd) or die "could not send the LVM command: $!\n";
-        close($stdin);
-        my $err = do { local $/; <$errors> } // '';
-        waitpid($pid, 0);
-        my $status = $?;
+        # The shell reports a failed command on stderr and still exits zero, so the re-read below
+        # is the verdict. Its own output stays out of this script's, which the caller parses.
+        my $err;
+        {
+            # LVM saves stdin commands, including keys, to $HOME/.lvm_history. Keep that history
+            # private on tmpfs and remove it as soon as the shell ends, including on failure.
+            my $home = File::Temp->newdir('pve-cephx-lvm-XXXXXX', DIR => '/run');
+            local $ENV{HOME} = "$home";
+            # A stdout pipe read before stderr can deadlock when the shell fills its stderr pipe.
+            open(my $stdout, '>', '/dev/null') or die "could not open /dev/null: $!\n";
+            my ($stdin, $errors) = (undef, gensym());
+            my $pid = eval { open3($stdin, '>&' . fileno($stdout), $errors, 'lvm') };
+            die "could not start the LVM shell: $@" if !$pid;
+            print {$stdin} join(' ', @cmd), "\n" or die "could not send the LVM command: $!\n";
+            close($stdin);
+            # some LVM errors name the whole tag, so its output passes a redaction first
+            $err = do { local $/; <$errors> } // '';
+            waitpid($pid, 0);
+        }
         # longest first, or a value that prefixes a longer one would leave its tail in the clear
         for my $secret (sort { length($b) <=> length($a) } grep { length } ($write, @secrets)) {
             $err =~ s/\Q$secret\E/<key>/g;
         }
         print STDERR $err if length($err);
-        die "could not replace the lockbox tag on '$path'\n" if $status;
 
         my $after = `lvs --noheadings -o lv_tags $path 2>/dev/null`;
         my @now = secrets_in($after);
@@ -874,7 +857,7 @@ my sub collect_lockbox($rados, $info, $probe) {
                 next;
             }
             my $tag = $fact->{secret};
-            # the node-side script hands the tag to liblvm inside one command string
+            # the node-side script hands the tag to the LVM shell inside one command string
             if ($count == 1 && ($tag // '') !~ m{^[A-Za-z0-9+/]*={0,2}$}) {
                 $entry->{missing} = "'$entry->{device}' carries a malformed lockbox tag";
                 next;
