@@ -5481,4 +5481,69 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     }
 }
 
+{
+    # Ceph never allows stopping a monitor below three of them, so the rolling restart would poll
+    # its own gate until the timeout, with the new keyring already written to every monitor.
+
+    package MonCountRados;
+
+    sub new { return bless {}, shift }
+
+    sub mon_command {
+        my ($self, $args) = @_;
+        return {} if $args->{prefix} eq 'health';
+        die "unexpected command '$args->{prefix}'\n";
+    }
+}
+
+{
+    my $preflight = sub {
+        my ($monitors, $plan) = @_;
+        my $mons = [
+            map { {
+                type => 'mon',
+                id => "$_",
+                entity => "mon.$_",
+                node => "node$_",
+                store => 'file',
+                version => '20.2.4-pve4',
+                binary => '20.2.4-pve4',
+            } } 1 .. $monitors
+        ];
+        my $info = {
+            daemons => { mon => $mons, mgr => [], mds => [], osd => [] },
+            monmap_mons => [map { $_->{id} } @$mons],
+            rados => MonCountRados->new(),
+        };
+        my ($output, $verdict) = ('');
+        {
+            local *STDOUT;
+            open(STDOUT, '>', \$output) or die $!;
+            $verdict = $HOOKS->{preflight_nodes}->(
+                $info, { daemons => [], lockbox_keys => [], $plan->%* }, {},
+            );
+        }
+        return ($verdict, $output // '');
+    };
+
+    my ($verdict, $output) = $preflight->(2, { mon_key => 1 });
+    is($verdict, -1, 'a two-monitor cluster refuses the shared monitor key rotation');
+    like($output, qr/monitor map holds 2 monitors/, 'naming what it found');
+    like($output, qr/rolling restarts without losing quorum/, 'and why three monitors are needed');
+    like($output, qr/at least three/, 'with the way out');
+
+    ($verdict, $output) = $preflight->(1, { mon_key => 1 });
+    is($verdict, -1, 'so does a single-monitor cluster');
+    like($output, qr/holds one monitor/, 'which is named in the singular');
+
+    ($verdict, $output) = $preflight->(2, { mon_key => 1, mon_repair_only => 1 });
+    is($verdict, 1, 'repairing the local keyring copy restarts nothing and stays allowed');
+
+    ($verdict, $output) = $preflight->(2, {});
+    is($verdict, 1, 'and a run that does not touch the monitor key is unaffected');
+
+    ($verdict, $output) = $preflight->(3, { mon_key => 1 });
+    is($verdict, 1, 'three monitors can hand the restart around');
+}
+
 done_testing();

@@ -2192,6 +2192,20 @@ my sub daemon_is_running($rados, $type, $id) {
 
 # needs probe_nodes() first: 1 go ahead, -1 fix something first
 my sub preflight_nodes($info, $plan, $opts) {
+    # 'mon ok-to-stop' compares the quorum that would remain against the monitor map's minimum, so
+    # below three monitors it refuses every time, however long a run waits for it. Say so before
+    # the new keyring reaches any monitor, rather than stalling in the rolling restart afterwards.
+    if ($plan->{mon_key} && !$plan->{mon_repair_only}) {
+        my $mons = scalar(($info->{monmap_mons} // [])->@*);
+        if ($mons && $mons < 3) {
+            log_fail("Rotating the 'mon.' key requires at least three monitors for rolling restarts"
+                . " without losing quorum. The monitor map holds "
+                . ($mons == 1 ? "one monitor" : "$mons monitors")
+                . ". Add monitors, then run this again.");
+            return -1;
+        }
+    }
+
     # Switching the cipher or wiping old rotating keys requires support from every service daemon.
     my @touched = touched_daemons($info, $plan);
     my @all = map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd);
