@@ -642,7 +642,7 @@ sub format_auth_status {
         );
     }
     print
-        "\nConsumer refresh, including disconnected consumers and external copies, is not verified here.\n";
+        "\nClient refresh, including disconnected clients and external copies, is not verified here.\n";
 }
 
 __PACKAGE__->register_method({

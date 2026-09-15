@@ -935,7 +935,7 @@ my sub count_old_cipher_entities {
     return $count;
 }
 
-# This view has no staging journal or consumer inventory. Pending keys take precedence over
+# This view has no staging journal or client inventory. Pending keys take precedence over
 # rotation previews, regardless of who staged them or which cipher they would restore.
 sub cephx_migration_verdicts {
     my ($status) = @_;
@@ -1016,7 +1016,7 @@ sub cephx_migration_verdicts {
             . " any keys outside that selection:",
             "$CEPHX_MIGRATION_HELPER --rotate-all-storage-keys --rotate-admin-key";
     } else {
-        # Current keys do not prove that consumers refreshed or that cipher restriction is safe.
+        # Current keys do not prove that clients refreshed or that cipher restriction is safe.
         push @$res,
             "For a helper-managed migration, check whether anything remains:",
             $CEPHX_MIGRATION_HELPER;

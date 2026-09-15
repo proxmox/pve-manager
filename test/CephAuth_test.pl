@@ -164,8 +164,8 @@ like($current_text, qr/not guests, mounts, or sessions/, 'counts are not workloa
 like($current_text, qr/none active/, 'a successful empty health read says none active');
 unlike(
     $current_text,
-    qr/--rotate-|--restrict|migration complete|consumers (?:are )?refreshed/,
-    'current keys do not imply further rotations, restriction safety, or refreshed consumers',
+    qr/--rotate-|--restrict|migration complete|clients (?:are )?refreshed/,
+    'current keys do not imply further rotations, restriction safety, or refreshed clients',
 );
 like($current_text, qr/^  \Q$helper\E$/m, 'the all-current helper readiness command is standalone');
 like(
@@ -226,8 +226,8 @@ is(
 );
 like(
     $fresh_text,
-    qr/Consumer refresh, including disconnected consumers and external copies, is not verified here/,
-    'grouped old keys retain consumer and saved-copy limits',
+    qr/Client refresh, including disconnected clients and external copies, is not verified here/,
+    'grouped old keys retain client and saved-copy limits',
 );
 
 my $mixed_replies = dclone($fresh_replies);

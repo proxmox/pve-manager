@@ -51,15 +51,13 @@ const CEPHX_CIPHER_HOWTO = {
     ),
     AUTH_INSECURE_CLIENT_KEY_TYPE: gettext(
         'Use the migration helper for cluster-owned keys and keys of compatible Ceph users.' +
-            ' Leave user keys required by incompatible consumers unchanged.',
+            ' Leave user keys required by incompatible clients unchanged.',
     ),
     AUTH_INSECURE_KEYS_ALLOWED: gettext(
-        'Keep aes enabled while any key or consumer still needs it. Restrict the ciphers only' +
+        'Keep aes enabled while any key or client still needs it. Restrict the ciphers only' +
             ' after the migration helper reports no blocker.',
     ),
-    AUTH_INSECURE_KEYS_CREATABLE: gettext(
-        'Finish the migration after no key or consumer needs aes.',
-    ),
+    AUTH_INSECURE_KEYS_CREATABLE: gettext('Finish the migration after no key or client needs aes.'),
     AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE: gettext(
         'This usually clears within a few hours after the monitors start issuing aes256k' +
             ' service tickets.',
