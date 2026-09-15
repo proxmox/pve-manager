@@ -3,7 +3,7 @@ package PVE::Service::pvescheduler;
 use strict;
 use warnings;
 
-use POSIX qw(WNOHANG);
+use POSIX qw(WNOHANG SIGCHLD SIGHUP SIG_BLOCK SIG_SETMASK);
 
 use PVE::Jobs;
 use PVE::SafeSyslog;
@@ -80,10 +80,20 @@ sub run {
         # FIXME: some job types may handle this better themself or just not care - make configurable
         return if scalar(keys $self->{jobs}->{$type}->%*);
 
+        # recorded before a HUP hands children over or a CHLD reaps them
+        my $prev_mask = POSIX::SigSet->new();
+        POSIX::sigprocmask(SIG_BLOCK, POSIX::SigSet->new(SIGHUP, SIGCHLD), $prev_mask);
+        # the hand-over is already built once a HUP came in
+        if ($self->{got_hup_signal}) {
+            POSIX::sigprocmask(SIG_SETMASK, $prev_mask);
+            return;
+        }
         my $child = fork();
         if (!defined($child)) {
+            POSIX::sigprocmask(SIG_SETMASK, $prev_mask);
             die "fork failed: $!\n";
         } elsif ($child == 0) {
+            POSIX::sigprocmask(SIG_SETMASK, $prev_mask);
             $self->after_fork_cleanup();
             eval { $sub->(); };
             if (my $err = $@) {
@@ -93,6 +103,7 @@ sub run {
         }
 
         $jobs->{$type}->{$child} = 1;
+        POSIX::sigprocmask(SIG_SETMASK, $prev_mask);
     };
 
     my $first_run = 1;
