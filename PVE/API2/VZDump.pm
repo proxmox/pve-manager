@@ -305,6 +305,9 @@ __PACKAGE__->register_method({
 
         if (PVE::Storage::parse_volume_id($volume, 1)) {
             my (undef, undef, $ownervm) = PVE::Storage::parse_volname($storage_cfg, $volume);
+            if (!defined($ownervm)) {
+                die "unable to extract configuration for '$volume' - not a guest backup\n";
+            }
             $rpcenv->check($authuser, "/vms/$ownervm", ['VM.Backup']);
         }
 
