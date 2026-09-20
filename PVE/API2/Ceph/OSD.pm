@@ -958,6 +958,59 @@ sub osd_belongs_to_node {
     return grep($_ == $osdid, @$osds);
 }
 
+# Drop everything the monitors still hold for $osdid.
+#
+# Note: 'osd destroy-actual', the monitor command behind 'ceph osd destroy', removes what is keyed
+# by the OSD's UUID, namely the lockbox entity and the dm-crypt key of an encrypted OSD. It reads
+# that UUID from the OSD map, so it has to run before 'osd rm'.
+sub remove_osd_from_monitors {
+    my ($rados, $osdid) = @_;
+
+    my $osdsection = "osd.$osdid";
+
+    print "Remove $osdsection from the CRUSH map\n";
+    $rados->mon_command({ prefix => "osd crush remove", name => $osdsection, format => 'plain' });
+
+    print "Remove the $osdsection authentication key.\n";
+    $rados->mon_command({
+        prefix => "auth del",
+        entity => $osdsection,
+        format => 'plain',
+    });
+
+    print "Remove the $osdsection lockbox key, if any\n";
+    $rados->mon_command({
+        prefix => "osd destroy-actual",
+        # the monitors read this as an integer and refuse a JSON string
+        id => int($osdid),
+        yes_i_really_mean_it => JSON::true,
+        format => 'plain',
+    });
+
+    print "Remove OSD $osdsection\n";
+    $rados->mon_command({
+        prefix => "osd rm",
+        ids => [$osdsection],
+        format => 'plain',
+    });
+
+    print "Remove $osdsection mclock max capacity iops settings from config\n";
+    $rados->mon_command(
+        {
+            prefix => "config rm",
+            who => $osdsection,
+            name => 'osd_mclock_max_capacity_iops_ssd',
+        },
+    );
+    $rados->mon_command(
+        {
+            prefix => "config rm",
+            who => $osdsection,
+            name => 'osd_mclock_max_capacity_iops_hdd',
+        },
+    );
+}
+
 __PACKAGE__->register_method({
     name => 'destroyosd',
     path => '{osdid}',
@@ -1038,39 +1091,7 @@ __PACKAGE__->register_method({
             };
             warn $@ if $@;
 
-            print "Remove $osdsection from the CRUSH map\n";
-            $rados->mon_command(
-                { prefix => "osd crush remove", name => $osdsection, format => 'plain' });
-
-            print "Remove the $osdsection authentication key.\n";
-            $rados->mon_command({
-                prefix => "auth del",
-                entity => $osdsection,
-                format => 'plain',
-            });
-
-            print "Remove OSD $osdsection\n";
-            $rados->mon_command({
-                prefix => "osd rm",
-                ids => [$osdsection],
-                format => 'plain',
-            });
-
-            print "Remove $osdsection mclock max capacity iops settings from config\n";
-            $rados->mon_command(
-                {
-                    prefix => "config rm",
-                    who => $osdsection,
-                    name => 'osd_mclock_max_capacity_iops_ssd',
-                },
-            );
-            $rados->mon_command(
-                {
-                    prefix => "config rm",
-                    who => $osdsection,
-                    name => 'osd_mclock_max_capacity_iops_hdd',
-                },
-            );
+            remove_osd_from_monitors($rados, $osdid);
 
             # try to unmount from standard mount point
             my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
