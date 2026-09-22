@@ -2108,6 +2108,10 @@ my sub preflight_cluster(
             . ", but no running or configured daemon claims them, so there is no keyring to"
             . " update. Before removing an auth entry, verify that the daemon was removed and"
             . " no node retains its data directory or keyring.");
+        log_text(
+            "'pveceph' cannot destroy daemons on removed nodes. After these checks, remove each"
+                . " auth entry with:");
+        log_step("ceph auth del " . PVE::Tools::shellquote($_)) for @orphaned;
         return -1;
     }
 

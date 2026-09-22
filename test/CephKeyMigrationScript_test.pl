@@ -5911,4 +5911,28 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     );
 }
 
+{
+    for my $apply (0, 1) {
+        my $info = migrated_info(picture(1));
+        $info->{insecure_entities} = { 'mgr.removed;host' => 'aes', 'mds.removed' => 'aes' };
+        my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
+        my ($out, $verdict) = ('', undef);
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            $verdict = $HOOKS->{preflight}->($info, { apply => $apply, force => 1 }, 0, $state);
+        }
+        is($verdict, -1, 'unclaimed service keys still refuse the run, even with force');
+        like(
+            $out,
+            qr/Before removing an auth entry, verify.*no node retains.*removed nodes.*ceph auth del/s,
+            'verification and removed-node advice precede the commands',
+        );
+        like($out, qr/ceph auth del mds\.removed/, 'the MDS removal command is explicit');
+        like($out, qr/ceph auth del 'mgr\.removed;host'/, 'the manager identity is shell-quoted');
+    }
+}
+
 done_testing();
