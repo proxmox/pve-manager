@@ -5935,4 +5935,52 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     }
 }
 
+{
+    for my $restrict (0, 1) {
+        for my $staging (0, 1) {
+            my $info = migrated_info(picture(1));
+            $info->{preferred_cipher} = 'aes';
+            $info->{allowed_ciphers} = [qw(aes aes256k)];
+            my $plan = {
+                daemons => [],
+                client_keys => [],
+                lockbox_keys => [],
+                stages_pending_keys => $staging,
+            };
+            my $out = '';
+            {
+                open(my $stdout, '>', \$out) or die $!;
+                local *STDOUT = $stdout;
+                $HOOKS->{print_plan}
+                    ->($info, $plan, {}, { verbose => 1, 'restrict-ciphers' => $restrict }, {});
+            }
+            my ($note) = $out =~ /^('auth_preferred_cipher'.*)$/m;
+            if ($restrict) {
+                like(
+                    $note,
+                    qr/will remain 'aes256k' after successful restriction/,
+                    'restriction keeps the new preferred cipher',
+                );
+                like(
+                    $note,
+                    qr/if restriction fails, this run\s+tries to put back 'aes'/,
+                    'the restriction plan does not promise successful restoration',
+                );
+            } elsif ($staging) {
+                like(
+                    $note,
+                    qr/put back to 'aes' at the end/,
+                    'staging alone restores the old default',
+                );
+            } else {
+                like(
+                    $note,
+                    qr/left untouched/,
+                    'a plan without staging or restriction leaves the default alone',
+                );
+            }
+        }
+    }
+}
+
 done_testing();

@@ -2737,12 +2737,16 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         # Go back to the recorded value, not to what the cluster reports now.
         my $goes_back_to = $state->{preferred_cipher_was} // $info->{preferred_cipher};
         my $now = $info->{preferred_cipher} // 'unreadable';
+        my $restrict = restrict_wanted($info, $opts);
         my $restore =
-            !$plan->{stages_pending_keys} ? "is left untouched"
+            $restrict
+            ? "will remain '$CIPHER' after successful restriction; if restriction fails, this run"
+            . " tries to put back '$goes_back_to'"
+            : !$plan->{stages_pending_keys} ? "is left untouched"
             : $now eq $CIPHER ? "already holds it, and is put back to '$goes_back_to' at the end"
             : "is set to '$CIPHER' for the run and put back to '$goes_back_to' at the end";
         my $elects =
-            $plan->{stages_pending_keys}
+            $plan->{stages_pending_keys} || $restrict
             ? " It is part of the monitor map, so each change causes a monitor election."
             : "";
         log_text("'auth_preferred_cipher' (currently '"
