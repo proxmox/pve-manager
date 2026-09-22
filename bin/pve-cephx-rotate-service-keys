@@ -1088,6 +1088,7 @@ my sub client_key_files {
             format => $secret ? 'secret' : 'keyring',
             scope => 'cluster',
             store => $storeid,
+            nodes => $scfg->{nodes},
             # a container root disk goes through 'rbd map' whether or not 'krbd' is set
             kernel => (
                 ($secret && !$scfg->{fuse})
@@ -3186,6 +3187,98 @@ my sub live_swap_daemon($rados, $state, $daemon) {
     return 1;
 }
 
+# Shared key files reach client-only nodes too. Check every node allowed to use any storage sharing
+# the selected user; client.admin also serves the CLI on nodes without a configured Ceph storage.
+my sub check_client_packages($plan, $opts, $nodes = undef, $run_node = undef) {
+    my @clients = grep {
+        $_->{entity} eq $ADMIN_ENTITY || grep { defined($_->{store}) } $_->{files}->@*
+    } @$plan;
+    return 1 if !@clients;
+
+    if (!$nodes) {
+        PVE::Cluster::cfs_update();
+        $nodes = PVE::Cluster::get_nodelist() // [];
+    }
+    die "could not read the cluster node list for client package checks\n" if !scalar(@$nodes);
+    $run_node //= sub($node, $cmd) { node_run($node, $cmd, timeout => 30) };
+
+    my $needed = {};
+    for my $item (@clients) {
+        for my $node (@$nodes) {
+            my @stores = grep {
+                defined($_->{store}) && (!$_->{nodes} || $_->{nodes}->{$node})
+            } $item->{files}->@*;
+            next if $item->{entity} ne $ADMIN_ENTITY && !@stores;
+            $needed->{$node}->{'libpve-storage-perl'} = 1;
+            $needed->{$node}->{librados2} = 1;
+            $needed->{$node}->{librbd1} = 1 if grep { $_->{format} eq 'keyring' } @stores;
+        }
+    }
+
+    my @problems;
+    for my $node (sort keys %$needed) {
+        my @packages = sort keys $needed->{$node}->%*;
+        my $out = eval {
+            $run_node->(
+                $node,
+                [
+                    'dpkg-query',
+                    '-W',
+                    '-f=${Package} ${Version} ${db:Status-Status}\\n',
+                    @packages,
+                ],
+            );
+        };
+        if (my $err = $@) {
+            chomp $err;
+            push @problems, "node '$node': could not query client packages: $err";
+            next;
+        }
+        my $versions = {};
+        for my $line (split(/\n/, $out // '')) {
+            my ($package, $version) = $line =~ m/^(\S+) (\S+) installed$/ or next;
+            $versions->{$package} = $version;
+        }
+        for my $package (@packages) {
+            my $version = $versions->{$package};
+            if (!defined($version)) {
+                push @problems, "node '$node': no installed version reported for '$package'";
+                next;
+            }
+            my $upstream_version = $version =~ s/^\d+://r;
+            my $storage_minimum = $upstream_version =~ m/^8\./ ? '8.3.9' : '9.1.9';
+            my $supported =
+                $package eq 'libpve-storage-perl'
+                ? run_command(
+                    ['dpkg', '--compare-versions', $upstream_version, 'ge', $storage_minimum],
+                    noerr => 1,
+                ) == 0
+                : version_has_cipher($upstream_version);
+            next if $supported;
+            my $required =
+                $package eq 'libpve-storage-perl'
+                ? "$storage_minimum or newer"
+                : 'Ceph 19.2.6, 20.2.4, or newer';
+            push @problems, "node '$node': '$package' is $version, needs $required";
+        }
+    }
+    return 1 if !@problems;
+
+    my $keys = join(', ', map { $_->{entity} } @clients);
+    my $message =
+        "Cannot confirm '$CIPHER' support in the client packages for $keys on these nodes:";
+    $opts->{force} ? log_warn($message) : log_fail($message);
+    log_steps(\@problems, 1);
+    if ($opts->{force}) {
+        log_text(
+            "Continuing because '--force' was passed; affected nodes may lose storage access.");
+    } else {
+        log_text("Upgrade these nodes or fix the listed errors, then run this again. Use '--force'"
+            . " only if every affected client is known to support '$CIPHER'.");
+    }
+    return $opts->{force} ? 1 : 0;
+}
+
 my sub check_client_kernels($plan, $opts, $kernels = undef) {
     return 1 if !grep { $_->{kernel} } @$plan;
 
@@ -4699,8 +4792,8 @@ and client keys require their rotation options. Without '--apply', this only pri
   --verbose                   include full inventories, paths, and equivalent Ceph commands
   --timeout SECONDS           how long to wait for a daemon or retry an incomplete session
                               query before cipher restriction (default 600)
-  --force                     continue past blocking HEALTH_WARN checks, kernel
-                              compatibility checks, and consumer or incomplete-session
+  --force                     continue past blocking HEALTH_WARN checks, client package and
+                              kernel compatibility checks, and live-client or incomplete-session
                               blockers for a wipe. With '--restrict-ciphers', also override
                               every blocker for the switch, including old-cipher
                               'client.admin' and stored 'mon.' keys and clients using them.
@@ -5391,6 +5484,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     return 1 if preflight_nodes($info, $plan, $opts) <= 0;
 
     # before the plan is printed, so a dry run reports the refusal too
+    return 1 if !check_client_packages($plan->{client_keys} // [], $opts);
     return 1 if !check_client_kernels($plan->{client_keys} // [], $opts);
 
     print_plan($info, $plan, $state, $opts, storage_entities($client_files));
@@ -5613,6 +5707,8 @@ sub key_migration_test_hooks {
         probe_nodes => \&probe_nodes,
         probe_script => $PROBE_SCRIPT,
         preflight_nodes => \&preflight_nodes,
+        check_client_packages => \&check_client_packages,
+        client_key_files => \&client_key_files,
         check_client_kernels => \&check_client_kernels,
         manual_promotion_with_retries => \&manual_promotion_with_retries,
         describe_live => \&describe_live,

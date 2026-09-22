@@ -4306,6 +4306,155 @@ sub run_aggregate_confirmation {
     );
 }
 
+{
+    no warnings qw(once redefine);
+    # open3 needs real descriptors, while these output assertions use a scalar-backed STDOUT.
+    local *main::run_command = sub {
+        my ($cmd) = @_;
+        system(@$cmd);
+        return $? >> 8;
+    };
+    my $plan = [{
+        entity => 'client.vm',
+        kernel => 0,
+        files => [
+            { store => 'rbd-a', format => 'keyring', nodes => { a => 1 } },
+            { store => 'rbd-b', format => 'keyring', nodes => { b => 1 } },
+        ],
+    }];
+    for my $case (qw(current current-8 epoch-8 old-storage old-8 old-epoch-8 old-major
+        old-rados old-rbd missing malformed unreachable))
+    {
+        for my $force (0, 1) {
+            my @queried;
+            my ($out, $verdict) = ('', undef);
+            {
+                open(my $stdout, '>', \$out) or die $!;
+                local *STDOUT = $stdout;
+                $verdict = $HOOKS->{check_client_packages}->(
+                    $plan,
+                    { force => $force },
+                    [qw(a b excluded)],
+                    sub {
+                        my ($node, $command) = @_;
+                        push @queried, $node;
+                        is_deeply(
+                            $command,
+                            [
+                                'dpkg-query',
+                                '-W',
+                                '-f=${Package} ${Version} ${db:Status-Status}\\n',
+                                qw(libpve-storage-perl librados2 librbd1),
+                            ],
+                            'one probe asks for installed client package versions on each affected node',
+                        );
+                        die "SSH unavailable\n" if $case eq 'unreachable' && $node eq 'b';
+                        my $versions = {
+                            'libpve-storage-perl' => '9.1.9',
+                            librados2 => '19.2.6-pve4',
+                            librbd1 => '20.2.4-pve4',
+                        };
+                        if ($node eq 'b') {
+                            my $storage_versions = {
+                                'current-8' => '8.3.9',
+                                'epoch-8' => '1:8.3.9',
+                                'old-storage' => '9.1.8',
+                                'old-8' => '8.3.8',
+                                'old-epoch-8' => '1:8.3.8',
+                                'old-major' => '1:7.9.9',
+                            };
+                            $versions->{'libpve-storage-perl'} = $storage_versions->{$case}
+                                if $storage_versions->{$case};
+                            $versions->{librados2} = '19.2.5-pve1' if $case eq 'old-rados';
+                            $versions->{librbd1} = '20.2.3-pve1' if $case eq 'old-rbd';
+                            delete $versions->{librbd1} if $case eq 'missing';
+                            return "invalid output\n" if $case eq 'malformed';
+                        }
+                        return
+                            join('', map { "$_ $versions->{$_} installed\n" } sort keys %$versions);
+                    },
+                );
+            }
+            is_deeply(
+                \@queried,
+                [qw(a b)],
+                'all storages sharing a key contribute their allowed nodes',
+            );
+            my $current = $case =~ m/^(?:current|current-8|epoch-8)$/;
+            is(
+                $verdict, $current || $force ? 1 : 0, "$case: package gate honors force=$force",
+            );
+            if (!$current) {
+                like($out, qr/node 'b'/, "$case: the incompatible or unknown node is named");
+                my $level = $force ? 'WARN' : 'FAIL';
+                like(
+                    $out,
+                    qr/$level: Cannot confirm 'aes256k' support in the client packages for client\.vm on these nodes:/,
+                    "$case: unknown support is not claimed to be proven incompatibility",
+                );
+                if ($force) {
+                    like(
+                        $out,
+                        qr/Continuing because '--force' was passed; affected nodes may lose storage access\./,
+                        'forcing warns about lost storage access',
+                    );
+                    unlike($out, qr/Upgrade these nodes or fix/, 'force does not print a refusal');
+                } else {
+                    like(
+                        $out,
+                        qr/node 'b'.*Upgrade these nodes or fix the listed errors.*Use '--force'\s+only if every affected client is known to support 'aes256k'/s,
+                        'refusal gives remediation and limits force to verified clients',
+                    );
+                }
+                unlike($out, qr/Installed packages do not prove/,
+                    'the duplicate caveat is omitted');
+            }
+            like(
+                $out,
+                qr/libpve-storage-perl.*9\.1\.8.*9\.1\.9/,
+                'the storage fix version is explicit',
+            ) if $case eq 'old-storage';
+            like(
+                $out,
+                qr/libpve-storage-perl.*8\.3\.8.*8\.3\.9/,
+                'the PVE 8 storage fix version is explicit',
+            ) if $case eq 'old-8' || $case eq 'old-epoch-8';
+        }
+    }
+
+    my @queried;
+    $HOOKS->{check_client_packages}->(
+        [{ entity => 'client.admin', files => [] }],
+        {},
+        [qw(a b)],
+        sub {
+            my ($node, $cmd) = @_;
+            push @queried, $node;
+            return
+                "libpve-storage-perl 1:9.1.10 installed\nlibrados2 1:20.2.4-pve4 installed\n";
+        },
+    );
+    is_deeply(\@queried, [qw(a b)], 'admin rotation checks every node even without Ceph storages');
+    is(
+        $HOOKS->{check_client_packages}->(
+            [{ entity => 'client.crash', files => [] }], {}, [], sub { die 'unexpected probe' },
+        ),
+        1,
+        'tool-only rotation needs no storage client probe',
+    );
+
+    no warnings qw(once redefine);
+    local *PVE::Storage::config = sub {
+        return { ids => { vm => { type => 'rbd', username => 'vm', nodes => { b => 1 } } } };
+    };
+    my $files = $HOOKS->{client_key_files}->();
+    is_deeply(
+        $files->{'client.vm'}->[0]->{nodes},
+        { b => 1 },
+        'storage node scope reaches the package gate',
+    );
+}
+
 # --- a monitor election right before staging is waited out, an old monitor is not ---------------
 {
     local $main::MONITOR_PROBE_RETRY_DELAY = 0;
