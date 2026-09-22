@@ -17,6 +17,19 @@ local $ENV{ANSI_COLORS_DISABLED} = 1;
 our $NEW = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7IlI=';
 our $OLD = 'AQCP/Y5qflfDFxAAPII6O9qSA7p65js5CEJYDA==';
 
+our ($test_time, $test_sleep_overrun, @test_sleeps);
+
+BEGIN {
+    *CORE::GLOBAL::time = sub () { return $test_time // CORE::time() };
+    *CORE::GLOBAL::sleep = sub (;$) {
+        my ($delay) = @_;
+        return CORE::sleep($delay) if !defined($test_time);
+        push @test_sleeps, $delay;
+        $test_time += $delay + ($test_sleep_overrun // 0);
+        return $delay;
+    };
+}
+
 our $SCRIPT =
     -f './bin/pve-cephx-rotate-service-keys'
     ? './bin/pve-cephx-rotate-service-keys'
@@ -430,6 +443,41 @@ sub restriction_is_offered {
         $rados, sub { return encode_json({ malformed => 1 }) },
     );
     ok(!$current->{sessions}->{complete}, 'a malformed monitor session result is incomplete');
+    is(
+        $current->{sessions}->{errors}->{a},
+        'invalid session query response',
+        'a malformed response names the monitor and the problem',
+    );
+}
+
+{
+    my $rados = CurrentMonitorRados->new(
+        mons => [qw(a b c d)],
+        quorum => [qw(a b c)],
+        metadata => [
+            { name => 'a', hostname => 'node-a' },
+            { name => 'b' },
+            { name => 'c', hostname => 'node-c' },
+            { name => 'd', hostname => 'node-d' },
+        ],
+    );
+    my $current = $HOOKS->{collect_monitor_state}->(
+        $rados,
+        sub {
+            my ($node) = @_;
+            die "SSH connection failed\n" if $node eq 'node-c';
+            return encode_json([]);
+        },
+    );
+    is_deeply(
+        $current->{sessions}->{errors},
+        {
+            b => 'no hostname in monitor metadata',
+            c => 'SSH connection failed ',
+            d => 'not in quorum',
+        },
+        'incomplete session diagnostics distinguish metadata, connection, and quorum failures',
+    );
 }
 
 sub migrated_info {
@@ -1336,6 +1384,111 @@ sub wipe_monitor_picture {
         qr/refusing to restrict.*service tickets still use the 'aes' cipher/s,
         'a fresh old service cipher also blocks execution after preflight',
     );
+}
+
+{
+    for my $case (qw(election unanswered no-hostname ssh returning changed-auth
+        deadline late-wakeup))
+    {
+        local $test_time = 100;
+        local $test_sleep_overrun = $case eq 'late-wakeup' ? 1 : 0;
+        local @test_sleeps;
+        my $rados = CurrentMonitorRados->new(
+            mons => ['a'],
+            preferred_cipher => 'aes',
+            allowed_ciphers => [qw(aes aes256k)],
+            exported => [{ entity => 'client.app', key => $NEW }],
+        );
+        my $state = {
+            client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
+            client_refresh => {
+                'client.app' => { session_ids => [48], cleared => 2, acknowledged => 2 },
+            },
+        };
+        my $calls = 0;
+        my @saved;
+        my ($err, $output) = ('', '');
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { push @saved, decode_json($_[1]) };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            eval {
+                $HOOKS->{restrict_ciphers}->(
+                    $rados,
+                    $state,
+                    { apply => 1, timeout => $case eq 'deadline' ? 3 : 4 },
+                    sub {
+                        $calls++;
+                        my $monitor = current_monitor_picture();
+                        if ($calls == 1 || $case eq 'unanswered') {
+                            $monitor->{sessions} = picture(0, $case eq 'returning' ? (48) : ());
+                            my $reason =
+                                $case eq 'no-hostname' ? 'no hostname in monitor metadata'
+                                : $case eq 'ssh' ? 'SSH connection failed'
+                                : 'not in quorum';
+                            $monitor->{sessions}->{errors} = { a => $reason };
+                        }
+                        $rados->{exported}->[0]->{pending_key} = $OLD
+                            if $calls == 2 && $case eq 'changed-auth';
+                        return $monitor;
+                    },
+                    sub { return $NEW },
+                );
+            };
+            $err = $@;
+        }
+        is(
+            $calls,
+            $case =~ /^(no-hostname|deadline|late-wakeup)$/ ? 1 : 2,
+            "$case: retries stop before the deadline or for missing hostnames",
+        );
+        is_deeply(
+            \@test_sleeps,
+            $case =~ /^(no-hostname|deadline)$/ ? [] : [3],
+            "$case: only a full delay before the deadline permits another attempt",
+        );
+        is(
+            scalar(() = $output =~ /Session query incomplete; retrying/g),
+            $case =~ /^(no-hostname|deadline)$/ ? 0 : 1,
+            "$case: the retry INFO appears only once, if needed",
+        );
+        if ($case eq 'election' || $case eq 'ssh') {
+            is($err, '', 'a complete retry lets restriction finish after the election');
+            is_deeply(
+                $rados->{allowed_ciphers},
+                ['aes256k'],
+                'the final complete result gates restriction',
+            );
+        } else {
+            like($err, qr/refusing to restrict/, "$case: retry does not bypass a blocker");
+            is_deeply(
+                $rados->{allowed_ciphers},
+                [qw(aes aes256k)],
+                "$case: old cipher remains allowed",
+            );
+            is($state->{preferred_cipher_was}, 'aes', "$case: refusal retains restore intent");
+        }
+        like($err, qr/a: not in quorum/, 'the final refusal names the unanswered monitor')
+            if $case eq 'unanswered';
+        like(
+            $err,
+            qr/a: no hostname in monitor metadata/,
+            'missing host metadata refuses immediately with the original diagnostic',
+        ) if $case eq 'no-hostname';
+        like($err, qr/pending/, 'auth is recollected after the election')
+            if $case eq 'changed-auth';
+        if ($case eq 'returning') {
+            ok(
+                !defined($state->{client_refresh}->{'client.app'}->{cleared}),
+                'a partial observation reopens the acknowledgment even when the client disappears',
+            );
+            ok(
+                scalar(grep { !defined($_->{client_refresh}->{'client.app'}->{cleared}) } @saved),
+                'the partial observation is durably recorded before the retry',
+            );
+        }
+    }
 }
 
 # --- staged client keys ------------------------------------------------------------------------

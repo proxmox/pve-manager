@@ -784,9 +784,14 @@ sub restrict_blockers($info, $state, $describe = undef, $files = {}) {
     $describe //= \&session_hosts;
     my $blockers = [];
     my $sessions = $info->{sessions} // {};
-    push @$blockers,
-        "not every monitor answered the session query, so live consumers cannot be verified"
-        if !$sessions->{complete};
+    if (!$sessions->{complete}) {
+        my $errors = $sessions->{errors} // {};
+        my $detail = join('; ', map { "$_: $errors->{$_}" } sort keys %$errors);
+        $detail ||= join(', ', @{ $sessions->{unanswered} // [] });
+        push @$blockers,
+            "not every monitor answered the session query, so live clients cannot be verified"
+            . (length($detail) ? " ($detail)" : '');
+    }
     push @$blockers,
         "the service tickets still use the '" . ($info->{service_cipher} // 'unknown') . "' cipher"
         if ($info->{service_cipher} // '') ne $CIPHER;

@@ -751,13 +751,25 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
 
     my $per_mon = [];
     my $reports = {};
+    my $errors = {};
     for my $id (@monmap) {
         my $sessions;
-        if ($in_quorum->{$id} && $nodes->{$id}) {
+        if (!$in_quorum->{$id}) {
+            $errors->{$id} = 'not in quorum';
+        } elsif (!$nodes->{$id}) {
+            $errors->{$id} = 'no hostname in monitor metadata';
+        } else {
             $sessions = eval {
                 decode_json($run_node->(
                     $nodes->{$id}, ['ceph', 'daemon', "mon.$id", 'sessions']));
             };
+            my $error = $@;
+            if ($error) {
+                $error =~ s/\s+/ /g;
+                $errors->{$id} = substr($error, 0, 200);
+            } elsif (!summarize_sessions([{ mon => $id, sessions => $sessions }])->{complete}) {
+                $errors->{$id} = 'invalid session query response';
+            }
             $reports->{$id} = probe_manual_promotion($nodes->{$id}, $id, $run_node);
         }
         push @$per_mon, { mon => $id, sessions => $sessions };
@@ -767,7 +779,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
         monmap_mons => \@monmap,
         quorum => \@quorum,
         monitor_metadata => $metadata,
-        sessions => summarize_sessions($per_mon),
+        sessions => { summarize_sessions($per_mon)->%*, errors => $errors },
         manual_promotion => manual_promotion_support($reports, \@monmap),
         service_cipher => $mon_dump->{auth_service_cipher}->{name} // 'unknown',
         preferred_cipher => $mon_dump->{auth_preferred_cipher}->{name} // 'unknown',
@@ -4216,11 +4228,32 @@ my sub restrict_ciphers(
 
     # A run can be long and the cluster lock does not serialize direct 'ceph auth' commands, so
     # the verdict is taken again on a snapshot collected right before the allowed-cipher switch.
-    my $snapshot = collect_restriction_snapshot($rados, $collect, $read_mon_key);
-    reconcile_client_fingerprints(
-        $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
-    );
-    reopen_returning_clients($state, $snapshot->{sessions}, $snapshot->{exported});
+    my $timeout = $opts->{timeout} // 600;
+    my $deadline = time() + $timeout;
+    my $snapshot;
+    my $retry_logged = 0;
+    while (1) {
+        $snapshot = collect_restriction_snapshot($rados, $collect, $read_mon_key);
+        reconcile_client_fingerprints(
+            $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
+        );
+        # A returning old-key client must reopen its record even if it disappears during the
+        # election. Only the final complete snapshot gates the switch.
+        reopen_returning_clients($state, $snapshot->{sessions}, $snapshot->{exported});
+        last if $snapshot->{sessions}->{complete};
+        # A monitor in quorum without a hostname cannot be queried over SSH.
+        last
+            if grep { $_ eq 'no hostname in monitor metadata' }
+            values %{ $snapshot->{sessions}->{errors} // {} };
+        my $remaining = $deadline - time();
+        last if $remaining <= $MONITOR_PROBE_RETRY_DELAY;
+        if (!$retry_logged) {
+            log_info("Session query incomplete; retrying through a possible monitor election.");
+            $retry_logged = 1;
+        }
+        sleep($MONITOR_PROBE_RETRY_DELAY);
+        last if time() >= $deadline;
+    }
     my $blockers =
         restrict_blockers($snapshot, $state, sub { describe_live($_[0], $opts->{verbose}) });
 
@@ -4664,7 +4697,8 @@ and client keys require their rotation options. Without '--apply', this only pri
   --assume-yes, -y            do not ask for confirmation. '--apply' needs this when
                               standard input is not a terminal
   --verbose                   include full inventories, paths, and equivalent Ceph commands
-  --timeout SECONDS           how long to wait for a daemon to come back (default 600)
+  --timeout SECONDS           how long to wait for a daemon or retry an incomplete session
+                              query before cipher restriction (default 600)
   --force                     continue past blocking HEALTH_WARN checks, kernel
                               compatibility checks, and consumer or incomplete-session
                               blockers for a wipe. With '--restrict-ciphers', also override
