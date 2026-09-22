@@ -1206,6 +1206,8 @@ my sub collect_restriction_snapshot(
     return {
         $monitor->%*,
         exported => $exported,
+        # This has no device probes and must not replace the inventory used for planned tag writes.
+        lockbox_status => collect_lockbox($rados, { exported => $exported, daemons => {} }, 0),
         pve_mon_key => $read_mon_key->(),
         health_checks => $health->{checks},
     };
@@ -2434,6 +2436,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         $info->{health_checks} // {},
         $storage_entities,
         $info->{exported},
+        $info->{lockbox_status} // $info->{lockbox} // {},
     );
     my @unselected_users;
     push @unselected_users, "bootstrap and crash users"
@@ -4522,6 +4525,15 @@ my sub print_open_options(
             . " an LVM tag on its device, and an auth entry changed alone leaves it unable to"
             . " start. '--rotate-lockbox-keys' writes both copies, and repairs one already rotated"
             . " by hand.");
+    }
+
+    if (scalar($open->{orphaned_lockbox}->@*)) {
+        log_text("");
+        log_text("Orphaned lockbox keys block '--restrict-ciphers'; '--rotate-lockbox-keys' skips"
+            . " them. Absence from the OSD map alone is not enough. Delete a key only after"
+            . " confirming that its OSD was destroyed and no device still uses the key; check its"
+            . " FSID in 'ceph-volume lvm list' on every node:");
+        log_step("ceph auth del " . PVE::Tools::shellquote($_)) for $open->{orphaned_lockbox}->@*;
     }
 
     return $open->{complete} if !scalar($open->{stuck}->@*);

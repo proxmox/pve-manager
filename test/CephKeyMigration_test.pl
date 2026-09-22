@@ -3262,4 +3262,56 @@ my sub cluster {
     }
 }
 
+{
+    my $orphan = 'client.osd-lockbox.orphan';
+    my $live = 'client.osd-lockbox.live';
+    my $info = {
+        exported => { $orphan => { key => $OLD } },
+        lockbox => { $orphan => { orphaned => 1 } },
+        sessions => { complete => 1, clients => {} },
+        service_cipher => $CIPHER,
+        pve_mon_key => $NEW,
+        preferred_cipher => $LEGACY_CIPHER,
+        allowed_ciphers => [$LEGACY_CIPHER, $CIPHER],
+    };
+    my $open = open_actions('helper', {}, {}, {}, $CIPHER, {}, $info);
+    is_deeply(
+        $open->{orphaned_lockbox},
+        [$orphan],
+        'orphaned old lockbox keys have their own action',
+    );
+    is_deeply($open->{next}, [], 'an orphan alone is not offered lockbox rotation or restriction');
+    ok(!$open->{complete}, 'an orphan alone is not migration completion');
+    like(
+        join(' ', restrict_blockers($info, {})->@*),
+        qr/\Q$orphan\E.*no OSD.*leaves it unchanged/,
+        'the restriction blocker explains why lockbox rotation cannot help',
+    );
+
+    $info->{exported}->{$live} = { key => $OLD };
+    $info->{lockbox}->{$live} = { id => 1 };
+    $open = open_actions('helper', {}, {}, {}, $CIPHER, {}, $info);
+    like(
+        join(' ', $open->{next}->@*),
+        qr/--rotate-lockbox-keys/,
+        'live OSD keys still get the rotation option',
+    );
+    is_deeply($open->{orphaned_lockbox}, [$orphan], 'mixed inventory keeps the orphan separate');
+
+    $info->{exported}->{$orphan} = { key => $NEW };
+    $open = open_actions('helper', {}, {}, {}, $CIPHER, {}, $info);
+    is_deeply(
+        $open->{orphaned_lockbox},
+        [],
+        'an orphan already using the new cipher needs no deletion',
+    );
+    $info->{exported}->{$orphan}->{pending_key} = $OLD;
+    $open = open_actions('helper', {}, {}, {}, $CIPHER, {}, $info);
+    is_deeply(
+        $open->{orphaned_lockbox},
+        [$orphan],
+        'an orphan with an old pending key still blocks restriction',
+    );
+}
+
 done_testing();

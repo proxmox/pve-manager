@@ -227,6 +227,8 @@ sub run_client_rotation {
             } ($self->{exported} // [])->@*
             ]
             if $args->{prefix} eq 'auth export';
+        return { osds => $self->{osds} }
+            if $args->{prefix} eq 'osd dump' && exists($self->{osds});
         return $self->{health_reply}
             if $args->{prefix} eq 'health' && exists($self->{health_reply});
         return { checks => { %{ $self->{health_checks} // {} } } }
@@ -5846,6 +5848,67 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
 
     ($verdict, $output) = $preflight->(3, { mon_key => 1 });
     is($verdict, 1, 'three monitors can hand the restart around');
+}
+
+{
+    my @orphans = map { "client.osd-lockbox.orphan-$_" } 1 .. 12;
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        metadata => [{ name => 'a', hostname => 'node-a' }],
+        preferred_cipher => 'aes',
+        allowed_ciphers => [qw(aes aes256k)],
+        exported => [map { { entity => $_, key => $OLD } } @orphans],
+        osds => [],
+    );
+    my $snapshot = fresh_test_restriction_snapshot($rados);
+    is(
+        scalar(keys $snapshot->{lockbox_status}->%*),
+        12,
+        'fresh restriction snapshots classify all lockbox entries',
+    );
+    ok(
+        !exists($snapshot->{lockbox}),
+        'the snapshot does not overwrite the device inventory for tag writes',
+    );
+    for my $apply (0, 1) {
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{print_open_options}->({ apply => $apply }, {}, {}, $snapshot);
+        }
+        like(
+            $out,
+            qr/Orphaned lockbox keys block '--restrict-ciphers'; '--rotate-lockbox-keys' skips them/,
+            'orphans explain the missing final step',
+        );
+        like(
+            $out,
+            qr/Absence from the OSD map alone is not enough.*Delete a key only after\s+confirming that its OSD was destroyed and no device still uses the key.*FSID in 'ceph-volume lvm list' on every node:.*ceph auth del/s,
+            'device verification precedes every removal command',
+        );
+        is(
+            scalar(() = $out =~ /ceph auth del /g),
+            12,
+            'removal commands are not truncated at ten entries',
+        );
+        unlike(
+            $out,
+            qr/--rotate-lockbox-keys:/,
+            'neither dry run nor apply offers rotation of orphan-only inventory',
+        );
+    }
+    $rados->{fail_prefix} = 'osd dump';
+    $snapshot = fresh_test_restriction_snapshot($rados);
+    ok(
+        !scalar(grep { $_->{orphaned} } values $snapshot->{lockbox_status}->%*),
+        'failed map queries never declare keys orphaned',
+    );
+    ok(
+        !scalar(grep { $_->{prefix} eq 'auth del' } $rados->{commands}->@*),
+        'no auth entry is deleted automatically',
+    );
 }
 
 done_testing();
