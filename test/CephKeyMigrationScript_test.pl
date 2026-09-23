@@ -5038,7 +5038,9 @@ sub run_aggregate_confirmation {
     }
 }
 
-{
+for my $mountpoint ('/mnt/pve/cephfs', '/srv/ceph.fs') {
+    require PVE::QemuConfig;
+    require PVE::LXC::Config;
     my $info = migrated_info(picture(1));
     $info->{manual_promotion} = { supported => 1, disabled => 1 };
     $info->{exported} = { 'client.app' => { key => $OLD, pending_key => $NEW } };
@@ -5053,14 +5055,58 @@ sub run_aggregate_confirmation {
             },
         },
     };
-    my $output = '';
+    my ($output, $empty, $many) = ('', '', '');
     {
         no warnings qw(once redefine);
+        local *PVE::Cluster::cfs_update = sub { };
+        local *PVE::Storage::config = sub {
+            return {
+                ids => {
+                    cephfs => {
+                        type => 'cephfs',
+                        $mountpoint eq '/mnt/pve/cephfs' ? () : (path => "$mountpoint/"),
+                    },
+                },
+            };
+        };
+        my $guests = {
+            100 => { type => 'qemu', node => 'tre' },
+            101 => { type => 'qemu', node => 'other-node' },
+            102 => { type => 'lxc', node => 'tre' },
+            103 => { type => 'qemu', node => 'tre' },
+            104 => { type => 'qemu', node => 'tre' },
+        };
+        local *PVE::Cluster::get_vmlist = sub { return { ids => $guests } };
+        local *PVE::QemuConfig::load_config = sub {
+            my ($class, $vmid) = @_;
+            die "unreadable config\n" if $vmid == 103;
+            return { sata0 => "$mountpoint/iso/absolute.iso,media=cdrom" } if $vmid == 104;
+            return {
+                ide2 => 'cephfs:iso/installer.iso,media=cdrom',
+                sata1 => 'other:iso/other.iso,media=cdrom',
+                sata2 => "$mountpoint-other/iso/other.iso,media=cdrom",
+                unused0 => 'cephfs:iso/unused.iso',
+                pending => { sata3 => 'cephfs:iso/pending.iso,media=cdrom' },
+            };
+        };
+        local *PVE::LXC::Config::load_config = sub {
+            return {
+                rootfs => 'local-lvm:vm-102-disk-0,size=8G',
+                mp0 => "$mountpoint/data,mp=/data",
+                mp1 => "$mountpoint-other/data,mp=/other",
+            };
+        };
         local *main::file_set_contents = sub { };
         open(my $stdout, '>', \$output) or die $!;
         local *STDOUT = $stdout;
         $HOOKS->{settle_staged}->(undef, $info, $state, {}, {});
         $HOOKS->{preflight}->($info, {}, 0, $state, {});
+        $HOOKS->{print_open_options}->({}, {}, $state, $info);
+        $guests->{$_} = { type => 'qemu', node => 'tre' } for 110 .. 119;
+        open(STDOUT, '>', \$many) or die $!;
+        $HOOKS->{print_open_options}->({}, {}, $state, $info);
+        $guests = {};
+        open(STDOUT, '>', \$empty) or die $!;
         $HOOKS->{print_open_options}->({}, {}, $state, $info);
     }
     like(
@@ -5079,6 +5125,44 @@ sub run_aggregate_confirmation {
         'mount guidance neither obscures the action nor offers premature retirement',
     );
     is(scalar(() = $output =~ /CephFS refresh pending/g), 1, 'the queued mount is reported once');
+    like(
+        $output,
+        qr/VM 100 on node 'tre': ide2=cephfs:iso\/installer.iso/,
+        'an ISO on the pending storage is named',
+    );
+    like(
+        $output,
+        qr/VM 104 on node 'tre': sata0=\Q$mountpoint\E\/iso\/absolute.iso/,
+        'an absolute-path ISO under the mount is named',
+    );
+    like(
+        $output,
+        qr/container 102 on node 'tre': mp0=\Q$mountpoint\E\/data/,
+        'a container bind mount under the mount is named',
+    );
+    unlike(
+        $output,
+        qr/VM 101|sata[123]=|unused0=|mp1=|rootfs=/,
+        'other nodes, storages, sibling paths, unused and pending volumes are excluded',
+    );
+    like(
+        $output,
+        qr/Guests configured with paths on these CephFS mounts:/,
+        'config references are not called live consumers',
+    );
+    like(
+        $output,
+        qr/Eject a listed ISO.*or stop guests holding these paths/,
+        'the release instruction is explicit',
+    );
+    is(scalar(() = $output =~ /rerun with '--apply'/g), 1, 'the retry instruction is not repeated');
+    like($many, qr/and 3 more/, 'the existing list formatter reports omitted references');
+    is(scalar(() = $many =~ /^  (?:VM|container) /mg), 10, 'at most ten references are printed');
+    unlike(
+        $empty,
+        qr/Guests configured|Eject a listed ISO|stop guests/,
+        'no guest-specific advice is printed without a named guest',
+    );
 }
 
 {

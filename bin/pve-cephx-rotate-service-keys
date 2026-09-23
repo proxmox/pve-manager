@@ -286,6 +286,48 @@ my sub print_possible_consumers($live, $opts) {
     return scalar(@$lines);
 }
 
+# A guest can hold a host CephFS mount without having its own monitor connection.
+my sub print_mount_consumers($state, $entities) {
+    my $pending = {};
+    for my $entity (@$entities) {
+        my $mounts = (($state->{mount_refresh} // {})->{$entity} // {})->{pending} // {};
+        for my $store (keys %$mounts) {
+            my $scfg = PVE::Storage::storage_config(PVE::Storage::config(), $store, 1) or next;
+            my $path = ($scfg->{path} // "/mnt/pve/$store") =~ s{/+$}{}r;
+            $pending->{$_}->{$store} = qr{^\Q$store\E:|^\Q$path\E(?:/|$)}
+                for keys $mounts->{$store}->%*;
+        }
+    }
+    return if !keys %$pending;
+
+    require PVE::LXC::Config;
+    require PVE::QemuConfig;
+    my $vmlist = eval { PVE::Cluster::cfs_update(); PVE::Cluster::get_vmlist()->{ids} } // {};
+    my @hints;
+    for my $vmid (sort { $a <=> $b } keys %$vmlist) {
+        my $guest = $vmlist->{$vmid};
+        my $stores = $pending->{ $guest->{node} } or next;
+        my $class = $guest->{type} eq 'qemu' ? 'PVE::QemuConfig' : 'PVE::LXC::Config';
+        my $conf = eval { $class->load_config($vmid, $guest->{node}) } or next;
+        $class->foreach_volume(
+            $conf,
+            sub {
+                my ($key, $volume) = @_;
+                return if $guest->{type} eq 'lxc' && $volume->{type} ne 'bind';
+                my $source = $volume->{ $class->volid_key() } // '';
+                return if !grep { $source =~ $_ } values %$stores;
+                my $kind = $guest->{type} eq 'qemu' ? 'VM' : 'container';
+                push @hints, "$kind $vmid on node '$guest->{node}': $key=$source";
+            },
+        );
+    }
+    return if !@hints;
+    log_text("Guests configured with paths on these CephFS mounts:");
+    log_steps(\@hints, 1);
+    log_text(
+        "Eject a listed ISO from the virtual CD/DVD drive, or stop guests holding these paths.");
+}
+
 my $WRITE_FILE = <<'PERL_EOF';
 use strict;
 use warnings;
@@ -4520,6 +4562,7 @@ my sub print_open_options(
             push @live, @{ $open->{waiting_sessions}->{$entity} // [] };
         }
         print_possible_consumers(\@live, $opts) if @live;
+        print_mount_consumers($state, $open->{waiting});
         if (@live) {
             log_text("Refresh clients of the affected Ceph users:");
             log_steps(
