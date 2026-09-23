@@ -4565,8 +4565,8 @@ my sub print_open_options(
     return $open->{complete} if !scalar($open->{stuck}->@*);
 
     log_text("");
-    log_text("Left to whoever manages the client that reads them; 'man pveceph' covers what each"
-        . " needs:");
+    log_text("These keys need manual migration. Follow each client's key-rotation procedure; update"
+        . " every key copy and refresh every client:");
     log_step($_) for $open->{stuck}->@*;
 
     return $open->{complete};

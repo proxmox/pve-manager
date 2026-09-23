@@ -4167,7 +4167,7 @@ sub run_aggregate_confirmation {
     );
     like(
         $planned,
-        qr/Left to whoever manages the client that reads them.*client\.rgw\.node1/s,
+        qr/These keys need manual migration.*client\.rgw\.node1/s,
         'and the keys no option of this helper reaches',
     );
 }
@@ -6076,6 +6076,24 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
             );
         }
     }
+}
+
+{
+    my $info = migrated_info(picture(1));
+    $info->{exported} = { 'client.rbd-mirror.peer' => { key => $OLD } };
+    my $state = { client_keys_seen => { 'client.rbd-mirror.peer' => key_fingerprint($OLD) } };
+    my $out = '';
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_open_options}->({}, {}, $state, $info);
+    }
+    like(
+        $out,
+        qr/These keys need manual migration\. Follow each client's key-rotation procedure; update every key copy and refresh every client:.*client\.rbd-mirror\.peer/s,
+        'unmanaged users refer to their owning client procedure',
+    );
+    unlike($out, qr/man pveceph.*covers/, 'the helper does not promise per-client manual coverage');
 }
 
 done_testing();
