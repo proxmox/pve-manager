@@ -4511,7 +4511,8 @@ my sub print_open_options(
 
     if (!$planned && !$opts->{only} && $open->{complete}) {
         log_pass("Cephx migration is complete. Authentication and new keys use only '$CIPHER'.");
-        log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours.")
+        log_text("AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours."
+                . " You do not need to wait for it.")
             if ($snapshot->{health_checks} // {})->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE};
     }
 
@@ -4659,7 +4660,8 @@ my sub print_closing_notes(
             "These recompute on the monitors' next tick"
                 . (
                     $checks->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE}
-                    ? "; AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours"
+                    ? "; AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE clears on its own within a few hours."
+                    . " You do not need to wait for it"
                     : ""
                 )
                 . "."

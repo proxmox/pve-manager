@@ -6041,4 +6041,41 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     }
 }
 
+{
+    for my $warning (0, 1) {
+        my $info = migrated_info(picture(1));
+        $info->{allowed_ciphers} = [qw(aes aes256k)];
+        $info->{health_checks}->{AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE} = {
+            severity => 'HEALTH_WARN',
+            summary => { message => 'old rotating keys' },
+            }
+            if $warning;
+        my $state = { client_keys_seen => { 'client.app' => key_fingerprint($NEW) } };
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{print_closing_notes}->(undef, {}, {}, 0, 0, $state, 0, {}, $info);
+        }
+        if ($warning) {
+            like(
+                $out,
+                qr/You do not need to wait for it\./,
+                'rotating-key expiry does not delay migration',
+            );
+            like(
+                $out,
+                qr/--restrict-ciphers/,
+                'the final step remains available while rotating keys expire',
+            );
+        } else {
+            unlike(
+                $out,
+                qr/need to wait/,
+                'no wait advice is added without the rotating-key warning',
+            );
+        }
+    }
+}
+
 done_testing();
