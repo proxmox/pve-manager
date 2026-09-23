@@ -5983,4 +5983,62 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     }
 }
 
+{
+    my $info = migrated_info({
+        complete => 1,
+        clients => { 'client.admin' => [{ global_id => 48, host => 'node-a' }] },
+    });
+    $info->{exported} = { 'client.admin' => { key => $OLD, pending_key => $NEW } };
+    my $state = {
+        client_keys_seen => { 'client.admin' => key_fingerprint($OLD) },
+        staged => { 'client.admin' => { key => key_fingerprint($NEW), written => 1 } },
+        client_refresh => { 'client.admin' => { rotated => 1, session_ids => [48] } },
+    };
+    for my $verbose (0, 1) {
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            no warnings qw(once redefine);
+            local *main::possible_consumer_hints = sub { return ['node-a: possible VM 100'] };
+            $HOOKS->{print_open_options}->({ verbose => $verbose }, {}, $state, $info);
+        }
+        like(
+            $out,
+            qr/Live-migrate\s+affected\s+VMs.*stop\s+and\s+start\s+only\s+VMs\s+that\s+cannot\s+be\s+migrated/s,
+            'waiting users get live migration, and a restart only for unmigratable VMs',
+        );
+        like(
+            $out,
+            qr/another up-to-date node with the new keyring/,
+            'the migration destination requirements are explicit',
+        );
+        like(
+            $out,
+            qr/guest reboot does\s+not reload the key/,
+            'a guest reboot is not a key refresh',
+        );
+        like(
+            $out,
+            qr/Possible consumers \(host-wide hints, not session attribution\):/,
+            'host-wide hints remain explicitly uncertain',
+        );
+        like(
+            $out,
+            qr/Remount affected kernel CephFS mounts.*Restart other clients/s,
+            'CephFS mounts and other clients get refresh advice',
+        );
+        like(
+            $out,
+            qr/including\s+VMs\s+with\s+kernel\s+RBD\s+disks.*container\s+on\s+RBD\s+keeps\s+the\s+key.*fully\s+stopped\s+and\s+started/s,
+            'krbd VMs refresh by live migration, only containers need a full restart',
+        );
+        like(
+            $out,
+            qr/Ceph CLI.*storages without a dedicated user.*client\.admin/s,
+            'the admin key explanation names its usual users',
+        );
+    }
+}
+
 done_testing();

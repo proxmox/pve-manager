@@ -4487,6 +4487,23 @@ my sub print_open_options(
             push @live, @{ $open->{waiting_sessions}->{$entity} // [] };
         }
         print_possible_consumers(\@live, $opts) if @live;
+        if (@live) {
+            log_text("Refresh clients of the affected Ceph users:");
+            log_steps(
+                [
+                    "Live-migrate affected VMs to another up-to-date node with the new keyring,"
+                        . " including VMs with kernel RBD disks. A guest reboot does not reload the"
+                        . " key. Fully stop and start only VMs that cannot be migrated.",
+                    "Remount affected kernel CephFS mounts. A container on RBD keeps the key its"
+                        . " disks were mapped with until it is fully stopped and started. Restart"
+                        . " other clients after updating any external key copies.",
+                ],
+                1,
+            );
+        }
+        log_text("The Ceph CLI and Proxmox VE storages without a dedicated user normally use"
+                . " 'client.admin'. VMs and mounts on those storages can retain its previous key.")
+            if grep { $_ eq $ADMIN_ENTITY } $open->{waiting}->@*;
         log_text("Session absence does not prove that disconnected consumers or external key copies"
                 . " were refreshed.")
             if $opts->{verbose};
