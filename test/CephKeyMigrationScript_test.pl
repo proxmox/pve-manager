@@ -5786,6 +5786,122 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
 }
 
 {
+    for my $case (qw(valid missing transport empty no-key unused repair resume
+        disabled cluster-only service-only mixed gss unreadable-config))
+    {
+        my $rados = ClientRotationRados->new($OLD);
+        my $plan = {
+            mon_key => $case eq 'unused' ? 0 : 1,
+            mon_repair_only => $case eq 'repair' ? 1 : 0,
+        };
+        my ($output, $verdict) = ('', undef);
+        {
+            no warnings qw(once redefine);
+            local *PVE::Cluster::cfs_read_file = sub {
+                die "cannot read ceph.conf\n" if $case eq 'unreadable-config';
+                my $settings = {
+                    disabled => "auth_cluster_required = none\nauth_service_required = none\n",
+                    'cluster-only' => "auth cluster required = none\n",
+                    'service-only' => "auth_service_required = none\n",
+                    mixed =>
+                        "auth_cluster_required = none, cephx\nauth_service_required = cephx\n",
+                    gss => "auth_cluster_required = gss\n",
+                };
+                return PVE::CephConfig::parse_ceph_config(
+                    'ceph.conf',
+                    "[global]\n" . ($settings->{$case} // ''),
+                );
+            };
+            local *ClientRotationRados::mon_command = sub {
+                my ($self, $args) = @_;
+                push $self->{commands}->@*, $args;
+                die "unexpected command\n"
+                    if $args->{prefix} ne 'auth get' || $args->{entity} ne 'mon.';
+                die "mon_cmd failed - failed to find mon. in keyring\n"
+                    if $case !~ /^(?:valid|unused|transport|empty|no-key)$/;
+                die "monitor connection timed out\n" if $case eq 'transport';
+                return [] if $case eq 'empty';
+                return [{ entity => 'mon.' }] if $case eq 'no-key';
+                return [{ entity => 'mon.', key => $self->{key} }];
+            };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $verdict = $HOOKS->{preflight_mon_key}->($rados, $plan);
+        }
+        is(
+            scalar($rados->{commands}->@*),
+            $case eq 'unused' ? 0 : 1,
+            "$case: only a plan using mon. re-reads its key, without any writes",
+        );
+        if ($case eq 'valid' || $case eq 'unused') {
+            is($verdict, 1, "$case: the monitor-key preflight permits the plan");
+            is($output, '', "$case: there is no misleading missing-key warning");
+        } else {
+            is($verdict, -1, "$case: the monitor-key preflight refuses the plan");
+            like($output, qr/Cannot read the shared 'mon\.' key/, 'the required key is named');
+            if ($case =~ /^(disabled|cluster-only|service-only|gss)$/) {
+                like(
+                    $output,
+                    qr/\[global\] omits cephx in: auth_/,
+                    'explicit file settings are diagnosed using the Ceph config parser',
+                );
+                like(
+                    $output,
+                    qr/neither cluster nor service.*requires cephx or GSS/s,
+                    'one disabled side or GSS alone does not imply an unloaded key',
+                );
+                like(
+                    $output,
+                    qr/Effective monitor settings may differ/,
+                    'global file settings are not treated as effective monitor settings',
+                );
+                like(
+                    $output,
+                    qr/auth_service_required = none/,
+                    'service authentication is checked independently',
+                ) if $case eq 'service-only';
+            } else {
+                like(
+                    $output,
+                    qr/do not load the 'mon\.' key.*neither cluster nor service\s+authentication requires cephx or GSS/s,
+                    'missing monitor configuration is a possible cause, not an inferred fact',
+                );
+                unlike($output, qr/omits cephx in/, 'no disabled setting is invented');
+            }
+            like(
+                $output,
+                qr/ceph config show mon\.<id> auth_cluster_required.*ceph config show mon\.<id> auth_service_required/s,
+                'both effective authentication settings can be checked',
+            );
+            like(
+                $output,
+                qr/omit '--rotate-mon-key' and\s+'--rotate-cluster-keys'/,
+                'both existing rotation options are named without automatically skipping them',
+            );
+            like(
+                $output,
+                qr/does not skip recovery of an unfinished rotation/,
+                'omitting the options is not promised to bypass recovery',
+            );
+        }
+        like(
+            $output,
+            qr/mon_cmd failed - failed to find mon\. in keyring/,
+            'the original Ceph error reaches preflight',
+        ) if $case eq 'missing';
+        like($output, qr/monitor connection timed out/, 'a transport error is retained too')
+            if $case eq 'transport';
+        like(
+            $output,
+            qr/unexpected answer to 'auth get mon\.'/,
+            'an empty response does not pass preflight',
+        ) if $case eq 'empty';
+        like($output, qr/'auth get mon\.' returned no key/, 'a reply without a key is diagnosed')
+            if $case eq 'no-key';
+    }
+}
+
+{
     # Ceph never allows stopping a monitor below three of them, so the rolling restart would poll
     # its own gate until the timeout, with the new keyring already written to every monitor.
 

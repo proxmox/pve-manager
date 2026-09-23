@@ -2192,6 +2192,40 @@ my sub daemon_is_running($rados, $type, $id) {
     return !eval { $rados->mon_command({ prefix => 'health', format => 'json' }); 1 } ? 1 : 0;
 }
 
+# Export absence is normal for historical monitor keys. Re-read the credential only when the
+# plan needs it, so an earlier best-effort collection cannot hide a failure until apply.
+my sub preflight_mon_key($rados, $plan) {
+    return 1 if !$plan->{mon_key};
+
+    eval { auth_entry($rados, 'mon.') };
+    if (my $err = $@) {
+        chomp($err);
+        log_fail("Cannot read the shared 'mon.' key needed by this plan: $err");
+        my $global = eval { PVE::Cluster::cfs_read_file('ceph.conf')->{global} } // {};
+        my @disabled;
+        for my $option (qw(auth_cluster_required auth_service_required)) {
+            my @methods = grep { length } split(/[;,= \t]+/, $global->{$option} // '');
+            push @disabled, "$option = $global->{$option}"
+                if @methods && !grep { $_ eq 'cephx' } @methods;
+        }
+        if (@disabled) {
+            log_text("'/etc/pve/ceph.conf' [global] omits cephx in: "
+                . join(', ', @disabled)
+                . ". Effective monitor settings may differ.");
+        }
+        log_text("Monitors do not load the 'mon.' key when neither cluster nor service"
+            . " authentication requires cephx or GSS. Check the effective settings on every"
+            . " monitor:");
+        log_step("ceph config show mon.<id> auth_cluster_required");
+        log_step("ceph config show mon.<id> auth_service_required");
+        log_text("To skip a new monitor-key rotation, omit '--rotate-mon-key' and"
+            . " '--rotate-cluster-keys'. This does not skip recovery of an unfinished rotation."
+        );
+        return -1;
+    }
+    return 1;
+}
+
 # needs probe_nodes() first: 1 go ahead, -1 fix something first
 my sub preflight_nodes($info, $plan, $opts) {
     # 'mon ok-to-stop' compares the quorum that would remain against the monitor map's minimum, so
@@ -5462,6 +5496,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
 
     my $plan = build_plan($info, $state, $opts, $client_files);
     log_warn($_) for $plan->{warnings}->@*;
+    return 1 if preflight_mon_key($rados, $plan) <= 0;
 
     # an old-cipher 'mon.' in the auth db blocks the switch, so say so before walking every daemon
     if ($info->{insecure_entities}->{'mon.'} && !$plan->{mon_key} && !$opts->{only}) {
@@ -5746,6 +5781,7 @@ sub key_migration_test_hooks {
         probe_nodes => \&probe_nodes,
         probe_script => $PROBE_SCRIPT,
         preflight_nodes => \&preflight_nodes,
+        preflight_mon_key => \&preflight_mon_key,
         check_client_packages => \&check_client_packages,
         client_key_files => \&client_key_files,
         check_client_kernels => \&check_client_kernels,
