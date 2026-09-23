@@ -3346,6 +3346,16 @@ sub run_aggregate_confirmation {
         qr/remained connected through the immediate replacement.*next reconnect fails.*three days at most.*Live-migrate/s,
         'post-apply advice is remedial and does not promise a grace period',
     );
+    like(
+        $output,
+        qr/Live-migrate affected VMs,\s+including those with kernel RBD disks, remount kernel CephFS mounts/s,
+        'immediate replacement advice refreshes krbd VMs by live migration',
+    );
+    like(
+        $output,
+        qr/fully stop and start\s+containers on RBD/s,
+        'immediate replacement advice restarts only containers for their RBD mappings',
+    );
 }
 
 {
@@ -3613,6 +3623,16 @@ sub run_aggregate_confirmation {
         $concise,
         qr/For each staged Ceph user key, both the current and new keys authenticate.*committed with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/s,
         'the default names both staged completion paths without offering the aggregate early',
+    );
+    like(
+        $concise,
+        qr/For staged keys.*live-migrate affected\s+VMs, including those with kernel RBD disks/s,
+        'staged refresh advice refreshes krbd VMs by live migration',
+    );
+    like(
+        $concise,
+        qr/fully stop and start containers on RBD/,
+        'staged refresh advice restarts only containers for their RBD mappings',
     );
     unlike(
         $concise,

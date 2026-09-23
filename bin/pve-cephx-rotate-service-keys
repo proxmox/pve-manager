@@ -2751,9 +2751,10 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         }
         print_possible_consumers($live_for_hints, $opts);
         if ($staged_count) {
-            log_step("For staged keys, refresh their consumers after applying: live-migrate every"
-                . " VM, remount every kernel CephFS or RBD mount, and restart other consumers; a"
-                . " dry run then reports who is left.");
+            log_step("For staged keys, refresh their clients after applying: live-migrate affected"
+                . " VMs, including those with kernel RBD disks, remount kernel CephFS mounts, fully"
+                . " stop and start containers on RBD, and restart other clients; a dry run then"
+                . " reports who is left.");
         }
     }
 
@@ -4261,14 +4262,15 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0
             { $entity => key_fingerprint($entry->{key}) },
         )->{$entity} // [];
         if (scalar(@$held)) {
-            log_warn("Consumers that remained connected through the immediate replacement may"
+            log_warn("Clients that remained connected through the immediate replacement may"
                 . " still hold the previous '$entity' key in memory: "
                 . scalar(@$held)
                 . ". Their next reconnect fails, as the active key changed; one that stays"
                 . " connected keeps its tickets, the monitor one for three days at most by"
-                . " default, and open data connections can outlast that. Live-migrate every VM,"
-                . " remount the kernel mounts, and restart the other consumers, then run a dry run"
-                . " to confirm none remain.");
+                . " default, and open data connections can outlast that. Live-migrate affected VMs,"
+                . " including those with kernel RBD disks, remount kernel CephFS mounts, fully stop"
+                . " and start containers on RBD, and restart other clients. Then run a dry run to"
+                . " confirm none remain.");
         }
     }
 
