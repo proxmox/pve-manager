@@ -1766,8 +1766,7 @@ my sub preflight_cluster(
 
     if ($confirm_all) {
         if (!scalar(@confirm)) {
-            log_fail("nothing to confirm: no open client-key refresh record exists");
-            $confirmation_refused = 1;
+            log_info("nothing left to confirm: no open client-key refresh record exists");
         }
 
         if (scalar(@confirm) && !$info->{sessions}->{complete}) {

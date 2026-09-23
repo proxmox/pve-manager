@@ -2449,6 +2449,45 @@ sub run_aggregate_confirmation {
         !scalar(PVE::Ceph::KeyMigration::restrict_blockers($info, $state)->@*),
         'the shared post-promotion state is ready for restriction',
     );
+
+    for my $case (qw(repeat orphan incomplete per-user)) {
+        my $output = '';
+        $info->{exported}->{'client.osd-lockbox.orphan'} = { key => $OLD }
+            if $case eq 'orphan';
+        delete $info->{exported}->{'client.osd-lockbox.orphan'} if $case ne 'orphan';
+        my $repeat_opts = {%$opts};
+        if ($case eq 'per-user') {
+            delete $repeat_opts->{'confirm-all-clients-refreshed'};
+            $repeat_opts->{'confirm-clients-refreshed'} = ['client.typo'];
+        }
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $info->{sessions} = { complete => $case eq 'incomplete' ? 0 : 1, clients => {} };
+            $verdict = $HOOKS->{preflight}->($info, $repeat_opts, 0, $state, $files);
+        }
+        is($verdict, $case eq 'repeat' ? 1 : -1, "$case: empty confirmation preserves other gates");
+        like(
+            $output,
+            qr/INFO: nothing left to confirm/,
+            "$case: aggregate confirmation with no open records is informational",
+        ) if $case ne 'per-user';
+        like(
+            $output,
+            qr/client\.osd-lockbox\.orphan/,
+            'an old lockbox key still blocks restriction',
+        ) if $case eq 'orphan';
+        like($output, qr/not every monitor answered/, 'incomplete sessions still block restriction')
+            if $case eq 'incomplete';
+        like(
+            $output,
+            qr/FAIL: nothing to confirm: no rotation record exists for 'client\.typo'/,
+            'an unknown per-user confirmation still fails',
+        ) if $case eq 'per-user';
+        is_deeply($rados->{committed}, ['client.app'], 'no repeated confirmation commits a key');
+    }
 }
 
 {
