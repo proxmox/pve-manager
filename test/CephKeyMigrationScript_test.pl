@@ -1493,6 +1493,78 @@ sub wipe_monitor_picture {
     }
 }
 
+{
+    for my $case (qw(no-write transient persistent no-hostname)) {
+        local $test_time = 100;
+        local @test_sleeps;
+        no warnings qw(once);
+        local $main::monmap_changed = 0;
+        my $rados = CurrentMonitorRados->new(
+            mons => ['a'],
+            preferred_cipher => 'aes256k',
+            allowed_ciphers => [qw(aes aes256k)],
+        );
+        my $state = {
+            preferred_cipher_was => $case eq 'no-write' ? 'aes256k' : 'aes',
+        };
+        my ($calls, $output) = (0, '');
+        my ($snapshot, $last);
+        {
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { };
+            open(my $stdout, '>', \$output) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{release_preferred}->($rados, $state);
+            $snapshot = $HOOKS->{summary_snapshot}->(
+                $rados,
+                $state,
+                { apply => 1 },
+                sub {
+                    $calls++;
+                    $last = {
+                        exported => { 'client.app' => { key => $NEW } },
+                        health_checks => {},
+                        sessions => picture($case eq 'transient' && $calls == 2),
+                    };
+                    $last->{sessions}->{errors} = {
+                        a => $case eq 'no-hostname'
+                        ? 'no hostname in monitor metadata'
+                        : 'not in quorum',
+                        }
+                        if !$last->{sessions}->{complete};
+                    return $last;
+                },
+            );
+        }
+        is(
+            scalar(grep { $_->{prefix} eq 'mon set' } $rados->{commands}->@*),
+            $case eq 'no-write' ? 0 : 1,
+            "$case: recovery marks only an actual monitor-map write",
+        );
+        is(
+            $calls,
+            $case eq 'persistent' ? 10 : $case eq 'transient' ? 2 : 1,
+            "$case: summary retries only after a write and within its budget",
+        );
+        is_deeply(
+            \@test_sleeps,
+            $case eq 'persistent' ? [(3) x 9] : $case eq 'transient' ? [3] : [],
+            "$case: summaries use the existing three-second interval",
+        );
+        is($snapshot, $last, "$case: the whole last snapshot is returned");
+        is(
+            $snapshot->{sessions}->{complete},
+            $case eq 'transient' ? 1 : '',
+            "$case: retry never disguises an incomplete snapshot",
+        );
+        is(
+            scalar(() = $output =~ /Session query incomplete after a monitor-map change/g),
+            $case eq 'transient' || $case eq 'persistent' ? 1 : 0,
+            "$case: the retry INFO appears once only when retrying",
+        );
+    }
+}
+
 # --- staged client keys ------------------------------------------------------------------------
 {
     my $script = $HOOKS->{cephfs_remount_script};

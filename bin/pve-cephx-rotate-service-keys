@@ -154,6 +154,9 @@ sub log_heading($title) {
 }
 
 my $ssh_command = {};
+# Set once this run wrote the monitor map, which starts an election that the next session
+# snapshots can run into.
+our $monmap_changed = 0;
 
 # a blackholed SSH would hang a run holding the cluster lock; no overall timeout, as killing a step
 # mid-rotation is worse
@@ -3059,6 +3062,7 @@ my sub claim_preferred_cipher($rados, $state) {
     }
 
     $rados->mon_command({ prefix => 'mon set', name => 'auth_preferred_cipher', value => $CIPHER });
+    $monmap_changed = 1;
     my $applied = current_preferred_cipher($rados);
     die "the monitors did not apply 'auth_preferred_cipher = $CIPHER'\n"
         if !defined($applied) || $applied ne $CIPHER;
@@ -3087,6 +3091,7 @@ my sub release_preferred_cipher($rados, $state) {
                 name => 'auth_preferred_cipher',
                 value => $restore,
             });
+            $monmap_changed = 1;
         }
     };
     if (my $err = $@) {
@@ -4385,6 +4390,7 @@ my sub set_service_cipher($rados, $state) {
     }
 
     $rados->mon_command({ prefix => 'mon set', name => 'auth_service_cipher', value => $CIPHER });
+    $monmap_changed = 1;
 
     my $mon_dump = $rados->mon_command({ prefix => 'mon dump', format => 'json' });
     my $now = $mon_dump->{auth_service_cipher}->{name} // 'unknown';
@@ -4400,6 +4406,48 @@ my sub set_service_cipher($rados, $state) {
     return;
 }
 
+# The deadline bounds retry starts, not collection time. Collection commands keep their own
+# timeouts, so a snapshot can finish after the retry budget expires.
+my sub snapshot_until_complete($collect, $deadline, $observe, $message) {
+    my $snapshot;
+    my $retry_logged = 0;
+    while (1) {
+        $snapshot = $collect->();
+        $observe->($snapshot);
+        last if $snapshot->{sessions}->{complete};
+        # A monitor in quorum without a hostname cannot be queried over SSH.
+        last
+            if grep { $_ eq 'no hostname in monitor metadata' }
+            values %{ $snapshot->{sessions}->{errors} // {} };
+        my $remaining = $deadline - time();
+        last if $remaining <= $MONITOR_PROBE_RETRY_DELAY;
+        if (!$retry_logged) {
+            log_info($message);
+            $retry_logged = 1;
+        }
+        sleep($MONITOR_PROBE_RETRY_DELAY);
+        last if time() >= $deadline;
+    }
+    return $snapshot;
+}
+
+my sub collect_summary_snapshot($rados, $state, $opts, $collect = undef) {
+    $collect //= sub { collect_restriction_snapshot($rados) };
+    return $collect->() if !$monmap_changed;
+
+    return snapshot_until_complete(
+        $collect,
+        # a summary only informs, so wait out an election rather than the whole '--timeout'
+        time() + 30,
+        sub($snapshot) {
+            reconcile_client_fingerprints(
+                $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
+            );
+        },
+        "Session query incomplete after a monitor-map change; retrying briefly.",
+    );
+}
+
 my sub restrict_ciphers(
     $rados, $state, $opts, $collect = undef, $read_mon_key = undef,
 ) {
@@ -4409,32 +4457,19 @@ my sub restrict_ciphers(
 
     # A run can be long and the cluster lock does not serialize direct 'ceph auth' commands, so
     # the verdict is taken again on a snapshot collected right before the allowed-cipher switch.
-    my $timeout = $opts->{timeout} // 600;
-    my $deadline = time() + $timeout;
-    my $snapshot;
-    my $retry_logged = 0;
-    while (1) {
-        $snapshot = collect_restriction_snapshot($rados, $collect, $read_mon_key);
-        reconcile_client_fingerprints(
-            $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
-        );
-        # A returning old-key client must reopen its record even if it disappears during the
-        # election. Only the final complete snapshot gates the switch.
-        reopen_returning_clients($state, $snapshot->{sessions}, $snapshot->{exported});
-        last if $snapshot->{sessions}->{complete};
-        # A monitor in quorum without a hostname cannot be queried over SSH.
-        last
-            if grep { $_ eq 'no hostname in monitor metadata' }
-            values %{ $snapshot->{sessions}->{errors} // {} };
-        my $remaining = $deadline - time();
-        last if $remaining <= $MONITOR_PROBE_RETRY_DELAY;
-        if (!$retry_logged) {
-            log_info("Session query incomplete; retrying through a possible monitor election.");
-            $retry_logged = 1;
-        }
-        sleep($MONITOR_PROBE_RETRY_DELAY);
-        last if time() >= $deadline;
-    }
+    my $snapshot = snapshot_until_complete(
+        sub { collect_restriction_snapshot($rados, $collect, $read_mon_key) },
+        time() + ($opts->{timeout} // 600),
+        sub($snapshot) {
+            reconcile_client_fingerprints(
+                $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
+            );
+            # A returning old-key client must reopen its record even if it disappears during the
+            # election. Only the final complete snapshot gates the switch.
+            reopen_returning_clients($state, $snapshot->{sessions}, $snapshot->{exported});
+        },
+        "Session query incomplete; retrying through a possible monitor election.",
+    );
     my $blockers =
         restrict_blockers($snapshot, $state, sub { describe_live($_[0], $opts->{verbose}) });
 
@@ -4452,6 +4487,7 @@ my sub restrict_ciphers(
     log_heading("Restricting the allowed ciphers");
 
     $rados->mon_command({ prefix => 'mon set', name => 'auth_allowed_ciphers', value => $CIPHER });
+    $monmap_changed = 1;
 
     # nothing may put the old cipher back after this
     delete $state->{preferred_cipher_was};
@@ -4663,7 +4699,7 @@ my sub print_closing_notes(
 ) {
     log_heading("What is left");
 
-    $snapshot //= collect_restriction_snapshot($rados);
+    $snapshot //= collect_summary_snapshot($rados, $state, $opts);
     my $checks = $snapshot->{health_checks};
     my $exported = $snapshot->{exported};
     # This check concerns active client keys, independently of pending keys and consumer refresh.
@@ -5287,6 +5323,7 @@ my sub report_unavailable_daemons($rados, $plan) {
 }
 
 my sub run_migration($opts, $confirm = \&confirm_apply_run) {
+    $monmap_changed = 0;
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
 
@@ -5508,7 +5545,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
             $opts,
             storage_entities($client_files),
             $state,
-            collect_restriction_snapshot($rados),
+            collect_summary_snapshot($rados, $state, $opts),
             0,
             $client_files,
         ) if $verdict == 0;
@@ -5591,7 +5628,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
             $opts,
             storage_entities($client_files),
             $state,
-            collect_restriction_snapshot($rados),
+            collect_summary_snapshot($rados, $state, $opts),
             0,
             $client_files,
         );
@@ -5785,6 +5822,7 @@ sub key_migration_test_hooks {
     return {
         collect_monitor_state => \&collect_current_monitor_state,
         restriction_snapshot => \&collect_restriction_snapshot,
+        summary_snapshot => \&collect_summary_snapshot,
         open_actions_from_snapshot => \&open_actions_from_snapshot,
         reconcile_clients => \&reconcile_client_fingerprints,
         migrate_client => \&migrate_client_key,
