@@ -83,6 +83,8 @@ my $home_log = "$tmp/lvm.home";
 # The helper runs as root on OSD nodes; use the test directory for unprivileged test runs.
 my $run_command = \&main::run_command;
 no warnings qw(once redefine);
+local *PVE::Cluster::cfs_update = sub { };
+local *PVE::Cluster::get_nodelist = sub { [$NODE] };
 local *main::run_command = sub {
     my ($cmd, %param) = @_;
     $param{input} =~ s{DIR => '/run'}{DIR => '$tmp'}g if defined($param{input});
@@ -511,6 +513,81 @@ sub info_for {
         [],
         'and nothing is planned for it',
     );
+}
+
+{
+    no warnings qw(once redefine);
+    my $cluster = 'cluster-fsid';
+    local *PVE::Ceph::Services::get_cluster_service = sub {
+        return { $NODE => { 7 => { direxists => 1 } } };
+    };
+    my @commands;
+    local *main::run_command = sub {
+        my ($cmd, %args) = @_;
+        push @commands, [@$cmd];
+        if (($args{input} // '') =~ /my \(\$cluster, \@specs\)/) {
+            $args{outfunc}->(
+                'label osd:7 '
+                    . JSON::encode_json({
+                        '/dev/block' => {
+                            whoami => 7,
+                            ceph_fsid => $cluster,
+                            osd_uuid => $FSID,
+                            osd_key => $OLD,
+                        },
+                    })
+            );
+        } else {
+            $args{outfunc}->("$FSID count=1");
+            $args{outfunc}->("$FSID secret=$OLD");
+        }
+    };
+    local *main::file_set_contents = sub { };
+    my $rados = LockboxTestRados->new(auth => { $ENTITY => { key => $OLD, pending_key => $NEW } });
+    my $state = {
+        fsid => $cluster,
+        lockbox => {
+            $ENTITY => {
+                fsid => $FSID,
+                node => "$NODE.example.invalid",
+                key => key_fingerprint($NEW),
+                phase => 'staged',
+            },
+        },
+    };
+    my $info = { exported => $rados->{auth}, fsid => $cluster };
+    ok(
+        $HOOKS->{resume}->($rados, $state, $info),
+        'FQDN lockbox journal fallback resumes with node evidence',
+    );
+    ok(
+        @commands && !grep({ $_->[0] ne 'perl' } @commands),
+        'local FQDN recovery uses only the member shortcut',
+    );
+    ok(!$state->{lockbox}->{$ENTITY}, 'verified recovery completes the journal');
+
+    $rados = LockboxTestRados->new(auth => { $ENTITY => { key => $OLD, pending_key => $NEW } });
+    $info = { exported => $rados->{auth}, fsid => $cluster };
+    for my $host ('foreign.invalid', "$NODE.foreign.invalid") {
+        local *PVE::Ceph::Services::get_cluster_service = sub { return {} };
+        $state = {
+            fsid => $cluster,
+            lockbox => {
+                $ENTITY => {
+                    fsid => $FSID,
+                    node => $host,
+                    key => key_fingerprint($NEW),
+                    phase => 'staged',
+                },
+            },
+        };
+        @commands = ();
+        eval { $HOOKS->{resume}->($rados, $state, $info) };
+        like($@, qr/not a node|unique data directory/, 'foreign lockbox recovery is refused');
+        is_deeply(\@commands, [], 'foreign lockbox recovery sends no node command');
+        is($rados->{auth}->{$ENTITY}->{pending_key}, $NEW, 'refusal leaves the pending key valid');
+        ok($state->{lockbox}->{$ENTITY}, 'refusal preserves lockbox recovery state');
+    }
 }
 
 done_testing();

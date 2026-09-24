@@ -164,7 +164,27 @@ my $SSH_OPTS = [
     '-o', 'ConnectTimeout=10', '-o', 'ServerAliveInterval=10', '-o', 'ServerAliveCountMax=3',
 ];
 
-my sub node_command($node, $cmd) {
+my sub cluster_nodes() {
+    PVE::Cluster::cfs_update();
+    return { map { $_ => 1 } PVE::Cluster::get_nodelist()->@* };
+}
+
+my sub daemon_location($type, $id, $host) {
+    return { node => undef } if !defined($host) || (!ref($host) && !length($host));
+    die "Cannot locate '$type.$id': no valid host name was reported\n" if ref($host);
+    my $node = PVE::Ceph::Services::metadata_host_node($host, cluster_nodes());
+    return { node => $node, $node ne $host ? ('metadata-host' => $host) : () };
+}
+
+my sub assert_member($node, $entity) {
+    die "Cannot manage '$entity': no valid host name was reported\n"
+        if !defined($node) || ref($node) || !length($node);
+    die "Cannot manage '$entity' on '$node', which is not a node of this Proxmox VE cluster\n"
+        if !cluster_nodes()->{$node};
+}
+
+my sub node_command($node, $cmd, $entity = 'node operation') {
+    assert_member($node, $entity);
     return [@$cmd] if $node eq $nodename;
 
     $ssh_command->{$node} //=
@@ -184,11 +204,14 @@ my sub node_run($node, $cmd, %opts) {
     # keyring write, a probe, or a unit action, none of which legitimately takes minutes
     $args{timeout} = $opts{timeout} // 300;
 
-    eval { run_command(node_command($node, $cmd), %args) };
+    eval { run_command(node_command($node, $cmd, $opts{entity} // 'node operation'), %args) };
     if (my $failure = $@) {
         chomp $failure;
         chomp $err;
-        die "command failed on node '$node': $failure" . (length($err) ? "\n$err\n" : "\n");
+        die "command failed on node '"
+            . ($node // 'unknown')
+            . "': $failure"
+            . (length($err) ? "\n$err\n" : "\n");
     }
 
     return $out;
@@ -203,6 +226,7 @@ my sub node_perl($node, $code, %opts) {
         $node,
         ['perl', '-', ($opts{args} // [])->@*],
         input => $input,
+        defined($opts{entity}) ? (entity => $opts{entity}) : (),
         defined($opts{timeout}) ? (timeout => $opts{timeout}) : (),
     );
 }
@@ -440,6 +464,49 @@ for my $spec (@specs) {
 }
 PERL_EOF
 
+# First-label mapping alone cannot authorize writes. Require the unique directory inventory and
+# the node-side evidence used by preflight again before mutation, including the current OSD UUID.
+my sub assert_daemon_location($rados, $daemon, $fsid, $probe = undef) {
+    my ($type, $id) = $daemon->@{qw(type id)};
+    my $location = daemon_location($type, $id, $daemon->{node});
+    $daemon->{$_} = $location->{$_} for keys %$location;
+    my $node = $daemon->{node};
+    assert_member($node, "$type.$id");
+    return if !defined($daemon->{'metadata-host'});
+
+    my $refuse = sub {
+        die
+            "Cannot verify '$type.$id' reported on '$daemon->{'metadata-host'}' at node '$node': "
+            . "$_[0]. Refusing to change this daemon.\n";
+    };
+    my $inventory = eval { PVE::Ceph::Services::get_cluster_service($type) };
+    $refuse->('the pvestatd service inventory is unavailable') if $@ || ref($inventory) ne 'HASH';
+    my $locations = configured_daemon_locations($inventory)->{$id} // [];
+    $refuse->('the pvestatd service inventory does not identify a unique data directory there')
+        if scalar(@$locations) != 1 || $locations->[0] ne $node;
+
+    $probe //= parse_probe_output(node_perl(
+        $node, $PROBE_SCRIPT,
+        args => [$ccname, "$type:$id"],
+        entity => "$type.$id",
+    ))->{"$type:$id"} // {};
+    if ($type eq 'osd') {
+        my $dump = $rados->mon_command({ prefix => 'osd dump', format => 'json' });
+        my @osds = grep { "$_->{osd}" eq "$id" } @{ $dump->{osds} // [] };
+        $refuse->('the current OSD UUID or cluster FSID is missing')
+            if @osds != 1 || !length($osds[0]->{uuid} // '') || !length($fsid // '');
+        my $identity = { %$daemon, %$probe, 'osd-uuid' => $osds[0]->{uuid} };
+        $refuse->('the bluestore label does not identify this OSD in this cluster')
+            if ($probe->{store} // '') ne 'block' || osd_label_identity($identity, $fsid) ne 'ok';
+    } else {
+        my $sections = $probe->{sections} // [];
+        $refuse->('the data-directory keyring does not identify this daemon')
+            if ($probe->{store} // '') ne 'file'
+            || scalar(@$sections) != 1
+            || $sections->[0] ne $daemon->{entity};
+    }
+}
+
 # keeps the key out of the SSH command line; it is in /proc on the OSD's own node either way
 my $OSD_LABEL_WRITE = <<'PERL_EOF';
 use strict;
@@ -668,7 +735,10 @@ my sub poll_client_sessions($info) {
         next if $mon->{down};
         my $sessions = eval {
             decode_json(node_run(
-                $mon->{node}, ['ceph', 'daemon', "mon.$mon->{id}", 'sessions']));
+                $mon->{node},
+                ['ceph', 'daemon', "mon.$mon->{id}", 'sessions'],
+                entity => "mon.$mon->{id}",
+            ));
         };
         push @$per_mon, { mon => $mon->{id}, sessions => $sessions };
     }
@@ -697,7 +767,7 @@ my sub poll_manual_promotion($info) {
         $reports->{ $mon->{id} } = probe_manual_promotion(
             $mon->{node},
             $mon->{id},
-            sub($node, $cmd) { node_run($node, $cmd) },
+            sub($node, $cmd) { node_run($node, $cmd, entity => "mon.$mon->{id}") },
         );
     }
     return manual_promotion_support($reports, $info->{monmap_mons});
@@ -790,7 +860,7 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
             || !length($id)
             || $metadata_seen->{$id}++
             || (defined($entry->{hostname}) && ref($entry->{hostname}));
-        $nodes->{$id} = $entry->{hostname}
+        $nodes->{$id} = daemon_location('mon', $id, $entry->{hostname})->{node}
             if defined($entry->{hostname}) && length($entry->{hostname});
     }
 
@@ -803,6 +873,8 @@ my sub collect_current_monitor_state($rados, $run_node = undef) {
             $errors->{$id} = 'not in quorum';
         } elsif (!$nodes->{$id}) {
             $errors->{$id} = 'no hostname in monitor metadata';
+        } elsif (!eval { assert_member($nodes->{$id}, "mon.$id"); 1 }) {
+            $errors->{$id} = $@;
         } else {
             $sessions = eval {
                 decode_json($run_node->(
@@ -873,6 +945,10 @@ my sub collect_lockbox($rados, $info, $probe) {
             next;
         }
         $entry->{node} = $daemon->{node};
+        if (!eval { assert_member($daemon->{node}, "osd.$id"); 1 }) {
+            $entry->{missing} = $@;
+            next;
+        }
         push $by_node->{ $daemon->{node} }->@*, $entity;
     }
     return $found if !$probe;
@@ -1000,7 +1076,8 @@ my sub collect_cluster_info($rados, $opts, $state) {
         my $daemons = [];
         for my $entry (@$metadata) {
             my $id = $entry->{name} // $entry->{id};
-            next if !defined($id);
+            die "invalid daemon ID in '$type metadata'\n"
+                if !defined($id) || ref($id) || !length($id);
             # an OSD the map holds as destroyed still answers with an empty metadata stub; one
             # the map read above does not know yet is newer, not gone
             next if $type eq 'osd' && $destroyed_osds->{$id};
@@ -1009,7 +1086,7 @@ my sub collect_cluster_info($rados, $opts, $state) {
                     type => $type,
                     id => "$id",
                     entity => $type eq 'mon' ? 'mon.' : "$type.$id",
-                    node => $entry->{hostname},
+                    daemon_location($type, $id, $entry->{hostname})->%*,
                     version => $entry->{ceph_version_short} // $entry->{ceph_version},
                     active => ($type eq 'mgr' && "$id" eq $active_mgr) ? 1 : 0,
                     $type eq 'osd' && exists($cluster_osds->{$id})
@@ -1353,10 +1430,7 @@ my sub probe_nodes($info, $plan, $opts = {}) {
     my $installed = installed_versions();
     my $specs = {};
     for my $daemon (touched_daemons($info, $plan)) {
-        if (!defined($daemon->{node}) || $daemon->{node} eq '') {
-            die "the '$daemon->{type}' daemon '$daemon->{id}' does not report a host name, so"
-                . " there is no way to tell which node to work on\n";
-        }
+        assert_member($daemon->{node}, "$daemon->{type}.$daemon->{id}");
         push $specs->{ $daemon->{node} }->@*, "$daemon->{type}:$daemon->{id}";
     }
 
@@ -1375,7 +1449,8 @@ my sub probe_nodes($info, $plan, $opts = {}) {
 
     # every daemon is judged on its Ceph version, only the touched ones on their data directory
     for my $type (qw(mon mgr mds osd)) {
-        $_->{binary} = $installed->{ $_->{node} } for $info->{daemons}->{$type}->@*;
+        $_->{binary} = defined($_->{node}) ? $installed->{ $_->{node} } : undef
+            for $info->{daemons}->{$type}->@*;
     }
     for my $daemon (touched_daemons($info, $plan)) {
         my $probe = $by_node->{ $daemon->{node} }->{"$daemon->{type}:$daemon->{id}"} // {};
@@ -2298,11 +2373,16 @@ my sub preflight_nodes($info, $plan, $opts) {
         my $lockbox_nodes = { map { $_->{node} => 1 } $plan->{lockbox_keys}->@* };
         my $seen = {};
         @judged =
-            grep { !$seen->{"$_"}++ } (@touched, grep { $lockbox_nodes->{ $_->{node} } } @all);
+            grep { !$seen->{"$_"}++ }
+            (@touched, grep { defined($_->{node}) && $lockbox_nodes->{ $_->{node} } } @all);
     }
 
     my (@outdated, @unknown_versions);
     for my $daemon (@judged) {
+        if (!eval { assert_member($daemon->{node}, "$daemon->{type}.$daemon->{id}"); 1 }) {
+            push @unknown_versions, $@;
+            next;
+        }
         if (!$daemon->{recovered} && !$daemon->{down}) {
             if (!defined($daemon->{version}) || $daemon->{version} eq '') {
                 push @unknown_versions,
@@ -2328,6 +2408,8 @@ my sub preflight_nodes($info, $plan, $opts) {
 
     my @unusable;
     for my $daemon (@touched) {
+        eval { assert_daemon_location($info->{rados}, $daemon, $info->{fsid}, $daemon) };
+        push @unusable, $@ if $@;
         my $type = $daemon->{type};
         my $store = $daemon->{store} // 'unknown';
 
@@ -2482,9 +2564,10 @@ my sub recover_left_behind($info, $state) {
             entity => $entity,
             type => $saved->{type},
             id => $saved->{id},
-            node => $saved->{node},
+            daemon_location($saved->{type}, $saved->{id}, $saved->{node})->%*,
             recovered => 1,
         };
+        assert_member($daemon->{node}, $entity);
         push @{ $info->{daemons}->{ $saved->{type} } }, $daemon;
         push @recovered, $daemon;
     }
@@ -2957,6 +3040,8 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     # a stale-copy repair is not gated behind the opt-in, so it must not rotate and restart the
     # quorum unasked. Finishing a started rotation is the exception
     my $rotate = !$plan->{mon_repair_only};
+    assert_daemon_location($rados, $_, $info->{fsid})
+        for $rotate ? $info->{daemons}->{mon}->@* : ();
     my $entry = $rotate ? rotate_entity($rados, $state, 'mon.') : auth_entry($rados, 'mon.');
     my $keyring = keyring_text($entry);
     my $target = key_fingerprint($entry->{key});
@@ -3415,6 +3500,28 @@ my sub check_client_kernels($plan, $opts, $kernels = undef) {
     return 1;
 }
 
+my sub assert_lockbox_location($rados, $item, $info, $fsid) {
+    my $location = daemon_location('lockbox', $item->{fsid}, $item->{node});
+    assert_member($location->{node}, $item->{entity} // "client.osd-lockbox.$item->{fsid}");
+    $item->{node} = $location->{node};
+    my ($daemon) =
+        grep { ($_->{id} // '') eq ($item->{id} // '') } @{ $info->{daemons}->{osd} // [] };
+    return if !$location->{'metadata-host'} && !$daemon->{'metadata-host'};
+
+    my $dump = $rados->mon_command({ prefix => 'osd dump', format => 'json' });
+    my @osds = grep { ($_->{uuid} // '') eq $item->{fsid} } @{ $dump->{osds} // [] };
+    die "Cannot identify the OSD for lockbox '$item->{fsid}' on '$item->{node}'\n" if @osds != 1;
+    my $id = $osds[0]->{osd};
+    my $candidate = {
+        type => 'osd',
+        id => $id,
+        entity => "osd.$id",
+        %$location,
+        'metadata-host' => $location->{'metadata-host'} // $daemon->{'metadata-host'},
+    };
+    assert_daemon_location($rados, $candidate, $fsid);
+}
+
 # The auth entry and the LVM tag must agree, and the tag is what activation reads, so the tag
 # decides whether a staged key is committed or dropped. Nothing reads it while the OSD runs.
 my sub resume_lockbox_keys($rados, $state, $info) {
@@ -3433,6 +3540,10 @@ my sub resume_lockbox_keys($rados, $state, $info) {
             && $current->{fsid} ne $swap->{fsid};
         die "the current node of '$entity' cannot be determined from the OSD map or its journal\n"
             if !defined($node) || !length($node);
+
+        my $item = { %$current, entity => $entity, node => $node, fsid => $fsid };
+        assert_lockbox_location($rados, $item, $info, $info->{fsid} // $state->{fsid});
+        $node = $item->{node};
 
         die "'$entity' is journalled as half rotated but has no auth entry any more. Restore it"
             . " from the LVM tag on node '$node' before running this again, or that OSD cannot"
@@ -3506,7 +3617,8 @@ my sub resume_lockbox_keys($rados, $state, $info) {
     return $changed;
 }
 
-my sub migrate_lockbox_key($rados, $state, $item) {
+my sub migrate_lockbox_key($rados, $state, $item, $info = {}) {
+    assert_lockbox_location($rados, $item, $info, $info->{fsid} // $state->{fsid});
     my ($entity, $node, $fsid) = $item->@{ 'entity', 'node', 'fsid' };
 
     my $entry = auth_entry($rados, $entity);
@@ -4289,6 +4401,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0
 }
 
 my sub migrate_daemon($rados, $state, $daemon, $opts) {
+    assert_daemon_location($rados, $daemon, $state->{fsid});
     my ($type, $id, $entity, $node) =
         ($daemon->{type}, $daemon->{id}, $daemon->{entity}, $daemon->{node});
     my $unit = "ceph-$type\@$id";
@@ -5742,7 +5855,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
                 for my $item (@{ $plan->{lockbox_keys} // [] }) {
                     log_text("");
                     log_info("lockbox key of 'osd.$item->{id}' on node '$item->{node}'");
-                    migrate_lockbox_key($rados, $state, $item);
+                    migrate_lockbox_key($rados, $state, $item, $info);
                 }
 
                 # before the switch, or a client key created right after silently gets the new
@@ -5820,6 +5933,11 @@ sub lockbox_test_hooks {
 
 sub key_migration_test_hooks {
     return {
+        node_command => \&node_command,
+        assert_daemon_location => \&assert_daemon_location,
+        migrate_daemon => \&migrate_daemon,
+        recover_left_behind => \&recover_left_behind,
+        collect_cluster_info => \&collect_cluster_info,
         collect_monitor_state => \&collect_current_monitor_state,
         restriction_snapshot => \&collect_restriction_snapshot,
         summary_snapshot => \&collect_summary_snapshot,

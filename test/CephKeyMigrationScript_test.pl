@@ -37,6 +37,13 @@ our $SCRIPT =
 do $SCRIPT or die "could not load '$SCRIPT': " . ($@ || $!);
 our $HOOKS = key_migration_test_hooks();
 
+no warnings qw(once redefine);
+local *PVE::Cluster::cfs_update = sub { };
+local *PVE::Cluster::get_nodelist = sub {
+    return [PVE::INotify::nodename(), qw(node-a node-b node-c node-d node1 node2 node3)];
+};
+use warnings;
+
 {
 
     package ClientRotationRados;
@@ -6425,6 +6432,247 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         'unmanaged users refer to their owning client procedure',
     );
     unlike($out, qr/man pveceph.*covers/, 'the helper does not promise per-client manual coverage');
+}
+
+{
+
+    package HostInventoryRados;
+
+    sub new { bless { host => $_[1] // 'node-a.example.invalid', commands => [] }, $_[0] }
+
+    sub mon_command {
+        my ($self, $args) = @_;
+        my $prefix = $args->{prefix};
+        push $self->{commands}->@*, $prefix;
+        return { fsid => 'cluster-fsid', mons => [{ name => 'a' }] } if $prefix eq 'mon dump';
+        return { quorum_names => ['a'] } if $prefix eq 'quorum_status';
+        return { active_name => 'a' } if $prefix eq 'mgr dump';
+        return { checks => {} } if $prefix eq 'health';
+        return { osds => [{ osd => 7, uuid => 'osd-uuid' }, { osd => 8, uuid => 'unbooted' }] }
+            if $prefix eq 'osd dump';
+        return [{ entity => 'client.osd-lockbox.osd-uuid', key => $main::OLD }]
+            if $prefix eq 'auth export';
+        return [
+            {
+                name => $1 eq 'osd' ? 7 : 'a',
+                hostname => $self->{host},
+                ceph_version_short => '20.2.4',
+            },
+            $1 eq 'osd' && $self->{hostless_osd} ? ({ id => 8 }) : (),
+            ]
+            if $prefix =~ m/^(mon|mgr|mds|osd) metadata$/;
+        die "unexpected command $prefix\n";
+    }
+}
+
+{
+    no warnings qw(once redefine);
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+    local *PVE::Ceph::Services::get_ceph_versions = sub {
+        return { 'node-a' => { version => { str => '20.2.4' } } };
+    };
+    my $inventory = { 'node-a' => { a => { direxists => 1 }, 7 => { direxists => 1 } } };
+    local *PVE::Ceph::Services::get_cluster_service = sub {
+        return undef if !defined($inventory);
+        my $id = $_[0] eq 'osd' ? 7 : 'a';
+        return {
+            map {
+                $_ =>
+                    { exists($inventory->{$_}->{$id}) ? ($id => $inventory->{$_}->{$id}) : () }
+            } keys %$inventory
+        };
+    };
+    my @commands;
+    local *main::run_command = sub {
+        my ($cmd, %args) = @_;
+        push @commands, [@$cmd];
+        if (($args{input} // '') =~ /my \(\$cluster, \@specs\)/) {
+            $args{outfunc}->('keyring mon:a [mon.]');
+            $args{outfunc}->('keyring mgr:a [mgr.a]');
+            $args{outfunc}->('keyring mds:a [mds.a]');
+            $args{outfunc}->(
+                'label osd:7 '
+                    . encode_json({
+                        '/dev/block' => {
+                            whoami => 7,
+                            ceph_fsid => 'cluster-fsid',
+                            osd_uuid => 'osd-uuid',
+                            osd_key => $OLD,
+                        },
+                    })
+            );
+        } elsif (join(' ', @$cmd) =~ /config/) {
+            $args{outfunc}
+                ->(encode_json({ mon_auth_client_pending_key_auto_promote => 'false' }));
+        } else {
+            $args{outfunc}->('[]');
+        }
+    };
+    my $rados = HostInventoryRados->new();
+    my $info = $HOOKS->{collect_cluster_info}->($rados, {}, {});
+    my @daemons = map { $info->{daemons}->{$_}->@* } qw(mon mgr mds osd);
+    is_deeply([map { $_->{node} } @daemons], [('node-a') x 4], 'all collectors map daemon FQDNs');
+    my $plan = { daemons => [grep { $_->{type} ne 'mon' } @daemons], mon_key => 1 };
+    $HOOKS->{probe_nodes}->($info, $plan);
+    is_deeply(
+        [map { $_->{binary} } @daemons],
+        [('20.2.4') x 4],
+        'FQDN daemons find member versions',
+    );
+    $HOOKS->{assert_daemon_location}->($rados, $_, $info->{fsid}) for @daemons;
+    ok(
+        @commands && !grep({ $_->[0] ne 'ssh' || $_->[1] ne 'node-a' } @commands),
+        'actual probe and session commands target the member, never its FQDN',
+    );
+
+    my @targets;
+    my $monitor = $HOOKS->{collect_monitor_state}->(
+        $rados,
+        sub {
+            my ($node, $cmd) = @_;
+            push @targets, $node;
+            return $cmd->[3] eq 'config'
+                ? encode_json({ mon_auth_client_pending_key_auto_promote => 'false' })
+                : '[]';
+        },
+    );
+    ok($monitor->{sessions}->{complete}, 'fresh FQDN monitor inventory is complete');
+    is_deeply(\@targets, ['node-a', 'node-a'], 'injected run_node also receives only member names');
+
+    $rados->{hostless_osd} = 1;
+    $info = $HOOKS->{collect_cluster_info}->($rados, {}, {});
+    $info->{rados} = $rados;
+    my ($hostless) = grep { $_->{id} eq '8' } $info->{daemons}->{osd}->@*;
+    ok($hostless && !defined($hostless->{node}),
+        'hostless OSD metadata is retained without a node');
+    my $untouched_plan = {
+        daemons => $info->{daemons}->{mgr},
+        mon_key => 0,
+        lockbox_keys => [],
+    };
+    $HOOKS->{probe_nodes}->($info, $untouched_plan);
+    is(
+        $HOOKS->{preflight_nodes}->($info, $untouched_plan, {}),
+        1,
+        'an untouched hostless OSD does not block another daemon migration',
+    );
+    eval { $HOOKS->{probe_nodes}->($info, { %$untouched_plan, daemons => [$hostless] }) };
+    like($@, qr/osd\.8.*no valid host name/, 'touching the hostless OSD refuses at the node check');
+    delete $rados->{hostless_osd};
+
+    local $main::MONITOR_PROBE_RETRY_DELAY = 0;
+    for my $missing (undef, '') {
+        $rados->{host} = $missing;
+        my $hostless_info = $HOOKS->{collect_cluster_info}->($rados, {}, {});
+        ok(
+            !defined($hostless_info->{daemons}->{mon}->[0]->{node}),
+            'a monitor that has not reported its hostname remains in inventory',
+        );
+    }
+    $rados->{host} = {};
+    eval { $HOOKS->{collect_cluster_info}->($rados, {}, {}) };
+    like($@, qr/no valid host name/, 'collector still rejects a structured hostname');
+    $rados->{host} = 'foreign.invalid';
+    @commands = ();
+    $info = $HOOKS->{collect_cluster_info}->($rados, { 'rotate-lockbox-keys' => 1 }, {});
+    is_deeply(\@commands, [], 'non-member gets no commands during pre-preflight collection');
+    like(
+        $info->{lockbox}->{'client.osd-lockbox.osd-uuid'}->{missing},
+        qr/osd\.7.*foreign\.invalid.*not a node/,
+        'lockbox collection names the foreign daemon host',
+    );
+    @targets = ();
+    $monitor = $HOOKS->{collect_monitor_state}->($rados, sub { push @targets, $_[0]; return '[]' });
+    is_deeply(\@targets, [], 'fresh monitor collection never queries a non-member');
+    like(
+        $monitor->{sessions}->{errors}->{a},
+        qr/mon\.a.*not a node/,
+        'monitor diagnostic names membership',
+    );
+
+    for my $version (1, 2) {
+        my $state = {
+            version => $version,
+            plan => {
+                'mgr.a' => { type => 'mgr', id => 'a', node => 'node-a.old.invalid' },
+            },
+        };
+        my $recovery = {
+            daemons => { map { $_ => [] } qw(mgr mds osd) },
+            exported => { 'mgr.a' => { key => $OLD } },
+        };
+        my $found = $HOOKS->{recover_left_behind}->($recovery, $state);
+        is($found->[0]->{node}, 'node-a', "v$version stopped-daemon recovery maps the old journal");
+        $HOOKS->{assert_daemon_location}->($rados, $found->[0], 'cluster-fsid');
+        is(
+            $state->{plan}->{'mgr.a'}->{node},
+            'node-a.old.invalid',
+            'reading does not rewrite journal fields',
+        );
+        $state->{plan}->{'mgr.a'}->{node} = 'removed.invalid';
+        $recovery->{daemons}->{mgr} = [];
+        @commands = ();
+        eval { $HOOKS->{recover_left_behind}->($recovery, $state) };
+        like(
+            $@,
+            qr/mgr\.a.*removed\.invalid.*not a node/,
+            'removed-member recovery refuses clearly',
+        );
+        is_deeply(\@commands, [], 'removed-member recovery sends no command');
+        ok($state->{plan}->{'mgr.a'}, 'refused journal entry is retained');
+    }
+
+    my $daemon = { type => 'mgr', id => 'a', entity => 'mgr.a', node => 'node-a.foreign.invalid' };
+    for my $case (
+        ['missing inventory', {}, qr/unique data directory/],
+        [
+            'duplicate ID',
+            {
+                'node-a' => { a => { direxists => 1 } },
+                'node-b' => { a => { direxists => 1 } },
+            },
+            qr/unique data directory/,
+        ],
+        ['failed inventory', undef, qr/inventory is unavailable/],
+    ) {
+        my ($name, $value, $error) = @$case;
+        $inventory = $value;
+        @commands = ();
+        my $state = { fsid => 'cluster-fsid' };
+        eval { $HOOKS->{migrate_daemon}->($rados, $state, {%$daemon}, { force => 1 }) };
+        like($@, $error, "$name refuses same-label foreign metadata even with force");
+        is_deeply(\@commands, [], "$name sends no write or restart command");
+        is_deeply($state, { fsid => 'cluster-fsid' }, "$name leaves the journal intact");
+    }
+    $inventory = { 'node-a' => { a => { direxists => 1 }, 7 => { direxists => 1 } } };
+    eval {
+        $HOOKS->{assert_daemon_location}
+            ->($rados, {%$daemon}, 'cluster-fsid', { store => 'missing' });
+    };
+    like($@, qr/keyring does not identify/, 'inventory alone cannot authorize a fallback write');
+    my $osd = { type => 'osd', id => 7, entity => 'osd.7', node => 'node-a.foreign.invalid' };
+    eval {
+        $HOOKS->{assert_daemon_location}->(
+            $rados,
+            $osd,
+            'cluster-fsid',
+            {
+                store => 'block',
+                'label-whoami' => 7,
+                'label-fsid' => 'cluster-fsid',
+                'label-osd-uuid' => 'reused-uuid',
+            },
+        );
+    };
+    like($@, qr/label does not identify/, 'a reused OSD ID cannot authorize a fallback write');
+
+    for my $node ('foreign.invalid', PVE::INotify::nodename()) {
+        local *PVE::Cluster::get_nodelist = sub { ['node-a'] };
+        eval { $HOOKS->{node_command}->($node, ['true'], 'mgr.a') };
+        like($@, qr/mgr\.a.*not a node/,
+            'transport checks membership before SSH or local shortcut');
+    }
 }
 
 done_testing();
