@@ -1,3 +1,59 @@
+pve-manager (9.2.21) trixie; urgency=medium
+
+  * ui: VM CD/DVD drive: change the medium through an API task, so that its
+    warnings, for example about problematic VirtIO driver ISO versions, are
+    shown.
+
+  * ui: pool selector: allow typing to search, which helps with many pools.
+
+  * backup: extracting the configuration of a backup that belongs to no guest,
+    for example a host backup on Proxmox Backup Server, now fails with a clear
+    error instead of also printing a Perl warning.
+
+  * ceph: OSD destroy: also remove the lockbox key and the dm-crypt key of an
+    encrypted OSD. Both were left behind in the monitors, and the lockbox key
+    then showed up as an insecure key during the Cephx key migration.
+
+  * ceph: FQDN host names: count outdated OSDs on nodes whose host name is an
+    FQDN for the OSD rolling restart, which previously reported nothing to do,
+    and show one entry per service in the daemon metadata.
+
+  * ceph: Cephx key migration:
+    - support nodes whose host name is an FQDN; previously every run that
+      judged service daemons was refused, and node commands now only run on
+      cluster members
+    - refuse to retire a key that a storage key copy still holds, for example
+      that of a storage naming the local monitors through 'monhost', whose
+      copy the helper does not update; the plan names such copies
+    - retry the monitor session query after the migration's own monitor
+      elections, instead of refusing the cipher restriction because not every
+      monitor answered, and likewise for the summary after a run
+    - check libpve-storage-perl, librados2, and librbd1 on every node using a
+      key before staging it, including nodes that only run guests
+    - refuse client key changes if the monitors do not accept Cephx from
+      clients, as a new storage key file would then break that storage
+    - refuse rotating the shared monitor key below three monitors, where the
+      rolling monitor restart cannot keep quorum
+    - detect an unreadable monitor key in the dry run instead of failing
+      during the apply run
+    - name orphaned lockbox keys and stale service entries as what blocks the
+      final step, with the removal commands to use after verification
+    - allow rerunning the final confirmation command when nothing is left to
+      confirm
+    - name guests with an ISO or bind mount on a CephFS mount that blocks the
+      key refresh
+    - write the lockbox key tag of encrypted OSDs through the LVM shell
+      instead of an embedded Python helper
+    - clarify guidance: live migration also refreshes kernel RBD disks, so
+      only containers on RBD need a restart; the rotating service key warning
+      does not need to clear first; say 'client' instead of 'consumer'
+
+  * d/control: require libpve-storage-perl 9.1.9 or newer, which accepts
+    keyrings holding an aes256k key; older versions leave RBD and CephFS
+    storages that use a migrated key inactive.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 24 Sep 2026 19:51:05 +0200
+
 pve-manager (9.2.20) trixie; urgency=medium
 
   * Revert "partially fix #1989: ui: qemu: disk: add qcow2 cache size config"
