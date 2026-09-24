@@ -619,7 +619,9 @@ __PACKAGE__->register_method({
                     # dialog so the run actually visits hosts the dialog showed work for.
                     my %outdated_count;
                     for my $osd (@{ $osd_meta // [] }) {
-                        my $host = $osd->{hostname};
+                        my $host = PVE::Ceph::Services::metadata_host_node(
+                            $osd->{hostname}, $known_nodes,
+                        );
                         my $running = $osd->{ceph_version_short};
                         next if !$host || !$running;
                         my $installed = $node_vers->{$host}->{version}->{str};
