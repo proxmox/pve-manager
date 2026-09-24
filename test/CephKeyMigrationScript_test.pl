@@ -3453,7 +3453,7 @@ sub run_aggregate_confirmation {
         $help =~ m/(--confirm-clients-refreshed USER.*?)(?=\n  --confirm-all-clients-refreshed)/s;
     like(
         $per_user_help // '',
-        qr/disconnected consumers.*key copies.*outside\s+Proxmox VE/s,
+        qr/disconnected clients.*key copies.*outside\s+Proxmox VE/s,
         'per-user help states the trust boundary outside Proxmox VE',
     );
     like(
@@ -3471,7 +3471,7 @@ sub run_aggregate_confirmation {
         $help =~ m/(--confirm-all-clients-refreshed.*?)(?=\n  --restrict-ciphers)/s;
     like(
         $aggregate_help // '',
-        qr/every open Ceph user key refresh record.*operator confirms.*disconnected consumers.*key copies.*outside\s+Proxmox VE/s,
+        qr/every open Ceph user key refresh record.*operator confirms.*disconnected clients.*key copies.*outside\s+Proxmox VE/s,
         'aggregate help names open refresh records and the operator trust boundary',
     );
     like(
@@ -3935,7 +3935,7 @@ sub run_aggregate_confirmation {
     my $help = $HOOKS->{usage}->();
     like(
         $help,
-        qr/--rotate-all-storage-keys\s+rotate all dedicated users of managed local RBD and CephFS\s+storages\. Excludes 'client\.admin' and storages for external\s+clusters\. Requires Ceph 19\.2\.6-pve3, 20\.2\.4-pve3, or newer\s+installed on every monitor, followed by a restart of every\s+monitor\. Each key is staged rather than replaced at once\.\s+Refresh every consumer and external key copy, then confirm it\s+in a later run/,
+        qr/--rotate-all-storage-keys\s+rotate all dedicated users of managed local RBD and CephFS\s+storages\. Excludes 'client\.admin' and storages for external\s+clusters\. Requires Ceph 19\.2\.6-pve3, 20\.2\.4-pve3, or newer\s+installed on every monitor, followed by a restart of every\s+monitor\. Each key is staged rather than replaced at once\.\s+Refresh every client and external key copy, then confirm it\s+in a later run/,
         'help states scope, exclusions, the monitor requirement, staging, and the later'
             . ' confirmation',
     );
@@ -4207,7 +4207,7 @@ sub run_aggregate_confirmation {
     my $output = $print->(0);
     like(
         $output,
-        qr/Ready for confirmation: client\.store\nConfirm only after refreshing every consumer, including disconnected ones and external key copies:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
+        qr/Ready for confirmation: client\.store\nConfirm only after refreshing every client, including disconnected ones and external key copies:\n\s+\S+ --apply --confirm-all-clients-refreshed/,
         'a ready record gets the direct heading and the exact confirmation command',
     );
     unlike($output, qr/only you can vouch for/, 'without the old phrase');
@@ -4270,7 +4270,7 @@ sub run_aggregate_confirmation {
         );
         like(
             $one,
-            qr/Rotate only when every consumer supports aes256k/,
+            qr/Rotate only when every client supports aes256k/,
             'and the kernel caveat stays',
         );
     }
@@ -4405,7 +4405,7 @@ sub run_aggregate_confirmation {
     };
     like(
         $render->([$other, $resume], { 'rotate-storage-key' => ['rbd-other'] }),
-        qr/Ceph user 'client\.other': replaced at once.*For each Ceph user marked 'replaced at once'.*stop every consumer/s,
+        qr/Ceph user 'client\.other': replaced at once.*For each Ceph user marked 'replaced at once'.*stop every client of it/s,
         'a real user replaced at once keeps the safety block, whatever else the plan holds',
     );
 
@@ -4804,7 +4804,7 @@ sub run_aggregate_confirmation {
     }
     like(
         $output,
-        qr/Client keys awaiting action:.*'client\.app': consumer verification is incomplete\. Monitors that did not answer: mon-b\. Both keys\s+remain valid\. Retry after every monitor answers\./s,
+        qr/Client keys awaiting action:.*'client\.app': client verification is incomplete\. Monitors that did not answer: mon-b\. Both keys\s+remain valid\. Retry after every monitor answers\./s,
         'a plain dry run explains a staged key hidden by an incomplete session picture',
     );
 }
@@ -5503,7 +5503,7 @@ for my $mountpoint ('/mnt/pve/cephfs', '/srv/ceph.fs') {
     );
     unlike(
         $output,
-        qr/64 live|Possible consumers|a client would be stopped|--confirm-clients-refreshed/,
+        qr/64 live|Possible clients|a client would be stopped|--confirm-clients-refreshed/,
         'no broad guest inventory or premature confirmation obscures the required inspection',
     );
     ok(!(grep { length($_) > 100 } split(/\n/, $output)), 'the refusal wraps at 100 columns');
@@ -6351,7 +6351,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         );
         like(
             $out,
-            qr/Possible consumers \(host-wide hints, not session attribution\):/,
+            qr/Possible clients \(host-wide hints, not session attribution\):/,
             'host-wide hints remain explicitly uncertain',
         );
         like(

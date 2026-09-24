@@ -786,7 +786,7 @@ is(
     );
     like(
         $open->{waiting_details}->{'client.admin'},
-        qr/consumer verification is incomplete\. Not every monitor answered\./,
+        qr/client verification is incomplete\. Not every monitor answered\./,
         'an incomplete session picture explains the waiter',
     );
     ok(
@@ -2518,7 +2518,7 @@ my sub cluster {
     };
     is(
         describe_sessions($live, $hints),
-        '198.51.100.8: 1, due: 2 (possible consumers: VM 102)',
+        '198.51.100.8: 1, due: 2 (possible clients: VM 102)',
         'known IPs become node names while unknown hosts remain visible',
     );
     is(describe_sessions($live), session_hosts($live), 'without hints the plain host list stays');
@@ -2549,7 +2549,7 @@ my sub cluster {
     )->@*;
     like(
         $blocker,
-        qr/1 live client\(s\) authenticate as 'client\.vm' \(due: 1 \(possible consumers: VM 102\)\)/,
+        qr/1 live client\(s\) authenticate as 'client\.vm' \(due: 1 \(possible clients: VM 102\)\)/,
         'the restriction blocker labels host-wide hints as possible consumers',
     );
 }
@@ -2588,7 +2588,7 @@ my sub cluster {
     is(scalar(@admin), 1, 'a user with live and recorded sessions gets one line');
     like(
         $admin[0],
-        qr/^'client\.admin': 4 session\(s\) may still hold the previous key \(due: 4\).*Refresh these consumers, then rerun without options\.$/,
+        qr/^'client\.admin': 4 session\(s\) may still hold the previous key \(due: 4\).*Refresh these clients, then rerun without options\.$/,
         'only the recorded subset is reported as needing refresh',
     );
     my $unrecorded = { %$state, client_refresh => { %{ $state->{client_refresh} } } };
@@ -2605,7 +2605,7 @@ my sub cluster {
     is(scalar(@tools), 1, 'the open bootstrap and crash records are one line');
     like(
         $tools[0],
-        qr/the rotations of 7 bootstrap and crash keys await their confirmation, which needs no consumer refresh; '--confirm-all-clients-refreshed' closes them/,
+        qr/the rotations of 7 bootstrap and crash keys await their confirmation, which needs no client refresh; '--confirm-all-clients-refreshed' closes them/,
         'saying why no refresh is needed and how to close them',
     );
     ok(!(grep { m/bootstrap-mds' awaits/ } @$blockers), 'and no line per tool key');
@@ -2877,7 +2877,7 @@ my sub cluster {
         like($text, $expected, "$name rollback sessions have direction-specific guidance");
         unlike(
             $text,
-            qr/Refresh consumers/,
+            qr/Refresh clients/,
             'unknown sessions need identification, not another refresh',
         ) if $name eq 'unknown';
         unlike(
@@ -3106,7 +3106,7 @@ my sub cluster {
     $blockers = restrict_blockers($info, $state, $describe, $files);
     like(
         join(' ', @$blockers),
-        qr/consumer verification is incomplete.*mon-b/,
+        qr/client verification is incomplete.*mon-b/,
         'restriction distinguishes incomplete observation from missing confirmation',
     );
     $info->{sessions}->{complete} = 1;
@@ -3114,7 +3114,7 @@ my sub cluster {
     $blockers = restrict_blockers($info, $state, $describe, $files);
     like(
         $blockers->[0],
-        qr/first complete consumer measurement.*first attempt records/,
+        qr/first complete client measurement.*first attempt records/,
         'a missing measurement does not look ready for retirement',
     );
 }

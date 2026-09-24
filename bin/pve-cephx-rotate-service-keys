@@ -282,7 +282,7 @@ my sub print_possible_consumers($live, $opts) {
     my $lines = possible_consumer_hints($live, consumer_hints($opts->{verbose}));
     return 0 if !scalar(@$lines);
 
-    log_text("Possible consumers (host-wide hints, not session attribution):");
+    log_text("Possible clients (host-wide hints, not session attribution):");
     log_text("Kernel hints mean sockets without an owning process.")
         if !$opts->{verbose} && grep { /possible kernel client/ } @$lines;
     log_steps($lines);
@@ -724,7 +724,7 @@ my sub manual_promotion_with_retries($collect, $attempts = 10) {
     return $collected;
 }
 
-# Keep observations from failed sweeps as well as the final complete sweep. Otherwise a consumer
+# Keep observations from failed sweeps as well as the final complete sweep. Otherwise a client
 # seen before an election could disappear during the retry and escape the rotation's baseline.
 my sub session_snapshot_with_retries($collect, $attempts = 10) {
     my $observations = [];
@@ -1391,7 +1391,7 @@ my sub probe_nodes($info, $plan, $opts = {}) {
     return;
 }
 
-# A client key rotated outside this script leaves consumers behind the same way as one this
+# A client key rotated outside this script leaves clients behind the same way as one this
 # script rotates, and only the key fingerprints recorded at earlier apply runs make that
 # visible. Shared by the preflight and by the destructive actions, which reconcile again right
 # before acting: a long run does not serialize other 'ceph auth' commands.
@@ -1508,7 +1508,7 @@ my sub release_manual_promotion($rados, $state) {
 }
 
 # Confirmed by the operator: promote the staged key and drop the previous one. From then on a
-# consumer still holding the previous key fails at its next authentication, which is exactly what
+# client still holding the previous key fails at its next authentication, which is exactly what
 # the confirmation vouches against. Returns whether a key was committed.
 my sub commit_staged_key($rados, $state, $entity) {
     my $record = $state->{staged}->{$entity} or return 0;
@@ -1546,7 +1546,7 @@ my sub commit_staged_key($rados, $state, $entity) {
 }
 
 # Polled fresh at the moment of the action: this very run may have rotated a client key after
-# the preflight gate ran, and a stale consumer cannot follow the wipe.
+# the preflight gate ran, and a stale client cannot follow the wipe.
 my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef) {
     $collect //= sub { collect_current_monitor_state($rados) };
     my $monitor = $collect->();
@@ -1589,7 +1589,7 @@ my sub assert_consumers_current($rados, $state, $opts, $action, $collect = undef
     if (!$opts->{force}) {
         die "refusing to $action: "
             . join('; ', @$blockers)
-            . ". Refresh the consumers, close each record with '--confirm-clients-refreshed', or pass"
+            . ". Refresh the clients, close each record with '--confirm-clients-refreshed', or pass"
             . " '--force' to continue anyway.\n";
     }
     log_warn("Continuing to $action although a client may be stopped, as '--force' was"
@@ -1608,11 +1608,11 @@ my sub restrict_wanted($info, $opts) {
 # monitors-only checks: 1 go ahead, 0 nothing to migrate, -1 fix something first
 my sub confirm_hint($entity) {
     return
-        "confirm with '--confirm-clients-refreshed $entity' once every consumer of it was refreshed";
+        "confirm with '--confirm-clients-refreshed $entity' once every client of it was refreshed";
 }
 
 # Only Ceph's own tools read the bootstrap and crash keys, and they load the key afresh for
-# every call, so there is no consumer to refresh and nothing an operator could confirm beyond
+# every call, so there is no client to refresh and nothing an operator could confirm beyond
 # what this script wrote. Their records close on their own; '--verbose' names them.
 my sub tool_key($entity) {
     return scalar(grep { $_ eq $entity } $TOOL_CLIENT_KEYS->@*) ? 1 : 0;
@@ -1705,7 +1705,7 @@ my sub preflight_cluster(
 
     # Without a fingerprint baseline nothing proves what key a live session's instance loaded:
     # the state file may be from an earlier version, or was deleted after a finished rotation.
-    # An entity still on the old cipher is unambiguous, its consumers hold the current key;
+    # An entity still on the old cipher is unambiguous, its clients hold the current key;
     # every other client entity remains unresolved. A cluster without any trace of a migration
     # is left alone. The sessions visible now may predate a rotation, so record their exact IDs.
     my $seeded_now = {};
@@ -1726,7 +1726,7 @@ my sub preflight_cluster(
             if (tool_key($entity)) {
                 push @seeded_tools, $entity;
             } else {
-                log_warn("the consumers of '$entity' predate this script's tracking; "
+                log_warn("the clients of '$entity' predate this script's tracking; "
                     . confirm_hint($entity));
             }
             $seeded_now->{$entity} = 1;
@@ -1755,7 +1755,7 @@ my sub preflight_cluster(
     my $stale_clients = reopen_returning_clients($state, $info->{sessions}, $info->{exported});
 
     # a record of a tool key left open by an earlier version closes here, unless a recorded
-    # session of it is back, which then reads like any other consumer
+    # session of it is back, which then reads like any other client
     my @closed_tools;
     for my $entity (sort keys %{ $state->{client_refresh} // {} }) {
         next if !tool_key($entity) || $stale_clients->{$entity};
@@ -1799,7 +1799,7 @@ my sub preflight_cluster(
         update_cluster_info($info, $fresh);
     }
 
-    # The fresh snapshot can reopen a record whose consumer returned. Include it in the aggregate
+    # The fresh snapshot can reopen a record whose client returned. Include it in the aggregate
     # gate before committing any key rather than using the selection made from the startup state.
     if ($confirm_all) {
         @confirm = sort {
@@ -1880,7 +1880,7 @@ my sub preflight_cluster(
         # every record passed the checks above, so the aggregate option is accepted as a whole
         log_warn("accepting '--confirm-all-clients-refreshed' for "
                 . join(', ', @confirm)
-                . ": every consumer of them that this run can see is refreshed, and you confirm"
+                . ": every client of them that this run can see is refreshed, and you confirm"
                 . " the same for those it cannot see")
             if $confirm_all && scalar(@confirm);
         for my $entity (@confirm) {
@@ -1915,7 +1915,7 @@ my sub preflight_cluster(
             }
             if ($verdict eq 'incomplete') {
                 log_fail("not accepting '$option': not every monitor answered the session query,"
-                    . " so a consumer of it could be connected unseen");
+                    . " so a client of this Ceph user could be connected unseen");
                 $confirmation_refused = 1;
                 next;
             }
@@ -1928,7 +1928,7 @@ my sub preflight_cluster(
                 next;
             }
             # An interrupted or externally performed rotation may lack a complete baseline. Record
-            # old-key and unidentified sessions before accepting attestations for unseen consumers.
+            # old-key and unidentified sessions before accepting attestations for unseen clients.
             if ($verdict eq 'measure') {
                 my $live = complete_client_measurement($state, $info, $entity);
                 save_state($state);
@@ -1943,7 +1943,7 @@ my sub preflight_cluster(
                     . " is now recorded";
                 log_fail("not accepting '$option' yet: its rotation needed a first complete"
                     . " measurement; $measurement. Repeat the confirmation after refreshing any"
-                    . " recorded clients; it then covers only consumers this run cannot see.");
+                    . " recorded clients; it then covers only clients this run cannot see.");
                 $confirmation_refused = 1;
                 next;
             }
@@ -1962,13 +1962,13 @@ my sub preflight_cluster(
             die "cannot commit the staged key of '$entity' without a cluster connection\n"
                 if $staged && !$info->{rados};
 
-            # What is left are consumers no run can see: disconnected ones, and copies of the key
+            # What is left are clients no run can see: disconnected ones, and copies of the key
             # on hosts Proxmox VE does not manage. The aggregate option said so once, above.
-            log_warn("accepting '$option': every consumer of '$entity' that this run can see"
+            log_warn("accepting '$option': every client of '$entity' that this run can see"
                     . " is refreshed, and you confirm the same for those it cannot see")
                 if !$confirm_all;
             # The aggregate was checked as a whole on a fresh snapshot above. Recheck at the
-            # mutation boundary so a consumer that appears while the batch runs preserves this
+            # mutation boundary so a client that appears while the batch runs preserves this
             # key and its open record.
             if ($staged && $collect_clients) {
                 my $fresh = collect_client_snapshot($info->{rados}, $collect_clients);
@@ -1981,8 +1981,8 @@ my sub preflight_cluster(
                 my $action = ack_decision($entity, $state, $fresh->{sessions}, $action_stale);
                 if ($action->{verdict} ne 'accept') {
                     log_fail(
-                        "not accepting '$option' at the commit boundary: a fresh consumer"
-                            . " check no longer proves that every visible consumer is refreshed"
+                        "not accepting '$option' at the commit boundary: a fresh client"
+                            . " check no longer proves that every visible client is refreshed"
                             . (
                                 $action->{verdict} eq 'unidentified'
                                 ? '. ' . session_key_support_hint()
@@ -2040,7 +2040,7 @@ my sub preflight_cluster(
             : "not every monitor answered the session query, so it cannot be verified that no"
             . " client would be stopped";
         if (!$opts->{force}) {
-            log_fail("Refusing '--wipe-rotating-keys': $why. Refresh the consumers first, or"
+            log_fail("Refusing '--wipe-rotating-keys': $why. Refresh the clients first, or"
                 . " pass '--force' to wipe anyway.");
             return -1;
         }
@@ -2718,9 +2718,9 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
                 if $opts->{verbose};
         }
         if ($replaced_count) {
-            log_step("For each Ceph user marked 'replaced at once', stop every consumer before"
+            log_step("For each Ceph user marked 'replaced at once', stop every client of it before"
                 . " applying. Apply the replacement only after all are stopped, update every key"
-                . " copy outside Proxmox VE, and then restart the consumers. Immediate replacement"
+                . " copy outside Proxmox VE, and then restart the clients. Immediate replacement"
                 . " removes the active key immediately, so reconnect can fail as soon as the key"
                 . " changes; monitor-ticket expiry is only an upper bound on continued access."
             );
@@ -3396,7 +3396,7 @@ my sub check_client_kernels($plan, $opts, $kernels = undef) {
             log_fail("These nodes run kernels that do not support '$CIPHER': $detail. The affected"
                 . " keys are: $keys. Reboot the nodes into kernel 7.0 or newer first.");
         }
-        log_text("Pass '--force' only after checking every external and future consumer. Affected"
+        log_text("Pass '--force' only after checking every external and future client. Affected"
             . " nodes may lose access to these storages.");
         return 0;
     }
@@ -3853,7 +3853,7 @@ my sub write_client_key_copies($item, $entry, $verbose = 0) {
 }
 
 # The new key becomes the entity's pending key, which the monitors accept next to the active one
-# while automatic promotion is disabled, so every copy can be rewritten and every consumer
+# while automatic promotion is disabled, so every copy can be rewritten and every client
 # refreshed at its own pace. The rotation ends with '--confirm-clients-refreshed', which commits
 # the key.
 my sub stage_client_key(
@@ -3902,7 +3902,7 @@ my sub stage_client_key(
             . " 'ceph auth commit-pending $entity' or 'ceph auth clear-pending $entity'.\n";
     } else {
         # Record intent before the auth change. A failure after it then leaves an open,
-        # deliberately incomplete record instead of losing every consumer seen just before.
+        # deliberately incomplete record instead of losing every client seen just before.
         my $before = $snapshot->();
         my $started = time();
         $state->{client_refresh}->{$entity} = merge_refresh_record(
@@ -3997,13 +3997,13 @@ my sub stage_client_key(
     save_state($state);
 
     log_pass("'$entity' has a new '$CIPHER' key staged next to its current one; both authenticate"
-        . " until you commit the new one, once every consumer of it is refreshed.");
+        . " until you commit the new one, once every client of this Ceph user is refreshed.");
 
     return;
 }
 
 # Prepare a rollback by restoring the active key to managed copies while both keys remain valid.
-# Retiring the pending key is a separate, freshly checked action after consumers refresh back.
+# Retiring the pending key is a separate, freshly checked action after clients refresh back.
 my sub abort_staged_key($rados, $state, $entity, $files, $verbose = 0, $resuming = 0) {
     my $record = $state->{staged}->{$entity}
         or die "no key is staged for '$entity' by this script\n";
@@ -4151,8 +4151,8 @@ my sub retire_aborted_keys($rados, $state, $entities, $collect = undef) {
     assert_abort_retirement_ready($state, $initial, $_) for @entities;
     log_warn("accepting reverse-refresh confirmation for "
         . join(', ', @entities)
-        . ": every visible consumer uses the restored key, and you confirm the same for"
-        . " disconnected consumers and external key copies");
+        . ": every visible client uses the restored key, and you confirm the same for"
+        . " disconnected clients and external key copies");
 
     for my $entity (@entities) {
         my $fresh = collect_client_snapshot($rados, $collect);
@@ -4202,7 +4202,7 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0
     $snapshot //= sub { collect_current_monitor_state($rados)->{sessions} };
 
     # Record intent before the auth change. A failure after the rotation then leaves an open,
-    # deliberately incomplete record instead of losing every consumer seen immediately before it.
+    # deliberately incomplete record instead of losing every client seen immediately before it.
     my $before_cipher = key_cipher(auth_entry($rados, $entity)->{key}) // -1;
     my ($before, $started);
     if ($before_cipher != $CIPHER_ID) {
@@ -4582,7 +4582,7 @@ my sub print_open_options(
                 '  ',
                 'Ready for confirmation: ' . join(', ', $open->{ready}->@*),
             ));
-            log_text("Confirm only after refreshing every consumer, including disconnected ones"
+            log_text("Confirm only after refreshing every client, including disconnected ones"
                 . " and external key copies:");
             log_step($open->{command});
         }
@@ -4618,7 +4618,7 @@ my sub print_open_options(
         log_text("The Ceph CLI and Proxmox VE storages without a dedicated user normally use"
                 . " 'client.admin'. VMs and mounts on those storages can retain its previous key.")
             if grep { $_ eq $ADMIN_ENTITY } $open->{waiting}->@*;
-        log_text("Session absence does not prove that disconnected consumers or external key copies"
+        log_text("Session absence does not prove that disconnected clients or external key copies"
                 . " were refreshed.")
             if $opts->{verbose};
     }
@@ -4654,7 +4654,7 @@ my sub print_open_options(
             log_step("$PROGRAM --apply " . join(' ', $open->{together}->@*));
         }
         if ($open->{hedge}) {
-            log_text("Rotate only when every consumer supports aes256k. Check 'pveceph auth status'"
+            log_text("Rotate only when every client supports aes256k. Check 'pveceph auth status'"
                 . " before applying.");
         }
     }
@@ -4702,7 +4702,7 @@ my sub print_closing_notes(
     $snapshot //= collect_summary_snapshot($rados, $state, $opts);
     my $checks = $snapshot->{health_checks};
     my $exported = $snapshot->{exported};
-    # This check concerns active client keys, independently of pending keys and consumer refresh.
+    # This check concerns active client keys, independently of pending keys and client refresh.
     my @client_ciphers = ref($exported) eq 'HASH'
         ? map {
             ref($exported->{$_}) eq 'HASH' ? key_cipher($exported->{$_}->{key}) : undef;
@@ -4857,7 +4857,7 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
         }
         if ($verdict eq 'committed') {
             log_warn("the key staged for '$entity' was promoted outside this script, so its"
-                . " rotation counts as done; confirm its consumers as before");
+                . " rotation counts as done; confirm its clients as before");
             my $item = { entity => $entity, files => $files->{$entity} // [] };
             if (
                 !$record->{written}
@@ -4976,11 +4976,11 @@ and client keys require their rotation options. Without '--apply', this only pri
                               clusters. Requires Ceph 19.2.6-pve3, 20.2.4-pve3, or newer
                               installed on every monitor, followed by a restart of every
                               monitor. Each key is staged rather than replaced at once.
-                              Refresh every consumer and external key copy, then confirm it
+                              Refresh every client and external key copy, then confirm it
                               in a later run
   --rotate-storage-key NAME   also stage a new key for one Ceph storage that has its own user.
                               May be given more than once. Requires every monitor to support
-                              keeping both keys valid while consumers are refreshed one by one.
+                              keeping both keys valid while clients are refreshed one by one.
                               Commit with '--confirm-clients-refreshed' or, once every open
                               record is ready, '--confirm-all-clients-refreshed'
   --abort-staged-key USER     needs '--apply'. Prepare rollback of a staged client key by
@@ -4988,24 +4988,24 @@ and client keys require their rotation options. Without '--apply', this only pri
                               refreshing idle CephFS mounts. Both keys remain valid
   --confirm-abort-clients-refreshed USER
                               needs '--apply'. After rollback preparation, confirm that every
-                              disconnected consumer and external copy uses the restored key.
+                              disconnected client and external copy uses the restored key.
                               Refused while a visible session uses the staged key or does not
                               report a key fingerprint. Retires the staged key when accepted
   --confirm-clients-refreshed USER
-                              needs '--apply'. Confirm that all disconnected consumers of one
+                              needs '--apply'. Confirm that all disconnected clients of one
                               rotated Ceph user key were refreshed and all key copies outside
-                              Proxmox VE were updated. Refused while a recorded consumer is
+                              Proxmox VE were updated. Refused while a recorded client is
                               connected; a returning one reopens the record. For a staged key,
                               this commits the new key
   --confirm-all-clients-refreshed
                               needs '--apply'. For every open Ceph user key refresh record, the
-                              operator confirms that all disconnected consumers were refreshed
+                              operator confirms that all disconnected clients were refreshed
                               and all key copies outside Proxmox VE were updated. Refused as a
                               whole unless every record has a complete measurement, no recorded
                               connected client, and every staged key in it is written to all
                               managed copies
   --restrict-ciphers          allow only the 'aes256k' cipher for authentication, the final
-                              step; refused while any key or live consumer still depends on
+                              step; refused while any key or live client still depends on
                               the old cipher
   --wipe-rotating-keys        NOT RECOMMENDED: invalidate every service ticket instead of
                               waiting a few hours for the rotating keys to expire. Use only
