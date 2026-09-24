@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
+    parse_auth_methods summarize_monitor_authentication
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     bulk_storage_staging_needed client_staging_needed touched_daemons
@@ -61,6 +62,36 @@ our $ADMIN_ENTITY = 'client.admin';
 # Monitors that know this option can keep a client's old and new key valid side by side while it
 # is disabled; older ones promote a pending key on its first use.
 our $GRACE_OPTION = 'mon_auth_client_pending_key_auto_promote';
+
+sub parse_auth_methods($value) {
+    return undef if !defined($value) || ref($value);
+    my @methods = grep { length } split(/[;,= \t]+/, $value);
+    @methods = ('cephx') if !@methods;
+    return undef if grep { !m/^(?:none|cephx|gss)$/ } @methods;
+    return { map { $_ => 1 } @methods };
+}
+
+# These are configured values, not the monitor's initialized authentication lists. A runtime
+# change without a restart can make the two differ, so they must not authorize skipping keys.
+sub summarize_monitor_authentication($monitors, $reports) {
+    my @unknown;
+    my $clients = 1;
+    for my $mon (@$monitors) {
+        my $report = $reports->{$mon} // {};
+        my $service = parse_auth_methods($report->{auth_service_required});
+        if (!defined($service)) {
+            push @unknown, $mon;
+        } elsif (!$service->{cephx}) {
+            $clients = 0;
+        }
+    }
+    push @unknown, 'unknown' if !@$monitors;
+    return {
+        monitors => $reports,
+        unknown => \@unknown,
+        client_cephx_available => @unknown ? undef : $clients,
+    };
+}
 
 sub key_cipher($key) {
     return undef if !defined($key) || $key eq '';

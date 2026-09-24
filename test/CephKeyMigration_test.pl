@@ -12,6 +12,7 @@ use FindBin;
 use PVE::Ceph::KeyMigration qw(
     manual_promotion_support client_key_stageable staged_records
     parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
+    parse_auth_methods summarize_monitor_authentication
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
@@ -204,6 +205,83 @@ my $NONE = 'AACP/Y5qnzxSGAAA';
         qr/the restored key of the same Ceph user/,
         'reverse advice names the restored key',
     );
+}
+
+{
+    for my $case (
+        ['', { cephx => 1 }],
+        [' ;,=\t', undef],
+        [" ;,=\t", { cephx => 1 }],
+        ['none', { none => 1 }],
+        ['cephx;gss,none=cephx', { cephx => 1, gss => 1, none => 1 }],
+        ['CEPHX', undef],
+        ['unknown', undef],
+        [undef, undef],
+        [{}, undef],
+    ) {
+        is_deeply(
+            parse_auth_methods($case->[0]),
+            $case->[1],
+            'authentication methods follow Ceph token rules',
+        );
+    }
+    my $report = sub {
+        my ($cluster, $service, $client) = @_;
+        return {
+            auth_cluster_required => $cluster,
+            auth_service_required => $service,
+            auth_client_required => $client // 'cephx',
+        };
+    };
+    for my $case (
+        ['all none', $report->('none', 'none', 'none'), 0],
+        ['ordinary cephx', $report->('cephx', 'cephx'), 1],
+        ['gss', $report->('gss', 'gss'), 0],
+        ['empty defaults', $report->('', ''), 1],
+        ['service none, cluster cephx', $report->('cephx', 'none'), 0],
+        ['client none, service cephx', $report->('none', 'cephx', 'none'), 1],
+        ['mixed service methods', $report->('none', 'cephx,none'), 1],
+        ['unknown service', $report->('cephx', 'other'), undef],
+        ['missing settings', {}, undef],
+        ['service-only client check', { auth_service_required => 'cephx' }, 1],
+        ['service-only none', { auth_service_required => 'none' }, 0],
+        ['unused client setting', $report->('none', 'cephx', 'other'), 1],
+    ) {
+        my ($name, $entry, $clients) = @$case;
+        my $result = summarize_monitor_authentication(['a', 'b'], { a => $entry, b => $entry });
+        is($result->{client_cephx_available}, $clients, "$name: client acceptance is independent");
+    }
+    my $mixed = summarize_monitor_authentication(
+        ['a', 'b'],
+        {
+            a => $report->('none', 'none'),
+            b => $report->('cephx', 'cephx'),
+        },
+    );
+    is($mixed->{client_cephx_available}, 0, 'one disabled monitor vetoes client changes');
+    my $unknown =
+        summarize_monitor_authentication(['a', 'b'], { a => $report->('cephx', 'cephx') });
+    is_deeply($unknown->{unknown}, ['b'], 'an unavailable monitor is named');
+    ok(!defined($unknown->{client_cephx_available}), 'missing settings never authorize clients');
+    ok(
+        !defined(summarize_monitor_authentication([], {})->{client_cephx_available}),
+        'empty monmap is unknown',
+    );
+
+    for my $key (undef, $OLD) {
+        my $info = {
+            pve_mon_key => $key,
+            sessions => { complete => 1, clients => {} },
+            exported => {},
+            service_cipher => 'aes256k',
+        };
+        my $blockers = join(' ', @{ restrict_blockers($info, {}) });
+        like(
+            $blockers,
+            qr/, see '--rotate-mon-key'/,
+            'monitor-key blockers retain the base wording',
+        );
+    }
 }
 
 # 'ceph-bluestore-tool show-label' pretty-prints, and the probe only strips the newlines, so what

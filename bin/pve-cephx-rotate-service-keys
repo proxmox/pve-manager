@@ -30,6 +30,7 @@ use PVE::Ceph::KeyMigration qw(
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
     parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
+    parse_auth_methods summarize_monitor_authentication
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     client_staging_needed touched_daemons
@@ -578,11 +579,68 @@ my sub monitor_auth_entry($entity) {
     return $res->[0];
 }
 
+my sub poll_monitor_authentication($monitors, $nodes, $run_node = undef) {
+    $run_node //= sub($node, $command) { node_run($node, $command, entity => $command->[2]) };
+    my ($reports, $errors) = ({}, {});
+    for my $mon (@$monitors) {
+        my $option = 'auth_service_required';
+        my $reply = eval {
+            assert_member($nodes->{$mon}, "mon.$mon");
+            decode_json(
+                $run_node->(
+                    $nodes->{$mon},
+                    ['ceph', 'daemon', "mon.$mon", 'config', 'get', $option],
+                ),
+            );
+        };
+        my $error = $@;
+        $reports->{$mon}->{$option} = ref($reply) eq 'HASH' ? $reply->{$option} : undef;
+        $errors->{$mon} = $error || "missing or invalid '$option' in the monitor reply"
+            if $error || !defined(parse_auth_methods($reports->{$mon}->{$option}));
+    }
+    return { summarize_monitor_authentication($monitors, $reports)->%*, errors => $errors };
+}
+
+my sub client_authentication($info) {
+    return poll_monitor_authentication(
+        $info->{monmap_mons},
+        { map { $_->{id} => $_->{node} } $info->{daemons}->{mon}->@* },
+    );
+}
+
 # A staged key keeps the current one valid, so the keyring written with it cannot lock a run out
 # and must not be overwritten with the active key from the monitor credential.
 my sub admin_rotation_unfinished($state) {
     return 0 if $state->{staged}->{$ADMIN_ENTITY};
     return migration_unfinished($state, $ADMIN_ENTITY);
+}
+
+my sub assert_client_authentication($authentication, $state = {}) {
+    my $available = ($authentication // {})->{client_cephx_available};
+    my $recovery =
+        scalar(keys %{ $state->{staged} // {} })
+        || admin_rotation_unfinished($state)
+        ? " Existing client-key records were kept."
+        : '';
+    if (!defined($available)) {
+        my $monitors = join(', ', @{ ($authentication // {})->{unknown} // ['unknown'] });
+        my $errors = ($authentication // {})->{errors} // {};
+        my $details = join(
+            '',
+            map {
+                my $error = $errors->{$_};
+                chomp($error);
+                "\n  $_: $error";
+            } sort keys %$errors,
+        );
+        die "Cannot verify authentication settings on monitor '$monitors'. Client keys and their"
+            . " managed copies were not changed.$recovery Rerun once every monitor answers.$details\n";
+    }
+    die "Client keys were not changed: these monitors do not accept cephx from clients. Creating"
+        . " a storage key file can prevent access to that storage.$recovery Restore and verify cephx"
+        . " client authentication on every monitor before resuming or preparing rollback. See"
+        . " 'Clusters with Cephx Disabled' in 'man pveceph'.\n"
+        if !$available;
 }
 
 my sub repair_admin_keyring($state) {
@@ -2445,19 +2503,15 @@ my sub preflight_mon_key($rados, $plan) {
             push @disabled, "$option = $global->{$option}"
                 if @methods && !grep { $_ eq 'cephx' } @methods;
         }
-        if (@disabled) {
-            log_text("'/etc/pve/ceph.conf' [global] omits cephx in: "
-                . join(', ', @disabled)
-                . ". Effective monitor settings may differ.");
-        }
+        my $conf = @disabled ? ", and '/etc/pve/ceph.conf' sets " . join(' and ', @disabled) : '';
         log_text("Monitors do not load the 'mon.' key when neither cluster nor service"
-            . " authentication requires cephx or GSS. Check the effective settings on every"
+            . " authentication requires cephx or GSS$conf. Check the running settings of each"
             . " monitor:");
         log_step("ceph config show mon.<id> auth_cluster_required");
         log_step("ceph config show mon.<id> auth_service_required");
-        log_text("To skip a new monitor-key rotation, omit '--rotate-mon-key' and"
-            . " '--rotate-cluster-keys'. This does not skip recovery of an unfinished rotation."
-        );
+        log_text("To skip the monitor key, omit '--rotate-mon-key' and '--rotate-cluster-keys'; an"
+            . " unfinished rotation is still recovered. For clusters with cephx disabled, see"
+            . " 'Clusters with Cephx Disabled' in 'man pveceph'.");
         return -1;
     }
     return 1;
@@ -5069,7 +5123,9 @@ my sub settle_staged_records($rados, $info, $state, $opts, $files, $collect = un
         my $record = $state->{staged}->{$entity};
         if ($record->{aborting}) {
             if ($opts->{apply}) {
-                abort_staged_key($rados, $state, $entity, $files, $opts->{verbose}, 1);
+                abort_staged_key(
+                    $rados, $state, $entity, $files, $opts->{verbose}, 1,
+                );
             }
             next;
         }
@@ -5586,6 +5642,51 @@ my sub report_unavailable_daemons($rados, $plan) {
     return \@down;
 }
 
+my sub client_key_work($opts, $state, $files, $info) {
+    return 1 if grep { $state->{staged}->{$_} } @{ $opts->{'abort-staged-key'} // [] };
+    if ($opts->{apply}) {
+        my $verdicts = staged_records($info, $state);
+        for my $entity (keys %$verdicts) {
+            my $record = $state->{staged}->{$entity};
+            return 1 if $record->{aborting};
+            next if $verdicts->{$entity} eq 'lost';
+            return 1 if $verdicts->{$entity} eq 'committed' && !$record->{written};
+            return 1
+                if mount_refresh_required(
+                    $state,
+                    $entity,
+                    { files => $files->{$entity} // [] },
+                    $record->{key},
+                );
+        }
+    }
+    my ($clients) = plan_client_keys($info, $state, $opts, $files);
+    return scalar(
+        grep {
+            $_->{staged} || $_->{refresh_only} || grep { defined($_->{store}) } $_->{files}->@*
+        } @$clients
+    ) ? 1 : 0;
+}
+
+my sub check_client_authentication($info, $opts, $state, $files, $cache) {
+    return if !client_key_work($opts, $state, $files, $info);
+    $cache->{authentication} //= client_authentication($info);
+    assert_client_authentication($cache->{authentication}, $state);
+}
+
+my sub staging_progress($plan, $state) {
+    my @planned = map { $_->{entity} } grep { $_->{staged} } @{ $plan->{client_keys} // [] };
+    return '' if !@planned;
+    my @staged = grep { $state->{staged}->{$_} } @planned;
+    my @not_staged = grep { !$state->{staged}->{$_} } @planned;
+    return
+        "\nKeys recorded as staged: "
+        . (@staged ? join(', ', @staged) : 'none')
+        . ".\nPlanned keys not recorded as staged: "
+        . (@not_staged ? join(', ', @not_staged) : 'none')
+        . ".\nKeep the journal and check unfinished key copies before resuming.";
+}
+
 my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     local $storage_copy_warnings_seen = {};
     $monmap_changed = 0;
@@ -5638,6 +5739,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     }
 
     my ($rados, $info);
+    my $auth_cache = {};
     eval {
         $rados = PVE::Ceph::Services::ResilientRados->new(timeout => 60);
         $rados->mon_command({ prefix => 'fsid', format => 'json' });
@@ -5655,6 +5757,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     }
 
     $info = collect_cluster_info($rados, $opts, $state);
+    check_client_authentication($info, $opts, $state, $client_files, $auth_cache);
     # Before any recovery of earlier runs: a selection that would have to stage new keys while a
     # monitor cannot keep two client keys valid stops here. The check repeats once the staged
     # records are settled, as settling can leave a key that needs staging anew.
@@ -5793,6 +5896,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
     # options before settling a staged key.
     $client_files = client_key_files();
     assert_abort_rotation_compatible($opts, $client_files);
+    check_client_authentication($info, $opts, $state, $client_files, $auth_cache);
     settle_staged_records($rados, $info, $state, $opts, $client_files);
     assert_client_staging_supported($info, $opts, $state, $client_files);
 
@@ -5821,7 +5925,9 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
         my $seen = {};
         for my $entity (grep { !$seen->{$_}++ } @abort) {
             log_text("");
-            abort_staged_key($rados, $state, $entity, $client_files, $opts->{verbose});
+            abort_staged_key(
+                $rados, $state, $entity, $client_files, $opts->{verbose}, 0,
+            );
         }
         # the managed copies and mount-refresh state changed, so recollect before planning
         $info = collect_cluster_info($rados, $opts, $state);
@@ -6032,7 +6138,10 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
 
     my $down = report_unavailable_daemons($rados, $plan);
 
-    die $failure if $failure;
+    if ($failure) {
+        chomp($failure);
+        die $failure . staging_progress($plan, $state) . "\n";
+    }
 
     if (@$down) {
         die scalar(@$down) . " planned daemon(s) remain unavailable\n";
@@ -6085,6 +6194,13 @@ sub lockbox_test_hooks {
 
 sub key_migration_test_hooks {
     return {
+        poll_monitor_authentication => \&poll_monitor_authentication,
+        check_client_authentication => \&check_client_authentication,
+        assert_client_authentication => \&assert_client_authentication,
+        client_key_work => \&client_key_work,
+        staging_progress => \&staging_progress,
+        repair_admin_keyring => \&repair_admin_keyring,
+        mon_key_hint => \&mon_key_hint,
         storage_key_copies => \&storage_key_copies,
         read_storage_key_file => \&read_storage_key_file,
         commit_pending_key => \&commit_pending_key,
@@ -6137,6 +6253,7 @@ sub key_migration_test_hooks {
         probe_script => $PROBE_SCRIPT,
         preflight_nodes => \&preflight_nodes,
         preflight_mon_key => \&preflight_mon_key,
+        migrate_mon_key => \&migrate_mon_key,
         check_client_packages => \&check_client_packages,
         client_key_files => \&client_key_files,
         check_client_kernels => \&check_client_kernels,

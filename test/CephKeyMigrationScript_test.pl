@@ -2822,7 +2822,9 @@ sub run_aggregate_confirmation {
     {
         no warnings qw(once redefine);
         local *main::file_set_contents = sub { };
-        $HOOKS->{abort_staged}->($rados, $state, 'client.cp', { 'client.cp' => [] });
+        $HOOKS->{abort_staged}->(
+            $rados, $state, 'client.cp', { 'client.cp' => [] },
+        );
     }
     is($rados->issued('auth clear-pending'), 0, 'preparing the abort retires no key');
     is($rados->{key}, $OLD, 'and leaves the current key active');
@@ -2963,7 +2965,9 @@ sub run_aggregate_confirmation {
         local *main::file_set_contents = sub { };
         $HOOKS->{settle_staged}->(
             $rados,
-            { exported => { 'client.cp' => { key => $NEW } } },
+            {
+                exported => { 'client.cp' => { key => $NEW } },
+            },
             $state,
             { apply => 0 },
             $files,
@@ -2974,7 +2978,9 @@ sub run_aggregate_confirmation {
         );
         $HOOKS->{settle_staged}->(
             $rados,
-            { exported => { 'client.cp' => { key => $NEW } } },
+            {
+                exported => { 'client.cp' => { key => $NEW } },
+            },
             $state,
             { apply => 1 },
             $files,
@@ -2995,7 +3001,9 @@ sub run_aggregate_confirmation {
         local *main::file_set_contents = sub { };
         $HOOKS->{settle_staged}->(
             $rados,
-            { exported => { 'client.cp' => { key => $OLD } } },
+            {
+                exported => { 'client.cp' => { key => $OLD } },
+            },
             $state,
             { apply => 1 },
             $files,
@@ -4684,8 +4692,10 @@ sub run_aggregate_confirmation {
         $rados,
         {},
         sub {
-            return { manual_promotion =>
-                { supported => 0, disabled => 0, unsupported => [], unanswered => ['due'] } };
+            return {
+                manual_promotion =>
+                    { supported => 0, disabled => 0, unsupported => [], unanswered => ['due'] },
+            };
         },
         picture(1),
     );
@@ -4968,7 +4978,9 @@ sub run_aggregate_confirmation {
         local *STDOUT = $stdout;
         $HOOKS->{settle_staged}->(
             undef,
-            { exported => { 'client.app' => { key => $OLD } } },
+            {
+                exported => { 'client.app' => { key => $OLD } },
+            },
             $state,
             { apply => 0 },
             {},
@@ -6071,7 +6083,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
             if ($case =~ /^(disabled|cluster-only|service-only|gss)$/) {
                 like(
                     $output,
-                    qr/\[global\] omits cephx in: auth_/,
+                    qr/'\/etc\/pve\/ceph\.conf' sets auth_/,
                     'explicit file settings are diagnosed using the Ceph config parser',
                 );
                 like(
@@ -6081,7 +6093,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
                 );
                 like(
                     $output,
-                    qr/Effective monitor settings may differ/,
+                    qr/Check the running settings of each\s+monitor/,
                     'global file settings are not treated as effective monitor settings',
                 );
                 like(
@@ -6109,7 +6121,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
             );
             like(
                 $output,
-                qr/does not skip recovery of an unfinished rotation/,
+                qr/an\s+unfinished rotation is still recovered/,
                 'omitting the options is not promised to bypass recovery',
             );
         }
@@ -6545,7 +6557,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         },
     );
     ok($monitor->{sessions}->{complete}, 'fresh FQDN monitor inventory is complete');
-    is_deeply(\@targets, ['node-a', 'node-a'], 'injected run_node also receives only member names');
+    is_deeply(\@targets, [('node-a') x 2], 'session collection adds no authentication probes');
 
     $rados->{hostless_osd} = 1;
     $info = $HOOKS->{collect_cluster_info}->($rados, {}, {});
@@ -7173,6 +7185,447 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
 }
 
 {
+    my @queries;
+    my $values = { map { $_ => 'none' }
+        qw(auth_cluster_required auth_service_required auth_client_required) };
+    my $poll = sub {
+        my ($node, $cmd) = @_;
+        push @queries, [$node, [@$cmd]];
+        return encode_json({ $cmd->[5] => $values->{ $cmd->[5] } });
+    };
+    my $authentication = $HOOKS->{poll_monitor_authentication}->(
+        [qw(a b c)], { map { $_ => "node-$_" } qw(a b c) }, $poll,
+    );
+    is(scalar(@queries), 3, 'client work queries only service-required once per monitor');
+    is(
+        scalar(grep { $_->[0] eq 'node-c' } @queries),
+        1,
+        'authentication probing includes a monitor outside quorum',
+    );
+    is(
+        $authentication->{client_cephx_available},
+        0,
+        'running service-none configuration refuses clients',
+    );
+    $values->{auth_service_required} = 'cephx';
+    my $auth = $HOOKS->{poll_monitor_authentication}->(['a'], { a => 'node-a' }, $poll);
+    is(
+        $auth->{client_cephx_available},
+        1,
+        'client acceptance uses service-required, not client-required',
+    );
+    $auth = $HOOKS->{poll_monitor_authentication}->(
+        ['a', 'b'], { a => 'node-a', b => 'node-b' }, sub { die "$_[0] unavailable\n" },
+    );
+    is_deeply($auth->{unknown}, ['a', 'b'], 'failed running-config probes name both monitors');
+    eval { $HOOKS->{assert_client_authentication}->($auth, { staged => { 'client.cp' => {} } }) };
+    my $error = $@;
+    like(
+        $error,
+        qr/a: node-a unavailable\n  b: node-b unavailable\n\z/,
+        'authentication refusal chomps each probe error before joining details',
+    );
+    like(
+        $error,
+        qr/records were kept.*Rerun once every monitor answers/,
+        'unknown authentication keeps the journal and asks for responsive monitors',
+    );
+    unlike(
+        $error,
+        qr/Restore.*cephx|Clusters with Cephx Disabled/,
+        'unreachable monitors are not diagnosed as disabled authentication',
+    );
+    unlike(
+        $error,
+        qr/No key migration was started/,
+        'existing records do not imply no earlier migration',
+    );
+    my $failure_output = '';
+    {
+        open(my $stdout, '>', \$failure_output) or die $!;
+        local *STDOUT = $stdout;
+        main::log_fail($error);
+    }
+    unlike(
+        $failure_output,
+        qr/^FAIL:\s*$/m,
+        'two unreachable monitors produce no bare failure label',
+    );
+    eval {
+        $HOOKS->{assert_client_authentication}
+            ->($authentication, { staged => { 'client.cp' => {} } });
+    };
+    like(
+        $@,
+        qr/Restore and verify cephx.*Clusters with Cephx Disabled/s,
+        'positively disabled authentication retains restoration and documentation guidance',
+    );
+
+    my $files = { 'client.cp' => [{ store => 's' }] };
+    my $plan_info =
+        { exported => { 'client.cp' => { key => $OLD }, 'client.admin' => { key => $OLD } } };
+    for my $opts (
+        { 'rotate-admin-key' => 1 },
+        { 'rotate-all-storage-keys' => 1 },
+        { 'rotate-storage-key' => ['s'] },
+    ) {
+        ok(
+            $HOOKS->{client_key_work}->($opts, {}, $files, $plan_info),
+            'explicit storage/admin action requires authentication evidence',
+        );
+    }
+    ok(
+        !$HOOKS->{client_key_work}->({ 'wipe-rotating-keys' => 1 }, {}, {}, $plan_info),
+        'wipe is not newly gated as client-file work',
+    );
+    {
+        no warnings qw(once redefine);
+        my @commands;
+        local *main::run_command =
+            sub { push @commands, $_[0]; die "unexpected authentication query\n" };
+        for my $case (
+            [{}, { staged => { 'client.cp' => { key => key_fingerprint($NEW) } } }],
+            [{ apply => 1, only => { mgr => 1 } }, {}],
+            [{ apply => 1 }, { previous_keys => { 'client.admin' => { key => $OLD } } }],
+            [{ 'rotate-admin-key' => 1 }, {}],
+        ) {
+            eval { $HOOKS->{check_client_authentication}->({ exported => {} }, @$case, {}, {}) };
+            is($@, '', 'status, daemon-only, legacy repair, and no-op client plans do not probe');
+        }
+        is_deeply(\@commands, [], 'unrelated runs make no authentication query');
+        my $rados = StagedRotationRados->new(key => $OLD);
+        is(
+            $HOOKS->{preflight_mon_key}->(
+                $rados, { mon_key => 1 },
+            ),
+            1,
+            'a usable monitor credential has no authentication-probe prerequisite',
+        );
+        is_deeply(
+            \@commands,
+            [],
+            'monitor credential preflight adds no diagnostic query on success',
+        );
+    }
+    ok(
+        $HOOKS->{client_key_work}->(
+            { 'abort-staged-key' => ['client.cp'] },
+            { staged => { 'client.cp' => { key => key_fingerprint($NEW) } } },
+            {},
+            $plan_info,
+        ),
+        'an explicit dry-run abort still needs authentication evidence',
+    );
+    for my $authentication (
+        { client_cephx_available => 0 },
+        { client_cephx_available => undef, unknown => ['b'] },
+    ) {
+        my $disabled = defined($authentication->{client_cephx_available});
+        for my $kind (qw(remount aborting promoted)) {
+            my $state = {
+                version => 2,
+                staged => {
+                    'client.cp' => {
+                        key => key_fingerprint($NEW),
+                        written => $kind eq 'promoted' ? 0 : 1,
+                        $kind eq 'aborting' ? (aborting => 1) : (),
+                    },
+                },
+                previous_keys => { 'client.cp' => { key => $OLD } },
+            };
+            my $before = encode_json($state);
+            my $rados = StagedRotationRados->new(
+                key => $kind eq 'promoted' ? $NEW : $OLD,
+                $kind =~ /^(remount|aborting)$/ ? (pending => $NEW) : (),
+            );
+            my $info = {
+                exported =>
+                    { 'client.cp' => { key => $rados->{key}, pending_key => $rados->{pending} } },
+            };
+            my $files = {
+                'client.cp' => [{
+                    store => 's',
+                    format => $kind eq 'remount' ? 'secret' : 'keyring',
+                    path => '/etc/pve/priv/ceph/s.keyring',
+                    scope => 'cluster',
+                }],
+            };
+            my $opts = { apply => 1, force => 1 };
+            my (@writes, @commands);
+            no warnings qw(once redefine);
+            local *main::file_set_contents = sub { push @writes, [@_] };
+            local *main::run_command = sub { push @commands, [@_] };
+            eval {
+                $HOOKS->{check_client_authentication}->(
+                    $info, $opts, $state, $files, { authentication => $authentication },
+                );
+                $HOOKS->{settle_staged}
+                    ->($rados, $info, $state, $opts, $files, grace_collect($rados));
+            };
+            like(
+                $@,
+                $disabled
+                ? qr/Client keys were not changed.*storage key file/s
+                : qr/Cannot verify.*monitor 'b'/,
+                "$kind journal refuses disabled or unknown authentication even with force",
+            );
+            like(
+                $@,
+                $disabled
+                ? qr/records were kept.*before resuming/s
+                : qr/records were kept.*Rerun once every monitor answers/,
+                'refusal includes journal recovery guidance for its cause',
+            );
+            is_deeply(\@writes, [], "$kind apply refusal writes no key or journal file");
+            is_deeply(\@commands, [], 'settlement refusal performs no remount');
+            is_deeply($rados->{commands}, [], 'settlement refusal issues no auth mutation');
+            is_deeply(
+                $state,
+                decode_json($before),
+                'settlement refusal preserves all journal records',
+            );
+            eval { $HOOKS->{settle_staged}->($rados, $info, $state, {}, $files) };
+            is($@, '', "$kind status dry run does not require authentication evidence");
+        }
+        my $rados = StagedRotationRados->new(key => $OLD);
+        my @writes;
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @writes, [@_] };
+        eval {
+            $HOOKS->{check_client_authentication}->(
+                $plan_info,
+                { 'rotate-storage-key' => ['s'] },
+                {},
+                $files,
+                { authentication => $authentication },
+            );
+            $HOOKS->{stage_client}->($rados, {}, { entity => 'client.cp', files => [] });
+        };
+        like($@, qr/Client keys were not changed|Cannot verify/, 'staging refuses before mutation');
+        is_deeply($rados->{commands}, [], 'staging refusal does not even request a pending key');
+        is_deeply(\@writes, [], 'staging refusal creates no key file');
+        my $state = { previous_keys => { 'client.admin' => { key => $OLD } } };
+        my @commands;
+        local *main::run_command = sub {
+            my ($cmd, %args) = @_;
+            push @commands, join(' ', @$cmd);
+            die "unexpected authentication probe\n" if grep { $_ eq 'config' } @$cmd;
+            $args{outfunc}->(
+                (grep { $_ eq 'fsid' } @$cmd)
+                ? 'test-fsid'
+                : encode_json([{ entity => 'client.admin', key => $OLD }])
+            );
+        };
+        eval { $HOOKS->{repair_admin_keyring}->($state) };
+        is($@, '', 'legacy admin repair does not require authentication probes');
+        is(scalar(@writes), 1, 'legacy repair restores its existing admin credential');
+        is(scalar(@commands), 2, 'legacy repair only reads the fsid and active admin key');
+    }
+    my $rados_mon = StagedRotationRados->new(key => $OLD, fail_prefix => 'auth get');
+    my $out = '';
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        is(
+            $HOOKS->{preflight_mon_key}->($rados_mon, { mon_key => 1 }),
+            -1,
+            'an unreadable monitor key retains the base refusal',
+        );
+    }
+    is_deeply(
+        [map { $_->{prefix} } $rados_mon->{commands}->@*],
+        ['auth get'],
+        'failed monitor-key read performs no auth probe or mutation',
+    );
+    like(
+        $out,
+        qr/Clusters with Cephx Disabled/,
+        'disabled monitor-key diagnostics point to the manual',
+    );
+
+}
+
+{
+    no warnings qw(once redefine);
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+    my ($method, $probes) = ('cephx', 0);
+    local *main::run_command = sub {
+        my ($cmd, %args) = @_;
+        die 'unexpected node command: ' . join(' ', @$cmd)
+            if $cmd->[-1] ne 'auth_service_required';
+        $probes++;
+        die "monitor is stopped\n" if $method eq 'stopped';
+        $args{outfunc}->(encode_json({ auth_service_required => $method }));
+    };
+    my @writes;
+    local *main::file_set_contents = sub { push @writes, $_[0] };
+    my $info = {
+        monmap_mons => [qw(a b c)],
+        daemons => { mon => [map { { id => $_, node => "node-$_" } } qw(a b c)] },
+        exported => { 'client.crash' => { key => $OLD } },
+    };
+    my $tool_files =
+        { 'client.crash' => [{ path => 'tool.keyring', format => 'keyring', scope => 'cluster' }] };
+    for my $auth_method (qw(stopped none)) {
+        $method = $auth_method;
+        for my $apply (0, 1) {
+            $probes = 0;
+            @writes = ();
+            my $opts = { 'rotate-cluster-keys' => 1, apply => $apply };
+            $HOOKS->{expand_cluster_key_option}->($opts);
+            my $state = {};
+            eval { $HOOKS->{check_client_authentication}->($info, $opts, $state, $tool_files, {}) };
+            is(
+                $@,
+                '',
+                "cluster-key run with $method monitor does not require client authentication",
+            );
+            my ($plan) =
+                PVE::Ceph::KeyMigration::plan_client_keys($info, $state, $opts, $tool_files);
+            is(scalar(@$plan), 1, 'the tool rotation is still selected');
+            my $rados = ClientRotationRados->new($OLD);
+            $HOOKS->{migrate_client}
+                ->($rados, $state, $plan->[0], sub { { complete => 1, clients => {} } })
+                if $apply;
+            is(
+                $rados->{key},
+                $apply ? $NEW : $OLD,
+                'apply rotates the tool key; dry run only plans it',
+            );
+            is(
+                scalar(grep { $_ eq 'tool.keyring' } @writes),
+                $apply,
+                'tool copies retain their base write behavior',
+            );
+            is($probes, 0, 'cluster-only work uses zero authentication probes');
+        }
+    }
+    $method = 'stopped';
+    my $state = { staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } } };
+    my $waiting = {
+        %$info,
+        exported => { 'client.cp' => { key => $OLD, pending_key => $NEW } },
+        manual_promotion => { supported => 0, unanswered => ['b'] },
+    };
+    my $opts = { apply => 1, only => { 'osd.7' => 1 } };
+    $probes = 0;
+    eval {
+        $HOOKS->{check_client_authentication}->($waiting, $opts, $state, {}, {});
+        $HOOKS->{settle_staged}->(undef, $waiting, $state, $opts, {});
+        $HOOKS->{node_command}->('node-a', ['systemctl', 'restart', 'ceph-osd@7'], 'osd.7');
+    };
+    is($@, '', 'a written waiting record does not block OSD-only apply with a stopped monitor');
+    is($probes, 0, 'waiting records require no authentication sweep');
+    for my $apply (0, 1) {
+        eval {
+            $HOOKS->{check_client_authentication}->(
+                $waiting,
+                { apply => $apply, 'confirm-all-clients-refreshed' => 1 },
+                $state,
+                {},
+                {},
+            );
+        };
+        is($@, '', 'confirmation without copy work needs no authentication prerequisite');
+        is($probes, 0, 'confirmation without copy work uses zero authentication probes');
+    }
+    for my $kind (qw(lost committed)) {
+        my $state = { staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } } };
+        my $rados = StagedRotationRados->new(key => $kind eq 'lost' ? $OLD : $NEW);
+        my $info = { %$waiting, exported => { 'client.cp' => { key => $rados->{key} } } };
+        eval {
+            $HOOKS->{check_client_authentication}->($info, $opts, $state, {}, {});
+            $HOOKS->{settle_staged}->($rados, $info, $state, $opts, {});
+        };
+        is($@, '', "$kind record settlement without copy work tolerates a stopped monitor");
+        is($probes, 0, 'journal-only settlement uses no authentication probes');
+    }
+
+    $method = 'cephx';
+    $probes = 0;
+    my @users = qw(client.alpha client.beta client.gamma);
+    my $files = { map { $_ => [{ store => $_ }] } @users };
+    my $stage_info = { %$info, exported => { map { $_ => { key => $OLD } } @users } };
+    my $stage_opts = { apply => 1, 'rotate-all-storage-keys' => 1 };
+    my ($cache, $stage_state) = ({}, {});
+    my $recollected = dclone($stage_info);
+    $HOOKS->{check_client_authentication}->($stage_info, $stage_opts, $stage_state, $files, $cache);
+    $HOOKS->{check_client_authentication}
+        ->($recollected, $stage_opts, $stage_state, $files, $cache);
+    is($probes, 3, 'one sweep of three monitors survives inventory recollection');
+    my ($sessions, $grace) = (0, 0);
+    my $plan = { client_keys => [map { { entity => $_, staged => 1, files => [] } } @users] };
+    my $failure;
+
+    for my $item ($plan->{client_keys}->@*) {
+        my $rados = StagedRotationRados->new(
+            key => $OLD,
+            disabled => 1,
+            $item->{entity} eq 'client.gamma'
+            ? (fail_prefix => 'auth get-or-create-pending')
+            : (),
+        );
+        eval {
+            $HOOKS->{stage_client}->(
+                $rados,
+                $stage_state,
+                $item,
+                sub { $sessions++; return { complete => 1, clients => {} } },
+                sub {
+                    $grace++;
+                    return { manual_promotion => { supported => 1, disabled => 1 } };
+                },
+            );
+        };
+        $failure = $@;
+        last if $failure;
+    }
+    is($probes, 3, 'staging multiple keys adds no per-key authentication probes');
+    is($grace, 3, 'the per-key collector is only used to verify pending-key grace');
+    is(
+        $sessions,
+        5,
+        'two successful stages and one failed stage take only their necessary session snapshots',
+    );
+    like($failure, qr/simulated.*auth get-or-create-pending/, 'later-key failure is retained');
+    my $progress = $HOOKS->{staging_progress}->($plan, $stage_state);
+    like(
+        $progress,
+        qr/recorded as staged: client.alpha, client.beta/,
+        'failure summary names staged keys',
+    );
+    like(
+        $progress,
+        qr/not recorded as staged: client.gamma/,
+        'failure summary names the key not staged',
+    );
+    unlike(
+        $progress,
+        qr/not changed|nothing changed/,
+        'partial progress is not described as no changes',
+    );
+
+    for my $auth_method (qw(stopped none)) {
+        $method = $auth_method;
+        $probes = 0;
+        my $cache = {};
+        for (1 .. 2) {
+            eval {
+                $HOOKS->{check_client_authentication}
+                    ->($stage_info, $stage_opts, {}, $files, $cache);
+            };
+            like(
+                $@,
+                qr/Cannot verify|do not accept cephx/,
+                'client staging refuses unavailable or disabled authentication',
+            );
+        }
+        is($probes, 3, 'a failed authentication sweep is cached too');
+    }
+}
+
+{
     no warnings qw(once redefine);
     my $cfg = {
         ids => {
@@ -7332,6 +7785,59 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
 }
 
 {
+    no warnings qw(once redefine);
+    local *PVE::Cluster::cfs_read_file = sub {
+        return {
+            global => { auth_service_required => 'none', auth_cluster_required => 'none' } };
+    };
+    local *PVE::Ceph::Services::get_blocking_health_errors = sub { return [] };
+    local *PVE::Ceph::Services::wait_for_safe_to_stop = sub { return (1, '') };
+    local *PVE::Ceph::Services::wait_for_daemon_up = sub { };
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+    local *main::file_set_contents = sub { };
+
+    my @commands;
+    local *main::run_command = sub {
+        my ($cmd) = @_;
+        push @commands, join(' ', @$cmd);
+        die "unexpected authentication probe\n" if $cmd->[-1] eq 'auth_service_required';
+    };
+    my $rados = ClientRotationRados->new($OLD);
+    my $info = {
+        fsid => 'cluster-fsid',
+        pve_mon_key => $OLD,
+        exported => { 'mon.' => { key => $OLD } },
+        daemons => { mon => [map { { type => 'mon', id => $_, node => "node-$_" } } qw(a b)] },
+    };
+    my $plan = { mon_key => 1 };
+    my $state = {};
+    is(
+        $HOOKS->{preflight_mon_key}->($rados, $plan),
+        1,
+        'a readable DB-only mon. key passes with no-auth configuration',
+    );
+    eval { $HOOKS->{migrate_mon_key}->($rados, $state, $info, { timeout => 30 }, $plan) };
+    is($@, '', 'readable mon. rotation does not acquire a no-auth prerequisite');
+    is($rados->{key}, $NEW, 'the retained mon. auth entry is rotated, not skipped');
+    is_deeply(
+        $state->{mon_restarted},
+        { map { $_ => key_fingerprint($NEW) } qw(a b) },
+        'both monitors complete the existing keyring and restart path',
+    );
+    is(
+        scalar(grep { /systemctl.*\brestart\b.*ceph-mon/ } @commands),
+        2,
+        'the monitor-key rotation retains both restarts',
+    );
+    is(
+        scalar(grep { /auth_(?:service|cluster)_required/ } @commands),
+        0,
+        'successful mon. rotation uses no authentication probes',
+    );
+}
+
+{
     my $out = '';
     {
         open(my $stdout, '>', \$out) or die $!;
@@ -7342,6 +7848,127 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         $out,
         "FAIL: first failure\nFAIL: second failure\n",
         'multiline failures prefix each nonempty line without bare failure labels',
+    );
+}
+
+{
+    no warnings qw(once redefine);
+    my $dir = tempdir(CLEANUP => 1);
+    my $source = file_get_contents($SCRIPT);
+    # Isolate fixed lock/journal paths and package symbols while executing the real orchestration.
+    $source =~ s{/etc/pve/priv/cephx-key-migration.json}{$dir/state.json}g;
+    $source =~ s{/var/lock/pve-ceph-bulk-restart.lck}{$dir/operation.lock}g;
+    $source =~
+        s/package PVE::Ceph::KeyMigration::ClusterLock;/package MigrationRunTest::ClusterLock;/;
+    local *PVE::Ceph::Tools::get_config = sub { return $_[0] eq 'ccname' ? 'ceph' : "$dir/$_[0]" };
+    file_set_contents("$dir/pve_mon_key_path", "[mon.]\n key = $NEW\n");
+    eval "package MigrationRunTest; $source" or die $@;
+    my $run = MigrationRunTest::key_migration_test_hooks()->{run_migration};
+
+    local *PVE::RPCEnvironment::setup_default_cli_env = sub { };
+    local *PVE::Ceph::Tools::check_ceph_inited = sub { };
+    local *PVE::Ceph::KeyMigration::ClusterLock::take = sub { return {} };
+    local *PVE::Ceph::Services::with_cluster_bulk_restart_lock = sub { $_[3]->() };
+    local *PVE::Ceph::Services::get_cluster_service = sub { return {} };
+    local *PVE::Ceph::Services::get_ceph_versions = sub {
+        return { 'node-a' => { version => { str => '20.2.4' } } };
+    };
+    local *PVE::Cluster::get_nodelist = sub { return ['node-a'] };
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+
+    my @users = qw(alpha beta gamma);
+    local *PVE::Storage::config = sub {
+        return { ids => { map { $_ => { type => 'rbd', username => $_ } } @users } };
+    };
+    my $entries = { map { ("client.$_" => { entity => "client.$_", key => $OLD }) } @users };
+    $entries->{'mon.'} = { entity => 'mon.', key => $NEW };
+    my $rados = CurrentMonitorRados->new(
+        mons => ['a'],
+        quorum => ['a'],
+        osds => [],
+        metadata => [{ name => 'a', hostname => 'node-a', ceph_version_short => '20.2.4' }],
+    );
+    local *PVE::Ceph::Services::ResilientRados::new = sub { return $rados };
+    my $mon_command = CurrentMonitorRados->can('mon_command');
+    local *CurrentMonitorRados::mon_command = sub {
+        my ($self, $args) = @_;
+        my $prefix = $args->{prefix};
+        return 'cluster-fsid' if $prefix eq 'fsid';
+        return { quorum_names => ['a'], features => { quorum_mon => ['cephx_auth_aes256k'] } }
+            if $prefix eq 'quorum_status';
+        return {} if $prefix eq 'mgr dump';
+        return [] if $prefix =~ /^(?:mgr|mds|osd) metadata$/;
+        return [
+            map {
+                { %$_ }
+            } values %$entries
+            ]
+            if $prefix eq 'auth export';
+        return [{ %{ $entries->{ $args->{entity} } } }] if $prefix eq 'auth get';
+        if ($prefix eq 'auth get-or-create-pending') {
+            return [] if $args->{entity} eq 'client.gamma';
+            $entries->{ $args->{entity} }->{pending_key} = $NEW;
+            return [{ %{ $entries->{ $args->{entity} } } }];
+        }
+        return $mon_command->(@_);
+    };
+    my %writes;
+    local *MigrationRunTest::file_set_contents = sub { $writes{ $_[0] } = $_[1] };
+    local *MigrationRunTest::run_command = sub {
+        my ($cmd, %args) = @_;
+        return 0 if $cmd->[0] eq 'dpkg' && $cmd->[1] eq '--compare-versions';
+        my $out;
+        if ($cmd->[-1] eq 'sessions') {
+            $out = '[]';
+        } elsif ($cmd->[-1] eq 'auth_service_required') {
+            $out = encode_json({ auth_service_required => 'cephx' });
+        } elsif ($cmd->[-1] eq 'mon_auth_client_pending_key_auto_promote') {
+            $out = encode_json({ mon_auth_client_pending_key_auto_promote => 'false' });
+        } elsif (grep { $_ eq 'dpkg-query' } @$cmd) {
+            $out =
+                "libpve-storage-perl 9.1.9 installed\nlibrados2 20.2.4-pve3 installed\nlibrbd1 20.2.4-pve3 installed";
+        } else {
+            die 'unexpected node command: ' . join(' ', @$cmd) . "\n";
+        }
+        $args{outfunc}->($_) for split(/\n/, $out);
+        return 0;
+    };
+    my ($error, $out) = ('', '');
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        eval {
+            $run->({ apply => 1, 'rotate-all-storage-keys' => 1 }, sub { return 1 });
+        };
+        $error = $@;
+        main::log_fail($error) if $error;
+    }
+    like(
+        $error,
+        qr/\Acould not stage a pending key for 'client.gamma'\nKeys recorded as staged:/,
+        'the real apply failure separates its original error from staging progress',
+    );
+    like(
+        $out,
+        qr/^FAIL: Keys recorded as staged: client.alpha, client.beta\.$/m,
+        'the real apply failure reports keys staged before the failure',
+    );
+    like(
+        $out,
+        qr/^FAIL: Planned keys not recorded as staged: client.gamma\.$/m,
+        'the real apply failure reports the unfinished planned key',
+    );
+    is_deeply(
+        [sort grep { /\.keyring$/ } keys %writes],
+        [map { "/etc/pve/priv/ceph/$_.keyring" } qw(alpha beta)],
+        'the real apply writes the first two managed copies before failing on the third key',
+    );
+    my $state = decode_json($writes{"$dir/state.json"} // '{}');
+    is_deeply(
+        [sort keys %{ $state->{staged} // {} }],
+        [qw(client.alpha client.beta)],
+        'the error summary agrees with the journal saved by the real apply',
     );
 }
 
