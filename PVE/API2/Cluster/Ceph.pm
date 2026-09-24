@@ -279,6 +279,7 @@ __PACKAGE__->register_method({
         # only check now, we want to allow calls with scope 'versions' on non-ceph nodes too!
         PVE::Ceph::Tools::check_ceph_inited();
         my $rados = PVE::RADOS->new();
+        my $nodes = { map { $_ => 1 } PVE::Cluster::get_nodelist()->@* };
 
         for my $type (qw(mon mgr mds)) {
             my $typedata = PVE::Ceph::Services::get_cluster_service($type);
@@ -292,8 +293,11 @@ __PACKAGE__->register_method({
             # get data from metadata call and merge 'our' data
             my $services = $rados->mon_command({ prefix => "$type metadata" });
             for my $service (@$services) {
-                my $hostname = $service->{hostname};
+                my $hostname = PVE::Ceph::Services::metadata_host_node(
+                    $service->{hostname}, $nodes,
+                );
                 next if !defined($hostname); # can happen if node is dead
+                $service->{hostname} = $hostname;
 
                 my $servicename = $service->{name} // $service->{id};
                 my $id = "$servicename\@$hostname";

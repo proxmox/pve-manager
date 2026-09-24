@@ -86,4 +86,47 @@ my $metadata = [
     like($out, qr/no outdated OSDs found/, 'up-to-date FQDN metadata does not schedule a restart');
 }
 
+{
+    no warnings qw(redefine once);
+    local *PVE::Cluster::get_nodelist = sub { ['node-a', 'node-a.example'] };
+    local *PVE::Ceph::Tools::check_ceph_inited = sub { };
+    local *PVE::Ceph::Services::get_ceph_versions = sub { {} };
+    local *PVE::Ceph::Services::get_cluster_service = sub {
+        return {
+            'node-a' =>
+                { present => { service => 1, direxists => 1 }, stopped => { service => 1 } },
+            'node-a.example' => { exact => { service => 1 } },
+        };
+    };
+    local *PVE::RADOS::new = sub {
+        return ServiceRados->new({
+            map {
+                $_ => [
+                    {
+                        name => 'present',
+                        hostname => 'node-a.invalid',
+                        ceph_version_short => '19.2.6',
+                    },
+                    { name => 'exact', hostname => 'node-a.example' },
+                    { name => 'foreign', hostname => 'foreign.invalid' },
+                    { name => 'dead' },
+                ]
+            } qw(mon mgr mds)
+        });
+    };
+    my $api = PVE::API2::Cluster::Ceph->map_method_by_name('metadata')->{code};
+    my $result = $api->({});
+    for my $type (qw(mon mgr mds)) {
+        is_deeply(
+            [sort keys %{ $result->{$type} }],
+            ['exact@node-a.example', 'foreign@foreign.invalid', 'present@node-a', 'stopped@node-a'],
+            "$type metadata merges member aliases without duplicate service records",
+        );
+        my $service = $result->{$type}->{'present@node-a'};
+        is($service->{hostname}, 'node-a', "$type merged hostname agrees with the record key");
+        ok($service->{service} && $service->{direxists}, "$type merged inventory flags survive");
+        is($service->{ceph_version_short}, '19.2.6', "$type merged version survives");
+    }
+}
+
 done_testing();
