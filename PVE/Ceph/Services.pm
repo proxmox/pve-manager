@@ -124,6 +124,18 @@ sub get_cluster_service {
     return $res;
 }
 
+# Ceph metadata can report an FQDN while Proxmox VE node names use the first label. A match is a
+# candidate location, not proof of daemon identity: an unrelated domain can share that label.
+sub metadata_host_node {
+    my ($hostname, $nodes) = @_;
+
+    return $hostname if !defined($hostname) || ref($hostname) || !length($hostname);
+    return $hostname if $nodes->{$hostname};
+
+    my ($short) = $hostname =~ m/^([^.]+)\./;
+    return defined($short) && $nodes->{$short} ? $short : $hostname;
+}
+
 sub ceph_service_cmd {
     my ($action, $service) = @_;
 

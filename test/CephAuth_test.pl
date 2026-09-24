@@ -11,6 +11,34 @@ use Storable qw(dclone);
 use PVE::Ceph::Services;
 use PVE::CLI::pveceph;
 
+my $members = { map { $_ => 1 } qw(node1 node2 node1.exact) };
+for my $test (
+    ['node1', 'node1', 'exact member'],
+    ['node1.exact', 'node1.exact', 'exact membership precedes first-label mapping'],
+    ['node1.example.com', 'node1', 'member FQDN'],
+    ['node2.example.com', 'node2', 'local member FQDN'],
+    ['foreign.example.com', 'foreign.example.com', 'foreign FQDN'],
+    ['foreign', 'foreign', 'foreign short name'],
+    ['node1.foreign.invalid', 'node1', 'same-label foreign domain is a known ambiguity'],
+    ['.example.com', '.example.com', 'empty first label is not a member'],
+    ['', '', 'empty input remains for caller validation'],
+    [undef, undef, 'undefined input remains for caller validation'],
+) {
+    my ($host, $expected, $name) = @$test;
+    is(PVE::Ceph::Services::metadata_host_node($host, $members), $expected, $name);
+}
+my $invalid_host = {};
+is(
+    PVE::Ceph::Services::metadata_host_node($invalid_host, $members),
+    $invalid_host,
+    'reference input remains for caller validation, not transport',
+);
+is(
+    PVE::Ceph::Services::metadata_host_node('node1.example.com', { node1 => 1 }),
+    'node1',
+    'single-node membership also maps an FQDN',
+);
+
 # The cipher landed mid-release, so $AES256K_MIN_CEPH_RELEASE has to answer per major and
 # not just compare against one minimum. Both the full 'ceph versions' string and the bare
 # 'ceph_version_short' of the daemon metadata reach ceph_version_supports_aes256k(), which
