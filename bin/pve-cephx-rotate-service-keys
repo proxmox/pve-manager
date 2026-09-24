@@ -5,6 +5,7 @@ use v5.36;
 use Cwd ();
 use File::Temp;
 use Fcntl qw(:flock);
+use Errno qw(ENOENT);
 use Getopt::Long;
 use POSIX ();
 use JSON;
@@ -28,6 +29,7 @@ use PVE::Ceph::KeyMigration qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
+    parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     client_staging_needed touched_daemons
@@ -121,7 +123,10 @@ my $log_line = sub($level, $line) {
 sub log_pass($line) { $log_line->('pass', $line); }
 sub log_info($line) { $log_line->('info', $line); }
 sub log_warn($line) { $log_line->('warn', $line); }
-sub log_fail($line) { $log_line->('fail', $line); }
+
+sub log_fail($line) {
+    $log_line->('fail', $_) for grep { length } split(/\n/, $line);
+}
 
 sub log_text($line) { print "$line\n"; }
 sub log_step($line) { print "  $line\n"; }
@@ -1230,6 +1235,102 @@ my sub client_key_files {
     return $files;
 }
 
+sub read_storage_key_file($path) {
+    if (!lstat($path)) {
+        return $! == ENOENT ? { missing => 1 } : { error => 'could not inspect file' };
+    }
+    return { error => 'not a regular file' } if !-f $path;
+    my $content = eval { file_get_contents($path) };
+    return { error => 'could not read file' } if $@;
+    return { content => $content };
+}
+
+# This is a veto inventory, not permission to rewrite a file. Include inactive and external
+# storages too: an offline client can read their copies after the retirement. In particular, do
+# not call ceph_connect_option(), which can create a per-storage configuration file.
+my sub storage_key_copies($read = \&read_storage_key_file) {
+    PVE::Cluster::cfs_update();
+    my $cfg = PVE::Storage::config();
+    die "could not read the storage configuration\n" if ref($cfg->{ids}) ne 'HASH';
+    my @copies;
+    for my $store (sort keys $cfg->{ids}->%*) {
+        my $scfg = $cfg->{ids}->{$store};
+        my $type = $scfg->{type} // '';
+        next if $type ne 'rbd' && $type ne 'cephfs';
+        my $format = $type eq 'rbd' ? 'keyring' : 'secret';
+        my $path = "/etc/pve/priv/ceph/$store.$format";
+        my $entity = 'client.' . ($scfg->{username} // 'admin');
+        my $file = $read->($path);
+        my $copy = {
+            store => $store,
+            path => $path,
+            entity => $entity,
+            managed => !defined($scfg->{monhost}),
+            exists($file->{content})
+            ? parse_storage_key($file->{content}, $format, $entity)->%*
+            : %$file,
+        };
+
+        if (defined($scfg->{monhost})) {
+            my $config = $read->("/etc/pve/priv/ceph/$store.conf");
+            my $problem = $config->{error};
+            $problem //= storage_config_problem($config->{content}, $path, $entity, $ccname)
+                if exists($config->{content});
+            $copy->{error} //= "$problem in '$store.conf'" if defined($problem);
+        }
+        push @copies, $copy;
+    }
+    return \@copies;
+}
+
+our $storage_copy_warnings_seen = {};
+
+my sub log_storage_copy_warning($warning) {
+    log_warn($warning) if !$storage_copy_warnings_seen->{$warning}++;
+}
+
+my sub storage_retirement_problems($entity, $retiring, $target, $reverse = 0, $copies = undef) {
+    if (!$copies) {
+        $copies = eval { storage_key_copies() };
+        return ["Cannot retire the key of '$entity': storage key copies could not be inventoried."]
+            if $@;
+    }
+    log_storage_copy_warning($_) for storage_key_copy_warnings($copies, $entity, $reverse)->@*;
+    return storage_key_copy_problems($copies, $entity, $retiring, $target, $reverse);
+}
+
+my sub staged_storage_problems($state, $exported, $entity, $copies = undef) {
+    my $record = $state->{staged}->{$entity} or return [];
+    my $entry = $exported->{$entity} or return [];
+    my $pending = $entry->{pending_key};
+    if (defined($pending) && length($pending) && key_fingerprint($pending) eq $record->{key}) {
+        return $record->{aborting}
+            ? storage_retirement_problems($entity, $pending, $entry->{key}, 1, $copies)
+            : storage_retirement_problems($entity, $entry->{key}, $pending, 0, $copies);
+    }
+    return storage_retirement_problems($entity, undef, $entry->{key}, 0, $copies)
+        if key_fingerprint($entry->{key}) eq $record->{key};
+    return [];
+}
+
+my sub storage_readiness_problems($state, $exported) {
+    return {
+        map { $_ => staged_storage_problems($state, $exported, $_) }
+        sort keys %{ $state->{staged} // {} }
+    };
+}
+
+# Re-read at the mutation boundary. The migration lock does not serialize storage configuration
+# or key-file editors, so those must remain frozen until retirement and client refresh complete.
+my sub commit_pending_key($rados, $entity, $pending) {
+    my $entry = auth_entry($rados, $entity);
+    die "the pending key of '$entity' changed before its commit\n"
+        if !defined($pending) || ($entry->{pending_key} // '') ne $pending;
+    my $problems = storage_retirement_problems($entity, $entry->{key}, $pending);
+    die join("\n", @$problems) . "\n" if @$problems;
+    $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+}
+
 # What mounts a storage cannot be known here, so every cluster node has to support a key an
 # in-kernel client reads. Nothing cluster-wide broadcasts the kernel, hence SSH.
 my sub collect_node_kernels($opts) {
@@ -1595,12 +1696,14 @@ my sub commit_staged_key($rados, $state, $entity) {
     my $entry = auth_entry($rados, $entity);
     my $pending = $entry->{pending_key};
     if (defined($pending) && length($pending) && key_fingerprint($pending) eq $record->{key}) {
-        log_info("committing the staged key of '$entity', its previous key stops working now");
-        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+        commit_pending_key($rados, $entity, $pending);
+        log_info("committed the staged key of '$entity', its previous key no longer works");
         my $after = auth_entry($rados, $entity);
         die "'$entity' does not use the staged key after the commit\n"
             if key_fingerprint($after->{key}) ne $record->{key};
     } elsif (key_fingerprint($entry->{key}) eq $record->{key}) {
+        my $problems = staged_storage_problems($state, { $entity => $entry }, $entity);
+        die join("\n", @$problems) . "\n" if @$problems;
         log_info("the staged key of '$entity' is its active key already");
     } else {
         die "the key staged for '$entity' is gone without becoming active, so the copies written"
@@ -1884,6 +1987,14 @@ my sub preflight_cluster(
             } keys %{ $state->{client_refresh} // {} };
     }
 
+    for my $entity (@confirm) {
+        my $problems = staged_storage_problems($state, $info->{exported}, $entity);
+        if (@$problems) {
+            log_fail($_) for @$problems;
+            $confirmation_refused = 1;
+        }
+    }
+
     if ($confirm_all) {
         if (!scalar(@confirm)) {
             log_info("nothing left to confirm: no open client-key refresh record exists");
@@ -2034,6 +2145,12 @@ my sub preflight_cluster(
                 $confirmation_refused = 1;
                 next;
             }
+            my $problems = staged_storage_problems($state, $info->{exported}, $entity);
+            if (@$problems) {
+                log_fail($_) for @$problems;
+                $confirmation_refused = 1;
+                next;
+            }
             die "cannot commit the staged key of '$entity' without a cluster connection\n"
                 if $staged && !$info->{rados};
 
@@ -2123,6 +2240,7 @@ my sub preflight_cluster(
     }
 
     if (restrict_wanted($info, $opts)) {
+        $info->{storage_copy_problems} = storage_readiness_problems($state, $info->{exported});
         my $blockers = restrict_blockers($info, $state, $describe_for_section, $client_files);
         if (scalar(@$blockers)) {
             if (!$opts->{force}) {
@@ -2577,6 +2695,18 @@ my sub recover_left_behind($info, $state) {
 
 my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
     $storage_entities //= {};
+    my $records = staged_records($info, $state);
+    my %users = map { $_ => 1 } grep { $records->{$_} ne 'lost' } keys %$records;
+    $users{ $_->{entity} } = 1 for grep { $_->{staged} } @{ $plan->{client_keys} // [] };
+    $users{$_} = 1 for grep {
+        /^client\.(?!osd-lockbox\.)/ && length($info->{exported}->{$_}->{pending_key} // '')
+    } keys %{ $info->{exported} // {} };
+    my $copies = keys(%users) ? eval { storage_key_copies() } : [];
+    for my $entity (sort keys %users) {
+        my $reverse = ($state->{staged}->{$entity} // {})->{aborting} // 0;
+        log_storage_copy_warning($_)
+            for storage_key_copy_warnings($copies // [], $entity, $reverse)->@*;
+    }
     my $insecure_service_keys = %{ $info->{insecure_entities} } ? 1 : 0;
     log_heading("Why HEALTH_ERR") if $insecure_service_keys;
     log_heading("Where this cluster stands") if !$insecure_service_keys && $opts->{verbose};
@@ -2757,10 +2887,10 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             my $key_label = $user_count == 1 ? 'Ceph user key' : 'Ceph user keys';
             log_text("Step $step: rotate $user_count selected $key_label"
                 . ($tool_count ? " and $tools_label" : '')
-                . " and rewrite every copy Proxmox VE keeps. Affected CephFS mounts are redone on"
+                . " and rewrite only managed copies. Affected CephFS mounts are redone on"
                 . " every node unless something is using them.");
         } else {
-            log_text("Step $step: rotate $tools_label and rewrite every copy Proxmox VE keeps."
+            log_text("Step $step: rotate $tools_label and rewrite only managed copies."
                 . " Only Ceph's own tools read "
                 . ($tool_count == 1 ? 'it' : 'them')
                 . ", so there is nothing to stop.");
@@ -2770,7 +2900,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             next if !$opts->{verbose} && tool_key($item->{entity});
             my $how =
                 $item->{staged} ? 'staged next to the current key'
-                : $item->{resume_only} ? 'resume writing its current key to every copy'
+                : $item->{resume_only} ? 'resume writing its current key to every managed copy'
                 : 'replaced at once';
             if ($opts->{verbose}) {
                 my $where =
@@ -2781,6 +2911,20 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             } else {
                 log_step("Ceph user '$item->{entity}': $how");
             }
+            next if !$item->{staged};
+            my $current = $info->{exported}->{ $item->{entity} }->{key};
+            next if !defined($current);
+            my @unmanaged =
+                grep { !$_->{managed} && ($_->{key} // '') eq $current } @{ $copies // [] };
+            log_storage_copy_warning(join(
+                "\n",
+                "These storages hold the current key of '$item->{entity}' in copies this helper"
+                    . " does not update:",
+                (map { "  $_->{store}: $_->{path}" } @unmanaged),
+                "Update them with the staged key of the same Ceph user and refresh their clients"
+                    . " before confirming.",
+            ))
+                if @unmanaged;
         }
         if ($user_count && scalar(@tool_items) && !$opts->{verbose}) {
             log_step((
@@ -3246,7 +3390,7 @@ my sub resume_live_swap($rados, $state, $daemon, $commit = 0) {
         return 1;
     } elsif ($decided->{verdict} eq 'commit') {
         log_info("committing the pending key for '$entity', which may already be on disk");
-        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+        commit_pending_key($rados, $entity, $pending);
     } elsif ($decided->{verdict} eq 'clear') {
         log_info("dropping the pending key for '$entity' because no durable copy holds it");
         $rados->mon_command({ prefix => 'auth clear-pending', entity => $entity });
@@ -3344,7 +3488,7 @@ my sub live_swap_daemon($rados, $state, $daemon) {
 
     my $committed = eval {
         daemon_tell($entity, 'rotate-key', $pending);
-        $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+        commit_pending_key($rados, $entity, $pending);
         1;
     };
     return $failed->("could not load and commit the pending key" . ($@ ? ": $@" : ""))
@@ -3584,7 +3728,7 @@ my sub resume_lockbox_keys($rados, $state, $info) {
             if (defined($tag) && $tag eq $pending) {
                 log_info("an earlier run wrote the staged lockbox key of '$entity' to its LVM tag,"
                     . " committing it");
-                $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+                commit_pending_key($rados, $entity, $pending);
             } else {
                 log_info("dropping the lockbox key an earlier run staged for '$entity', its LVM"
                     . " tag does not hold it");
@@ -3691,7 +3835,7 @@ my sub migrate_lockbox_key($rados, $state, $item, $info = {}) {
     $state->{lockbox}->{$entity} = { $state->{lockbox}->{$entity}->%*, phase => 'written' };
     save_state($state);
 
-    $rados->mon_command({ prefix => 'auth commit-pending', entity => $entity });
+    commit_pending_key($rados, $entity, $pending);
 
     my $now = auth_entry($rados, $entity);
     die "'$entity' still uses the '"
@@ -4247,6 +4391,8 @@ my sub assert_abort_retirement_ready($state, $snapshot, $entity) {
             . ".$guidance\n";
     }
 
+    my $problems = storage_retirement_problems($entity, $pending, $entry->{key}, 1);
+    die join("\n", @$problems) . "\n" if @$problems;
     return key_fingerprint($entry->{key});
 }
 
@@ -4583,6 +4729,7 @@ my sub restrict_ciphers(
         },
         "Session query incomplete; retrying through a possible monitor election.",
     );
+    $snapshot->{storage_copy_problems} = storage_readiness_problems($state, $snapshot->{exported});
     my $blockers =
         restrict_blockers($snapshot, $state, sub { describe_live($_[0], $opts->{verbose}) });
 
@@ -4660,6 +4807,10 @@ my sub open_actions_from_snapshot($opts, $storage_entities, $state, $snapshot) {
         $state, $snapshot->{exported}, $snapshot->{sessions}, $opts,
     );
 
+    $snapshot = {
+        %$snapshot,
+        storage_copy_problems => storage_readiness_problems($state, $snapshot->{exported}),
+    };
     return open_actions(
         $PROGRAM,
         $snapshot->{health_checks},
@@ -5436,6 +5587,7 @@ my sub report_unavailable_daemons($rados, $plan) {
 }
 
 my sub run_migration($opts, $confirm = \&confirm_apply_run) {
+    local $storage_copy_warnings_seen = {};
     $monmap_changed = 0;
     PVE::RPCEnvironment->setup_default_cli_env();
     PVE::Ceph::Tools::check_ceph_inited();
@@ -5933,6 +6085,9 @@ sub lockbox_test_hooks {
 
 sub key_migration_test_hooks {
     return {
+        storage_key_copies => \&storage_key_copies,
+        read_storage_key_file => \&read_storage_key_file,
+        commit_pending_key => \&commit_pending_key,
         node_command => \&node_command,
         assert_daemon_location => \&assert_daemon_location,
         migrate_daemon => \&migrate_daemon,

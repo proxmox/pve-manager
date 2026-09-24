@@ -7,7 +7,7 @@ use v5.36;
 
 use Digest::SHA qw(sha256_hex);
 use JSON;
-use MIME::Base64 qw(decode_base64);
+use MIME::Base64 qw(decode_base64 encode_base64);
 
 use PVE::Ceph::Services;
 use PVE::Tools ();
@@ -19,6 +19,7 @@ our @EXPORT_OK = qw(
     $CIPHER $LEGACY_CIPHER $CIPHER_ID $CIPHER_NAMES $CIPHER_IDS
     $DAEMON_TYPES $TOOL_CLIENT_KEYS $ADMIN_ENTITY $GRACE_OPTION
     key_cipher key_fingerprint keyring_text short_version version_has_cipher
+    parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
     parse_probe_output osd_label_identity needs_rotation mon_key_needs_rotation mon_keyring_stale
     mon_key_rotation_wanted client_keys_requested migration_unfinished unfinished_entities
     bulk_storage_staging_needed client_staging_needed touched_daemons
@@ -88,6 +89,130 @@ sub keyring_text($entry) {
     }
 
     return $text;
+}
+
+sub valid_storage_key($key) {
+    return 0 if !defined($key) || ref($key) || $key !~ m{\A[A-Za-z0-9+/]+={0,2}\z};
+    my $raw = decode_base64($key);
+    return 0 if length($raw) < 12 || encode_base64($raw, '') ne $key;
+    my ($type, $length) = (unpack('v', $raw), unpack('v', substr($raw, 10, 2)));
+    return 0 if length($raw) != 12 + $length;
+    return
+        ($type == 0 && $length == 0)
+        || ($type == 1 && $length >= 16)
+        || ($type == 2 && $length == 32);
+}
+
+# Inspect the configured identity, not any matching substring or another section's credential.
+# Errors describe structure only: malformed lines can themselves contain secret material.
+sub parse_storage_key($content, $format, $entity) {
+    my $invalid = { error => 'malformed or ambiguous key file' };
+    return $invalid if !defined($content) || ref($content);
+    if ($format eq 'secret') {
+        $content =~ s/\A\s+|\s+\z//g;
+        return valid_storage_key($content) ? { key => $content } : $invalid;
+    }
+    return $invalid if $format ne 'keyring';
+
+    my ($section, $seen, $key);
+    for my $line (split(/\n/, $content)) {
+        $line =~ s/^\s+|\s+$//g;
+        next if $line eq '' || $line =~ m/^[#;]/;
+        if ($line =~ m/^\[([^\[\]]+)\]\s*(?:[#;].*)?$/) {
+            $section = $1;
+            return $invalid if $section eq $entity && $seen++;
+            next;
+        }
+        next if !defined($section) || $section ne $entity || $line !~ m/^key\s*=/;
+        return $invalid
+            if defined($key)
+            || $line !~ m/^key\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s#;]+))\s*(?:[#;].*)?$/;
+        $key = $1 // $2 // $3;
+        return $invalid if !valid_storage_key($key);
+    }
+    return { error => 'no key for the configured Ceph user' } if !defined($key);
+    return { key => $key };
+}
+
+# Custom configurations can redirect clients away from the standard file. Do not follow those
+# paths or create configuration files during a read-only retirement check.
+sub storage_config_problem($content, $path, $entity = 'client.admin', $cluster = 'ceph') {
+    my ($type, $id) = split(/\./, $entity, 2);
+    my $variables = { cluster => $cluster, name => $entity, type => $type, id => $id };
+    my ($section, %sections, %options, $keyring);
+    for my $line (split(/\n/, $content)) {
+        $line =~ s/^\s+|\s+$//g;
+        next if $line eq '' || $line =~ m/^[#;]/;
+        if ($line =~ m/^\[([^\[\]]+)\]\s*(?:[#;].*)?$/) {
+            $section = $1;
+            return 'duplicate section in custom configuration' if $sections{$section}++;
+            next;
+        }
+        return 'unverified custom configuration'
+            if !defined($section) || $line !~ m/^([\w -]+?)\s*=\s*(.*?)\s*$/;
+        my ($option, $value) = ($1, $2);
+        $option =~ s/ /_/g;
+        return 'duplicate option in custom configuration' if $options{"$section:$option"}++;
+        $value =~ s/\s*[#;].*$// if $value !~ m/^["']/;
+        $value =~ s/^(?:"([^"]*)"|'([^']*)')\s*(?:[#;].*)?$/$1 \/\/ $2/e;
+        $value =~
+            s/\$\{(cluster|name|id|type)\}|\$(cluster|name|id|type)\b/$variables->{$1 \/\/ $2}/ge;
+        $keyring = 1 if $option eq 'keyring';
+        return 'alternate credentials in custom configuration'
+            if $option =~ m/^(?:key|keyfile|secretfile|name|id|include)$/
+            || ($option eq 'keyring' && $value ne $path);
+    }
+    return 'no verified keyring path in custom configuration'
+        if $path =~ m/\.keyring$/ && !$keyring;
+    return undef;
+}
+
+sub storage_key_copy_problems($copies, $entity, $retiring, $target, $reverse = 0) {
+    my (@problems, @stale);
+    my $replacement = $reverse ? 'the restored key' : 'the staged key';
+    for my $copy (@$copies) {
+        my $where = "storage '$copy->{store}' in '$copy->{path}'";
+        my $own_user = $entity =~ m/^client\.(?!osd-lockbox\.)/ && $copy->{entity} eq $entity;
+        my $managed = $copy->{managed} && $own_user;
+        if (defined($retiring) && $retiring ne $target && ($copy->{key} // '') eq $retiring) {
+            push @stale, $copy;
+        } elsif ($copy->{error} && $managed) {
+            push @problems, "Cannot retire the key of '$entity': $where is unverified"
+                . " ($copy->{error}). Verify its configured user's credentials, then retry.";
+        } elsif ($managed && ($copy->{key} // '') ne $target) {
+            push @problems,
+                "Cannot retire the key of '$entity': managed $where does not hold"
+                . " $replacement of the same Ceph user. Update this copy, refresh its clients,"
+                . " then retry.";
+        }
+    }
+    unshift @problems,
+        join(
+            "\n",
+            "Cannot retire the key of '$entity': these storage key copies still hold it:",
+            (map { "  $_->{store}: $_->{path}" } @stale),
+            "Update each with $replacement of the same Ceph user and refresh its clients, then"
+            . " retry. If one is configured for another cluster or Ceph user, first confirm"
+            . " that it really shares this key.",
+        ) if @stale;
+    return \@problems;
+}
+
+sub storage_key_copy_warnings($copies, $entity = undef, $reverse = 0) {
+    my $replacement = $reverse ? 'the restored key' : 'the staged key';
+    my @unchecked = grep {
+        !$_->{managed} && $_->{error} && (!defined($entity) || $_->{entity} eq $entity)
+    } @$copies;
+    return [] if !@unchecked;
+    return [
+        join(
+            "\n",
+            "These storage key copies could not be checked:",
+            (map { "  $_->{store}: $_->{path} ($_->{error})" } @unchecked),
+            "If one points at this cluster, update it with $replacement of the same Ceph user"
+                . " before confirming.",
+        ),
+    ];
 }
 
 # parse_ceph_version() insists on the commit hash, which a bare or dev version lacks
@@ -813,6 +938,8 @@ sub restrict_blockers($info, $state, $describe = undef, $files = {}) {
             $info->{exported},
             $files,
             $describe,
+            $info->{lockbox_status} // $info->{lockbox} // {},
+            $info->{storage_copy_problems} // {},
         );
         return $readiness->{waiting_details}->{$entity}
             // "client refresh awaits your confirmation with '--confirm-clients-refreshed"
@@ -1049,6 +1176,7 @@ sub open_options(
     $files = {},
     $describe = \&session_hosts,
     $lockbox = {},
+    $storage_problems = {},
 ) {
     my $clients = classify_insecure_clients($checks, $storage_entities, $exported, $lockbox);
     my $done = $opts->{'rotate-storage-key'} // [];
@@ -1139,7 +1267,15 @@ sub open_options(
         my $unwritten = $staged && (!$staged->{written} || $mounts);
         my $unresolved_key = $staged && $key_state !~ m/^(?:waiting|committed)$/;
 
-        if (!$cleared && $verdict eq 'accept' && !$unwritten && !$aborting && !$unresolved_key) {
+        my $copy_problems = $storage_problems->{$entity} // [];
+        if (
+            !$cleared
+            && $verdict eq 'accept'
+            && !$unwritten
+            && !$aborting
+            && !$unresolved_key
+            && !scalar(@$copy_problems)
+        ) {
             push @ready, $entity;
             $all_ready_for_aggregate = 0
                 if $records->{$entity}->{measurement_incomplete}
@@ -1149,7 +1285,9 @@ sub open_options(
             $all_ready_for_aggregate = 0;
 
             my $both = $key_state eq 'waiting' ? ' Both keys remain valid.' : '';
-            if ($key_state eq 'unknown') {
+            if (scalar(@$copy_problems)) {
+                $waiting_details->{$entity} = join(' ', @$copy_problems);
+            } elsif ($key_state eq 'unknown') {
                 $waiting_details->{$entity} =
                     "the staged key cannot be matched to the current auth database."
                     . " Resolve its recorded state before confirming.";
@@ -1323,6 +1461,7 @@ sub open_actions(
         ($info // {})->{client_files} // {},
         $describe,
         ($info // {})->{lockbox_status} // ($info // {})->{lockbox} // {},
+        ($info // {})->{storage_copy_problems} // {},
     );
     my $allowed = $info ? $info->{allowed_ciphers} : undef;
     my $preferred = $info ? $info->{preferred_cipher} : undef;

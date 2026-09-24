@@ -11,6 +11,7 @@ use Storable qw(dclone);
 use FindBin;
 use PVE::Ceph::KeyMigration qw(
     manual_promotion_support client_key_stageable staged_records
+    parse_storage_key storage_config_problem storage_key_copy_problems storage_key_copy_warnings
     $CIPHER $LEGACY_CIPHER
     key_cipher key_fingerprint parse_probe_output osd_label_identity needs_rotation mon_keyring_stale
     mon_key_rotation_wanted migration_unfinished unfinished_entities touched_daemons
@@ -33,6 +34,177 @@ use PVE::Ceph::KeyMigration qw(
 my $NEW = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7IlI=';
 my $OLD = 'AQCP/Y5qflfDFxAAPII6O9qSA7p65js5CEJYDA==';
 my $NONE = 'AACP/Y5qnzxSGAAA';
+
+{
+    my $ring = "[client.vm]\n key = $OLD\n caps mon = \"allow r\"\n";
+    for my $case (
+        ['exact section', $ring, 'keyring', 'client.vm', $OLD],
+        [
+            'multiple sections',
+            "[client.admin]\n key = $NEW\n$ring",
+            'keyring',
+            'client.vm',
+            $OLD,
+        ],
+        ['bare CephFS secret', " $NEW\n", 'secret', 'client.vm', $NEW],
+        ['quoted key', "[client.vm]\n key = \"$OLD\"\n", 'keyring', 'client.vm', $OLD],
+        ['wrong user', $ring, 'keyring', 'client.admin', undef],
+        ['duplicate section', "$ring$ring", 'keyring', 'client.vm', undef],
+        ['duplicate key', "$ring key = $OLD\n", 'keyring', 'client.vm', undef],
+        ['two secrets', "$OLD\n$NEW\n", 'secret', 'client.vm', undef],
+        ['keyring as secret', $ring, 'secret', 'client.vm', undef],
+        ['empty secret', '', 'secret', 'client.vm', undef],
+        ['malformed key', "[client.vm]\n key = garbage\n", 'keyring', 'client.vm', undef],
+        ['truncated blob', substr($OLD, 0, -4), 'secret', 'client.vm', undef],
+        ['ignored caps', "$ring caps osd = \"allow *\n", 'keyring', 'client.vm', $OLD],
+        ['other section without key', "${ring}[client.other]\n", 'keyring', 'client.vm', $OLD],
+        [
+            'auid and comments',
+            "${ring} auid = 18446744073709551615 # owner\n; comment\n",
+            'keyring',
+            'client.vm',
+            $OLD,
+        ],
+        [
+            'quoted key and inline comment',
+            "[client.vm]\n key = '$OLD' # comment\n",
+            'keyring',
+            'client.vm',
+            $OLD,
+        ],
+        [
+            'other invalid key',
+            "${ring}[client.other]\n key = invalid\n",
+            'keyring',
+            'client.vm',
+            $OLD,
+        ],
+    ) {
+        my ($name, $content, $format, $entity, $expected) = @$case;
+        my $result = parse_storage_key($content, $format, $entity);
+        is($result->{key}, $expected, "$name selects only a verified key");
+        ok(
+            $expected ? !$result->{error} : $result->{error},
+            "$name has explicit verification status",
+        );
+        unlike($result->{error} // '', qr/\Q$OLD\E|\Q$NEW\E/, "$name does not disclose secrets");
+    }
+
+    my $path = '/etc/pve/priv/ceph/vm.keyring';
+    is(
+        storage_config_problem("[global]\n keyring = $path\n", $path),
+        undef,
+        'generated external configuration names the inspected file',
+    );
+    for my $value (
+        '"/etc/pve/priv/$cluster/$id.keyring" # generated',
+        "'/etc/pve/priv/ceph/vm.keyring' ; comment",
+        '/etc/pve/priv/${cluster}/${id}.keyring',
+    ) {
+        is(
+            storage_config_problem("[global]\n keyring = $value\n", $path, 'client.vm'),
+            undef,
+            'quoted custom paths expand storage identity and cluster variables',
+        );
+    }
+    for my $value (
+        '/etc/$cluster/$cluster.$name.keyring', '/etc/$cluster/$cluster.$type.$id.keyring',
+    ) {
+        is(
+            storage_config_problem(
+                "[global]\n keyring = $value\n",
+                '/etc/ceph/ceph.client.vm.keyring',
+                'client.vm',
+            ),
+            undef,
+            'name and type metavariables resolve to the configured user',
+        );
+    }
+    for my $content (
+        "[global]\n keyring = /other/path\n",
+        "[global]\n key = $OLD\n",
+        "include /other/config\n",
+        "[global]\n",
+        "[global]\n[global]\n",
+    ) {
+        my $error = storage_config_problem($content, $path);
+        ok($error, 'custom credential indirection is unverified');
+        unlike($error, qr/\Q$OLD\E/, 'configuration errors do not disclose inline keys');
+    }
+
+    my $copy = { store => 'vm', path => $path, entity => 'client.vm', key => $OLD };
+    for my $error (
+        'could not read file',
+        'malformed or ambiguous key file',
+        'alternate credentials',
+        'no verified keyring path',
+    ) {
+        my $unverified = { %$copy, managed => 1, key => undef, error => $error };
+        for my $entity (qw(osd.7 mgr.a mds.a client.osd-lockbox.uuid client.admin client.vm)) {
+            my $problems = storage_key_copy_problems([$unverified], $entity, $OLD, $NEW);
+            is(
+                scalar(@$problems),
+                $entity eq 'client.vm' ? 1 : 0,
+                "$error gates only the configured user, not $entity",
+            );
+        }
+        my $external = { %$unverified, managed => 0, entity => 'client.admin' };
+        is_deeply(
+            storage_key_copy_problems([$external], 'client.admin', $OLD, $NEW),
+            [],
+            'unverified external admin copy does not veto the local admin key',
+        );
+        like(
+            join(' ', storage_key_copy_warnings([$external])->@*),
+            qr/could not be checked:\n  vm: .*If one points at this cluster.*staged key of the same Ceph user/s,
+            'unverified external copy warns without claiming ownership',
+        );
+        $unverified->{entity} = 'client.osd-lockbox.uuid';
+        is_deeply(
+            storage_key_copy_problems([$unverified], 'client.osd-lockbox.uuid', $OLD, $NEW),
+            [],
+            'a storage username matching a lockbox identity does not claim its key',
+        );
+    }
+    my $problems = storage_key_copy_problems([$copy], 'client.admin', $OLD, $NEW);
+    like(
+        join(' ', @$problems),
+        qr/still hold it:\n  vm: /,
+        'matching bytes veto across configured users',
+    );
+    unlike(join(' ', @$problems), qr/\Q$OLD\E|\Q$NEW\E/, 'comparison errors do not disclose keys');
+    is_deeply(
+        storage_key_copy_problems([{ %$copy, key => $NEW }], 'client.vm', $OLD, $NEW),
+        [],
+        'a copy holding the target pending key passes',
+    );
+    is_deeply(
+        storage_key_copy_problems([$copy], 'client.vm', $OLD, $OLD),
+        [],
+        'identical pending and active keys retire no distinct credential',
+    );
+    is_deeply(
+        storage_key_copy_problems([{ %$copy, key => $NONE }], 'client.vm', $OLD, $NEW),
+        [],
+        'an external copy with a different key is not claimed',
+    );
+    ok(
+        @{
+            storage_key_copy_problems(
+                [{ %$copy, key => $NONE, managed => 1 }],
+                'client.vm',
+                $OLD,
+                $NEW,
+            ),
+        },
+        'a third key is not a repaired managed copy',
+    );
+    like(
+        join(' ', @{ storage_key_copy_problems([$copy], 'client.vm', $OLD, $NEW, 1) }),
+        qr/the restored key of the same Ceph user/,
+        'reverse advice names the restored key',
+    );
+}
 
 # 'ceph-bluestore-tool show-label' pretty-prints, and the probe only strips the newlines, so what
 # the parser really sees is one line full of runs of spaces.
@@ -3090,6 +3262,21 @@ my sub cluster {
         'connected sessions are not mistaken for remaining refresh work',
     );
     is(scalar(@described), 0, 'no host-wide hints are requested just because sessions exist');
+
+    $info->{storage_copy_problems} =
+        { $entity => ['Cannot retire: managed storage still has the old key.'] };
+    $blockers = restrict_blockers($info, $state, $describe, $files);
+    like(
+        $blockers->[0],
+        qr/managed storage still has the old key/,
+        'restriction includes storage readiness',
+    );
+    unlike(
+        $blockers->[0],
+        qr/--confirm-clients-refreshed/,
+        'restriction does not offer a refused confirmation',
+    );
+    delete $info->{storage_copy_problems};
 
     $info->{sessions}->{clients}->{$entity}->[0]->{key_fingerprint} = key_fingerprint($OLD);
     $blockers = restrict_blockers($info, $state, $describe, $files);

@@ -83,6 +83,7 @@ my $home_log = "$tmp/lvm.home";
 # The helper runs as root on OSD nodes; use the test directory for unprivileged test runs.
 my $run_command = \&main::run_command;
 no warnings qw(once redefine);
+local *PVE::Storage::config = sub { return { ids => {} } };
 local *PVE::Cluster::cfs_update = sub { };
 local *PVE::Cluster::get_nodelist = sub { [$NODE] };
 local *main::run_command = sub {

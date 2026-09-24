@@ -38,6 +38,7 @@ do $SCRIPT or die "could not load '$SCRIPT': " . ($@ || $!);
 our $HOOKS = key_migration_test_hooks();
 
 no warnings qw(once redefine);
+local *PVE::Storage::config = sub { return { ids => {} } };
 local *PVE::Cluster::cfs_update = sub { };
 local *PVE::Cluster::get_nodelist = sub {
     return [PVE::INotify::nodename(), qw(node-a node-b node-c node-d node1 node2 node3)];
@@ -1904,6 +1905,11 @@ sub run_staging {
             push $self->{committed}->@*, $entity;
             return {};
         }
+        if ($args->{prefix} eq 'auth clear-pending') {
+            delete $self->{entries}->{$entity}->{pending_key};
+            push $self->{retired}->@*, $entity;
+            return {};
+        }
         die "unexpected monitor command '$args->{prefix}'\n";
     }
 }
@@ -3765,7 +3771,7 @@ sub run_aggregate_confirmation {
     );
     like(
         $tools_only,
-        qr/Plan\nStep 1: rotate 3 bootstrap and crash keys and rewrite every copy Proxmox VE keeps\. Only Ceph's own tools read them, so there is nothing to stop\./,
+        qr/Plan\nStep 1: rotate 3 bootstrap and crash keys and rewrite only managed copies\. Only Ceph's own tools read them, so there is nothing to stop\./,
         'a step of tool keys alone says so in its heading, right below the plan title',
     );
     unlike($tools_only, qr/bootstrap and crash keys: replaced at once/, 'without a second line');
@@ -3774,7 +3780,7 @@ sub run_aggregate_confirmation {
         { %$plan, client_keys => [$plan->{client_keys}->@*, $tool->('client.crash')] });
     like(
         $mixed,
-        qr/Step 2: rotate 2 selected Ceph user keys and the tool key 'client\.crash' and rewrite every copy/,
+        qr/Step 2: rotate 2 selected Ceph user keys and the tool key 'client\.crash' and rewrite only managed copies/,
         'a mixed step counts the selected users and names the tool key',
     );
     like(
@@ -4390,7 +4396,7 @@ sub run_aggregate_confirmation {
     );
     like(
         $mixed,
-        qr/Ceph user 'client\.vm': resume writing its current key to every copy.*the tool key 'client\.crash': replaced at once; only Ceph's own tools read it, so there is nothing to stop/s,
+        qr/Ceph user 'client\.vm': resume writing its current key to every managed copy.*the tool key 'client\.crash': replaced at once; only Ceph's own tools read it, so there is nothing to stop/s,
         'a replaced tool key is one line without a consumer to stop, a resumed bulk user its own',
     );
     unlike(
@@ -5157,6 +5163,7 @@ for my $mountpoint ('/mnt/pve/cephfs', '/srv/ceph.fs') {
     my ($output, $empty, $many) = ('', '', '');
     {
         no warnings qw(once redefine);
+        local *main::read_storage_key_file = sub { return { content => "$NEW\n" } };
         local *PVE::Cluster::cfs_update = sub { };
         local *PVE::Storage::config = sub {
             return {
@@ -6673,6 +6680,669 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         like($@, qr/mgr\.a.*not a node/,
             'transport checks membership before SSH or local shortcut');
     }
+}
+
+{
+    no warnings qw(once redefine);
+    my $third = 'AgCk941qku/sDSAAIjO5RhRv/ogXhuxccNS4DZxlXS1LUgzEGFIiY/U7ImI=';
+    my $cfg = { ids => {} };
+    local *PVE::Storage::config = sub { return $cfg };
+    local *PVE::CephConfig::ceph_connect_option =
+        sub { die "read-only scan called ceph_connect_option\n" };
+    my (%files, @reads, @writes);
+    local *main::read_storage_key_file = sub {
+        my ($path) = @_;
+        push @reads, $path;
+        return $files{$path} // { missing => 1 };
+    };
+    local *main::file_set_contents = sub { push @writes, $_[0] };
+    my $path = '/etc/pve/priv/ceph/s.keyring';
+    my $ring = sub { return { content => "[$_[0]]\n key = $_[1]\n" } };
+    $cfg->{ids} = {
+        s => { type => 'rbd', username => 'cp' },
+        remote => {
+            type => 'rbd',
+            monhost => 'unrelated.invalid',
+            disable => 1,
+            nodes => { elsewhere => 1 },
+        },
+        fs => { type => 'cephfs', username => 'other', monhost => 'unknown.invalid' },
+        dir => { type => 'dir' },
+    };
+    %files = (
+        $path => $ring->('client.cp', $NEW),
+        '/etc/pve/priv/ceph/remote.keyring' => $ring->('client.admin', $OLD),
+        '/etc/pve/priv/ceph/fs.secret' => { content => "$OLD\n" },
+    );
+    my $copies = $HOOKS->{storage_key_copies}->();
+    is_deeply(
+        [map { $_->{store} } @$copies],
+        [qw(fs remote s)],
+        'read-only inventory includes disabled, restricted, monhost, RBD, and CephFS stores',
+    );
+    is_deeply(
+        [map { $_->{entity} } @$copies],
+        [qw(client.other client.admin client.cp)],
+        'inventory uses each configured user, defaulting only absent usernames to admin',
+    );
+    is_deeply(
+        [map { $_->{managed} ? 1 : 0 } @$copies],
+        [0, 0, 1],
+        'read-only matching does not adopt monhost files for writing',
+    );
+    is_deeply(\@writes, [], 'inventory writes no file');
+
+    for my $case (
+        [
+            'managed old copy',
+            { type => 'rbd', username => 'cp' },
+            $ring->('client.cp', $OLD),
+            undef,
+            0,
+        ],
+        [
+            'key-only monhost match',
+            { type => 'rbd', username => 'cp', monhost => 'unrelated.invalid' },
+            $ring->('client.cp', $OLD),
+            undef,
+            0,
+        ],
+        [
+            'disabled and node-restricted',
+            { type => 'rbd', username => 'cp', disable => 1, nodes => { nowhere => 1 } },
+            $ring->('client.cp', $OLD),
+            undef,
+            0,
+        ],
+        [
+            'different configured user',
+            { type => 'rbd', username => 'other', monhost => 'foreign' },
+            $ring->('client.other', $OLD),
+            undef,
+            0,
+        ],
+        [
+            'real external different key',
+            { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            $ring->('client.cp', $third),
+            undef,
+            1,
+        ],
+        [
+            'managed target key',
+            { type => 'rbd', username => 'cp' },
+            $ring->('client.cp', $NEW),
+            undef,
+            1,
+        ],
+        [
+            'managed third key',
+            { type => 'rbd', username => 'cp' },
+            $ring->('client.cp', $third),
+            undef,
+            0,
+        ],
+        [
+            'missing managed copy',
+            { type => 'rbd', username => 'cp' },
+            { missing => 1 },
+            undef,
+            0,
+        ],
+        [
+            'absent external standard copy',
+            { type => 'rbd', monhost => 'foreign' },
+            { missing => 1 },
+            undef,
+            1,
+        ],
+        [
+            'unreadable external copy',
+            { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            { error => 'could not read file' },
+            undef,
+            1,
+        ],
+        [
+            'malformed external copy',
+            { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            { content => 'malformed' },
+            undef,
+            1,
+        ],
+        [
+            'duplicate section',
+            { type => 'rbd', username => 'cp' },
+            { content => "[client.cp]\n key = $NEW\n[client.cp]\n key = $NEW\n" },
+            undef,
+            0,
+        ],
+        [
+            'multiple exact-user sections',
+            { type => 'rbd', username => 'cp' },
+            { content => "[client.other]\n key = $OLD\n[client.cp]\n key = $NEW\n" },
+            undef,
+            1,
+        ],
+        [
+            'alternate credential path',
+            { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            $ring->('client.cp', $NEW),
+            "[global]\n keyring = /different/keyring\n",
+            1,
+        ],
+        [
+            'generated configuration',
+            { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            $ring->('client.cp', $NEW),
+            "[global]\n keyring = $path\n",
+            1,
+        ],
+        [
+            'CephFS old bare secret',
+            { type => 'cephfs', username => 'cp', monhost => 'foreign' },
+            { content => "$OLD\n" },
+            undef,
+            0,
+        ],
+    ) {
+        my ($name, $scfg, $file, $config, $allowed) = @$case;
+        $cfg->{ids} = { s => $scfg };
+        my $keypath = $scfg->{type} eq 'cephfs' ? '/etc/pve/priv/ceph/s.secret' : $path;
+        %files = ($keypath => $file);
+        $files{'/etc/pve/priv/ceph/s.conf'} = { content => $config } if defined($config);
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $state = { staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } } };
+        my $out = '';
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        eval { $HOOKS->{commit_staged}->($rados, $state, 'client.cp') };
+        my $error = $@;
+        is($rados->issued('auth commit-pending'), $allowed, "$name: retirement permission");
+
+        if (!$allowed) {
+            like(
+                $error,
+                qr/Cannot retire.*(?:storage|managed).*s/s,
+                "$name: actionable storage diagnostic",
+            );
+            ok($state->{staged}->{'client.cp'}, "$name: staged key remains journalled");
+        } else {
+            is($error, '', "$name: commit succeeds");
+        }
+        unlike($out . $error, qr/\Q$OLD\E|\Q$NEW\E|\Q$third\E/, "$name: secrets stay private");
+        unlike(
+            $error,
+            qr/from.*admin|admin credential/,
+            "$name: no advice to substitute admin credentials",
+        );
+    }
+
+    $cfg->{ids} = { s => { type => 'rbd', username => 'cp' } };
+    %files = ($path => $ring->('client.cp', $third));
+    my $rados = StagedRotationRados->new(key => $third, pending => $NEW);
+    my $state = {
+        staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } },
+        previous_keys => { 'client.cp' => { key => $OLD } },
+    };
+    eval { $HOOKS->{commit_staged}->($rados, $state, 'client.cp') };
+    like(
+        $@,
+        qr/still hold it/,
+        'retirement uses the fresh active key, not the journal previous key',
+    );
+    is($rados->issued('auth commit-pending'), 0, 'fresh-active-key refusal retires nothing');
+
+    for my $key ($third, $NEW) {
+        %files = ($path => $ring->('client.cp', $key));
+        $rados = StagedRotationRados->new(key => $NEW);
+        $state = { staged => { 'client.cp' => { key => key_fingerprint($NEW), written => 1 } } };
+        eval { $HOOKS->{commit_staged}->($rados, $state, 'client.cp') };
+        is(
+            $rados->issued('auth commit-pending'),
+            0,
+            'already-promoted keys are never committed again',
+        );
+        ok($key eq $NEW ? !$@ : $@, 'already-promoted managed copies still require their target');
+    }
+
+    for my $reverse (0, 1) {
+        for my $late (0, 1) {
+            $cfg->{ids} =
+                { s => { type => 'rbd', username => 'beta', monhost => 'unrelated.invalid' } };
+            my $retiring = $reverse ? $NEW : $OLD;
+            my $target = $reverse ? $OLD : $NEW;
+            %files = ($path => $ring->('client.beta', $late ? $target : $retiring));
+            my ($rados, $info, $state) =
+                aggregate_fixture({ complete => 1, clients => {} }, qw(client.alpha client.beta));
+            if ($reverse) {
+                for my $record (values $state->{staged}->%*) {
+                    $record->{aborting} = 1;
+                    $record->{abort_written} = 1;
+                    $record->{abort_key} = key_fingerprint($OLD);
+                }
+            }
+            my $open = $HOOKS->{open_actions_from_snapshot}->({}, {}, $state, $info);
+            if (!$late) {
+                ok(!@{ $open->{ready} }, 'a stale storage copy suppresses forward readiness');
+                unlike(
+                    join(' ', values $open->{waiting_details}->%*),
+                    qr/--confirm-abort-clients-refreshed/,
+                    'a stale copy suppresses reverse confirmation advice',
+                );
+            }
+            my $poll = 0;
+            my $collect = sub {
+                $files{$path} = $ring->('client.beta', $retiring) if ++$poll == 3 && $late;
+                return { sessions => { complete => 1, clients => {} } };
+            };
+            my $out = '';
+            my ($error, $verdict);
+            {
+                open(my $stdout, '>', \$out) or die $!;
+                local *STDOUT = $stdout;
+                eval {
+                    if ($reverse) {
+                        $HOOKS->{retire_aborted}
+                            ->($rados, $state, [qw(client.alpha client.beta)], $collect);
+                    } else {
+                        $verdict = $HOOKS->{preflight}->(
+                            $info,
+                            { apply => 1, force => 1, 'confirm-all-clients-refreshed' => 1 },
+                            0,
+                            $state,
+                            {},
+                            $collect,
+                        );
+                    }
+                };
+                $error = $@;
+            }
+            my $mutations = $reverse ? ($rados->{retired} // []) : $rados->{committed};
+            is_deeply(
+                $mutations,
+                $late ? ['client.alpha'] : [],
+                ($reverse ? 'reverse' : 'forward')
+                    . (
+                        $late
+                        ? ': per-key reread catches a changed copy'
+                        : ': initial bad copy prevents every batch retirement'
+                    ),
+            );
+            like(
+                $out . $error,
+                qr/Cannot retire.*still hold it:\n(?:FAIL:)?\s+s: \S+/s,
+                'batch refusal names the stale copy',
+            );
+            like(
+                $out . $error,
+                $reverse ? qr/the restored key/ : qr/the staged key/,
+                'batch repair advice follows the direction',
+            );
+            unlike($out . $error, qr/\Q$OLD\E|\Q$NEW\E/, 'batch diagnostics disclose neither key');
+            ok($state->{staged}->{'client.beta'}, 'refused batch member retains recovery state');
+        }
+    }
+    $cfg->{ids} = { s => { type => 'rbd', username => 'cp' } };
+    for my $key ($NEW, $third, $OLD) {
+        %files = ($path => $ring->('client.cp', $key));
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $state = {
+            staged => {
+                'client.cp' => {
+                    key => key_fingerprint($NEW),
+                    aborting => 1,
+                    abort_written => 1,
+                    abort_key => key_fingerprint($OLD),
+                },
+            },
+        };
+        eval {
+            $HOOKS->{retire_aborted}->(
+                $rados,
+                $state,
+                ['client.cp'],
+                sub { return { sessions => { complete => 1, clients => {} } } },
+            );
+        };
+        is(
+            $rados->issued('auth clear-pending'),
+            $key eq $OLD ? 1 : 0,
+            'reverse retirement requires the restored target in managed copies, not a third key',
+        );
+    }
+    %files = ($path => $ring->('client.cp', $OLD));
+    my ($single_rados, $single_info, $single_state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.cp');
+    is(
+        $HOOKS->{preflight}->(
+            $single_info,
+            { apply => 1, force => 1, 'confirm-clients-refreshed' => ['client.cp'] },
+            0,
+            $single_state,
+            {},
+        ),
+        -1,
+        'force cannot bypass an individual storage-copy refusal',
+    );
+    is_deeply($single_rados->{committed}, [], 'individual refusal leaves both keys valid');
+    for my $entity (qw(osd.7 mgr.a mds.a client.osd-lockbox.uuid client.other client.cp)) {
+        $cfg->{ids} = { s => { type => 'rbd', username => 'cp', monhost => 'foreign' } };
+        %files = (
+            $path => $ring->('client.cp', $third),
+            '/etc/pve/priv/ceph/s.conf' =>
+                { content => "[global]\n keyring = /custom/keyring\n" },
+        );
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        eval { $HOOKS->{commit_pending_key}->($rados, $entity, $NEW) };
+        is(
+            $rados->issued('auth commit-pending'),
+            1,
+            "unverified external configuration does not veto $entity",
+        );
+        $files{$path} = $ring->('client.cp', $OLD);
+        $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        eval { $HOOKS->{commit_pending_key}->($rados, $entity, $NEW) };
+        is(
+            $rados->issued('auth commit-pending'),
+            0,
+            "an exact retiring-key match still gates $entity",
+        );
+    }
+    $cfg->{ids} = { s => { type => 'rbd', monhost => 'external.invalid' } };
+    %files = ($path => { error => 'could not read file' });
+    my $plan_output = '';
+    {
+        local $main::storage_copy_warnings_seen = {};
+        open(my $stdout, '>', \$plan_output) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{print_plan}->(
+            migrated_info({ complete => 1, clients => {} }),
+            { daemons => [], client_keys => [], lockbox_keys => [] },
+            {},
+            {},
+            {},
+        );
+    }
+    unlike(
+        $plan_output,
+        qr/WARN: storage 's'|before confirming/,
+        'a plan with no staged or pending users does not warn about unrelated external copies',
+    );
+    for my $file (
+        { error => 'could not read file' },
+        { content => 'malformed' },
+        $ring->('client.admin', $third),
+    ) {
+        local $main::storage_copy_warnings_seen = {};
+        %files = ($path => $file, '/etc/pve/priv/ceph/s.conf' => { content => '[global]' });
+        my $rados = StagedRotationRados->new(key => $OLD, pending => $NEW);
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            eval { $HOOKS->{commit_pending_key}->($rados, 'client.admin', $NEW) };
+        }
+        is($@, '', 'an unverified external default-admin storage does not block local retirement');
+        is($rados->issued('auth commit-pending'), 1, 'local admin retirement can finish');
+        like(
+            $out,
+            qr/WARN: These storage key copies could not be checked:\n  s: .*staged key of the same Ceph user\s+before confirming/s,
+            'confirmation warns without prescribing local admin credentials for the external cluster',
+        );
+        unlike($out, qr/\Q$OLD\E|\Q$NEW\E|\Q$third\E/, 'warning contains no credential');
+    }
+    %files = (
+        $path => $ring->('client.admin', $third),
+        '/etc/pve/priv/ceph/s.conf' => {
+            content => '[global]'
+                . "\n keyring = \"/etc/pve/priv/\$cluster/s.keyring\" # generated\n",
+        },
+    );
+    my $config_copies = $HOOKS->{storage_key_copies}->();
+    ok(
+        !$config_copies->[0]->{error},
+        'inventory expands cluster metavariables in quoted custom paths',
+    );
+
+    $cfg->{ids} = { s => { type => 'rbd', username => 'cp' } };
+    %files = ($path => $ring->('client.cp', $OLD));
+    my ($restrict_rados, $restrict_info, $restrict_state) =
+        aggregate_fixture({ complete => 1, clients => {} }, 'client.cp');
+    $restrict_info->{allowed_ciphers} = ['aes', 'aes256k'];
+    my $restriction_output = '';
+    {
+        open(my $stdout, '>', \$restriction_output) or die $!;
+        local *STDOUT = $stdout;
+        is(
+            $HOOKS->{preflight}->(
+                $restrict_info,
+                { 'restrict-ciphers' => 1 },
+                0,
+                $restrict_state,
+                {},
+                undef,
+                sub { $restrict_info },
+            ),
+            -1,
+            'restriction waits for the stale storage copy',
+        );
+    }
+    like(
+        $restriction_output,
+        qr/still hold it:\n\s+s: \S+/,
+        'restriction names the actual storage blocker',
+    );
+    unlike(
+        $restriction_output,
+        qr/--confirm-clients-refreshed client\.cp --apply/,
+        'restriction offers no confirmation that the storage veto would refuse',
+    );
+    ok(!grep({ $_ eq $path } @writes), 'retirement inventories never overwrite a storage copy');
+}
+
+{
+    my $dir = tempdir(CLEANUP => 1);
+    my $path = "$dir/copy";
+    is_deeply(
+        $HOOKS->{read_storage_key_file}->($path),
+        { missing => 1 },
+        'genuine file absence is distinct',
+    );
+    symlink("$dir/absent", $path) or die $!;
+    ok(
+        $HOOKS->{read_storage_key_file}->($path)->{error},
+        'dangling symlink is unverified, not absent',
+    );
+    unlink($path) or die $!;
+    open(my $fh, '>', $path) or die $!;
+    print {$fh} "$NEW\n";
+    close($fh) or die $!;
+    is(
+        $HOOKS->{read_storage_key_file}->($path)->{content},
+        "$NEW\n",
+        'read-only file reader preserves exact bytes',
+    );
+    {
+        no warnings qw(once redefine);
+        local *main::file_get_contents = sub { die "injected read failure $NEW\n" };
+        my $result = $HOOKS->{read_storage_key_file}->($path);
+        like($result->{error}, qr/could not read/, 'read failure is unverified');
+        unlike($result->{error}, qr/\Q$NEW\E/, 'raw read errors cannot leak secrets');
+    }
+}
+
+{
+    no warnings qw(once redefine);
+    my $cfg = {
+        ids => {
+            managed => { type => 'rbd', username => 'cp' },
+            remote => { type => 'rbd', username => 'cp', monhost => 'node-a' },
+            cross => { type => 'cephfs', username => 'other', monhost => 'foreign' },
+            bad => { type => 'rbd', username => 'cp', monhost => 'foreign' },
+            unrelated => { type => 'rbd', username => 'elsewhere', monhost => 'foreign' },
+        },
+    };
+    local *PVE::Storage::config = sub { return $cfg };
+    my %copies = (
+        managed => { content => "[client.cp]\n key = $OLD\n" },
+        remote => { content => "[client.cp]\n key = $OLD\n" },
+        cross => { content => "$OLD\n" },
+        bad => { content => 'malformed' },
+        unrelated => { error => 'could not read file' },
+    );
+    local *main::read_storage_key_file = sub {
+        my ($path) = @_;
+        return { missing => 1 } if $path =~ /\.conf$/;
+        my ($store) = $path =~ m{([^/]+)\.(?:keyring|secret)$};
+        return $copies{$store} // { missing => 1 };
+    };
+    my @writes;
+    local *main::file_set_contents = sub { push @writes, $_[0] };
+    my $files = {
+        'client.cp' => [{
+            store => 'managed',
+            path => '/etc/pve/priv/ceph/managed.keyring',
+            format => 'keyring',
+            scope => 'cluster',
+        }],
+    };
+    for my $verbose (0, 1) {
+        local $main::storage_copy_warnings_seen = {};
+        %copies = (
+            %copies,
+            managed => { content => "[client.cp]\n key = $OLD\n" },
+            remote => { content => "[client.cp]\n key = $OLD\n" },
+            cross => { content => "$OLD\n" },
+        );
+        @writes = ();
+        my $info = migrated_info({ complete => 1, clients => {} });
+        $info->{exported} = { 'client.cp' => { key => $OLD } };
+        my $opts = { 'rotate-storage-key' => ['managed'], verbose => $verbose };
+        my ($clients) = PVE::Ceph::KeyMigration::plan_client_keys($info, {}, $opts, $files);
+        my $plan = { daemons => [], client_keys => $clients, lockbox_keys => [] };
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{print_plan}->($info, $plan, {}, $opts, { 'client.cp' => ['managed'] });
+            $HOOKS->{print_plan}->($info, $plan, {}, $opts, { 'client.cp' => ['managed'] });
+        }
+        like(
+            $out,
+            qr/rewrite only managed copies/,
+            'staging promises to rewrite only managed copies',
+        );
+        like(
+            $out,
+            qr/WARN: These storages hold the current key of 'client.cp' in copies this helper\s+does not update:\n(?:  .*\n)*  remote: .*remote.keyring\n.*Update them with the staged key.*before confirming/,
+            'the initial plan names the external copy and its manual update requirement',
+        );
+        like(
+            $out,
+            qr/current key of 'client.cp'.*\n(?:  .*\n)*  cross: /,
+            'an exact match under another configured user is also visible without prescribing admin credentials',
+        );
+        unlike(
+            $out,
+            qr/storage 'unrelated'/,
+            'warnings exclude users not staged, pending or confirmed',
+        );
+        is(
+            scalar(() = $out =~ /^  bad: /mg),
+            1,
+            'repeated planning warns about an unverified copy once',
+        );
+        is(
+            scalar(() = $out =~ /^  remote: /mg),
+            1,
+            'the current-key copy notice is deduplicated too',
+        );
+        is_deeply(\@writes, [], 'planning writes no managed or external copy');
+
+        my ($rados, $pending_info, $state) =
+            aggregate_fixture({ complete => 1, clients => {} }, 'client.cp');
+        {
+            open(my $stdout, '>>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            $HOOKS->{open_actions_from_snapshot}->({}, $files, $state, $pending_info);
+            $HOOKS->{preflight}->(
+                $pending_info,
+                { apply => 0, 'confirm-all-clients-refreshed' => 1 },
+                0,
+                $state,
+                $files,
+            );
+            $copies{$_} = { content => "[client.cp]\n key = $NEW\n" } for qw(managed remote);
+            $copies{cross} = { content => "$NEW\n" };
+            $HOOKS->{preflight}->(
+                $pending_info,
+                { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+                0,
+                $state,
+                $files,
+            );
+            $HOOKS->{open_actions_from_snapshot}->({}, $files, $state, $pending_info);
+        }
+        is_deeply($rados->{committed}, ['client.cp'], 'the updated copies allow confirmation');
+        is(
+            scalar(() = $out =~ /^  bad: /mg),
+            1,
+            'plan, readiness, confirmation and retirement-boundary checks share warning deduplication',
+        );
+        unlike($out, qr/\Q$OLD\E|\Q$NEW\E/, 'plan and retirement messages contain no key bytes');
+        is_deeply(
+            [grep { /\.(?:keyring|secret)$/ } @writes],
+            [],
+            'confirmation never adopts external files for writes',
+        );
+    }
+
+    local $main::storage_copy_warnings_seen = {};
+    $cfg->{ids} = { map { $_ => { type => 'rbd', username => 'cp', monhost => 'node-a' } }
+        qw(remote second) };
+    $copies{$_} = { content => "[client.cp]\n key = $NEW\n" } for qw(remote second);
+    my ($rados, $info, $state) = aggregate_fixture({ complete => 1, clients => {} }, 'client.cp');
+    $state->{staged}->{'client.cp'}->{aborting} = 1;
+    $state->{staged}->{'client.cp'}->{abort_written} = 1;
+    $state->{staged}->{'client.cp'}->{abort_key} = key_fingerprint($OLD);
+    my $out = '';
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        eval {
+            $HOOKS->{retire_aborted}->(
+                $rados,
+                $state,
+                ['client.cp'],
+                sub { return { sessions => { complete => 1, clients => {} } } },
+            );
+        };
+        main::log_fail($@) if $@;
+    }
+    my @lines = split(/\n/, $out);
+    is(
+        scalar(grep { /^FAIL:   \S+: \S+$/ } @lines),
+        2,
+        'reverse file-only refusal lists both stale copies',
+    );
+    is(scalar(grep { /^FAIL: Cannot retire/ } @lines), 1, 'the reverse refusal names the key once');
+    is(scalar(grep { !/^FAIL: / } @lines), 0, 'every reverse refusal line carries FAIL');
+    is_deeply($rados->{retired} // [], [], 'neither refusal retires the pending key');
+}
+
+{
+    my $out = '';
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        main::log_fail("first failure\n\nsecond failure\n");
+    }
+    is(
+        $out,
+        "FAIL: first failure\nFAIL: second failure\n",
+        'multiline failures prefix each nonempty line without bare failure labels',
+    );
 }
 
 done_testing();
