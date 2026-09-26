@@ -167,6 +167,8 @@ Ext.define('PVE.window.UploadToStorage', {
                 (fileInput.files[0] && Proxmox.Utils.format_size(fileInput.files[0].size)) || '-',
             );
             vm.set('mimetype', (fileInput.files[0] && fileInput.files[0].type) || '-');
+            // browsers hide the real path behind 'C:\fakepath\', so only show the file name
+            input.setRawValue(fileInput.files[0]?.name ?? '');
         },
 
         hashChange: function (field, value) {
