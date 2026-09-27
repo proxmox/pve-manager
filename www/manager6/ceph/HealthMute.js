@@ -14,12 +14,14 @@ Ext.define('PVE.ceph.HealthMuteInputPanel', {
             name: 'ttl',
             fieldLabel: gettext('Duration'),
             editable: true,
-            value: '',
+            value: '__default__',
             // without this an empty field is submitted as a request to delete the property,
             // which this endpoint does not accept
             deleteEmpty: false,
             comboItems: [
-                ['', gettext('No expiry')],
+                // KVComboBox cannot round-trip an empty string as a key, so use the
+                // toolkit's '__default__' sentinel, which it already drops on submit
+                ['__default__', gettext('No expiry')],
                 ['1h', gettext('1 hour')],
                 ['1d', gettext('1 day')],
                 ['1w', gettext('1 week')],
