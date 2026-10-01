@@ -5069,8 +5069,8 @@ my sub print_closing_notes(
         } elsif ($switched) {
             log_text("This run switched the service tickets to the '$CIPHER' cipher.");
         } else {
-            log_text("No authentication check is an error: the service keys and the tickets they"
-                . " hand out are migrated.");
+            log_text("No authentication health error remains: the service keys and service tickets"
+                . " use '$CIPHER'.");
         }
         log_text("");
     }

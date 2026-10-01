@@ -5304,6 +5304,11 @@ for my $mountpoint ('/mnt/pve/cephfs', '/srv/ceph.fs') {
         qr/Cephx migration is complete/,
         'the fully migrated state has an explicit summary',
     );
+    like(
+        $output,
+        qr/What is left\nNo authentication health error remains: the service keys and service\s+tickets use 'aes256k'\./,
+        'the summary opens with whether an authentication error remains',
+    );
     unlike($output, qr/\n\n\nWARN: Keep/, 'journal retention has no double blank separator');
     like(
         $output,
