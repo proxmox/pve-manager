@@ -1202,6 +1202,10 @@ Ext.define('PVE.node.CephOsdTree', {
             text: 'Name',
             dataIndex: 'name',
             width: 150,
+            sorter: {
+                sorterFn: (a, b) =>
+                    a.data.name.localeCompare(b.data.name, undefined, { numeric: true }),
+            },
         },
         {
             text: 'Type',
