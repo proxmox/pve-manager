@@ -27,7 +27,7 @@ Ext.define('PVE.form.GuestIDSelector', {
         }
 
         if (me.validateExists === false && me.rejected) {
-            return me.inUseID;
+            return me.nextIDError;
         }
 
         return true;
@@ -67,6 +67,15 @@ Ext.define('PVE.form.GuestIDSelector', {
                         },
                         failure: function (response, opts) {
                             me.rejected = true;
+                            // prefer translated message if guest is known to the UI
+                            if (PVE.data.ResourceStore.findVMID(newValue)) {
+                                me.nextIDError = me.inUseID;
+                            } else {
+                                let error = response.result?.errors?.vmid;
+                                me.nextIDError = error
+                                    ? Ext.htmlEncode(error.trim())
+                                    : response.htmlStatus;
+                            }
                             me.validate();
                         },
                     });
