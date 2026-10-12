@@ -360,7 +360,7 @@ Ext.define('PVE.dc.OptionView', {
             minValue: 1,
             maxValue: 64, // arbitrary but generous limit as limits are good
         });
-        me.add_inputpanel_row('next-id', gettext('Next Free VMID Range'), {
+        me.add_inputpanel_row('next-id', gettext('Next Free Guest ID Range'), {
             renderer: PVE.Utils.render_as_property_string,
             url: '/api2/extjs/cluster/options',
             items: [
