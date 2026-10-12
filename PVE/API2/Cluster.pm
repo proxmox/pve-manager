@@ -11,6 +11,7 @@ use PVE::DataCenterConfig;
 use PVE::Exception qw(raise_param_exc);
 use PVE::Firewall;
 use PVE::GuestHelpers;
+use PVE::GuestID;
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::INotify;
@@ -1045,8 +1046,13 @@ __PACKAGE__->register_method({
         my $lower = $next_id->{lower} // 100;
         my $upper = $next_id->{upper} // (1000 * 1000); # note, lower than the schema-maximum
 
-        for (my $i = $lower; $i < $upper; $i++) {
-            return $i if !defined($idlist->{$i});
+        if ($next_id->{unique}) {
+            my $id = PVE::GuestID::get_next_unused_id($lower);
+            return $id if $id < $upper;
+        } else {
+            for (my $i = $lower; $i < $upper; $i++) {
+                return $i if !defined($idlist->{$i});
+            }
         }
 
         die "unable to get any free VMID in range [$lower, $upper]\n";
