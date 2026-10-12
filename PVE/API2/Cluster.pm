@@ -1036,8 +1036,13 @@ __PACKAGE__->register_method({
         my $idlist = $vmlist->{ids} || {};
 
         if (my $vmid = $param->{vmid}) {
-            return $vmid if !defined($idlist->{$vmid});
-            raise_param_exc({ vmid => "VM $vmid already exists" });
+            raise_param_exc({ vmid => "guest ID $vmid is already in use" })
+                if defined($idlist->{$vmid});
+
+            eval { PVE::GuestID::assert_id_satisfies_next_id_settings($vmid) };
+            raise_param_exc({ vmid => $@ }) if $@;
+
+            return $vmid;
         }
 
         my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
