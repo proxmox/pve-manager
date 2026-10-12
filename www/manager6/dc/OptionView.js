@@ -389,6 +389,15 @@ Ext.define('PVE.dc.OptionView', {
                     boxLabel: gettext('Only suggest guest IDs that were never used'),
                     value: 0,
                 },
+                {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'enforce',
+                    fieldLabel: gettext('Enforce'),
+                    boxLabel: gettext(
+                        'Reject guest IDs outside the range or, with unique, guest IDs that were used before',
+                    ),
+                    value: 0,
+                },
             ],
         });
         me.rows['tag-style'] = {
