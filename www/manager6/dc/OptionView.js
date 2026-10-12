@@ -360,7 +360,7 @@ Ext.define('PVE.dc.OptionView', {
             minValue: 1,
             maxValue: 64, // arbitrary but generous limit as limits are good
         });
-        me.add_inputpanel_row('next-id', gettext('Next Free Guest ID Range'), {
+        me.add_inputpanel_row('next-id', gettext('Next Free Guest ID'), {
             renderer: PVE.Utils.render_as_property_string,
             url: '/api2/extjs/cluster/options',
             items: [
@@ -381,6 +381,13 @@ Ext.define('PVE.dc.OptionView', {
                     minValue: 100,
                     maxValue: 1000 * 1000 * 1000 - 1,
                     submitValue: true,
+                },
+                {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'unique',
+                    fieldLabel: gettext('Unique'),
+                    boxLabel: gettext('Only suggest guest IDs that were never used'),
+                    value: 0,
                 },
             ],
         });
