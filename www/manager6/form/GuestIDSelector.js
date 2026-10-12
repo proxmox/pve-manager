@@ -22,11 +22,11 @@ Ext.define('PVE.form.GuestIDSelector', {
             return true;
         }
 
-        if (me.validateExists === true && !me.exists) {
+        if (me.validateExists === true && !me.rejected) {
             return me.unknownID;
         }
 
-        if (me.validateExists === false && me.exists) {
+        if (me.validateExists === false && me.rejected) {
             return me.inUseID;
         }
 
@@ -62,11 +62,11 @@ Ext.define('PVE.form.GuestIDSelector', {
                         url: '/cluster/nextid',
                         method: 'GET',
                         success: function (response, opts) {
-                            me.exists = false;
+                            me.rejected = false;
                             me.validate();
                         },
                         failure: function (response, opts) {
-                            me.exists = true;
+                            me.rejected = true;
                             me.validate();
                         },
                     });
