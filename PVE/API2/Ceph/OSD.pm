@@ -421,7 +421,7 @@ __PACKAGE__->register_method({
                 ],
                 format => 'plain',
             });
-            file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
+            file_set_contents($ceph_bootstrap_osd_keyring, $bindata, 0600);
         }
 
         # $size is in kibibytes

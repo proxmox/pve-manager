@@ -325,7 +325,7 @@ sub create_mds {
         format => 'plain',
     });
 
-    PVE::Tools::file_set_contents($service_keyring, $output);
+    PVE::Tools::file_set_contents($service_keyring, $output, 0600);
 
     print "setting ceph as owner for service directory\n";
     run_command(["chown", 'ceph:ceph', '-R', $service_dir]);
@@ -401,7 +401,7 @@ sub create_mgr {
         ],
         format => 'plain',
     });
-    PVE::Tools::file_set_contents($mgrkeyring, $output);
+    PVE::Tools::file_set_contents($mgrkeyring, $output, 0600);
 
     print "setting owner for directory\n";
     run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
