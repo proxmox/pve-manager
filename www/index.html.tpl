@@ -48,7 +48,7 @@
         NodeArch: '[% arch %]',
         UserName: '[% username %]',
         CSRFPreventionToken: '[% token %]',
-        ConsentText: '[% consenttext %]'
+        ConsentText: '[% consenttext.squote %]'
     };
     </script>
     <script type="text/javascript" src="/proxmoxlib.js?ver=[% wtversion %]"></script>
