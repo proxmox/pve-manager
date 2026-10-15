@@ -302,7 +302,6 @@ __PACKAGE__->register_method({
                         'osd_pool_default_min_size' => $param->{min_size} // 2,
                         'mon_allow_pool_delete' => 'true',
                     };
-
                 }
 
                 if ($auth eq 'cephx') {
