@@ -1,3 +1,80 @@
+pve-manager (9.2.22) trixie; urgency=medium
+
+  * fix #8015: ui: upload and download from URL: let the user choose the
+    format of '.img' images for import content, instead of always treating
+    them as raw images. The '.img' extension is also used for other formats,
+    for example by the qcow2 based Ubuntu cloud images, which were imported as
+    raw disks that did not boot.
+
+  * fix #6475: ui: upload: show only the name of the selected file, instead of
+    the 'C:\fakepath\' path that browsers report on every platform.
+
+  * fix #5608: ui: resource mappings: validate the names of PCI, USB and
+    directory mappings like the API does, so that an invalid name is marked
+    right away with a hint about the allowed characters, instead of failing
+    with a generic error on submit.
+
+  * fix #7108: ui: firewall: IPSet: do not offer aliases that are already part
+    of the IPSet, as adding them again only fails with an 'already exists'
+    error.
+
+  * ui: container features: drop the 'Experimental' label from the 'Create
+    Device Nodes' option, as the feature is considered stable.
+
+  * ui: SDN: zone edit: opening the dialog no longer marks the DNS server
+    fields as changed, which enabled the reset button and allowed submitting
+    an unchanged form.
+
+  * fix #6735: api: PCI: allow listing the mediated device types of a PCI
+    mapping with Mapping.Use, Mapping.Modify or Mapping.Audit on that mapping.
+    Previously Sys.Audit or Sys.Modify on '/' was required, so other users
+    could not choose a mediated device type for a mapped PCI device.
+
+  * api: node status: return the idle time from /proc/uptime as 'idle', which
+    was always 0, and document 'idle' and 'uptime' in the return schema, so
+    that generated API clients can access them.
+
+  * fix #4986: jobs: schedule a job again if the task log of its last run is
+    missing, for example after a crash. Previously the job was skipped with
+    'could not update job state, skipping - no such task' on every scheduler
+    iteration until its state file was removed manually.
+
+  * fix #8093: pvestatd: drop the periodic cleanup of stale container
+    consoles, which queried the status of every running container a second
+    time in each update cycle, an overhead growing with the number of
+    containers. Consoles exit on their own when their container stops; the
+    cleanup only mattered in broken states, such as a container config
+    removed while the container still runs.
+
+  * ceph: create the keyrings of new MDS and manager daemons and the OSD
+    bootstrap keyring with mode 0600 instead of 0644, as their keys can access
+    every pool or register OSDs. Before, only the 0750 /var/lib/ceph directory
+    kept other local users out. Existing keyrings are not changed.
+
+  * fix #8163: ceph: pool create: pass the CRUSH rule of replicated pools to
+    Ceph on creation, instead of setting it afterwards. Ceph checks the
+    'mon_max_pg_per_osd' limit against the rule a pool is created with, so a
+    pool with a non-default rule could be refused because the OSDs of the
+    default rule were near the limit, while it was never checked against its
+    own rule.
+
+  * fix #8046: ui: ceph: fix muting a health check with 'No expiry', which the
+    API rejected with an invalid 'ttl' error.
+
+  * fix #8098: ui: ceph: OSD: sort the OSD tree naturally by name, so that
+    osd.10 comes after osd.8 and a host pve10 after pve2.
+
+  * ceph: Cephx key migration: state plainly in the closing summary that no
+    authentication health error remains, as the previous wording was read as
+    something still left to do.
+
+  * pve8to9: warn if the EFI System Partition (ESP) of a UEFI system is not
+    mounted at /boot/efi, as the system may then fail to boot after the GRUB
+    update of the upgrade. Systems using proxmox-boot-tool are skipped, as it
+    mounts the ESPs itself.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 15 Oct 2026 22:35:27 +0200
+
 pve-manager (9.2.21) trixie; urgency=medium
 
   * ui: VM CD/DVD drive: change the medium through an API task, so that its
