@@ -72,6 +72,22 @@ my $tests = [
         sev => 'HEALTH_OK',
     },
     {
+        # Umbrella OSDs raise this right after their upgrade, between the nodes of a rolling
+        # restart, and it reports space usage, not whether stopping an OSD is safe.
+        name => 'BlueFS usage beyond the warn ratio does not block',
+        checks => {
+            BLUESTORE_BLUEFS_OVERSIZED => check(
+                'HEALTH_WARN',
+                '2 OSD(s) have BlueFS usage exceeding configured ratio of main device size',
+            ),
+        },
+        expected => undef,
+        ignored => ['BLUESTORE_BLUEFS_OVERSIZED'],
+        acceptable => 1,
+        acceptable_forced => 1,
+        sev => 'HEALTH_OK',
+    },
+    {
         name => 'a real error next to the cephx checks still blocks',
         checks => { $cephx->%*, PG_UNAVAILABLE => check('HEALTH_ERR', 'no data') },
         expected => 'HEALTH_ERR',
