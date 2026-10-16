@@ -93,6 +93,13 @@ my sub get_ceph_release_def {
                 9 => 1,
             },
         },
+        umbrella => {
+            release => '21.2',
+            unsupported => 1,
+            'available-for-pve-release' => {
+                9 => 1,
+            },
+        },
     };
 
     my $current_pve_major_release = get_current_pve_major_release();
