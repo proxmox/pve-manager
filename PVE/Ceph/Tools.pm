@@ -609,6 +609,11 @@ sub get_possible_osd_flags {
             type => 'boolean',
             optional => 1,
         },
+        noautoscale => {
+            description => 'The PG autoscaler does not change the number of PGs of any pool.',
+            type => 'boolean',
+            optional => 1,
+        },
     };
     return $possible_flags;
 }
