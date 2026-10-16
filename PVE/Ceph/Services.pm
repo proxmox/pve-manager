@@ -662,6 +662,14 @@ sub classify_health_checks {
             next;
         }
 
+        # The monitors answer 'ok-to-stop' for mon and mds daemons, only the OSD variant goes
+        # through the active manager. No other restart depends on one, and restarting the
+        # managers is what brings one back, so refusing that would block the remedy.
+        if ($name eq 'MGR_DOWN' && defined($service_type) && $service_type ne 'osd') {
+            push @ignored, $name;
+            next;
+        }
+
         # Ceph leaves muted checks out of the cluster status, so do the same here. Stays below
         # the OSDMAP_FLAGS branch, as muting that check must not hide a nodown or noup flag.
         if ($checks->{$name}->{muted}) {

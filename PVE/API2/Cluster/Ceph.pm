@@ -495,8 +495,10 @@ __PACKAGE__->register_method({
                     . " known to be harmless for a rolling restart, never block and are named"
                     . " in the task log. The cluster-wide OSD map flags are only ever"
                     . " evaluated for an OSD restart, since they govern nothing a mon, mgr or"
-                    . " mds restart touches. The operator is responsible for confirming the"
-                    . " cluster is stable enough to absorb a rolling restart.",
+                    . " mds restart touches. Likewise, a missing active manager (MGR_DOWN) only"
+                    . " blocks an OSD restart, as only the OSD safety check needs a manager."
+                    . " The operator is responsible for confirming the cluster is stable enough"
+                    . " to absorb a rolling restart.",
                 type => 'boolean',
                 optional => 1,
                 default => 0,
