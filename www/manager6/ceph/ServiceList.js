@@ -567,7 +567,6 @@ Ext.define(
                 iconCls: 'fa fa-refresh',
                 action: 'restart',
                 disabled: true,
-                enableFn: (rec) => rec.data.state !== 'stopped',
                 handler: 'onChangeService',
             },
             '-',
