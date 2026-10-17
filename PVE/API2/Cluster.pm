@@ -37,6 +37,7 @@ use PVE::API2::Cluster::Qemu;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
+use PVE::API2::Multipath;
 use PVE::API2::ReplicationConfig;
 
 my $have_sdn;
@@ -100,6 +101,11 @@ __PACKAGE__->register_method({
 __PACKAGE__->register_method({
     subclass => "PVE::API2::Cluster::Ceph",
     path => 'ceph',
+});
+
+__PACKAGE__->register_method({
+    subclass => "PVE::API2::Multipath",
+    path => 'multipath',
 });
 
 __PACKAGE__->register_method({
@@ -171,6 +177,7 @@ __PACKAGE__->register_method({
             { name => 'log' },
             { name => 'mapping' },
             { name => 'metrics' },
+            { name => 'multipath' },
             { name => 'notifications' },
             { name => 'nextid' },
             { name => 'options' },
