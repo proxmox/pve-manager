@@ -106,6 +106,10 @@ Ext.define('PVE.storage.IScsiInputPanel', {
                     change: {
                         fn: function (f, value) {
                             let panel = this.up('inputpanel');
+                            // only the target selector of the add dialog follows the portal
+                            if (!panel.isCreate) {
+                                return;
+                            }
                             let exportField = panel.lookup('iScsiTargetScan');
                             if (exportField) {
                                 exportField.setDisabled(!value);
