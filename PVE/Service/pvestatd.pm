@@ -20,6 +20,7 @@ use PVE::RS::SDN::Fabrics;
 use PVE::NodeConfig;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
+use PVE::Multipath::Status;
 use PVE::QemuServer;
 use PVE::QemuServer::Monitor;
 use PVE::LXC;
@@ -829,6 +830,12 @@ sub update_status {
     eval { rebalance_lxc_containers(); };
     $err = $@;
     syslog('err', "lxc cpuset rebalance error: $err") if $err;
+
+    # apply the multipath configuration before the storage status update, which can block in LVM
+    # while all paths of a LUN are lost
+    eval { PVE::Multipath::Status::update_node_status(); };
+    $err = $@;
+    syslog('err', "multipath update error: $err") if $err;
 
     eval { update_storage_status($status_cfg, $pull_txn); };
     $err = $@;
