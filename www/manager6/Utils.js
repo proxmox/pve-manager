@@ -1130,6 +1130,25 @@ Ext.define('PVE.Utils', {
             return Ext.String.htmlEncode(result);
         },
 
+        copyToClipboard: function (text) {
+            let fail = (err) =>
+                Ext.Msg.alert(
+                    gettext('Error'),
+                    Ext.htmlEncode(
+                        Ext.String.format(
+                            gettext('Copying to the clipboard failed: {0}'),
+                            `${err}`,
+                        ),
+                    ),
+                );
+            // the browser has no clipboard API for a page that is not served securely
+            try {
+                navigator.clipboard.writeText(text).catch(fail);
+            } catch (err) {
+                fail(err);
+            }
+        },
+
         render_serverity: function (value) {
             return PVE.Utils.log_severity_hash[value] || value;
         },

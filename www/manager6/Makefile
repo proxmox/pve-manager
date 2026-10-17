@@ -7,6 +7,7 @@ JSSRC= 							\
 	StateProvider.js				\
 	qemu/Architecture.js				\
 	Utils.js					\
+	SANUtils.js					\
 	UIOptions.js					\
 	Toolkit.js					\
 	VNCConsole.js					\
@@ -185,6 +186,7 @@ JSSRC= 							\
 	dc/Guests.js					\
 	dc/Health.js					\
 	dc/Log.js					\
+	dc/MultipathWwidEdit.js				\
 	dc/NodeView.js					\
 	dc/OptionView.js				\
 	dc/PermissionView.js				\
@@ -192,6 +194,7 @@ JSSRC= 							\
 	dc/PoolView.js					\
 	dc/RoleEdit.js					\
 	dc/RoleView.js					\
+	dc/SAN.js					\
 	dc/SecurityGroups.js				\
 	dc/StorageView.js				\
 	dc/Summary.js					\

@@ -124,12 +124,23 @@ Ext.define('PVE.dc.Config', {
         }
 
         if (caps.storage['Datastore.Allocate'] || caps.dc['Sys.Audit']) {
-            me.items.push({
-                xtype: 'pveStorageView',
-                title: gettext('Storage'),
-                iconCls: 'fa fa-database',
-                itemId: 'storage',
-            });
+            me.items.push(
+                {
+                    xtype: 'pveStorageView',
+                    title: gettext('Storage'),
+                    iconCls: 'fa fa-database',
+                    itemId: 'storage',
+                    expandedOnInit: true,
+                },
+                // storage admins need the node identities for the target ACLs too
+                {
+                    xtype: 'pveDcSAN',
+                    title: 'SAN',
+                    iconCls: 'fa fa-cubes',
+                    itemId: 'san',
+                    groups: ['storage'],
+                },
+            );
         }
 
         if (caps.dc['Sys.Audit']) {
