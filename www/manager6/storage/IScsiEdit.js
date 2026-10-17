@@ -77,6 +77,15 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
     lunContent: 'images',
 
+    // Loading sets the value before its original value, so use the dirty state.
+    updateMultipathActivation: function () {
+        let me = this;
+        let field = me.down('field[name=managed-multipath]');
+        me.lookup('multipathActivation').setHidden(
+            me.isCreate || !field.getValue() || !field.isDirty(),
+        );
+    },
+
     onGetValues: function (values) {
         let me = this;
 
@@ -155,6 +164,40 @@ Ext.define('PVE.storage.IScsiInputPanel', {
             name: 'luns',
             checked: true,
             fieldLabel: gettext('Use LUNs directly'),
+        },
+        {
+            xtype: 'proxmoxcheckbox',
+            name: 'managed-multipath',
+            fieldLabel: gettext('Multipath'),
+            cbind: {
+                deleteEmpty: '{!isCreate}',
+            },
+            autoEl: {
+                tag: 'div',
+                'data-qtip': gettext(
+                    'Combine the paths of each LUN into one device on every node using the storage.',
+                ),
+            },
+            listeners: {
+                change: (field) => field.up('inputpanel').updateMultipathActivation(),
+                dirtychange: (field) => field.up('inputpanel').updateMultipathActivation(),
+            },
+        },
+        {
+            xtype: 'displayfield',
+            reference: 'multipathActivation',
+            userCls: 'pmx-hint',
+            htmlEncode: false,
+            hidden: true,
+            cbind: {
+                value: () =>
+                    Ext.String.format(
+                        gettext(
+                            'Active logical volumes and guests using individual paths do not switch to the multipath map. Check their device dependencies before relying on path redundancy (<a href="{0}" target="_blank" rel="noopener noreferrer">documentation</a>).',
+                        ),
+                        Ext.htmlEncode(Proxmox.Utils.get_help_link('storage_multipath')),
+                    ),
+            },
         },
     ],
 });
