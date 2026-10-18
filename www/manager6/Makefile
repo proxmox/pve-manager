@@ -138,6 +138,7 @@ JSSRC= 							\
 	window/Restore.js				\
 	window/SafeDestroyGuest.js			\
 	window/SafeDestroyStorage.js			\
+	window/SANLunWipe.js				\
 	window/Settings.js				\
 	window/Snapshot.js				\
 	window/StartupEdit.js				\

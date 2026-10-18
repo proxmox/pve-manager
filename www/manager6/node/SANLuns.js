@@ -160,6 +160,24 @@ Ext.define('PVE.node.SANLunList', {
                             apiCallDone: (success) => success && reload(),
                         }),
                 },
+                '-',
+                {
+                    xtype: 'proxmoxButton',
+                    text: gettext('Wipe'),
+                    iconCls: 'fa fa-eraser',
+                    disabled: true,
+                    enableFn: (rec) =>
+                        Proxmox.UserName === 'root@pam' &&
+                        !!rec.get('by-id') &&
+                        !rec.get('used-by-storage'),
+                    handler: (button, event, rec) =>
+                        Ext.create('PVE.window.SANLunWipe', {
+                            node: me.nodename,
+                            lun: rec.data,
+                            autoShow: true,
+                            taskDone: () => !me.destroyed && reload(),
+                        }),
+                },
                 '->',
                 gettext('Search') + ':',
                 ' ',
