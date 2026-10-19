@@ -5866,6 +5866,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         id => '4',
         entity => 'osd.4',
         node => 'node2',
+        managed => 1,
         version => '20.2.4-pve4',
         binary => '20.2.4-pve4',
     };
@@ -6171,6 +6172,7 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
                 id => "$_",
                 entity => "mon.$_",
                 node => "node$_",
+                managed => 1,
                 store => 'file',
                 version => '20.2.4-pve4',
                 binary => '20.2.4-pve4',
@@ -8028,6 +8030,91 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         [qw(client.alpha client.beta)],
         'the error summary agrees with the journal saved by the real apply',
     );
+}
+
+{
+
+    package QuorumRados;
+
+    sub new { my ($class, $quorum) = @_; return bless { quorum => $quorum }, $class }
+
+    sub mon_command {
+        my ($self, $args) = @_;
+        return {} if $args->{prefix} eq 'health';
+        return { quorum_names => $self->{quorum} } if $args->{prefix} eq 'quorum_status';
+        die "unexpected command '$args->{prefix}'\n";
+    }
+}
+
+# a daemon outside the cluster has no installed version, so only its running version counts
+{
+    my $info = sub {
+        my (%tiebreaker) = @_;
+        my $quorum = delete $tiebreaker{quorum};
+        my $mons = [
+            (
+                map { {
+                    type => 'mon',
+                    id => "$_",
+                    entity => "mon.$_",
+                    node => "node$_",
+                    managed => 1,
+                    store => 'file',
+                    version => '20.2.4-pve4',
+                    binary => '20.2.4-pve4',
+                } } 1 .. 2
+            ),
+            {
+                type => 'mon',
+                id => 'tiebreaker',
+                # all monitors share the 'mon.' key, as the inventory records
+                entity => 'mon.',
+                node => 'tiebreaker.invalid',
+                managed => 0,
+                store => 'file',
+                version => '20.2.4-pve4',
+                %tiebreaker,
+            },
+        ];
+        return {
+            daemons => { mon => $mons, mgr => [], mds => [], osd => [] },
+            monmap_mons => [map { $_->{id} } @$mons],
+            rados => QuorumRados->new($quorum // [qw(1 2 tiebreaker)]),
+        };
+    };
+    my $preflight = sub {
+        my ($info) = @_;
+        my ($output, $verdict) = ('');
+        {
+            local *STDOUT;
+            open(STDOUT, '>', \$output) or die $!;
+            $verdict = $HOOKS->{preflight_nodes}
+                ->($info, { daemons => [], lockbox_keys => [], service_cipher => 1 }, {});
+        }
+        return ($verdict, $output // '');
+    };
+
+    my ($verdict, $output) = $preflight->($info->());
+    is($verdict, 1, 'a capable monitor outside the cluster does not block the cipher switch');
+    like(
+        $output,
+        qr/does not manage.*mon\.tiebreaker on 'tiebreaker\.invalid' runs 20\.2\.4/s,
+        'naming it with the version it was judged by',
+    );
+
+    ($verdict, $output) = $preflight->($info->(version => '19.2.5'));
+    is($verdict, -1, 'an outdated monitor outside the cluster still blocks');
+    like($output, qr/mon\.tiebreaker on node 'tiebreaker\.invalid' runs 19\.2\.5/, 'as outdated');
+
+    ($verdict, $output) = $preflight->($info->(down => 1));
+    is($verdict, -1, 'a stopped monitor outside the cluster cannot be judged');
+    like($output, qr/mon\.tiebreaker.*not a node/, 'which names the membership');
+
+    # Ceph keeps the metadata, and so the version, of a monitor that left the quorum
+    ($verdict, $output) = $preflight->($info->(quorum => [qw(1 2)]));
+    is($verdict, -1, 'a monitor outside the cluster that left the quorum cannot be judged either');
+    like($output, qr/mon\.tiebreaker: it is not reported as running/, 'despite its cached version');
+
 }
 
 done_testing();

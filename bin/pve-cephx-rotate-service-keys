@@ -189,9 +189,13 @@ my sub daemon_location($type, $id, $host) {
     };
 }
 
-my sub assert_member($node, $entity) {
+my sub assert_located($node, $entity) {
     die "Cannot manage '$entity': no valid host name was reported\n"
         if !defined($node) || ref($node) || !length($node);
+}
+
+my sub assert_member($node, $entity) {
+    assert_located($node, $entity);
     die "Cannot manage '$entity' on '$node', which is not a node of this Proxmox VE cluster\n"
         if !cluster_nodes()->{$node};
 }
@@ -2545,31 +2549,55 @@ my sub preflight_nodes($info, $plan, $opts) {
             (@touched, grep { defined($_->{node}) && $lockbox_nodes->{ $_->{node} } } @all);
     }
 
-    my (@outdated, @unknown_versions);
+    # The running version tells whether a daemon can use the new cipher now, and Ceph reports it for
+    # every daemon. The installed version tells whether it still can after a restart, and only
+    # pvestatd reports it, for our nodes. A daemon elsewhere is checked by its running version only,
+    # so it has to be running.
+    my (@outdated, @unknown_versions, @running_only);
     for my $daemon (@judged) {
-        if (!eval { assert_member($daemon->{node}, "$daemon->{type}.$daemon->{id}"); 1 }) {
+        my $label = "$daemon->{type}.$daemon->{id}";
+        my $stopped = ($daemon->{recovered} || $daemon->{down}) ? 1 : 0;
+        # Ceph keeps the metadata of a daemon that stopped, so for one elsewhere only the cluster's
+        # current view tells that it still runs the version it reported
+        $stopped = 1
+            if !$stopped
+            && !$daemon->{managed}
+            && !PVE::Ceph::Services::daemon_is_up($info->{rados}, $daemon->{type}, $daemon->{id});
+
+        if (!eval { assert_located($daemon->{node}, $label); 1 }) {
             push @unknown_versions, $@;
             next;
         }
-        if (!$daemon->{recovered} && !$daemon->{down}) {
+        if (!$daemon->{managed} && $stopped) {
+            push @unknown_versions,
+                "cannot verify the Ceph version of $label: it is not reported as running, and its"
+                . " host '$daemon->{node}' is not a node of this Proxmox VE cluster";
+            next;
+        }
+
+        if (!$stopped) {
             if (!defined($daemon->{version}) || $daemon->{version} eq '') {
                 push @unknown_versions,
-                    "could not verify the running Ceph version of $daemon->{entity} on node"
+                    "could not verify the running Ceph version of $label on node"
                     . " '$daemon->{node}'";
             } elsif (!version_has_cipher($daemon->{version})) {
                 push @outdated,
-                    "$daemon->{entity} on node '$daemon->{node}' runs "
-                    . short_version($daemon->{version});
+                    "$label on node '$daemon->{node}' runs " . short_version($daemon->{version});
+            } elsif (!$daemon->{managed}) {
+                push @running_only,
+                    "$label on '$daemon->{node}' runs " . short_version($daemon->{version});
             }
         }
 
+        next if !$daemon->{managed};
+
         if (!defined($daemon->{binary}) || $daemon->{binary} eq '') {
             push @unknown_versions,
-                "could not verify the installed Ceph version of $daemon->{entity} on node"
+                "could not verify the installed Ceph version of $label on node"
                 . " '$daemon->{node}'; check that 'pvestatd' runs there";
         } elsif (!version_has_cipher($daemon->{binary})) {
             push @outdated,
-                "$daemon->{entity} on node '$daemon->{node}' would restart into "
+                "$label on node '$daemon->{node}' would restart into "
                 . short_version($daemon->{binary});
         }
     }
@@ -2634,6 +2662,13 @@ my sub preflight_nodes($info, $plan, $opts) {
                     . join(', ', @$sections);
             }
         }
+    }
+
+    if (@running_only) {
+        log_warn("These daemons run on hosts this cluster does not manage, so only the version they"
+            . " run was checked, not the one installed there. Keep Ceph on those hosts at this"
+            . " version or newer, or they lose the new cipher on their next restart:");
+        log_steps(\@running_only);
     }
 
     if (@unknown_versions) {
