@@ -566,6 +566,22 @@ is(
         1,
         'repairing only the stored copy writes to none of them, so none is validated either',
     );
+
+    # its key is rotated too, so its version is checked. Only the work on its node is skipped.
+    my $stretch = {
+        daemons => {
+            mon => [
+                { entity => 'mon.', id => 'a', managed => 1 },
+                { entity => 'mon.', id => 'b', managed => 1 },
+                { entity => 'mon.', id => 'tiebreaker', managed => 0 },
+            ],
+        },
+    };
+    is(
+        scalar(touched_daemons($stretch, { daemons => [$osd], mon_key => 1 })),
+        4,
+        'a monitor outside the cluster counts as changed as well',
+    );
 }
 
 # --- daemons ceph cannot see ------------------------------------------------------------------

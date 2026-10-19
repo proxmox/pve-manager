@@ -6194,6 +6194,49 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         return ($verdict, $output // '');
     };
 
+    # an unmanaged monitor gets the key from the auth database, so no keyring is required there
+    {
+        my $mons = [
+            (
+                map { {
+                    type => 'mon',
+                    id => "$_",
+                    entity => 'mon.',
+                    node => "node$_",
+                    managed => 1,
+                    store => 'file',
+                    version => '20.2.4',
+                    binary => '20.2.4',
+                } } 1 .. 2
+            ),
+            {
+                type => 'mon',
+                id => 'tiebreaker',
+                entity => 'mon.',
+                node => 'witness.example',
+                managed => 0,
+                version => '20.2.4',
+            },
+        ];
+        my $info = {
+            daemons => { mon => $mons, mgr => [], mds => [], osd => [] },
+            monmap_mons => [map { $_->{id} } @$mons],
+            fsid => 'cluster-fsid',
+            rados => QuorumRados->new([qw(1 2 tiebreaker)]),
+        };
+        my ($output, $verdict) = ('');
+        {
+            local *STDOUT;
+            open(STDOUT, '>', \$output) or die $!;
+            $verdict = $HOOKS->{preflight_nodes}->(
+                $info, { daemons => [], lockbox_keys => [], mon_key => 1 }, {},
+            );
+        }
+        is($verdict, 1, 'a monitor we do not manage does not block the monitor key rotation');
+        unlike($output, qr/neither a keyring file nor a bluestore device/, 'nothing is read there');
+        unlike($output, qr/Cannot manage 'mon\.tiebreaker'/, 'and nothing is verified there');
+    }
+
     my ($verdict, $output) = $preflight->(2, { mon_key => 1 });
     is($verdict, -1, 'a two-monitor cluster refuses the shared monitor key rotation');
     like($output, qr/monitor map holds 2 monitors/, 'naming what it found');
@@ -7828,7 +7871,10 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         fsid => 'cluster-fsid',
         pve_mon_key => $OLD,
         exported => { 'mon.' => { key => $OLD } },
-        daemons => { mon => [map { { type => 'mon', id => $_, node => "node-$_" } } qw(a b)] },
+        daemons => {
+            mon =>
+                [map { { type => 'mon', id => $_, node => "node-$_", managed => 1 } } qw(a b)],
+        },
     };
     my $plan = { mon_key => 1 };
     my $state = {};
@@ -7894,6 +7940,106 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         \@routed,
         [['ceph', 'daemon', 'mon.a', 'config', 'get', 'opt']],
         'a caller-supplied runner keeps the member route, which the tests rely on',
+    );
+}
+
+# A monitor outside this cluster gets the rotated key from the auth database. Its keyring and
+# restart are left to its admin.
+{
+    no warnings qw(once redefine);
+    local *PVE::Ceph::Services::get_blocking_health_errors = sub { return [] };
+    local *PVE::Ceph::Services::wait_for_safe_to_stop = sub { return (1, '') };
+    local *PVE::Ceph::Services::wait_for_daemon_up = sub { };
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+    local *main::file_set_contents = sub { };
+
+    my @commands;
+    local *main::run_command = sub { push @commands, join(' ', $_[0]->@*) };
+
+    my $run = sub {
+        my ($quorum) = @_;
+        my $rados = ClientRotationRados->new($OLD);
+        my $mon_command = ClientRotationRados->can('mon_command');
+        local *ClientRotationRados::mon_command = sub {
+            my ($self, $args) = @_;
+            die "the cluster cannot be read\n"
+                if !defined($quorum) && $args->{prefix} =~ m/^(?:quorum_status|health)$/;
+            return $quorum if $args->{prefix} eq 'quorum_status';
+            return {} if $args->{prefix} eq 'health';
+            return $mon_command->(@_);
+        };
+        my $info = {
+            fsid => 'cluster-fsid',
+            pve_mon_key => $OLD,
+            exported => { 'mon.' => { key => $OLD } },
+            daemons => {
+                mon => [
+                    (
+                        map { { type => 'mon', id => $_, node => "node-$_", managed => 1 } }
+                            qw(a b)
+                    ),
+                    {
+                        type => 'mon',
+                        id => 'tiebreaker',
+                        node => 'witness.example',
+                        managed => 0,
+                    },
+                ],
+            },
+        };
+        my $state = {};
+        my $out = '';
+        {
+            open(my $stdout, '>', \$out) or die $!;
+            local *STDOUT = $stdout;
+            eval {
+                $HOOKS->{migrate_mon_key}
+                    ->($rados, $state, $info, { timeout => 30 }, { mon_key => 1 });
+            };
+            main::log_fail($@) if $@;
+        }
+        return ($state, $out, $rados);
+    };
+
+    @commands = ();
+    my ($state, $out, $rados) = $run->({ quorum_names => [qw(a b tiebreaker)] });
+    is($rados->{key}, $NEW, 'the shared key is rotated, not refused over the outside monitor');
+    is_deeply(
+        $state->{mon_restarted},
+        { map { $_ => key_fingerprint($NEW) } qw(a b) },
+        'the monitors this cluster manages are restarted',
+    );
+    is(
+        scalar(grep { /ssh witness\.example/ } @commands),
+        0,
+        'and nothing is sent to the host outside it',
+    );
+    like(
+        $out,
+        qr{ceph auth get mon\. -o /var/lib/ceph/mon/\S+-tiebreaker/keyring},
+        'the admin is handed the keyring command for that monitor',
+    );
+    like($out, qr/systemctl restart ceph-mon\@tiebreaker/, 'and the restart to run there');
+    like($out, qr/chmod 600/, 'with the mode that keeps the key private');
+    like($out, qr/needs an admin keyring on that host/, 'and what to do without admin access');
+    like($out, qr/PASS.*outside this cluster is still in the quorum/, 'the quorum is confirmed');
+
+    (undef, $out) = $run->({ quorum_names => [qw(a b)] });
+    like(
+        $out,
+        qr/WARN.*not in the quorum right now.*mon\.tiebreaker on 'witness\.example'/,
+        'a monitor that left the quorum is named instead',
+    );
+
+    # an unreadable cluster says nothing about that monitor, and the rotation is done by then
+    (undef, $out) = $run->(undef);
+    unlike($out, qr/not in the quorum right now/, 'an unreadable cluster accuses nobody');
+    unlike($out, qr/PASS.*still in the quorum/, 'nor confirms the quorum it could not see');
+    like(
+        $out,
+        qr/WARN: Could not check whether they are still in the quorum.*mon\.tiebreaker/,
+        'but says it could not check that monitor',
     );
 }
 

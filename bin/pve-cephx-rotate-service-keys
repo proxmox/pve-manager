@@ -189,6 +189,14 @@ my sub daemon_location($type, $id, $host) {
     };
 }
 
+my sub mon_keyring_path($id) {
+    return "/var/lib/ceph/mon/$ccname-$id/keyring";
+}
+
+my sub unmanaged_monitors($info) {
+    return grep { !$_->{managed} } $info->{daemons}->{mon}->@*;
+}
+
 my sub assert_located($node, $entity) {
     die "Cannot manage '$entity': no valid host name was reported\n"
         if !defined($node) || ref($node) || !length($node);
@@ -1589,7 +1597,9 @@ my sub probe_nodes($info, $plan, $opts = {}) {
     my $installed = installed_versions();
     my $specs = {};
     for my $daemon (touched_daemons($info, $plan)) {
-        assert_member($daemon->{node}, "$daemon->{type}.$daemon->{id}");
+        assert_located($daemon->{node}, "$daemon->{type}.$daemon->{id}");
+        # a host we do not manage has nothing to probe, so its running version is checked instead
+        next if !$daemon->{managed};
         push $specs->{ $daemon->{node} }->@*, "$daemon->{type}:$daemon->{id}";
     }
 
@@ -1612,6 +1622,7 @@ my sub probe_nodes($info, $plan, $opts = {}) {
             for $info->{daemons}->{$type}->@*;
     }
     for my $daemon (touched_daemons($info, $plan)) {
+        next if !$daemon->{managed};
         my $probe = $by_node->{ $daemon->{node} }->{"$daemon->{type}:$daemon->{id}"} // {};
         $daemon->{store} = $probe->{store};
         $daemon->{error} = $probe->{error};
@@ -2604,6 +2615,10 @@ my sub preflight_nodes($info, $plan, $opts) {
 
     my @unusable;
     for my $daemon (@touched) {
+        # a monitor gets the 'mon.' key from the auth database, so it needs no keyring on its host.
+        # Other daemons read their key from a file there.
+        next if !$daemon->{managed} && $daemon->{type} eq 'mon';
+
         eval { assert_daemon_location($info->{rados}, $daemon, $info->{fsid}, $daemon) };
         push @unusable, $@ if $@;
         my $type = $daemon->{type};
@@ -2897,16 +2912,30 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
         log_step("write $pve_mon_keyring for use by monitors created later") if $opts->{verbose};
     } elsif ($plan->{mon_key}) {
         $step++;
-        log_text("Step $step: rotate the shared 'mon.' key. Every keyring is written first, then"
-            . " the monitors restart one at a time.");
+        my @unmanaged = unmanaged_monitors($info);
+        log_text("Step $step: rotate the shared 'mon.' key. Every keyring"
+            . (@unmanaged ? " on the nodes of this cluster" : '')
+            . " is written first, then "
+            . (@unmanaged ? 'their' : 'the')
+            . " monitors restart one at a time.");
+        log_step("Not managed by this cluster, so their emergency keyring keeps the old key: "
+                . join(', ', map { "mon.$_->{id} on '$_->{node}'" } @unmanaged)
+                . ". The commands for their admin follow at the end of the run.")
+            if @unmanaged;
         if ($opts->{verbose}) {
             log_step(
                 $info->{mon_key_in_auth_db}
                 ? "Ceph lists the key in its health checks."
                 : "Ceph's health checks cannot see the key."
             );
-            log_step("monitors, restarted one at a time: "
-                . join(', ', map { "$_->{id} (node $_->{node})" } $info->{daemons}->{mon}->@*));
+            log_step(
+                "monitors, restarted one at a time: "
+                    . join(
+                        ', ',
+                        map { "$_->{id} (node $_->{node})" }
+                        grep { $_->{managed} } $info->{daemons}->{mon}->@*,
+                    ),
+            );
         }
     }
 
@@ -3259,6 +3288,48 @@ my sub merge_pve_mon_keyring($entry) {
     return;
 }
 
+# Such a monitor already uses the new key from the auth database. Only the keyring in its data
+# directory, which it uses if a peer rejects it, keeps the old key, and only its admin can fix that.
+my sub report_unmanaged_monitors($rados, $unmanaged) {
+    log_warn("These monitors run on hosts outside this Proxmox VE cluster. They use the new key"
+        . " already, while their emergency keyring still holds the old one. To bring that copy up"
+        . " to date, their admin can run:");
+    for my $mon (@$unmanaged) {
+        my $path = mon_keyring_path($mon->{id});
+        log_step("on '$mon->{node}', as root:");
+        log_step("  ceph auth get mon. -o $path");
+        log_step("  chown ceph:ceph $path && chmod 600 $path");
+        log_step("  systemctl restart ceph-mon\@$mon->{id}");
+    }
+    log_text("The first command needs an admin keyring on that host. Without one, run it on a node"
+        . " of this cluster and copy the file over. Nothing is broken until then, but such a"
+        . " monitor cannot authenticate from its keyring alone, which is what it falls back on"
+        . " after losing its store.");
+
+    my $quorum = eval { $rados->mon_command({ prefix => 'quorum_status', format => 'json' }) };
+    if (ref($quorum) ne 'HASH') {
+        my $err = $@ // '';
+        chomp($err);
+        log_warn("Could not check whether they are still in the quorum"
+            . (length($err) ? " ($err)" : '')
+            . ", so check them before anything else: "
+            . join(', ', map { "mon.$_->{id} on '$_->{node}'" } @$unmanaged));
+        return;
+    }
+    my $in_quorum = { map { $_ => 1 } ($quorum->{quorum_names} // [])->@* };
+    my @lost =
+        map { "mon.$_->{id} on '$_->{node}'" } grep { !$in_quorum->{ $_->{id} } } @$unmanaged;
+    if (@lost) {
+        log_warn("These are not in the quorum right now, so check them before anything else: "
+            . join(', ', @lost));
+        return;
+    }
+
+    log_pass("every monitor outside this cluster is still in the quorum");
+
+    return;
+}
+
 my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     log_heading(
         $plan->{mon_repair_only}
@@ -3269,8 +3340,9 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     # a stale-copy repair is not gated behind the opt-in, so it must not rotate and restart the
     # quorum unasked. Finishing a started rotation is the exception
     my $rotate = !$plan->{mon_repair_only};
-    assert_daemon_location($rados, $_, $info->{fsid})
-        for $rotate ? $info->{daemons}->{mon}->@* : ();
+    my @managed = grep { $_->{managed} } $info->{daemons}->{mon}->@*;
+    my @unmanaged = unmanaged_monitors($info);
+    assert_daemon_location($rados, $_, $info->{fsid}) for $rotate ? @managed : ();
     my $entry = $rotate ? rotate_entity($rados, $state, 'mon.') : auth_entry($rados, 'mon.');
     my $keyring = keyring_text($entry);
     my $target = key_fingerprint($entry->{key});
@@ -3278,11 +3350,11 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     merge_pve_mon_keyring($entry) if ($info->{pve_mon_key} // '') ne $entry->{key};
 
     # all keyrings first, so a monitor going down in between still finds the new key locally
-    for my $mon ($info->{daemons}->{mon}->@*) {
+    for my $mon (@managed) {
         next if $plan->{mon_repair_only};
         next if ($state->{mon_keyring}->{ $mon->{id} } // '') eq $target;
 
-        my $path = "/var/lib/ceph/mon/$ccname-$mon->{id}/keyring";
+        my $path = mon_keyring_path($mon->{id});
         log_info("writing the new key to '$path' on node '$mon->{node}'");
         write_node_file($mon->{node}, $path, $keyring);
 
@@ -3291,7 +3363,7 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     }
 
     # only monitors holding the superseded key restart, so a keyring repair leaves the quorum alone
-    for my $mon ($info->{daemons}->{mon}->@*) {
+    for my $mon (@managed) {
         next if $plan->{mon_repair_only};
         next if ($state->{mon_restarted}->{ $mon->{id} } // '') eq $target;
 
@@ -3326,6 +3398,8 @@ my sub migrate_mon_key($rados, $state, $info, $opts, $plan) {
     save_state($state);
 
     log_pass("the shared monitor key now uses the '$CIPHER' cipher");
+
+    report_unmanaged_monitors($rados, \@unmanaged) if @unmanaged;
 
     return;
 }
@@ -5313,7 +5387,7 @@ and client keys require their rotation options. Without '--apply', this only pri
                               encrypted OSD lockbox keys. Does not select 'client.admin',
                               Ceph storage users, ticket wipes, or cipher restriction
   --rotate-mon-key            also rotate the shared 'mon.' key, which restarts every
-                              monitor, one at a time
+                              monitor on the nodes of this cluster, one at a time
   --rotate-client-keys        also rotate the 'client.bootstrap-*' keys and 'client.crash'
   --rotate-lockbox-keys       also rotate the 'client.osd-lockbox.*' key of every encrypted
                               OSD, in the auth database and in the LVM tag its keyring is
