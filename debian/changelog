@@ -1,3 +1,56 @@
+pve-manager (9.2.23) trixie; urgency=medium
+
+  * ceph: add Ceph 21.2 Umbrella as an experimental release, which
+    'pveceph install' and the installation wizard offer for testing. This
+    also lets the wizard recognize a cluster that already runs Umbrella when
+    adding a node, instead of reporting that it found no Ceph installation.
+
+  * ceph: OSD flags: offer the 'noautoscale' flag, which pauses the PG
+    autoscaler for all pools. This helps during maintenance and upgrades, for
+    example to Ceph 21 Umbrella, which doubles the autoscaler's target of PGs
+    per OSD and could otherwise start splitting PGs while daemons of both
+    versions run. The web interface also shows whether the flag is set, as
+    Ceph raises no health warning for it.
+
+  * ceph: rolling restart: let a missing active manager (MGR_DOWN) only block
+    OSD restarts, as only their safety check needs the manager. During an
+    upgrade, managers still running the old version can stop reporting to the
+    upgraded monitors, which left no manager active and blocked restarting
+    the managers, even with Force once Ceph raised the check to HEALTH_ERR.
+
+  * ceph: rolling restart: do not let BLUESTORE_BLUEFS_OVERSIZED warnings
+    block. Ceph 21 Umbrella OSDs can raise this space usage advisory right
+    after their upgrade, which made the restart refuse every further node
+    unless forced.
+
+  * api: resource pools: require the Pool.Audit privilege on a pool when
+    querying it with 'GET /pools?poolid=<pool>'. The permission was checked,
+    but its result was ignored, so any user could list the members of every
+    pool.
+
+  * api: network: reject line breaks in the OVS options of an interface, as
+    the value is written as is into /etc/network/interfaces.
+
+  * ui: ceph: service list: allow restarting a monitor, manager or MDS shown
+    as stopped. The shown state comes from the cluster, so a daemon whose
+    service runs but does not report in, such as a manager not reporting to
+    upgraded monitors, only offered Start, which did nothing.
+
+  * ceph: Cephx key migration: support Ceph daemons on hosts outside this
+    Proxmox VE cluster, such as the tiebreaker monitor of a stretch cluster.
+    Previously, such a monitor made the helper refuse staging client keys and
+    switching the service cipher, and made the monitor key rotation fail:
+    - query such monitors with 'ceph tell' instead of over SSH
+    - judge their cipher support by the version they run, and refuse if they
+      are not reported as running
+    - rotate the 'mon.' key without writing their keyring or restarting them,
+      print the commands to refresh their emergency keyring, and check that
+      they remain in the quorum
+    - warn about key copies such hosts keep for their own use, for example of
+      'client.admin', and print the commands to refresh them
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 19 Oct 2026 20:18:22 +0200
+
 pve-manager (9.2.22) trixie; urgency=medium
 
   * fix #8015: ui: upload and download from URL: let the user choose the
