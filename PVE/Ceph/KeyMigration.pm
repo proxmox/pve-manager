@@ -561,6 +561,8 @@ sub summarize_sessions($per_mon, $expected_mons = undef) {
                 next;
             }
             next if $session->{con_type} ne 'client';
+            # skip the monitors' own key, which a 'ceph tell' sent as 'mon.' also shows up as
+            next if ($session->{entity_name} // '') eq 'mon.';
 
             my $gid = $session->{global_id};
             my $entity = $session->{entity_name};
@@ -1101,15 +1103,16 @@ sub merge_configured_daemons($daemons, $type, $configured, $existing = undef) {
             push @$ghosts, { type => $type, id => "$id", node => $configured->{$id} };
             next;
         }
-        push @$daemons,
-            {
-                type => $type,
-                id => "$id",
-                entity => $type eq 'mon' ? 'mon.' : "$type.$id",
-                node => $configured->{$id},
-                down => 1,
-                $type eq 'osd' && $existing ? ('osd-uuid' => $existing->{$id}) : (),
-            };
+        push @$daemons, {
+            type => $type,
+            id => "$id",
+            entity => $type eq 'mon' ? 'mon.' : "$type.$id",
+            node => $configured->{$id},
+            # pvestatd only reports daemons on nodes of this cluster
+            managed => 1,
+            down => 1,
+            $type eq 'osd' && $existing ? ('osd-uuid' => $existing->{$id}) : (),
+        };
     }
 
     return wantarray ? ($daemons, $ghosts) : $daemons;

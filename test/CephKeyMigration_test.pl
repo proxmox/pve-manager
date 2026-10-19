@@ -771,6 +771,18 @@ is(
         sessions => [{ con_type => 'osd', entity_name => '', global_id => [] }],
     }]);
     ok($non_client->{complete}, 'a valid non-client session remains irrelevant');
+
+    my $own_tell = summarize_sessions([{
+        mon => 'a',
+        sessions => [{
+            con_type => 'client',
+            entity_name => 'mon.',
+            global_id => 140,
+            socket_addr => { addr => '10.0.0.3:0' },
+        }],
+    }]);
+    ok($own_tell->{complete}, "a 'mon.' session leaves the picture complete");
+    is_deeply($own_tell->{clients}, {}, "a 'mon.' session is no client of a key to refresh");
 }
 
 # --- the final step is offered once nothing else is open ---------------------------------------

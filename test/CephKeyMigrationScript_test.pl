@@ -6600,7 +6600,16 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     $rados->{host} = 'foreign.invalid';
     @commands = ();
     $info = $HOOKS->{collect_cluster_info}->($rados, { 'rotate-lockbox-keys' => 1 }, {});
-    is_deeply(\@commands, [], 'non-member gets no commands during pre-preflight collection');
+    is(
+        scalar(grep { /foreign\.invalid/ } map { join(' ', @$_) } @commands),
+        0,
+        'pre-preflight collection sends nothing to the non-member host',
+    );
+    is(
+        scalar(grep { /tell mon\.a config get/ } map { join(' ', @$_) } @commands),
+        1,
+        'the monitor outside the cluster is asked with tell instead of its socket',
+    );
     like(
         $info->{lockbox}->{'client.osd-lockbox.osd-uuid'}->{missing},
         qr/osd\.7.*foreign\.invalid.*not a node/,
@@ -6609,10 +6618,14 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
     @targets = ();
     $monitor = $HOOKS->{collect_monitor_state}->($rados, sub { push @targets, $_[0]; return '[]' });
     is_deeply(\@targets, [], 'fresh monitor collection never queries a non-member');
-    like(
+    is(
         $monitor->{sessions}->{errors}->{a},
-        qr/mon\.a.*not a node/,
-        'monitor diagnostic names membership',
+        undef,
+        'and its sessions come over the network, so nothing is left unanswered',
+    );
+    ok(
+        $monitor->{manual_promotion}->{supported},
+        'so a client key can still be staged with a monitor outside the cluster',
     );
 
     for my $version (1, 2) {
@@ -7839,6 +7852,46 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         scalar(grep { /auth_(?:service|cluster)_required/ } @commands),
         0,
         'successful mon. rotation uses no authentication probes',
+    );
+}
+
+# A monitor on one of our nodes is asked over its admin socket, any other one with 'ceph tell'.
+{
+    no warnings qw(once redefine);
+    local *PVE::SSHInfo::get_ssh_info = sub { return { node => $_[0] } };
+    local *PVE::SSHInfo::ssh_info_to_command = sub { return ['ssh', $_[0]->{node}, '--'] };
+
+    my @commands;
+    local *main::run_command = sub {
+        my ($cmd, %args) = @_;
+        push @commands, join(' ', @$cmd);
+        $args{outfunc}->('answer');
+    };
+
+    my $run = sub {
+        @commands = ();
+        return $HOOKS->{mon_admin_run}->(@_);
+    };
+
+    is($run->('node-a', 'a', ['sessions']), "answer\n", 'a member answers over its admin socket');
+    is($commands[0], 'ssh node-a -- ceph daemon mon.a sessions', 'which is asked through ssh');
+
+    is($run->('witness.invalid', 'tiebreaker', ['sessions']), "answer\n", 'so does an outsider');
+    like(
+        $commands[0],
+        qr/^ceph --cluster \S+ --name mon\. --keyring \S+ --connect-timeout 10 tell mon\.tiebreaker sessions$/,
+        'asked locally with tell, as mon., and with a connect timeout instead of a long default',
+    );
+
+    $run->(undef, 'nameless', ['version']);
+    like($commands[0], qr/tell mon\.nameless version/, 'a monitor without a known host too');
+
+    my @routed;
+    $run->('node-a', 'a', ['config', 'get', 'opt'], sub { push @routed, $_[1]; return '{}' });
+    is_deeply(
+        \@routed,
+        [['ceph', 'daemon', 'mon.a', 'config', 'get', 'opt']],
+        'a caller-supplied runner keeps the member route, which the tests rely on',
     );
 }
 
