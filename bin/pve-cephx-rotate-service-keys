@@ -197,6 +197,54 @@ my sub unmanaged_monitors($info) {
     return grep { !$_->{managed} } $info->{daemons}->{mon}->@*;
 }
 
+# hosts that run Ceph daemons outside this cluster. '$DAEMON_TYPES' has no monitors, so add them.
+my sub unmanaged_hosts_of($info) {
+    my $hosts = {};
+    for my $type ('mon', @$DAEMON_TYPES) {
+        $hosts->{ $_->{node} } = 1
+            for grep { !$_->{managed} && defined($_->{node}) } $info->{daemons}->{$type}->@*;
+    }
+    return sort keys %$hosts;
+}
+
+# Such a host keeps its own key copies, usually of 'client.admin'. While the key is staged, its
+# admin can fetch the new key with the old one, as a user allowed to read keys. The key comes from
+# the JSON output, as Ceph cannot read the 'pending key' line that 'auth get' writes, and reaches the
+# keyring through a private temporary file, as a command line would show it to every local user.
+# After the commit, a monitor host can use its 'mon.' keyring instead.
+my sub unmanaged_copy_note($info, $committed = 0) {
+    my @hosts = unmanaged_hosts_of($info);
+    return if !@hosts;
+
+    my $where = join(', ', map { "'$_'" } @hosts);
+    if (!$committed) {
+        log_warn("Proxmox VE rewrites the key copies it manages. These hosts run Ceph daemons"
+            . " without being nodes of this cluster, so a keyring they keep for their own use is"
+            . " not among them: $where. Their admin can refresh one while both keys still work,"
+            . " as a user allowed to read keys, usually 'client.admin'. The commands name both"
+            . " keyrings, as a configuration copied from here looks for keys under '/etc/pve',"
+            . " which such a host does not have:");
+        log_step("  T=\$(mktemp)");
+        log_step("  ceph -n client.admin -k <admin keyring file> auth get USER -f json | python3 -c"
+            . " 'import json, sys; e = json.load(sys.stdin)[0];"
+            . " print(\"[%s]\\n\\tkey = %s\" % (e[\"entity\"], e[\"pending_key\"]))' > \"\$T\""
+        );
+        log_step("  ceph-authtool <keyring file> --import-keyring \"\$T\"; rm -f \"\$T\"");
+        return;
+    }
+
+    log_warn("The previous key no longer works. A keyring these hosts keep for their own use was"
+        . " not rewritten, as they are not nodes of this cluster: $where. On a monitor host, and"
+        . " while its keyring still holds the current 'mon.' key, its admin can refresh one with"
+        . " the monitor's own credential:");
+    log_step("  ceph --name mon. --keyring "
+        . mon_keyring_path('<id>')
+        . " auth get USER -o <keyring file>");
+    log_step("Otherwise fetch the key on a node of this cluster and copy the file over.");
+
+    return;
+}
+
 my sub assert_located($node, $entity) {
     die "Cannot manage '$entity': no valid host name was reported\n"
         if !defined($node) || ref($node) || !length($node);
@@ -2029,6 +2077,7 @@ my sub preflight_cluster(
     };
 
     my $confirmation_refused = 0;
+    my $committed_copies = 0;
     my $confirm_all = $opts->{'confirm-all-clients-refreshed'};
     my $confirmation_seen = {};
     my @confirm =
@@ -2256,7 +2305,7 @@ my sub preflight_cluster(
             }
 
             # The record remains open if the commit fails, so the confirmation is retryable.
-            commit_staged_key($info->{rados}, $state, $entity) if $staged;
+            $committed_copies = 1 if $staged && commit_staged_key($info->{rados}, $state, $entity);
             my $mark = $state->{client_refresh}->{$entity};
             $mark->{cleared} = time();
             $mark->{acknowledged} = time();
@@ -2264,6 +2313,9 @@ my sub preflight_cluster(
             delete $stale_clients->{$entity};
         }
     }
+
+    # copies on hosts we do not manage are stale from here on
+    unmanaged_copy_note($info, 1) if $committed_copies;
 
     # Confirmation can promote staged keys. Recollect before any remaining preflight decision and
     # update the caller's shared cluster picture before it builds the migration plan.
@@ -3054,6 +3106,7 @@ my sub print_plan($info, $plan, $state, $opts, $storage_entities) {
             log_step("For each staged Ceph user key, both the current and new keys authenticate"
                 . " until the new key is committed with '--confirm-clients-refreshed USER' or,"
                 . " once every open record is ready, '--confirm-all-clients-refreshed'.");
+            unmanaged_copy_note($info);
             log_step("the monitors stop automatic pending-key promotion until every staged key is"
                     . " committed or aborted")
                 if $opts->{verbose};
@@ -4705,6 +4758,19 @@ my sub migrate_client_key($rados, $state, $item, $snapshot = undef, $verbose = 0
     return;
 }
 
+# A key replaced at once leaves the copies on hosts we do not manage stale right away, unlike a
+# staged one, whose note comes with its plan and its commit.
+my sub migrate_client_keys($rados, $state, $info, $plan, $opts, $migrate = \&migrate_client_key) {
+    my $replaced = 0;
+    for my $item (@{ $plan->{client_keys} // [] }) {
+        log_text("");
+        $migrate->($rados, $state, $item, undef, $opts->{verbose});
+        $replaced = 1 if !$item->{staged};
+    }
+    unmanaged_copy_note($info, 1) if $replaced;
+    return;
+}
+
 my sub migrate_daemon($rados, $state, $daemon, $opts) {
     assert_daemon_location($rados, $daemon, $state->{fsid});
     my ($type, $id, $entity, $node) =
@@ -6210,10 +6276,7 @@ my sub run_migration($opts, $confirm = \&confirm_apply_run) {
                     );
                 }
 
-                for my $item (@{ $plan->{client_keys} // [] }) {
-                    log_text("");
-                    migrate_client_key($rados, $state, $item, undef, $opts->{verbose});
-                }
+                migrate_client_keys($rados, $state, $info, $plan, $opts);
 
                 for my $item (@{ $plan->{lockbox_keys} // [] }) {
                     log_text("");
@@ -6364,6 +6427,8 @@ sub key_migration_test_hooks {
         check_client_kernels => \&check_client_kernels,
         manual_promotion_with_retries => \&manual_promotion_with_retries,
         mon_admin_run => \&mon_admin_run,
+        unmanaged_copy_note => \&unmanaged_copy_note,
+        migrate_client_keys => \&migrate_client_keys,
         describe_live => \&describe_live,
     };
 }

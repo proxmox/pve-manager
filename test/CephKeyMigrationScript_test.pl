@@ -3619,7 +3619,15 @@ sub run_aggregate_confirmation {
             mon => [],
             mgr => [],
             mds => [],
-            osd => [{ type => 'osd', id => 7, entity => 'osd.7', node => 'node-daemon' }],
+            osd => [
+                {
+                    type => 'osd',
+                    id => 7,
+                    entity => 'osd.7',
+                    node => 'node-daemon',
+                    managed => 1,
+                },
+            ],
         },
     };
     my $plan = {
@@ -3717,6 +3725,47 @@ sub run_aggregate_confirmation {
         qr/For each staged Ceph user key, both the current and new keys authenticate.*committed with '--confirm-clients-refreshed USER' or, once every open record is ready, '--confirm-all-clients-refreshed'/s,
         'the default names both staged completion paths without offering the aggregate early',
     );
+    unlike(
+        $concise,
+        qr/without being nodes of this cluster/,
+        'a cluster that manages every daemon host is told nothing about copies elsewhere',
+    );
+
+    # while the key is staged, a host outside this cluster can fetch it with the old key
+    {
+        my $stretched = { %$info, daemons => { %{ $info->{daemons} } } };
+        $stretched->{daemons}->{mon} = [
+            { type => 'mon', id => 'a', node => 'node-a', managed => 1 },
+            { type => 'mon', id => 'tiebreaker', node => 'witness.example', managed => 0 },
+        ];
+        my $output = $render->(0, undef, undef, undef, $stretched);
+        like(
+            $output,
+            qr/without being nodes of this cluster.*'witness\.example'.*while both keys still work/s,
+            'the host is named while the old key still authenticates',
+        );
+        like(
+            $output,
+            qr/WARN: Proxmox VE rewrites the key copies it manages/,
+            'as a warning, as the run cannot do this itself',
+        );
+        like(
+            $output,
+            qr/T=\$\(mktemp\)\n.*ceph -n client\.admin -k <admin keyring file> auth get USER -f json \|.*"pending_key".*> "\$T"\n.*ceph-authtool <keyring file> --import-keyring "\$T"; rm -f "\$T"/,
+            'as a user allowed to read keys, writing the staged key itself, naming both keyrings',
+        );
+        unlike($output, qr/--add-key/, 'and the key never goes on a command line');
+        unlike(
+            $output,
+            qr/'node-a'/,
+            'and a managed node is not, as Proxmox VE rewrites its copies',
+        );
+        unlike(
+            $output,
+            qr/--name mon\./,
+            'the monitor credential is not offered while the simpler one still works',
+        );
+    }
     like(
         $concise,
         qr/For staged keys.*live-migrate affected\s+VMs, including those with kernel RBD disks/s,
@@ -7901,6 +7950,91 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         0,
         'successful mon. rotation uses no authentication probes',
     );
+}
+
+# After the commit the old copy no longer works, so the note names another credential.
+{
+    my $stretched = {
+        daemons => {
+            mon => [
+                { type => 'mon', id => 'a', node => 'node-a', managed => 1 },
+                { type => 'mon', id => 'witness', node => 'witness.example', managed => 0 },
+            ],
+            mgr => [],
+            mds => [],
+            osd => [],
+        },
+    };
+    my $note = sub {
+        my ($committed) = @_;
+        my $out = '';
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{unmanaged_copy_note}->($stretched, $committed);
+        return $out;
+    };
+
+    my $committed = $note->(1);
+    like($committed, qr/WARN.*previous key no longer works/, 'the note says the old key is gone');
+    like(
+        $committed,
+        qr{ceph --name mon\. --keyring /var/lib/ceph/mon/\S+-<id>/keyring auth get USER},
+        "and gives the monitor's own credential as the way back",
+    );
+    like($committed, qr/copy the file over/, 'with the fallback for a host running no monitor');
+    like($committed, qr/'witness\.example'/, 'naming the unmanaged host');
+    unlike($committed, qr/'node-a'/, 'and not the one Proxmox VE rewrites itself');
+    like($note->(0), qr/while both keys still work/, 'before the commit it is the simpler route');
+
+    my $managed = { daemons => { map { $_ => [] } qw(mon mgr mds osd) } };
+    my $out = '';
+    {
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{unmanaged_copy_note}->($managed, 1);
+    }
+    is($out, '', 'a cluster that manages every daemon host hears nothing about copies elsewhere');
+}
+
+# A key replaced at once makes the copies on hosts we do not manage stale right away.
+{
+    my $info = {
+        daemons => {
+            mon => [
+                { type => 'mon', id => 'a', node => 'node-a', managed => 1 },
+                { type => 'mon', id => 'witness', node => 'witness.example', managed => 0 },
+            ],
+            mgr => [],
+            mds => [],
+            osd => [],
+        },
+    };
+    my $run = sub {
+        my (@items) = @_;
+        my ($out, @migrated) = ('');
+        open(my $stdout, '>', \$out) or die $!;
+        local *STDOUT = $stdout;
+        $HOOKS->{migrate_client_keys}->(
+            undef,
+            {},
+            $info,
+            { client_keys => \@items },
+            {},
+            sub { push @migrated, $_[2]->{entity} },
+        );
+        return ($out, \@migrated);
+    };
+
+    my ($out, $migrated) =
+        $run->({ entity => 'client.crash' }, { entity => 'client.bootstrap-osd' });
+    is_deeply($migrated, ['client.crash', 'client.bootstrap-osd'], 'every key is migrated');
+    like(
+        $out,
+        qr/WARN: The previous key no longer works.*'witness\.example'/s,
+        'a replaced key names the host whose copy is now stale',
+    );
+    ($out) = $run->({ entity => 'client.admin', staged => 1 });
+    unlike($out, qr/previous key no longer works/, 'a staged key leaves that to its commit');
 }
 
 # A monitor on one of our nodes is asked over its admin socket, any other one with 'ceph tell'.
