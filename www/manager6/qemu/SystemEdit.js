@@ -179,6 +179,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
             storageContent: 'images',
             bind: {
                 nodename: '{nodename}',
+                arch: '{current.architecture}',
                 hidden: '{!addtpm}',
                 disabled: '{!addtpm}',
             },

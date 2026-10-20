@@ -885,7 +885,13 @@ Ext.define('PVE.qemu.HardwareView', {
                                 itemId: 'addTpmState',
                                 iconCls: 'fa fa-fw fa-hdd-o black',
                                 disabled: !caps.vms['VM.Config.Disk'],
-                                handler: editorFactory('TPMDiskEdit'),
+                                handler: () =>
+                                    editorFactory('TPMDiskEdit', {
+                                        arch: PVE.qemu.Architecture.getGuestArchitecture(
+                                            me.getObjectValue('arch'),
+                                            nodename,
+                                        ),
+                                    })(),
                             },
                             {
                                 text: gettext('USB Device'),

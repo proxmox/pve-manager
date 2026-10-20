@@ -67,6 +67,11 @@ Ext.define('PVE.qemu.Architecture', {
         aarch64: ['ovmf'],
     },
 
+    allowedTPMVersions: {
+        x86_64: ['v1.2', 'v2.0'],
+        aarch64: ['v2.0'],
+    },
+
     render_vcpu_architecture: function (value) {
         switch (value ?? '') {
             case '':

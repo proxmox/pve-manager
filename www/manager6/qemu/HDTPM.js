@@ -5,6 +5,9 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
     unused: false,
     vmconfig: {},
 
+    // guest architecture, limits the selectable TPM versions
+    arch: undefined,
+
     onGetValues: function (values) {
         var me = this;
 
@@ -34,6 +37,12 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
         me.down('#hdimage').setStorage(undefined, nodename);
     },
 
+    setArch: function (arch) {
+        let me = this;
+        me.arch = arch;
+        me.down('pveFilteredKVComboBox[name=version]')?.setCategory(arch);
+    },
+
     setDisabled: function (disabled) {
         let me = this;
         me.down('pveDiskStorageSelector').setDisabled(disabled);
@@ -57,7 +66,7 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
                 hideSize: true,
             },
             {
-                xtype: 'proxmoxKVComboBox',
+                xtype: 'pveFilteredKVComboBox',
                 name: 'version',
                 value: 'v2.0',
                 fieldLabel: gettext('Version'),
@@ -67,6 +76,8 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
                     ['v1.2', 'v1.2'],
                     ['v2.0', 'v2.0'],
                 ],
+                allowedValuesPerCategory: PVE.qemu.Architecture.allowedTPMVersions,
+                category: me.arch,
             },
         ];
 
@@ -95,6 +106,7 @@ Ext.define('PVE.qemu.TPMDiskEdit', {
                 onlineHelp: 'qm_tpm',
                 confid: me.confid,
                 nodename: nodename,
+                arch: me.arch,
                 isCreate: true,
             },
         ];
