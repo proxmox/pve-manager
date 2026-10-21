@@ -83,7 +83,9 @@ eval {
     if ($acme_node_config && $acme_node_config->{domains}) {
         my $cert = PVE::CertHelpers::cert_path_prefix($nodename) . ".pem";
         if (-e $cert) {
-            if (PVE::Certificate::check_expiry($cert, time() + 30 * 24 * 60 * 60)) {
+            my $lead_time = PVE::Certificate::get_cert_renew_lead_time($cert);
+
+            if (PVE::Certificate::check_expiry($cert, time() + $lead_time)) {
                 PVE::API2::ACME->renew_certificate({ node => $nodename });
             } else {
                 syslog(
