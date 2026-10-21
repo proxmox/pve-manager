@@ -243,7 +243,8 @@ __PACKAGE__->register_method({
             node => get_standard_option('pve-node'),
             force => {
                 type => 'boolean',
-                description => 'Force renewal even if expiry is more than 30 days away.',
+                description =>
+                    'Force renewal even if the certificate is not yet due for renewal.',
                 optional => 1,
                 default => 0,
             },
@@ -261,12 +262,13 @@ __PACKAGE__->register_method({
         raise("No current (custom) certificate found, please order a new certificate!\n")
             if !-e "${cert_prefix}.pem";
 
+        my $lead_time = PVE::Certificate::get_cert_renew_lead_time("${cert_prefix}.pem");
+
         my $expires_soon =
-            PVE::Certificate::check_expiry("${cert_prefix}.pem", time() + 30 * 24 * 60 * 60);
+            PVE::Certificate::check_expiry("${cert_prefix}.pem", time() + $lead_time);
         raise_param_exc(
             {
-                'force' =>
-                    "Certificate does not expire within the next 30 days, and 'force' is not set.",
+                'force' => "Certificate is not yet due for renewal, and 'force' is not set.",
             },
         ) if !$expires_soon && !$param->{force};
 
