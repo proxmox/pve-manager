@@ -298,6 +298,18 @@ Ext.define('PVE.node.Config', {
                     groups: ['apt'],
                 },
             );
+            // unlike listing updates, reading the history needs Sys.Audit
+            if (caps.nodes['Sys.Audit']) {
+                me.items.push({
+                    xtype: 'proxmoxNodeAPTHistory',
+                    title: gettext('History'),
+                    iconCls: 'fa fa-history',
+                    itemId: 'apthistory',
+                    nodename: nodename,
+                    canShowTermLog: !!caps.nodes['Sys.Syslog'],
+                    groups: ['apt'],
+                });
+            }
         }
 
         if (caps.nodes['Sys.Audit']) {
