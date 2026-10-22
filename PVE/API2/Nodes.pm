@@ -18,6 +18,7 @@ use IO::Socket::SSL;
 use PVE::API2Tools;
 use PVE::APLInfo;
 use PVE::AccessControl;
+use PVE::Ceph::Releases;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::DataCenterConfig;
 use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
@@ -1147,7 +1148,10 @@ my $shell_cmd_map = {
     },
     'ceph_install' => {
         cmd => ['/usr/bin/pveceph', 'install'],
-        allow_args => 1,
+        allowed_args => [
+            qw(--version --repository enterprise manual no-subscription test),
+            PVE::Ceph::Releases::get_available_ceph_release_codenames(1)->@*,
+        ],
     },
 };
 
@@ -1186,8 +1190,16 @@ sub get_shell_command {
                 $cmd = [$def->{cmd}->@*]; # clone
             }
 
-            if (defined($args) && $def->{allow_args}) {
-                push @$cmd, split("\0", $args);
+            if (defined($args) && defined($def->{allowed_args})) {
+                my $allowed_args = {};
+                $allowed_args->{$_} = 1 for $def->{allowed_args}->@*;
+
+                my $cmd_args = [split("\0", $args)];
+                for my $arg (@$cmd_args) {
+                    raise_param_exc({ 'cmd-opts' => "invalid cmd parameter" })
+                        if !$allowed_args->{$arg};
+                }
+                push @$cmd, @$cmd_args;
             }
         } elsif ($is_ssh_tunneling) {
             $cmd = []; # SSH logs us already in as root, and we must not nest login (vhangup).
