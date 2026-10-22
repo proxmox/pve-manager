@@ -12,6 +12,7 @@ use URI qw();
 
 use LWP::UserAgent;
 
+use Proxmox::APT::HistoryAPI;
 use Proxmox::RS::APT::Repositories;
 
 use PVE::pvecfg;
@@ -71,7 +72,9 @@ __PACKAGE__->register_method({
 
         my $res = [
             { id => 'changelog' },
+            { id => 'history' },
             { id => 'repositories' },
+            { id => 'termlog' },
             { id => 'update' },
             { id => 'versions' },
         ];
@@ -478,6 +481,14 @@ __PACKAGE__->register_method({
         return $output;
     },
 });
+
+__PACKAGE__->register_method(Proxmox::APT::HistoryAPI::history_method({
+    check => ['perm', '/nodes/{node}', ['Sys.Audit']],
+}));
+
+__PACKAGE__->register_method(Proxmox::APT::HistoryAPI::term_log_method({
+    check => ['perm', '/nodes/{node}', ['Sys.Syslog']],
+}));
 
 __PACKAGE__->register_method({
     name => 'repositories',
