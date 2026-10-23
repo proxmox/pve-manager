@@ -1,3 +1,16 @@
+pve-manager (9.2.24) trixie; urgency=medium
+
+  * api: node shell: harden the console against crafted parameters by only
+    passing the known Ceph version and repository options to the command of
+    the Ceph installation wizard, rejecting any other parameter.
+
+  * ui: consent banner: fix loading the web interface when the consent text
+    contains a single quote, which broke the JavaScript of the page. This only
+    affected texts set outside the web interface, for example through the API,
+    as the web interface stores them base64-encoded.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Oct 2026 19:51:57 +0200
+
 pve-manager (9.2.23) trixie; urgency=medium
 
   * ceph: add Ceph 21.2 Umbrella as an experimental release, which
