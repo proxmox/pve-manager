@@ -189,6 +189,99 @@ my $extract_job_status = sub {
     return $data;
 };
 
+my $job_status_properties = {
+    id => get_standard_option('pve-replication-id'),
+    type => {
+        description => "Section type.",
+        type => 'string',
+        enum => PVE::ReplicationConfig->lookup_types(),
+    },
+    guest => get_standard_option('pve-vmid', { description => "Guest ID." }),
+    jobnum => {
+        description => "Unique, sequential ID assigned to each job.",
+        type => 'integer',
+    },
+    vmtype => {
+        description => "Guest type.",
+        type => 'string',
+        enum => ['qemu', 'lxc'],
+    },
+    target => {
+        description => "Target node.",
+        type => 'string',
+        format => 'pve-node',
+        optional => 1,
+    },
+    source => {
+        description => "The node the guest was on when the job last ran.",
+        type => 'string',
+        format => 'pve-node',
+        optional => 1,
+    },
+    schedule => {
+        description => "Storage replication schedule.",
+        type => 'string',
+        format => 'pve-calendar-event',
+        optional => 1,
+    },
+    rate => {
+        description => "Rate limit in mbps (megabytes per second) as floating point number.",
+        type => 'number',
+        optional => 1,
+    },
+    comment => {
+        description => "Description.",
+        type => 'string',
+        optional => 1,
+    },
+    disable => {
+        description => "Whether the job is disabled.",
+        type => 'boolean',
+        optional => 1,
+    },
+    remove_job => {
+        description => "Whether the job is marked for removal, and in which mode.",
+        type => 'string',
+        enum => ['local', 'full'],
+        optional => 1,
+    },
+    next_sync => {
+        description => "Scheduled start of the next run (UNIX epoch), 0 if none is due.",
+        type => 'integer',
+        optional => 1,
+    },
+    last_sync => {
+        description => "Start of the last successful run (UNIX epoch), 0 if there was none.",
+        type => 'integer',
+        optional => 1,
+    },
+    last_try => {
+        description => "Start of the last run (UNIX epoch), 0 if there was none.",
+        type => 'integer',
+        optional => 1,
+    },
+    fail_count => {
+        description => "Number of consecutive failed runs.",
+        type => 'integer',
+        optional => 1,
+    },
+    error => {
+        description => "Error of the last failed run.",
+        type => 'string',
+        optional => 1,
+    },
+    duration => {
+        description => "Duration of the last run in seconds.",
+        type => 'number',
+        optional => 1,
+    },
+    pid => {
+        description => "Process ID of the currently running job.",
+        type => 'integer',
+        optional => 1,
+    },
+};
+
 __PACKAGE__->register_method({
     name => 'status',
     path => '',
@@ -217,9 +310,7 @@ __PACKAGE__->register_method({
         type => 'array',
         items => {
             type => "object",
-            properties => {
-                id => { type => 'string' },
-            },
+            properties => $job_status_properties,
         },
         links => [{ rel => 'child', href => "{id}" }],
     },
@@ -294,7 +385,7 @@ __PACKAGE__->register_method({
     },
     returns => {
         type => "object",
-        properties => {},
+        properties => $job_status_properties,
     },
     code => sub {
         my ($param) = @_;
