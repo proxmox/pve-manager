@@ -265,16 +265,19 @@ Ext.define('PVE.node.Config', {
                 itemId: 'access-log',
                 url: `/api2/extjs/nodes/${nodename}/access-log`,
             });
+        }
 
-            if (caps.nodes['Sys.Modify']) {
-                me.items.push({
+        if (caps.nodes['Sys.Audit'] || caps.nodes['Sys.Modify']) {
+            me.items.push(
+                {
                     xtype: 'proxmoxNodeAPT',
                     title: gettext('Updates'),
                     iconCls: 'fa fa-refresh',
                     expandedOnInit: true,
-                    disabled: !caps.nodes['Sys.Console'],
                     // do we want to link to system updates instead?
                     itemId: 'apt',
+                    canRefresh: !!caps.nodes['Sys.Modify'],
+                    canShowChangelog: !!caps.nodes['Sys.Modify'],
                     upgradeBtn: {
                         xtype: 'pveConsoleButton',
                         disabled: Proxmox.UserName !== 'root@pam',
@@ -283,18 +286,18 @@ Ext.define('PVE.node.Config', {
                         nodename: nodename,
                     },
                     nodename: nodename,
-                });
-
-                me.items.push({
+                },
+                {
                     xtype: 'proxmoxNodeAPTRepositories',
                     title: gettext('Repositories'),
                     iconCls: 'fa fa-files-o',
                     itemId: 'aptrepositories',
                     nodename: nodename,
+                    canModify: !!caps.nodes['Sys.Modify'],
                     onlineHelp: 'sysadmin_package_repositories',
                     groups: ['apt'],
-                });
-            }
+                },
+            );
         }
 
         if (caps.nodes['Sys.Audit']) {
