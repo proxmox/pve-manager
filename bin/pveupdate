@@ -131,6 +131,8 @@ eval {
         # create new certificate
         my $ip = PVE::Cluster::remote_node_ip($nodename);
         PVE::Cluster::Setup::gen_pve_ssl_cert(1, $nodename, $ip);
+        my $expiry = localtime(PVE::Certificate::get_expiration_as_epoch($certpath));
+        print "Renewed PVE certificate is valid until $expiry\n";
 
         print "Restarting pveproxy after renewing certificate\n";
         PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
