@@ -227,8 +227,15 @@ sub get_index {
         }
 
         my $ticket = PVE::APIServer::Formatter::extract_auth_value($cookie, $server->{cookie_name});
-        if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
-            $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
+        $username = PVE::AccessControl::verify_ticket($ticket, 1);
+        if (defined($username)) {
+            if (ref($username)) {
+                # Older libpve-access-control returns a hash ref for user names starting with
+                # '!tfa!'.
+                $username = undef;
+            } else {
+                $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
+            }
         }
     }
 
