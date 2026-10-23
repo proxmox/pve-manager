@@ -257,6 +257,15 @@ Ext.define('PVE.node.Config', {
                 url: '/api2/extjs/nodes/' + nodename + '/journal',
             });
 
+            me.items.push({
+                xtype: 'proxmoxAccessLogView',
+                title: gettext('Access Log'),
+                iconCls: 'fa fa-history',
+                groups: ['services'],
+                itemId: 'access-log',
+                url: `/api2/extjs/nodes/${nodename}/access-log`,
+            });
+
             if (caps.nodes['Sys.Modify']) {
                 me.items.push({
                     xtype: 'proxmoxNodeAPT',
