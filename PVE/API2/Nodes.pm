@@ -1148,9 +1148,11 @@ my $shell_cmd_map = {
     },
     'ceph_install' => {
         cmd => ['/usr/bin/pveceph', 'install'],
+        # all known releases, not only those available here: the command can run on another node
+        # over SSH, and pveceph checks there which releases that node can install
         allowed_args => [
             qw(--version --repository enterprise manual no-subscription test),
-            PVE::Ceph::Releases::get_available_ceph_release_codenames(1)->@*,
+            keys PVE::Ceph::Releases::get_all_ceph_releases()->%*,
         ],
     },
 };
