@@ -44,6 +44,7 @@ use PVE::Tools qw(file_get_contents);
 use PVE::pvecfg;
 
 use PVE::API2::APT;
+use PVE::API2::AccessLog;
 use PVE::API2::Capabilities;
 use PVE::API2::Ceph;
 use PVE::API2::Certificates;
@@ -206,6 +207,11 @@ __PACKAGE__->register_method({
 });
 
 __PACKAGE__->register_method({
+    subclass => "PVE::API2::AccessLog",
+    path => 'access-log',
+});
+
+__PACKAGE__->register_method({
     name => 'index',
     path => '',
     method => 'GET',
@@ -229,6 +235,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $result = [
+            { name => 'access-log' },
             { name => 'aplinfo' },
             { name => 'apt' },
             { name => 'capabilities' },

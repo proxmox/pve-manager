@@ -7,6 +7,7 @@ PERLSOURCE = 			\
 	ACMEAccount.pm		\
 	ACMEPlugin.pm		\
 	APT.pm			\
+	AccessLog.pm		\
 	Backup.pm		\
 	Capabilities.pm		\
 	Ceph.pm			\
