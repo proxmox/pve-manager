@@ -454,7 +454,8 @@ __PACKAGE__->register_method({
                     sub {
                         my $jobs_data = cfs_read_file('jobs.cfg');
 
-                        if (!defined($jobs_data->{ids}->{$id})) {
+                        my $job = $jobs_data->{ids}->{$id};
+                        if (!defined($job) || $job->{type} ne 'vzdump') {
                             raise_param_exc({ id => "No such job '$id'" });
                         }
                         delete $jobs_data->{ids}->{$id};
