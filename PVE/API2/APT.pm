@@ -253,7 +253,7 @@ __PACKAGE__->register_method({
     method => 'GET',
     description => "List available updates.",
     permissions => {
-        check => ['perm', '/nodes/{node}', ['Sys.Modify']],
+        check => ['perm', '/nodes/{node}', ['Sys.Audit', 'Sys.Modify'], any => 1],
     },
     protected => 1,
     proxyto => 'node',
