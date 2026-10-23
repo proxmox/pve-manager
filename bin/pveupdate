@@ -101,6 +101,9 @@ eval {
 };
 syslog('err', "Renewing ACME certificate failed: $@") if $@;
 
+eval { PVE::Cluster::Setup::renew_pveca_cert() };
+syslog('err', "Renewing cluster CA certificate failed: $@") if $@;
+
 eval {
     my $certpath = PVE::CertHelpers::default_cert_path_prefix($nodename) . ".pem";
     my $capath = "/etc/pve/pve-root-ca.pem";
