@@ -95,6 +95,9 @@ sub auth_handler {
             my $tfa_info;
             eval {
                 ($username, $age, $tfa_info) = PVE::AccessControl::verify_ticket($ticket);
+                if (ref($username)) {
+                    die "missing 2nd factor\n";
+                }
                 $rpcenv->check_user_enabled($username);
             };
             if (my $err = $@) {
