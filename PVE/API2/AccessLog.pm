@@ -63,6 +63,19 @@ my $access_log_filter = {
         maxLength => 1024,
         optional => 1,
     },
+    'auth-id-exact' => {
+        description => "Whether 'auth-id' only matches itself, so a user does not match its API"
+            . " tokens, and '-' matches requests without any.",
+        type => 'boolean',
+        optional => 1,
+    },
+    'path-group' => {
+        description => "Only requests whose path falls into this group, as the statistics list"
+            . " them.",
+        type => 'string',
+        maxLength => 1024,
+        optional => 1,
+    },
     'min-status' => {
         description => "Only responses with a known HTTP status code of at least this value.",
         type => 'integer',
@@ -82,12 +95,14 @@ my $access_log_filter = {
 # Converts the filter parameters for the Rust side, which takes integers only as such.
 my sub access_log_filter_from_param($param) {
     my $filter = {};
-    for my $key (qw(auth-id client method path search)) {
+    for my $key (qw(auth-id client method path search path-group)) {
         $filter->{$key} = $param->{$key} if defined($param->{$key});
     }
     for my $key (qw(since until min-status max-status)) {
         $filter->{$key} = int($param->{$key}) if defined($param->{$key});
     }
+    $filter->{'auth-id-exact'} = $param->{'auth-id-exact'} ? 1 : 0
+        if defined($param->{'auth-id-exact'});
     return $filter;
 }
 
@@ -160,6 +175,69 @@ my $access_log_gap = {
         },
     },
 };
+
+my $access_log_counts = {
+    requests => {
+        description => "The number of requests.",
+        type => 'integer',
+    },
+    'client-errors' => {
+        description => "The number of requests with a known client-error status, 400 to 499.",
+        type => 'integer',
+    },
+    'server-errors' => {
+        description => "The number of requests with a known server-error status, 500 or more.",
+        type => 'integer',
+    },
+    unauthenticated => {
+        description => "The number of requests without an authenticated user.",
+        type => 'integer',
+    },
+};
+
+my sub access_log_stats_list($description) {
+    return {
+        description => $description,
+        type => 'object',
+        properties => {
+            rows => {
+                description => "The values with the most requests, most first.",
+                type => 'array',
+                items => {
+                    type => 'object',
+                    properties => {
+                        key => {
+                            description => "The value, missing for requests without one.",
+                            type => 'string',
+                            optional => 1,
+                        },
+                        %$access_log_counts,
+                        last => {
+                            description =>
+                                "When the newest of the requests got logged, as UNIX epoch.",
+                            type => 'integer',
+                        },
+                    },
+                },
+            },
+            others => {
+                description => "The requests of all other values.",
+                type => 'object',
+                properties => $access_log_counts,
+            },
+            tracked => {
+                description => "The number of values counted separately.",
+                type => 'integer',
+            },
+            truncated => {
+                description => "Whether there were more values than get counted separately, so"
+                    . " further ones only count as others, and the rows need not be the values"
+                    . " with the most requests of all.",
+                type => 'boolean',
+            },
+        },
+    };
+}
 
 __PACKAGE__->register_method({
     name => 'access_log',
@@ -360,6 +438,175 @@ __PACKAGE__->register_method({
                 $result->{'dated-copies'} = $dated;
                 $result->{complete} = 0;
             }
+        }
+        return $result;
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'access_log_stats',
+    path => 'stats',
+    method => 'GET',
+    description => "Count the requests of the API access log of pveproxy and spiceproxy,"
+        . " including its rotated copies, in a time range, which defaults to the last day. As the"
+        . " log is not ordered by time, the counting reads through the files like a page of the"
+        . " access log does, as much as one page at most, and tells which parts of the files it"
+        . " covered.",
+    proxyto => 'node',
+    permissions => {
+        check => ['perm', '/nodes/{node}', ['Sys.Syslog']],
+    },
+    protected => 1,
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            %$access_log_filter,
+            top => {
+                description => "The number of values with the most requests to list.",
+                type => 'integer',
+                minimum => 1,
+                maximum => 100,
+                default => 10,
+                optional => 1,
+            },
+            bucket => {
+                description => "The length of a histogram bucket in seconds, chosen for at most"
+                    . " 300 buckets if not set.",
+                type => 'integer',
+                minimum => 1,
+                maximum => 9_223_372_036_854_775_807,
+                optional => 1,
+            },
+        },
+    },
+    returns => {
+        type => 'object',
+        properties => {
+            since => {
+                description => "The start of the time range, as UNIX epoch.",
+                type => 'integer',
+            },
+            until => {
+                description => "The end of the time range, as UNIX epoch.",
+                type => 'integer',
+            },
+            complete => {
+                description =>
+                    "Whether all lines of all files got counted. Otherwise, the counts"
+                    . " are only those of the covered parts.",
+                type => 'boolean',
+            },
+            stopped => {
+                description => "Why the counting stopped before the oldest file ended.",
+                type => 'string',
+                enum => ['read-budget', 'parse-budget', 'damaged'],
+                optional => 1,
+            },
+            covered => {
+                description => "The parts of the files that got counted, newest first.",
+                type => 'array',
+                items => {
+                    type => 'object',
+                    properties => {
+                        file => {
+                            description => "The name of the file.",
+                            type => 'string',
+                        },
+                        start => {
+                            description =>
+                                "Where the part starts, as offset in the uncompressed data.",
+                            type => 'integer',
+                        },
+                        end => {
+                            description => "Where the part ends, as offset in the uncompressed"
+                                . " data.",
+                            type => 'integer',
+                        },
+                    },
+                },
+            },
+            'searched-back-to' => {
+                description => "The time of the oldest request looked at, matching or not, as"
+                    . " UNIX epoch. Requests are not strictly ordered in the log, so this does not"
+                    . " bound the covered time.",
+                type => 'integer',
+                optional => 1,
+            },
+            'invalid-lines' => {
+                description => "The number of lines that failed to parse, of the ones parsed"
+                    . " completely. Lines whose first fields already rule them out do not get"
+                    . " parsed further.",
+                type => 'integer',
+            },
+            gaps => {
+                description => "The damaged compressed copy the counting stopped at.",
+                type => 'array',
+                items => $access_log_gap,
+            },
+            'dated-copies' => {
+                description => "Rotated copies named by date, as logrotate's 'dateext' names"
+                    . " them, which are not counted but can hold requests of the time range.",
+                type => 'array',
+                items => { type => 'string' },
+                optional => 1,
+            },
+            total => {
+                description => "The counts of all matching requests.",
+                type => 'object',
+                properties => $access_log_counts,
+            },
+            histogram => {
+                description => "The matching requests over the time range.",
+                type => 'object',
+                properties => {
+                    start => {
+                        description => "The start of the first bucket, as UNIX epoch.",
+                        type => 'integer',
+                    },
+                    bucket => {
+                        description => "The length of a bucket in seconds.",
+                        type => 'integer',
+                    },
+                    counts => {
+                        description => "The requests of each bucket.",
+                        type => 'array',
+                        items => {
+                            type => 'object',
+                            properties => $access_log_counts,
+                        },
+                    },
+                },
+            },
+            clients => access_log_stats_list("The client addresses with the most requests."),
+            'auth-ids' =>
+                access_log_stats_list("The users and API tokens with the most requests."),
+            'path-groups' => access_log_stats_list(
+                "The path groups with the most requests, which replace the parts of API paths"
+                    . " naming objects, like IDs, with placeholders."
+            ),
+            statuses => access_log_stats_list(
+                "The status codes with the most requests. A missing key denotes an unknown"
+                    . " status. Error counts include only requests with a known status."
+            ),
+        },
+    },
+    code => sub {
+        my ($param) = @_;
+
+        my $filter = access_log_filter_from_param($param);
+        my $top = defined($param->{top}) ? int($param->{top}) : undef;
+        my $bucket = defined($param->{bucket}) ? int($param->{bucket}) : undef;
+
+        my $result = scan_access_log(sub {
+            return Proxmox::RS::AccessLog::stats(
+                "$LOG_DIR/access.log", $filter, $top, $bucket,
+            );
+        });
+        my $dated = dated_copies($result->{since});
+        if (@$dated) {
+            $result->{'dated-copies'} = $dated;
+            $result->{complete} = 0;
         }
         return $result;
     },

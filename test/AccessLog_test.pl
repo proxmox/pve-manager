@@ -33,7 +33,7 @@ $rpcenv->mock(get_user => sub { $user });
 
 my $binding = Test::MockModule->new('Proxmox::RS::AccessLog');
 my $binding_error;
-for my $name (qw(query query_newer)) {
+for my $name (qw(query query_newer stats)) {
     my $native = Proxmox::RS::AccessLog->can($name);
     $binding->mock(
         $name => sub {
@@ -96,6 +96,44 @@ subtest 'paging and redaction' => sub {
     $binding_error = undef;
 };
 
+subtest 'statistics' => sub {
+    my $info = PVE::API2::AccessLog->map_method_by_name('access_log_stats');
+    is($info->{path}, 'stats', 'statistics child path');
+    my (undef, $routed) =
+        PVE::API2::Nodes::Nodeinfo->find_handler('GET', 'access-log/stats', {});
+    is($routed, $info, 'routed below the node');
+    ok(!exists($info->{parameters}->{properties}->{limit}), 'no page limit in statistics');
+    for my $exact ('0', '1') {
+        my $result = invoke(
+            'access_log_stats',
+            {
+                since => '0',
+                until => '253402300799',
+                top => '10',
+                'auth-id' => 'root@pam',
+                'auth-id-exact' => $exact,
+            },
+        );
+        is($result->{total}->{requests}, $exact ? 1 : 2, 'explicit boolean conversion');
+        unlike(encode_json($result), qr/SECRET/, 'statistics have no query values');
+    }
+    my $result = invoke(
+        'access_log_stats',
+        {
+            since => '0',
+            until => '253402300799',
+            bucket => '9223372036854775807',
+        },
+    );
+    is($result->{total}->{requests}, 3, 'maximum signed bucket reaches the binding');
+    is($result->{histogram}->{bucket}, 9_223_372_036_854_775_807, 'bucket preserved');
+    for my $bucket ('9223372036854775808', '18446744073709551615') {
+        eval { invoke('access_log_stats', { bucket => $bucket }); };
+        isa_ok($@, 'PVE::Exception');
+        is($@->{code}, 400, 'oversized bucket rejected before native conversion');
+    }
+};
+
 subtest 'date-named copies' => sub {
     my $dated = "$dir/access.log-20261021";
     open(my $copy, '>', $dated) or die $!;
@@ -111,6 +149,11 @@ subtest 'date-named copies' => sub {
     ok(!$newer->{'dated-copies'}, 'not when following the log');
     ok($newer->{complete}, 'following the log stays complete');
 
+    my $stats = invoke('access_log_stats', { since => '0', until => '253402300799' });
+    is_deeply($stats->{'dated-copies'}, ['access.log-20261021'], 'named in the statistics');
+    ok(!$stats->{complete}, 'the statistics are not complete');
+    ok(!invoke('access_log_stats', {})->{'dated-copies'}, 'not for the last day');
+
     unlink($dated) or die $!;
 };
 
@@ -124,7 +167,7 @@ subtest 'one scan at a time' => sub {
 
     open(my $held, '>>', $PVE::API2::AccessLog::SCAN_LOCK) or die $!;
     flock($held, LOCK_EX) or die $!;
-    for my $name (qw(access_log)) {
+    for my $name (qw(access_log access_log_stats)) {
         eval { invoke($name, {}); };
         isa_ok($@, 'PVE::Exception');
         is($@->{code}, 503, "$name refused while another scan runs");
