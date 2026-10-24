@@ -250,9 +250,9 @@ Ext.define(
                 lvm: [
                     'local',
                     gettext(
-                        'Use an existing volume group, or create one on a LUN of an iSCSI storage.',
+                        'Use an existing volume group, or create one on an iSCSI LUN or NVMe/TCP namespace.',
                     ),
-                    'san lun shared',
+                    'san lun shared nvme namespace',
                 ],
                 lvmthin: ['local', gettext('Use an existing LVM thin pool.'), ''],
                 zfspool: ['local', gettext('Use an existing ZFS pool or dataset.'), 'zpool'],

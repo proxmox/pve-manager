@@ -70,10 +70,21 @@ Ext.define('PVE.storage.BaseStorageSelector', {
         let store = Ext.create('Ext.data.Store', {
             autoLoad: {
                 addRecords: true,
-                params: {
-                    type: 'iscsi',
-                },
             },
+            filters: [
+                {
+                    filterFn: (rec) => {
+                        let type = rec.get('type');
+                        // one that offers its namespaces as guest disks cannot be a base
+                        let direct =
+                            type === 'nvmeof' &&
+                            /(^|,)(images|vm-vol)(,|$)/.test(rec.get('content') ?? '');
+                        return (
+                            !rec.get('storage') || (['iscsi', 'nvmeof'].includes(type) && !direct)
+                        );
+                    },
+                },
+            ],
             fields: [
                 'storage',
                 'type',
@@ -82,7 +93,8 @@ Ext.define('PVE.storage.BaseStorageSelector', {
                     name: 'text',
                     convert: function (value, record) {
                         if (record.data.storage) {
-                            return record.data.storage + ' (iSCSI)';
+                            let type = PVE.Utils.format_storage_type(record.data.type);
+                            return `${record.data.storage} (${type})`;
                         } else {
                             return me.existingGroupsText;
                         }
