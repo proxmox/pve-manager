@@ -9,6 +9,7 @@ Ext.define('PVE.storage.NFSScan', {
     matchFieldWidth: false,
     listConfig: {
         loadingText: gettext('Scanning...'),
+        emptyText: PVE.Utils.renderNotFound(gettext('NFS export')),
         width: 350,
     },
     doRawQuery: function () {
@@ -55,6 +56,8 @@ Ext.define('PVE.storage.NFSScan', {
         });
 
         me.callParent();
+
+        PVE.Utils.monPickerStoreErrors(me, store);
     },
 });
 
