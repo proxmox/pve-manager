@@ -343,9 +343,21 @@ Ext.define('PVE.node.Certificates', {
         },
         {
             header: gettext('Expires'),
-            width: 150,
+            width: 170,
             dataIndex: 'notafter',
-            renderer: Proxmox.Utils.render_timestamp,
+            renderer: function (value, metaData, record) {
+                let text = Proxmox.Utils.render_timestamp(value);
+                let validityLeft = value - Date.now() / 1000;
+                // stay below the renewal windows: 14 days and more for the renewals done here, and
+                // usually a third of the lifetime for short-lived certificates from other clients
+                let warnWindow = Math.min(7 * 24 * 60 * 60, (value - record.data.notbefore) / 4);
+                if (validityLeft < 0) {
+                    return `<i class="fa fa-times-circle critical"></i> ${text}`;
+                } else if (validityLeft < warnWindow) {
+                    return `<i class="fa fa-exclamation-triangle warning"></i> ${text}`;
+                }
+                return text;
+            },
         },
         {
             header: gettext('Subject Alternative Names'),
