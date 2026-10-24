@@ -439,6 +439,27 @@ Ext.define('PVE.Utils', {
 
         renderNotFound: (what) => Ext.String.format(gettext('No {0} found'), what),
 
+        // monStoreErrors would mask the field of a combo box, not its picker list
+        monPickerStoreErrors: function (combo, store) {
+            let picker = combo.getPicker();
+            picker.mon(store, 'beforeload', function () {
+                picker.unmask();
+                delete picker.minHeight;
+            });
+            picker.mon(store.proxy, 'afterload', function (proxy, request, success) {
+                if (success) {
+                    Proxmox.Utils.setErrorMask(picker, false);
+                    return;
+                }
+                let error = request._operation.getError();
+                let msg = Proxmox.Utils.getResponseErrorMessage(error);
+                if (msg) {
+                    picker.minHeight = 100;
+                }
+                Proxmox.Utils.setErrorMask(picker, msg);
+            });
+        },
+
         get_kvm_osinfo: function (value) {
             var info = { base: 'Other' }; // default
             if (value) {
