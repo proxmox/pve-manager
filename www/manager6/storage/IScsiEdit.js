@@ -5,6 +5,7 @@ Ext.define('PVE.storage.IScsiScan', {
     queryParam: 'portal',
     valueField: 'target',
     displayField: 'target',
+    scanFields: ['target', 'portal'],
     matchFieldWidth: false,
     allowBlank: false,
 
@@ -56,13 +57,13 @@ Ext.define('PVE.storage.IScsiScan', {
         }
 
         let store = Ext.create('Ext.data.Store', {
-            fields: ['target', 'portal'],
+            fields: me.scanFields,
             proxy: {
                 type: 'proxmox',
                 url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
             },
         });
-        store.sort('target', 'ASC');
+        store.sort(me.valueField, 'ASC');
 
         Ext.apply(me, {
             store: store,

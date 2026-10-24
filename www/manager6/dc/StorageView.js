@@ -68,8 +68,9 @@ Ext.define(
             });
         },
 
-        // What a storage is on: the volume group or pool for the types without path or target.
-        storageLocation: function ({ type, vgname, thinpool, pool, target, path }) {
+        // What a storage is on: the volume group, pool or subsystem for the types without path or
+        // target.
+        storageLocation: function ({ type, vgname, thinpool, pool, subsysnqn, target, path }) {
             switch (type) {
                 case 'lvm':
                     return vgname;
@@ -77,6 +78,8 @@ Ext.define(
                     return vgname && thinpool ? `${vgname}/${thinpool}` : vgname;
                 case 'zfspool':
                     return pool;
+                case 'nvmeof':
+                    return subsysnqn;
                 default:
                     return target || path;
             }
@@ -207,6 +210,13 @@ Ext.define(
                         'Connect to an iSCSI target, to use its LUNs directly or as base of an LVM storage.',
                     ),
                     'lun target',
+                ],
+                nvmeof: [
+                    'san',
+                    gettext(
+                        'Connect to an NVMe/TCP subsystem, to use its namespaces directly or as base of an LVM storage.',
+                    ),
+                    'nvme tcp subsystem namespace',
                 ],
                 zfs: [
                     'san',

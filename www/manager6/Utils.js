@@ -886,6 +886,12 @@ Ext.define('PVE.Utils', {
                 faIcon: 'building',
                 backups: false,
             },
+            nvmeof: {
+                name: 'NVMe over Fabrics',
+                ipanel: 'NVMeOFInputPanel',
+                faIcon: 'building',
+                backups: false,
+            },
             cephfs: {
                 name: 'CephFS',
                 ipanel: 'CephFSInputPanel',

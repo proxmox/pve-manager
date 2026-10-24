@@ -380,6 +380,7 @@ JSSRC= 							\
 	storage/LvmThinEdit.js				\
 	storage/BTRFSEdit.js				\
 	storage/NFSEdit.js				\
+	storage/NVMeOFEdit.js				\
 	storage/PBSEdit.js				\
 	storage/RBDEdit.js				\
 	storage/StatusView.js				\
