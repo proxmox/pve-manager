@@ -2276,6 +2276,7 @@ Ext.define('PVE.Utils', {
             lvmthinremove: ['Thinpool', gettext('Remove')],
             migrateall: ['', gettext('Bulk migrate VMs and Containers')],
             move_volume: ['CT', gettext('Move Volume')],
+            nvmedisconnect: ['NVMe-oF', gettext('Disconnect')],
             'pbs-download': ['VM/CT', gettext('File Restore Download')],
             pull_file: ['CT', gettext('Pull file')],
             push_file: ['CT', gettext('Push file')],

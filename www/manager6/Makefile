@@ -253,6 +253,7 @@ JSSRC= 							\
 	node/ISCSITargets.js				\
 	node/LVM.js					\
 	node/LVMThin.js					\
+	node/NVMeOFControllers.js			\
 	node/SANLuns.js					\
 	node/StatusView.js				\
 	node/Subscription.js				\

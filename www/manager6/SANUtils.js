@@ -132,6 +132,11 @@ Ext.define('PVE.SANUtils', {
             'logged-in': ['check-circle good', gettext('Connected')],
             recovering: ['exclamation-circle warning', gettext('Reconnecting')],
             'not-connected': ['times-circle faded', gettext('Not connected')],
+            live: ['check-circle good', gettext('Connected')],
+            connecting: ['exclamation-circle warning', gettext('Reconnecting')],
+            resetting: ['exclamation-circle warning', gettext('Reconnecting')],
+            deleting: ['times-circle faded', gettext('Disconnecting')],
+            'deleting (no IO)': ['times-circle faded', gettext('Disconnecting')],
         }[state];
         let [icon, label] = display ?? ['question-circle faded', state];
         return `<i class="fa fa-fw fa-${icon}"></i> ${Ext.htmlEncode(text ?? label)}`;

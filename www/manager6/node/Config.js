@@ -398,7 +398,7 @@ Ext.define('PVE.node.Config', {
             );
         }
 
-        // the LUN and iSCSI reads of the node accept either privilege
+        // the LUN, iSCSI and NVMe over Fabrics reads of the node accept either privilege
         if (caps.nodes['Sys.Audit'] || caps.storage['Datastore.Allocate']) {
             me.items.push(
                 {
@@ -412,6 +412,13 @@ Ext.define('PVE.node.Config', {
                     title: 'iSCSI',
                     itemId: 'san-iscsi',
                     iconCls: 'fa fa-bullseye',
+                    groups: ['san'],
+                },
+                {
+                    xtype: 'pveNVMeOFControllerList',
+                    title: 'NVMe over Fabrics',
+                    itemId: 'san-nvmeof',
+                    iconCls: 'fa fa-plug',
                     groups: ['san'],
                 },
             );
