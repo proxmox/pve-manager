@@ -10,6 +10,7 @@ Ext.define('pve-san-status', {
         'time',
         'iscsi-initiator-name',
         'other-maps',
+        'nvme-host-nqn',
         'wwid',
         'name',
         'explicit',
@@ -98,6 +99,14 @@ Ext.define('PVE.dc.SANView', {
             sortAfterUpdate: true,
         });
         let reload = () => me.rstore.load();
+        let copy = (field) => () =>
+            PVE.Utils.copyToClipboard(
+                nodeStore
+                    .getRange()
+                    .map((rec) => rec.get(field))
+                    .filter(Boolean)
+                    .join('\n'),
+            );
         let edit = ({ wwid, isCreate }) =>
             Ext.create('PVE.dc.MultipathWwidEdit', {
                 wwid,
@@ -144,14 +153,12 @@ Ext.define('PVE.dc.SANView', {
                     {
                         text: gettext('Copy Initiator Names'),
                         iconCls: 'fa fa-clipboard',
-                        handler: () =>
-                            PVE.Utils.copyToClipboard(
-                                nodeStore
-                                    .getRange()
-                                    .map((rec) => rec.get('iscsi-initiator-name'))
-                                    .filter(Boolean)
-                                    .join('\n'),
-                            ),
+                        handler: copy('iscsi-initiator-name'),
+                    },
+                    {
+                        text: gettext('Copy Host NQNs'),
+                        iconCls: 'fa fa-clipboard',
+                        handler: copy('nvme-host-nqn'),
                     },
                 ],
                 columns: [
@@ -181,6 +188,12 @@ Ext.define('PVE.dc.SANView', {
                         text: gettext('iSCSI Initiator Name'),
                         dataIndex: 'iscsi-initiator-name',
                         flex: 2,
+                        renderer: Ext.htmlEncode,
+                    },
+                    {
+                        text: gettext('NVMe Host NQN'),
+                        dataIndex: 'nvme-host-nqn',
+                        flex: 4,
                         renderer: Ext.htmlEncode,
                     },
                     {
