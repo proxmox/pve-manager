@@ -10,8 +10,8 @@ Ext.define('PVE.storage.wizard.SAN', {
                 type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
             ),
 
-        // Removes the iSCSI storage that a closed setup added if it still has the settings of the
-        // setup and no storage uses it, and calls done in any case.
+        // Removes the iSCSI or NVMe over Fabrics storage that a closed setup added if it still has
+        // the settings of the setup and no storage uses it, and calls done in any case.
         removeAddedConnection: function (connection, done) {
             let id = connection.storage;
             // the storage list adds these to the configuration of a storage
@@ -29,7 +29,7 @@ Ext.define('PVE.storage.wizard.SAN', {
                     gettext('Error'),
                     Ext.htmlEncode(
                         Ext.String.format(
-                            gettext('Could not remove iSCSI storage "{0}" of the closed setup'),
+                            gettext('Could not remove storage "{0}" of the closed setup'),
                             id,
                         ),
                     ) + `: ${response.htmlStatus}`,
@@ -45,7 +45,7 @@ Ext.define('PVE.storage.wizard.SAN', {
                     let own = storages.find((entry) => entry.storage === id);
                     let created = connection.created;
                     let unchanged =
-                        own?.type === 'iscsi' &&
+                        own?.type === created.type &&
                         keys(own).join() === keys(created).join() &&
                         keys(own).every((key) => text(key, own[key]) === text(key, created[key]));
                     let used = storages.some((entry) => `${entry.base ?? ''}`.startsWith(`${id}:`));
@@ -169,7 +169,7 @@ Ext.define('PVE.storage.wizard.SAN', {
         };
     },
 
-    // Removes an iSCSI storage that the setup added for a storage it did not add, then reloads.
+    // Removes a connection storage that the setup added for a storage it did not add, then reloads.
     cleanUp: function () {
         let me = this;
         let done = () => me.reloadCallback?.();
@@ -225,6 +225,7 @@ Ext.define('PVE.storage.wizard.SAN', {
                 storage: values.storage,
                 nodes: params.nodes,
                 fc: me.wizardType === 'fc',
+                nvme: me.wizardType === 'nvmeof',
                 autoShow: true,
             });
         };
@@ -233,6 +234,9 @@ Ext.define('PVE.storage.wizard.SAN', {
 
     multipathSummary: function (lun) {
         let me = this;
+        if (me.wizardType === 'nvmeof') {
+            return PVE.SANUtils.multipathText('native');
+        }
         // an explicit entry takes precedence, also for a LUN of the iSCSI storage
         if (lun.multipath === 'manual') {
             return PVE.SANUtils.multipathText('manual');
@@ -257,7 +261,9 @@ Ext.define('PVE.storage.wizard.SAN', {
             ...(connection
                 ? [
                       [
-                          gettext('iSCSI Storage'),
+                          me.wizardType === 'nvmeof'
+                              ? gettext('NVMe over Fabrics Storage')
+                              : gettext('iSCSI Storage'),
                           connection.created
                               ? Ext.String.format(
                                     gettext('{0}, added by this setup'),
@@ -302,10 +308,15 @@ Ext.define('PVE.storage.wizard.SAN', {
         me.down('#action').setHtml(
             Ext.htmlEncode(
                 Ext.String.format(
-                    gettext(
-                        // TRANSLATORS: {0} is the label of the Finish button.
-                        '{0} creates the volume group "{1}" on this LUN and adds it as shared LVM storage "{2}".',
-                    ),
+                    me.wizardType === 'nvmeof'
+                        ? gettext(
+                              // TRANSLATORS: {0} is the label of the Finish button.
+                              '{0} creates the volume group "{1}" on this namespace and adds it as shared LVM storage "{2}".',
+                          )
+                        : gettext(
+                              // TRANSLATORS: {0} is the label of the Finish button.
+                              '{0} creates the volume group "{1}" on this LUN and adds it as shared LVM storage "{2}".',
+                          ),
                     gettext('Finish'),
                     values.vgname,
                     values.storage,
@@ -350,10 +361,13 @@ Ext.define('PVE.storage.wizard.SAN', {
 
     initComponent: function () {
         let me = this;
-        if (!['iscsi', 'fc'].includes(me.wizardType)) {
+        if (!['iscsi', 'fc', 'nvmeof'].includes(me.wizardType)) {
             throw 'no SAN storage type specified';
         }
-        let iscsi = me.wizardType === 'iscsi';
+        // the iSCSI and NVMe over Fabrics setups connect to the array with a storage first
+        let target = me.wizardType !== 'fc';
+        let nvme = me.wizardType === 'nvmeof';
+        let onlineHelp = nvme ? 'storage_nvmeof' : 'storage_multipath';
         me.subject = PVE.storage.wizard.SAN.subject(me.wizardType);
         me.title = Proxmox.Utils.dialog_title(me.subject, true, true);
         let common = PVE.panel.StorageBase.commonFields(true);
@@ -369,9 +383,9 @@ Ext.define('PVE.storage.wizard.SAN', {
         let settings = {
             xtype: 'inputpanel',
             title: gettext('Storage'),
-            onlineHelp: 'storage_multipath',
+            onlineHelp,
             items: [
-                ...(iscsi
+                ...(target
                     ? []
                     : [
                           {
@@ -389,29 +403,31 @@ Ext.define('PVE.storage.wizard.SAN', {
             ],
             advancedItems: [
                 vgname,
-                ...(iscsi
+                ...(target
                     ? []
                     : [{ ...common.nodes, validator: PVE.storage.wizard.SAN.validateNodes }]),
             ],
             itemId: 'settings',
         };
         me.items = [
-            ...(iscsi
+            ...(target
                 ? [
                       {
-                          xtype: 'pveStorageWizardIScsiTarget',
-                          title: gettext('Target'),
+                          xtype: 'pveStorageWizardTarget',
+                          storageType: me.wizardType,
+                          title: nvme ? gettext('Subsystem') : gettext('Target'),
                           itemId: 'target',
                       },
                   ]
                 : []),
             {
                 xtype: 'pveStorageWizardLunSelect',
-                title: 'LUN',
+                title: nvme ? gettext('Namespace') : 'LUN',
                 itemId: 'luns',
-                onlineHelp: 'storage_multipath',
+                nvme,
+                onlineHelp,
                 // the nodes only see a newly mapped Fibre Channel LUN after a rescan
-                rescanNote: iscsi
+                rescanNote: target
                     ? undefined
                     : Ext.String.format(
                           gettext(
@@ -460,14 +476,14 @@ Ext.define('PVE.storage.wizard.SAN', {
         me.down('#settings').on('activate', followId);
         let tabs = me.down('#wizcontent');
         tabs.on('tabchange', function (tp, tab) {
-            if (iscsi && tab === me.down('#luns')) {
+            if (target && tab === me.down('#luns')) {
                 me.down('#back').disable();
             }
             me.down('#submit').setText(
                 tab === me.down('#target') ? gettext('Next') : gettext('Finish'),
             );
         });
-        if (iscsi) {
+        if (target) {
             me.down('#submit').setText(gettext('Next'));
         }
         me.on('destroy', () => !me.writing && me.cleanUp());

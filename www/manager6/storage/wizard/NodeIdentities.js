@@ -1,32 +1,21 @@
 Ext.define('pve-san-node-identity', {
     extend: 'Ext.data.Model',
     idProperty: 'node',
-    fields: ['node', 'state', 'iscsi-initiator-name'],
+    fields: ['node', 'state', 'iscsi-initiator-name', 'nvme-host-nqn'],
 });
 
-// The nodes with their initiator names, to allow them on the array, and to select the nodes that
-// use the target. The node serving the web UI sets up the volume group, so it stays selected.
+// The nodes with their iSCSI initiator names or NVMe host NQNs, to allow them on the array, and to
+// select the nodes that use the target. The node serving the web UI sets up the volume group, so it
+// stays selected.
 Ext.define('PVE.storage.wizard.NodeIdentities', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveStorageWizardNodeIdentities',
     height: 220,
     selModel: { selType: 'checkboxmodel', mode: 'SIMPLE' },
     viewConfig: { enableTextSelection: true },
-    columns: [
-        { text: gettext('Node'), dataIndex: 'node', width: 100, renderer: Ext.htmlEncode },
-        {
-            text: gettext('Multipath Setup'),
-            dataIndex: 'state',
-            width: 175,
-            renderer: PVE.SANUtils.renderState,
-        },
-        {
-            text: gettext('Initiator Name'),
-            dataIndex: 'iscsi-initiator-name',
-            flex: 1,
-            renderer: Ext.htmlEncode,
-        },
-    ],
+
+    // the identity of a node that the array allows
+    identity: 'iscsi-initiator-name',
 
     getSelectedNodes: function () {
         return this.getSelection()
@@ -62,6 +51,24 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
 
     initComponent: function () {
         let me = this;
+        let nvme = me.identity === 'nvme-host-nqn';
+        me.columns = [
+            { text: gettext('Node'), dataIndex: 'node', width: 100, renderer: Ext.htmlEncode },
+            {
+                text: gettext('Multipath Setup'),
+                dataIndex: 'state',
+                width: 175,
+                renderer: PVE.SANUtils.renderState,
+                // the state of multipathd, which native NVMe multipath does not use
+                hidden: nvme,
+            },
+            {
+                text: nvme ? gettext('Host NQN') : gettext('Initiator Name'),
+                dataIndex: me.identity,
+                flex: 1,
+                renderer: Ext.htmlEncode,
+            },
+        ];
         me.rstore = Ext.create('Proxmox.data.UpdateStore', {
             storeid: 'san-wizard-identities',
             model: 'pve-san-node-identity',
@@ -90,19 +97,23 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
         me.tbar = [
             {
                 xtype: 'tbtext',
-                text: gettext(
-                    'Select the nodes that will use the target and allow their initiator names on the array.',
-                ),
+                text: nvme
+                    ? gettext(
+                          'Select the nodes that will use the subsystem and allow their host NQNs on the array.',
+                      )
+                    : gettext(
+                          'Select the nodes that will use the target and allow their initiator names on the array.',
+                      ),
             },
             '->',
             {
-                text: gettext('Copy Initiator Names'),
+                text: nvme ? gettext('Copy Host NQNs') : gettext('Copy Initiator Names'),
                 iconCls: 'fa fa-clipboard',
                 handler: () =>
                     PVE.Utils.copyToClipboard(
                         me
                             .getSelection()
-                            .map((rec) => rec.get('iscsi-initiator-name'))
+                            .map((rec) => rec.get(me.identity))
                             .filter(Boolean)
                             .join('\n'),
                     ),

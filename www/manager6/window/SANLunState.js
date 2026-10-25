@@ -20,8 +20,11 @@ Ext.define('PVE.window.SANLunState', {
         if (!me.wwid) {
             throw 'no LUN specified';
         }
+        let title = me.nvme
+            ? gettext('Storage {0}: Namespace State')
+            : gettext('Storage {0}: LUN State');
         me.title = me.storage
-            ? Ext.String.format(gettext('Storage {0}: LUN State'), me.storage)
+            ? Ext.String.format(title, me.storage)
             : Ext.String.format(
                   gettext('LUN {0}: Paths by Node'),
                   Ext.htmlEncode(me.name || me.wwid),
@@ -56,13 +59,17 @@ Ext.define('PVE.window.SANLunState', {
             sortAfterUpdate: true,
         });
         let added = Ext.String.format(gettext('Storage "{0}" was added.'), me.storage);
-        let missingAdvice = me.fc
+        let missingAdvice = me.nvme
             ? gettext(
-                  'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and zoning on the array, then rescan the Fibre Channel hosts on {0}.',
+                  'The namespace is missing on {0}, so guests on this storage cannot run there. Check the host access to the subsystem on the array.',
               )
-            : gettext(
-                  'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and initiator access on the array.',
-              );
+            : me.fc
+              ? gettext(
+                    'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and zoning on the array, then rescan the Fibre Channel hosts on {0}.',
+                )
+              : gettext(
+                    'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and initiator access on the array.',
+                );
         let updateAdvice = function () {
             if (me.destroyed || !me.storage) {
                 return;
@@ -79,7 +86,12 @@ Ext.define('PVE.window.SANLunState', {
             let text = [
                 added,
                 waiting &&
-                    Ext.String.format(gettext('Waiting for a LUN report from: {0}.'), waiting),
+                    Ext.String.format(
+                        me.nvme
+                            ? gettext('Waiting for a namespace report from: {0}.')
+                            : gettext('Waiting for a LUN report from: {0}.'),
+                        waiting,
+                    ),
                 missing && Ext.String.format(missingAdvice, missing),
             ];
             me.down('#advice').setHtml(Ext.htmlEncode(text.filter(Boolean).join(' ')));
@@ -97,7 +109,9 @@ Ext.define('PVE.window.SANLunState', {
                 flex: 1,
                 store,
                 disableSelection: true,
-                emptyText: gettext('No node reported this LUN yet.'),
+                emptyText: me.nvme
+                    ? gettext('No node reported this namespace yet.')
+                    : gettext('No node reported this LUN yet.'),
                 columns: [
                     {
                         text: gettext('Node'),

@@ -1,16 +1,21 @@
-Ext.define('PVE.storage.wizard.IScsiTarget', {
+// The step of a guided setup that connects to the target of an iSCSI or the subsystem of an NVMe
+// over Fabrics array, through a storage of that type.
+Ext.define('PVE.storage.wizard.Target', {
     extend: 'Proxmox.panel.InputPanel',
-    xtype: 'pveStorageWizardIScsiTarget',
-    onlineHelp: 'storage_open_iscsi',
+    xtype: 'pveStorageWizardTarget',
 
-    // The iSCSI storage the target already has, which the setup uses instead of adding one.
+    storageType: 'iscsi',
+
+    // The storage the target already has, which the setup uses instead of adding one.
     existingConnection: function () {
         let me = this;
         let target = me.down('field[name=target]').getValue();
-        return me.storages?.find((entry) => entry.type === 'iscsi' && entry.target === target);
+        return me.storages?.find(
+            (entry) => entry.type === me.storageType && entry[me.targetKey] === target,
+        );
     },
 
-    // The ID of the iSCSI storage the setup adds, named after the storage on the LUN by default.
+    // The ID of the storage the setup adds, named after the storage on the LUN by default.
     newConnectionId: function () {
         let me = this;
         let id = me.down('field[name=storage]').getValue();
@@ -21,8 +26,9 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
     // step and Next both use it, so that the note does not promise what Next then refuses.
     reuseConflict: function (selectedNodes) {
         let me = this;
+        let nvme = me.storageType === 'nvmeof';
         let target = me.down('field[name=target]').getValue();
-        let users = (me.storages ?? []).filter((entry) => entry.target === target);
+        let users = (me.storages ?? []).filter((entry) => entry[me.targetKey] === target);
         if (!users.length) {
             return undefined;
         }
@@ -30,30 +36,46 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let format = (text, ...args) => Ext.String.format(text, ...args);
         if (users.length !== 1) {
             return format(
-                gettext(
-                    'Storages {0} use this target. The setup can only reuse a target that one storage uses.',
-                ),
+                nvme
+                    ? gettext(
+                          'Storages {0} use this subsystem. The setup can only reuse a subsystem that one storage uses.',
+                      )
+                    : gettext(
+                          'Storages {0} use this target. The setup can only reuse a target that one storage uses.',
+                      ),
                 users.map((entry) => entry.storage).join(', '),
             );
-        } else if (base.type !== 'iscsi') {
+        } else if (base.type !== me.storageType) {
             return format(
-                gettext(
-                    'Storage "{0}" uses this target. The setup can only reuse an iSCSI storage.',
-                ),
+                nvme
+                    ? gettext(
+                          'Storage "{0}" uses this subsystem. The setup can only reuse an NVMe over Fabrics storage.',
+                      )
+                    : gettext(
+                          'Storage "{0}" uses this target. The setup can only reuse an iSCSI storage.',
+                      ),
                 base.storage,
             );
         } else if (`${base.content ?? ''}` !== 'none') {
             return format(
-                gettext(
-                    'Storage "{0}" uses the LUNs of this target directly. If no guest uses them, clear Use LUNs directly in its edit dialog, otherwise use another target.',
-                ),
+                nvme
+                    ? gettext(
+                          'Storage "{0}" uses the namespaces of this subsystem directly. If no guest uses them, clear Use namespaces directly in its edit dialog, otherwise use another subsystem.',
+                      )
+                    : gettext(
+                          'Storage "{0}" uses the LUNs of this target directly. If no guest uses them, clear Use LUNs directly in its edit dialog, otherwise use another target.',
+                      ),
                 base.storage,
             );
         } else if (base.disable) {
             return format(
-                gettext(
-                    'Storage "{0}" connects to this target, but it is disabled. Enable that storage first.',
-                ),
+                nvme
+                    ? gettext(
+                          'Storage "{0}" connects to this subsystem, but it is disabled. Enable that storage first.',
+                      )
+                    : gettext(
+                          'Storage "{0}" connects to this target, but it is disabled. Enable that storage first.',
+                      ),
                 base.storage,
             );
         }
@@ -61,17 +83,17 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         if (baseNodes.length && !baseNodes.includes(Proxmox.NodeName)) {
             return format(
                 gettext(
-                    'iSCSI storage "{0}" is not available on node "{1}". Open the web UI on one of its nodes.',
+                    'Storage "{0}" is not available on node "{1}". Open the web UI on one of its nodes.',
                 ),
                 base.storage,
                 Proxmox.NodeName,
             );
         } else if (baseNodes.length && selectedNodes.some((node) => !baseNodes.includes(node))) {
             return format(
-                gettext('iSCSI storage "{0}" is not available on all selected nodes.'),
+                gettext('Storage "{0}" is not available on all selected nodes.'),
                 base.storage,
             );
-        } else if (!base['managed-multipath']) {
+        } else if (!nvme && !base['managed-multipath']) {
             return format(
                 gettext(
                     'Enable Multipath in the edit dialog of storage "{0}" before using it here.',
@@ -94,6 +116,14 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         field.setReadOnly(!!existing);
         let id = me.down('field[name=storage]').getValue();
         field.setEmptyText(id ? `${id}-base` : '');
+        // a reused storage keeps its own portals
+        let portals = me.down('field[name=portals]');
+        if (portals) {
+            if (existing) {
+                portals.setValue(existing.portals);
+            }
+            portals.setReadOnly(!!existing);
+        }
 
         // the nodes of a storage that the setup uses are the default selection
         let identities = me.down('pveStorageWizardNodeIdentities');
@@ -112,19 +142,32 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         note.setHidden(!conflict);
     },
 
-    // The portals of the enabled iSCSI storages, to discover the target of another LUN through one
-    // of them.
+    // The portals of the enabled storages of the type, to discover the target of another LUN
+    // through one of them. An NVMe over Fabrics storage lists the I/O portals of its subsystem,
+    // whose default port would skip the discovery port 8009, so the suggestion leaves it out.
     updatePortalSuggestions: function () {
         let me = this;
         let users = new Map();
-        for (const { type, portal, storage, disable } of me.storages ?? []) {
-            if (['iscsi', 'iscsidirect'].includes(type) && portal && !disable) {
-                users.set(portal, [...(users.get(portal) ?? []), storage]);
+        for (const { type, portal, portals, storage, disable } of me.storages ?? []) {
+            let list = [];
+            if (disable) {
+                continue;
+            } else if (me.storageType === 'nvmeof' && type === 'nvmeof') {
+                // as the storage splits its list
+                list = `${portals ?? ''}`
+                    .split(/[\s,;]+/)
+                    .filter(Boolean)
+                    .map((entry) => entry.replace(/:4420$/, ''));
+            } else if (me.storageType === 'iscsi' && ['iscsi', 'iscsidirect'].includes(type)) {
+                list = portal ? [portal] : [];
+            }
+            for (const entry of new Set(list)) {
+                users.set(entry, [...(users.get(entry) ?? []), storage]);
             }
         }
         let suggestions = [...users.keys()]
             .sort()
-            .map((portal) => ({ portal, storages: users.get(portal).sort().join(', ') }));
+            .map((entry) => ({ portal: entry, storages: users.get(entry).sort().join(', ') }));
         let field = me.down('field[name=portal]');
         field.getStore().setData(suggestions);
         field.setHideTrigger(!suggestions.length);
@@ -132,6 +175,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
 
     onSubmit: function () {
         let me = this;
+        let nvme = me.storageType === 'nvmeof';
         let wizard = me.up('window');
         let values = me.getValues();
         // a pasted portal can come with spaces around it
@@ -140,7 +184,9 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let target = me.down('field[name=target]');
         if (!values.target || target.discoveredPortal !== values.portal) {
             wizard.showError(
-                gettext('Select a target once the targets of this portal are listed.'),
+                nvme
+                    ? gettext('Select a subsystem once the subsystems of this portal are listed.')
+                    : gettext('Select a target once the targets of this portal are listed.'),
             );
             return;
         }
@@ -182,9 +228,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 // the step showed which storage it reuses, if any, which must still hold
                 if (me.existingConnection()?.storage !== shown) {
                     wizard.showError(
-                        gettext(
-                            'The iSCSI storage of this target changed in the meantime. Check this step, then retry.',
-                        ),
+                        nvme
+                            ? gettext(
+                                  'The NVMe over Fabrics storage of this subsystem changed in the meantime. Check this step, then retry.',
+                              )
+                            : gettext(
+                                  'The iSCSI storage of this target changed in the meantime. Check this step, then retry.',
+                              ),
                     );
                     return;
                 }
@@ -212,25 +262,35 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     if (restricted.length) {
                         nodes = (selectedNodes.length ? selectedNodes : restricted).join(',');
                     }
-                    connected({ storage: base.storage, target: base.target, nodes });
+                    connected({ storage: base.storage, target: base[me.targetKey], nodes });
                     return;
                 }
                 let params = {
-                    type: 'iscsi',
+                    type: me.storageType,
                     storage: me.newConnectionId(),
-                    portal: values.portal,
-                    target: values.target,
                     content: 'none',
-                    'managed-multipath': 1,
+                    ...(nvme
+                        ? // the storage configuration does not keep outer spaces, so neither may the
+                          // copy that the cleanup compares
+                          { subsysnqn: values.target, portals: values.portals.trim() }
+                        : {
+                              portal: values.portal,
+                              target: values.target,
+                              'managed-multipath': 1,
+                          }),
                 };
                 if (nodes) {
                     params.nodes = nodes;
                 }
                 if (params.storage === values.storage) {
                     wizard.showError(
-                        gettext(
-                            'The storage for guest disks and the iSCSI storage need different IDs. Change the iSCSI Storage ID under Advanced.',
-                        ),
+                        nvme
+                            ? gettext(
+                                  'The storage for guest disks and the NVMe over Fabrics storage need different IDs. Change the NVMe over Fabrics Storage ID under Advanced.',
+                              )
+                            : gettext(
+                                  'The storage for guest disks and the iSCSI storage need different IDs. Change the iSCSI Storage ID under Advanced.',
+                              ),
                     );
                     return;
                 }
@@ -238,9 +298,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     wizard.showError(
                         Ext.htmlEncode(
                             Ext.String.format(
-                                gettext(
-                                    'The ID "{0}" for the iSCSI storage is already in use. Set another one under Advanced.',
-                                ),
+                                nvme
+                                    ? gettext(
+                                          'The ID "{0}" for the NVMe over Fabrics storage is already in use. Set another one under Advanced.',
+                                      )
+                                    : gettext(
+                                          'The ID "{0}" for the iSCSI storage is already in use. Set another one under Advanced.',
+                                      ),
                                 params.storage,
                             ),
                         ),
@@ -260,9 +324,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
 
     initComponent: function () {
         let me = this;
+        let nvme = me.storageType === 'nvmeof';
+        me.targetKey = nvme ? 'subsysnqn' : 'target';
+        me.onlineHelp = nvme ? 'storage_nvmeof' : 'storage_open_iscsi';
+        let targetLabel = nvme ? gettext('Subsystem') : gettext('Target');
         let common = PVE.panel.StorageBase.commonFields(true);
         // wide enough for the longest label of the step
-        let labelWidth = 150;
+        let labelWidth = nvme ? 200 : 150;
         let update = () => me.updateConnectionField();
         let discovery = new Ext.util.DelayedTask(function () {
             let portal = me.down('field[name=portal]').getValue()?.trim();
@@ -290,7 +358,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
             {
                 xtype: 'combobox',
                 name: 'portal',
-                fieldLabel: gettext('Portal'),
+                fieldLabel: nvme ? gettext('Discovery Portal') : gettext('Portal'),
                 labelWidth,
                 allowBlank: false,
                 queryMode: 'local',
@@ -317,6 +385,8 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                         let target = me.down('field[name=target]');
                         target.setValue('');
                         target.disable();
+                        // and the I/O portals of its subsystem
+                        me.down('field[name=portals]')?.setValue('');
                         // an answer for the previous portal would select one of its targets
                         target.setPortal('');
                         discovery.delay(500);
@@ -324,46 +394,76 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 },
             },
             {
-                xtype: 'pveIScsiScan',
+                xtype: nvme ? 'pveNVMeOFScan' : 'pveIScsiScan',
                 name: 'target',
-                fieldLabel: gettext('Target'),
+                fieldLabel: targetLabel,
                 labelWidth,
                 disabled: true,
                 showNodeSelector: false,
                 nodename: Proxmox.NodeName,
-                listeners: { change: update },
+                listeners: {
+                    change: function (field, value) {
+                        // the I/O portals that the discovery reported for the subsystem
+                        let rec =
+                            nvme &&
+                            field.getStore().findRecord('subsysnqn', value, 0, false, true, true);
+                        if (rec) {
+                            me.down('field[name=portals]').setValue(rec.get('portals'));
+                        }
+                        update();
+                    },
+                },
                 listConfig: {
                     width: 650,
-                    emptyText: PVE.Utils.renderNotFound(gettext('iSCSI Target')),
+                    emptyText: PVE.Utils.renderNotFound(
+                        nvme ? gettext('Subsystem') : gettext('iSCSI Target'),
+                    ),
                     columns: [
                         {
-                            text: gettext('Target'),
-                            dataIndex: 'target',
+                            text: targetLabel,
+                            dataIndex: me.targetKey,
                             flex: 1,
                             renderer: Ext.htmlEncode,
                         },
                         {
                             text: gettext('Portals'),
-                            dataIndex: 'portal',
+                            dataIndex: nvme ? 'portals' : 'portal',
                             width: 220,
                             renderer: Ext.htmlEncode,
                         },
                     ],
                 },
             },
+            ...(nvme
+                ? [
+                      {
+                          xtype: 'textfield',
+                          name: 'portals',
+                          fieldLabel: gettext('Portals'),
+                          labelWidth,
+                          allowBlank: false,
+                      },
+                  ]
+                : []),
             {
                 xtype: 'component',
                 itemId: 'connectionNote',
                 margin: '0 0 10 0',
                 hidden: true,
             },
-            { xtype: 'pveStorageWizardNodeIdentities', listeners: { nodeschange: update } },
+            {
+                xtype: 'pveStorageWizardNodeIdentities',
+                identity: nvme ? 'nvme-host-nqn' : 'iscsi-initiator-name',
+                listeners: { nodeschange: update },
+            },
         ];
         me.advancedItems = [
             {
                 ...common.id,
                 name: 'connection',
-                fieldLabel: gettext('iSCSI Storage ID'),
+                fieldLabel: nvme
+                    ? gettext('NVMe over Fabrics Storage ID')
+                    : gettext('iSCSI Storage ID'),
                 labelWidth,
                 allowBlank: true,
             },
@@ -393,12 +493,15 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
     },
 });
 
+// Both add the LVM storage the same way; only the volume ID that names its base differs.
 Ext.define('PVE.storage.wizard.IScsi', {
     extend: 'PVE.storage.wizard.SAN',
     wizardType: 'iscsi',
 
     createStorage: function (values, lun) {
         let me = this;
+        let nvme = me.wizardType === 'nvmeof';
+        let suffix = nvme ? `:nvme-${lun.wwid}` : `.dm-uuid-mpath-${lun.wwid}`;
         let fail = (response) => me.showError(response.htmlStatus);
         Proxmox.Utils.API2Request({
             url: `/nodes/${Proxmox.NodeName}/storage/${encodeURIComponent(me.connection.storage)}/content`,
@@ -410,14 +513,16 @@ Ext.define('PVE.storage.wizard.IScsi', {
                 if (me.destroyed) {
                     return;
                 }
-                let volume = response.result.data.find((entry) =>
-                    entry.volid.endsWith(`.dm-uuid-mpath-${lun.wwid}`),
-                );
+                let volume = response.result.data.find((entry) => entry.volid.endsWith(suffix));
                 if (!volume) {
                     me.showError(
-                        gettext(
-                            'The selected LUN has no multipath volume yet. Check Node > SAN, then retry.',
-                        ),
+                        nvme
+                            ? gettext(
+                                  'The selected namespace is not available yet. Check Node > SAN, then retry.',
+                              )
+                            : gettext(
+                                  'The selected LUN has no multipath volume yet. Check Node > SAN, then retry.',
+                              ),
                     );
                     return;
                 }
@@ -425,4 +530,9 @@ Ext.define('PVE.storage.wizard.IScsi', {
             },
         });
     },
+});
+
+Ext.define('PVE.storage.wizard.NVMeOF', {
+    extend: 'PVE.storage.wizard.IScsi',
+    wizardType: 'nvmeof',
 });

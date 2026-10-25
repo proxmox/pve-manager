@@ -30,10 +30,11 @@ Ext.define('PVE.storage.wizard.LunSelect', {
         // The scan names one target per LUN, also for a LUN reached through several. The content
         // listing has the LUNs of the connection, and a LUN that shows up later is listed once the
         // scan names the target of the connection for it.
+        let targetKey = wizard.wizardType === 'nvmeof' ? 'nvme-subsystem' : 'iscsi-target';
         let filter = {
             id: 'connection',
             filterFn: (rec) =>
-                rec.get('iscsi-target') === connection.target ||
+                rec.get(targetKey) === connection.target ||
                 (me.connectionWwids ?? []).includes(rec.get('wwid')),
         };
         me.store.addFilter(filter);
@@ -45,7 +46,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             success: function (response) {
                 if (!me.destroyed) {
                     me.connectionWwids = response.result.data
-                        .map((entry) => entry.volid.match(/\.dm-uuid-mpath-(.+)$/)?.[1])
+                        .map((entry) => entry.volid.match(/(?:\.dm-uuid-mpath-|:nvme-)(.+)$/)?.[1])
                         .filter(Boolean);
                     me.store.addFilter(filter);
                 }
@@ -74,7 +75,9 @@ Ext.define('PVE.storage.wizard.LunSelect', {
         // the setup refuses a LUN with data, so do not offer one
         let hasData = (row) => row.usage === 'lvm' || row.usage === 'other';
         let blocked = (row) => inUse(row) || hasData(row);
-        let noLunsText = gettext('No LUNs found. Check connections and array access.');
+        let noLunsText = me.nvme
+            ? gettext('No namespaces found. Check connections and array access.')
+            : gettext('No LUNs found. Check connections and array access.');
         let updateSelection = function () {
             let row = me.getSelection();
             me.down('#selection').setValue(row && !blocked(row) ? row.wwid : '');
@@ -91,9 +94,13 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                 xtype: 'component',
                 cls: 'pmx-hint',
                 margin: '0 0 10 0',
-                html: gettext(
-                    'LUNs with known data or users cannot be selected. To keep the volume group on a LUN, add it under Datacenter > Storage > Add > LVM instead. To discard the data of a LUN, stop its users on all hosts and wipe it under Node > SAN first.',
-                ),
+                html: me.nvme
+                    ? gettext(
+                          'Namespaces with known data or users cannot be selected. To keep the volume group on a namespace, add it under Datacenter > Storage > Add > LVM instead. To discard the data of a namespace, stop its users on all hosts and wipe it under Node > SAN first.',
+                      )
+                    : gettext(
+                          'LUNs with known data or users cannot be selected. To keep the volume group on a LUN, add it under Datacenter > Storage > Add > LVM instead. To discard the data of a LUN, stop its users on all hosts and wipe it under Node > SAN first.',
+                      ),
             },
             ...(me.rescanNote
                 ? [
@@ -126,6 +133,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                         renderer: Ext.htmlEncode,
                     },
                     { text: 'LUN', dataIndex: 'iscsi-lun', width: 60 },
+                    { text: 'NSID', dataIndex: 'nvme-nsid', width: 60 },
                     {
                         text: gettext('Model'),
                         dataIndex: 'model',
@@ -144,6 +152,8 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                         dataIndex: 'multipath',
                         width: 170,
                         renderer: PVE.SANUtils.renderSanLunMultipath,
+                        // native NVMe multipath needs no setup per namespace
+                        hidden: me.nvme,
                     },
                     {
                         text: gettext('Used By'),
@@ -189,9 +199,10 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                             searchchange: function (field, query) {
                                 let grid = me.down('grid');
                                 if (grid?.rendered) {
-                                    grid.setEmptyText(
-                                        query ? gettext('No LUNs match the search.') : noLunsText,
-                                    );
+                                    let noMatch = me.nvme
+                                        ? gettext('No namespaces match the search.')
+                                        : gettext('No LUNs match the search.');
+                                    grid.setEmptyText(query ? noMatch : noLunsText);
                                 }
                             },
                         },
@@ -206,8 +217,10 @@ Ext.define('PVE.storage.wizard.LunSelect', {
         let search = me.down('pveRecordSearchField');
         me.on('activate', function () {
             search.setTargetStore(me.store);
-            if (me.up('window').wizardType === 'fc') {
-                me.down('gridcolumn[dataIndex=iscsi-lun]').hide();
+            let type = me.up('window').wizardType;
+            me.down('gridcolumn[dataIndex=iscsi-lun]').setHidden(type !== 'iscsi');
+            me.down('gridcolumn[dataIndex=nvme-nsid]').setHidden(type !== 'nvmeof');
+            if (type === 'fc') {
                 me.store.addFilter({
                     id: 'transport',
                     filterFn: (rec) => ['fc', 'fcoe'].includes(rec.get('transport')),

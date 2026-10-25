@@ -237,7 +237,7 @@ Ext.define('PVE.SANUtils', {
     },
 
     openSetup: function (type, reloadCallback) {
-        let wizard = type === 'fc' ? 'FibreChannel' : 'IScsi';
+        let wizard = { fc: 'FibreChannel', nvmeof: 'NVMeOF' }[type] ?? 'IScsi';
         Ext.create(`PVE.storage.wizard.${wizard}`, { autoShow: true, reloadCallback });
     },
 

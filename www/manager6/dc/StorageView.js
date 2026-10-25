@@ -201,6 +201,11 @@ Ext.define(
                     gettext('Set up shared LVM on a Fibre Channel LUN with multipath.'),
                     'san lun multipath lvm fc guided',
                 ),
+                setup(
+                    'nvmeof',
+                    gettext('Set up shared LVM on a namespace of an NVMe/TCP subsystem.'),
+                    'san nvme namespace lvm tcp guided',
+                ),
             ];
 
             let types = {

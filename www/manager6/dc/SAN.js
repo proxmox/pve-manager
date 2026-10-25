@@ -112,7 +112,7 @@ Ext.define('PVE.dc.SANView', {
                 autoShow: true,
             });
         let setupItem = (type) => ({
-            text: type === 'fc' ? gettext('Fibre Channel') : 'iSCSI',
+            text: type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
             iconCls: `fa fa-fw fa-${type === 'fc' ? 'plug' : 'building'}`,
             disabled: !PVE.SANUtils.canSetup(type),
             handler: () => PVE.SANUtils.openSetup(type, reload),
@@ -121,7 +121,7 @@ Ext.define('PVE.dc.SANView', {
             {
                 text: gettext('Add Shared LVM'),
                 disabled: !PVE.SANUtils.canSetup('iscsi'),
-                menu: [setupItem('iscsi'), setupItem('fc')],
+                menu: [setupItem('iscsi'), setupItem('fc'), setupItem('nvmeof')],
             },
             {
                 text: gettext('Multipath Overrides'),
