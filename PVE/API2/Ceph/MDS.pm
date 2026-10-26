@@ -179,24 +179,32 @@ __PACKAGE__->register_method({
             my $timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
             my $rados = PVE::RADOS->new(timeout => $timeout);
 
-            my $cfg = cfs_read_file('ceph.conf');
-
             my $section = "mds.$mds_id";
 
-            if (defined($cfg->{$section})) {
-                die "MDS '$mds_id' already referenced in ceph config, abort!\n";
-            }
+            # lock only the config update, creating the MDS does not touch ceph.conf
+            PVE::Cluster::cfs_lock_file(
+                'ceph.conf',
+                undef,
+                sub {
+                    my $cfg = cfs_read_file('ceph.conf');
 
-            if (!defined($cfg->{mds}->{keyring})) {
-                # $id isn't a perl variable but a ceph metavariable
-                my $keyring = '/var/lib/ceph/mds/ceph-$id/keyring';
+                    if (defined($cfg->{$section})) {
+                        die "MDS '$mds_id' already referenced in ceph config, abort!\n";
+                    }
 
-                $cfg->{mds}->{keyring} = $keyring;
-            }
+                    if (!defined($cfg->{mds}->{keyring})) {
+                        # $id isn't a perl variable but a ceph metavariable
+                        my $keyring = '/var/lib/ceph/mds/ceph-$id/keyring';
 
-            $cfg->{$section}->{host} = $nodename;
+                        $cfg->{mds}->{keyring} = $keyring;
+                    }
 
-            cfs_write_file('ceph.conf', $cfg);
+                    $cfg->{$section}->{host} = $nodename;
+
+                    cfs_write_file('ceph.conf', $cfg);
+                },
+            );
+            die $@ if $@;
 
             eval { PVE::Ceph::Services::create_mds($mds_id, $rados) };
             if (my $err = $@) {
@@ -204,9 +212,20 @@ __PACKAGE__->register_method({
                 # wrote it at this point. Do not auto remove the service, could
                 # do real harm for previously manual setup MDS
                 warn "Encountered error, remove '$section' from ceph.conf\n";
-                my $cfg = cfs_read_file('ceph.conf');
-                delete $cfg->{$section};
-                cfs_write_file('ceph.conf', $cfg);
+                PVE::Cluster::cfs_lock_file(
+                    'ceph.conf',
+                    undef,
+                    sub {
+                        my $cfg = cfs_read_file('ceph.conf');
+                        # the lock was released in between, the section may be another node's now
+                        my $host = $cfg->{$section} ? $cfg->{$section}->{host} : undef;
+                        return if !defined($host) || $host ne $nodename;
+                        delete $cfg->{$section};
+                        cfs_write_file('ceph.conf', $cfg);
+                    },
+                );
+                warn "failed to remove '$section' from ceph.conf, remove it manually: $@"
+                    if $@;
 
                 die "$err\n";
             }
@@ -253,12 +272,19 @@ __PACKAGE__->register_method({
             my $timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
             my $rados = PVE::RADOS->new(timeout => $timeout);
 
-            my $cfg = cfs_read_file('ceph.conf');
+            PVE::Cluster::cfs_lock_file(
+                'ceph.conf',
+                undef,
+                sub {
+                    my $cfg = cfs_read_file('ceph.conf');
 
-            if (defined($cfg->{"mds.$mds_id"})) {
-                delete $cfg->{"mds.$mds_id"};
-                cfs_write_file('ceph.conf', $cfg);
-            }
+                    if (defined($cfg->{"mds.$mds_id"})) {
+                        delete $cfg->{"mds.$mds_id"};
+                        cfs_write_file('ceph.conf', $cfg);
+                    }
+                },
+            );
+            die $@ if $@;
 
             PVE::Ceph::Services::destroy_mds($mds_id, $rados);
         };
