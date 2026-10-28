@@ -1,3 +1,42 @@
+pve-manager (9.2.25) trixie; urgency=medium
+
+  * ceph: allow the installation wizard to select any Ceph release supported
+    by the target node, even when the node serving the web interface has a
+    different architecture or Proxmox VE major version.
+
+  * ui: virtual machines: only offer TPM 2.0 for aarch64 guests, as TPM 1.2 is
+    not supported by their QEMU device and firmware.
+
+  * certificates:
+    - renew the cluster CA during the daily update before its remaining
+      validity shortens node certificates, and log the expiry of renewed node
+      certificates. Clients trusting the CA directly must import the renewed
+      CA certificate before the previous one expires.
+    - re-issue node certificates signed by a replaced cluster CA, so nodes
+      that were offline during CA rotation recover on their next daily update.
+    - mark expired and near-expiry certificates in the web interface, with a
+      shorter warning window for short-lived certificates to avoid warning
+      before their normal renewal time.
+
+  * fix #8195: ceph: lock configuration updates when creating or removing
+    metadata servers, preventing concurrent tasks from overwriting each
+    other's changes or leaving stale MDS sections behind.
+
+  * fix #8184: ui: settings: allow Remote Resizing as the default noVNC scaling
+    mode, so the guest display can follow the console window size when
+    supported.
+
+  * ceph: order all ceph-* services, RBD mappings and CephFS mirroring after
+    the cluster filesystem at boot, avoiding failures from reading their
+    configuration before /etc/pve is mounted.
+
+  * fix #8006: acme: base automatic renewal and the API renewal threshold on
+    the certificate lifetime instead of a fixed 30 days. This avoids
+    unnecessary daily renewals and CA rate limits for shorter-lived
+    certificates while retaining at least three days for retries.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Oct 2026 22:14:54 +0100
+
 pve-manager (9.2.24) trixie; urgency=medium
 
   * api: node shell: harden the console against crafted parameters by only
