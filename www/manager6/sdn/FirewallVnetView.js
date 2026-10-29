@@ -26,7 +26,7 @@ Ext.define('PVE.sdn.FirewallVnetView', {
             model: 'pve-sdn-vnet',
             proxy: {
                 type: 'proxmox',
-                url: '/api2/json/cluster/sdn/vnets',
+                url: '/api2/json/cluster/sdn/vnets?running=1',
             },
             sorters: {
                 property: ['zone', 'vnet'],
