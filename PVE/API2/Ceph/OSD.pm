@@ -7,6 +7,7 @@ use Cwd qw(abs_path);
 use Errno qw(ENOENT);
 use IO::File;
 use JSON;
+use List::Util qw(any);
 use UUID;
 
 use PVE::Ceph::Tools;
@@ -342,17 +343,18 @@ __PACKAGE__->register_method({
 
         my $ceph_conf = cfs_read_file('ceph.conf');
 
+        my $osd_net_opt = 'cluster_network';
         my $osd_network = $ceph_conf->{global}->{cluster_network};
-        $osd_network //= $ceph_conf->{global}->{public_network}; # fallback
+        if (!$osd_network) { # fallback, also when empty like ceph does
+            $osd_net_opt = 'public_network';
+            $osd_network = $ceph_conf->{global}->{public_network};
+        }
 
-        if ($osd_network) { # check only if something is configured
-            my $cluster_net_ips = PVE::Network::get_local_ip_from_cidr($osd_network);
-            if (scalar(@$cluster_net_ips) < 1) {
-                my $osd_net_obj = PVE::Network::IP_from_cidr($osd_network);
-                my $osd_base_cidr = $osd_net_obj->{ip} . "/" . $osd_net_obj->{prefixlen};
-
+        my @osd_nets = PVE::Tools::split_list($osd_network);
+        if (@osd_nets) { # check only if something is configured
+            if (!any { scalar(@{ PVE::Network::get_local_ip_from_cidr($_) }) } @osd_nets) {
                 die
-                    "No address from ceph cluster network (${osd_base_cidr}) found on node '$nodename'. "
+                    "No address from ceph $osd_net_opt ($osd_network) found on node '$nodename'. "
                     . "Check your network config.\n";
             }
         }
