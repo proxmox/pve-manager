@@ -1201,7 +1201,7 @@ Ext.define('PVE.node.CephOsdTree', {
     columns: [
         {
             xtype: 'treecolumn',
-            text: 'Name',
+            text: gettext('Name'),
             dataIndex: 'name',
             width: 150,
             sorter: {
@@ -1210,7 +1210,7 @@ Ext.define('PVE.node.CephOsdTree', {
             },
         },
         {
-            text: 'Type',
+            text: gettext('Type'),
             dataIndex: 'type',
             hidden: true,
             align: 'right',
@@ -1224,13 +1224,13 @@ Ext.define('PVE.node.CephOsdTree', {
             renderer: Ext.htmlEncode,
         },
         {
-            text: 'OSD Type',
+            text: gettext('OSD Type'),
             dataIndex: 'osdtype',
             align: 'right',
             width: 100,
         },
         {
-            text: 'Bluestore Device',
+            text: gettext('Bluestore Device'),
             dataIndex: 'blfsdev',
             align: 'right',
             width: 75,
@@ -1238,7 +1238,7 @@ Ext.define('PVE.node.CephOsdTree', {
             renderer: Ext.htmlEncode,
         },
         {
-            text: 'DB Device',
+            text: gettext('DB Device'),
             dataIndex: 'dbdev',
             align: 'right',
             width: 75,
@@ -1246,7 +1246,7 @@ Ext.define('PVE.node.CephOsdTree', {
             renderer: Ext.htmlEncode,
         },
         {
-            text: 'WAL Device',
+            text: gettext('WAL Device'),
             dataIndex: 'waldev',
             align: 'right',
             renderer: 'render_wal',
@@ -1254,7 +1254,7 @@ Ext.define('PVE.node.CephOsdTree', {
             hidden: true,
         },
         {
-            text: 'Status',
+            text: gettext('Status'),
             dataIndex: 'status',
             align: 'right',
             renderer: 'render_status',
@@ -1267,21 +1267,21 @@ Ext.define('PVE.node.CephOsdTree', {
             renderer: 'render_version',
         },
         {
-            text: 'weight',
+            text: gettext('weight'),
             dataIndex: 'crush_weight',
             align: 'right',
             renderer: 'render_osd_weight',
             width: 90,
         },
         {
-            text: 'reweight',
+            text: gettext('reweight'),
             dataIndex: 'reweight',
             align: 'right',
             renderer: 'render_osd_weight',
             width: 90,
         },
         {
-            text: gettext('Used') + ' (%)',
+            text: gettext('Used (%)'),
             dataIndex: 'percent_used',
             align: 'right',
             renderer: function (value, metaData, rec) {
@@ -1300,14 +1300,14 @@ Ext.define('PVE.node.CephOsdTree', {
             width: 100,
         },
         {
-            text: 'Apply/Commit<br>Latency (ms)',
+            text: gettext('Apply/Commit<br>Latency (ms)'),
             dataIndex: 'apply_latency_ms',
             align: 'right',
             renderer: 'render_osd_latency',
             width: 120,
         },
         {
-            text: 'PGs',
+            text: gettext('PGs'),
             dataIndex: 'pgs',
             align: 'right',
             renderer: 'render_osd_val',
