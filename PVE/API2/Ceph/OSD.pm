@@ -4,12 +4,14 @@ use strict;
 use warnings;
 
 use Cwd qw(abs_path);
+use Errno qw(ENOENT);
 use IO::File;
 use JSON;
 use UUID;
 
 use PVE::Ceph::Tools;
 use PVE::Ceph::Services;
+use PVE::Ceph::KeyMigration qw(keyring_text parse_storage_key);
 use PVE::CephConfig;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::Diskmanage;
@@ -20,7 +22,7 @@ use PVE::INotify;
 use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
-use PVE::Tools qw(run_command file_set_contents);
+use PVE::Tools qw(run_command file_get_contents file_set_contents);
 use PVE::ProcFSTools;
 use PVE::Network;
 
@@ -412,16 +414,10 @@ __PACKAGE__->register_method({
             PVE::Ceph::Tools::get_config('ceph_bootstrap_osd_keyring');
 
         my $auth_client_required = $ceph_conf->{global}->{auth_client_required} // 'cephx';
-        if (!-f $ceph_bootstrap_osd_keyring && $auth_client_required ne 'none') {
-            my $bindata = $rados->mon_command({
-                prefix => 'auth get-or-create',
-                entity => 'client.bootstrap-osd',
-                caps => [
-                    'mon' => 'allow profile bootstrap-osd',
-                ],
-                format => 'plain',
-            });
-            file_set_contents($ceph_bootstrap_osd_keyring, $bindata, 0600);
+        my $bootstrap_keyring_updated;
+        if ($auth_client_required ne 'none') {
+            $bootstrap_keyring_updated =
+                update_bootstrap_osd_keyring($rados, $ceph_bootstrap_osd_keyring);
         }
 
         # $size is in kibibytes
@@ -523,6 +519,10 @@ __PACKAGE__->register_method({
 
         my $worker = sub {
             my $upid = shift;
+
+            print "updated '$ceph_bootstrap_osd_keyring' - its key did not match the auth"
+                . " database\n"
+                if $bootstrap_keyring_updated;
 
             PVE::Diskmanage::locked_disk_action(sub {
                 # update disklist and re-test requirements
@@ -956,6 +956,37 @@ sub osd_belongs_to_node {
     return 0 if !$osds;
 
     return grep($_ == $osdid, @$osds);
+}
+
+# ceph-volume fails with EACCES if this keyring holds an outdated key, for example on a node
+# restored from before a key rotation. Returns whether an existing file was replaced.
+sub update_bootstrap_osd_keyring {
+    my ($rados, $path) = @_;
+
+    my $entity = 'client.bootstrap-osd';
+    my $res = $rados->mon_cmd({ prefix => 'auth get', entity => $entity }, 1);
+    if ($res->{return_code} == -ENOENT) {
+        $res = $rados->mon_cmd({
+            prefix => 'auth get-or-create',
+            entity => $entity,
+            caps => [
+                'mon' => 'allow profile bootstrap-osd',
+            ],
+        });
+    } elsif ($res->{return_code} < 0) {
+        die "could not read '$entity' - $res->{status_message}\n";
+    }
+    my $entry = $res->{data}->[0];
+    die "no key for '$entity' in the auth database\n" if !$entry || !$entry->{key};
+
+    my $current = -f $path ? file_get_contents($path) : undef;
+    my $key = parse_storage_key($current, 'keyring', $entity)->{key};
+    # a staged key authenticates next to the active one until it is committed
+    return 0 if defined($key) && ($key eq $entry->{key} || $key eq ($entry->{pending_key} // ''));
+
+    file_set_contents($path, keyring_text($entry), 0600);
+
+    return defined($current) ? 1 : 0;
 }
 
 # Drop everything the monitors still hold for $osdid.
