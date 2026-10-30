@@ -1634,8 +1634,7 @@ sub check_bootloader {
                 "System booted in UEFI mode but the EFI System Partition (ESP) is not mounted at"
                     . " /boot/efi. Mount it at /boot/efi before upgrading and ensure it mounts"
                     . " automatically at boot (e.g. via /etc/fstab), otherwise GRUB updates may leave"
-                    . " the system unbootable."
-            );
+                    . " the system unbootable.");
             $boot_ok = 0;
         }
         if (!-f "/usr/share/doc/grub-efi-amd64/changelog.Debian.gz") {
