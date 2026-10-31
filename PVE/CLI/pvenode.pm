@@ -6,6 +6,7 @@ use warnings;
 use PVE::API2::ACME;
 use PVE::API2::ACMEAccount;
 use PVE::API2::ACMEPlugin;
+use PVE::API2::APT;
 use PVE::API2::Certificates;
 use PVE::API2::NodeConfig;
 use PVE::API2::Nodes;
@@ -15,6 +16,7 @@ use PVE::ACME::Challenge;
 use PVE::CertHelpers;
 use PVE::Certificate;
 use PVE::Exception qw(raise_param_exc raise);
+use PVE::Format;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::NodeConfig;
 use PVE::RPCEnvironment;
@@ -181,6 +183,40 @@ my $print_cert_info = sub {
     );
 };
 
+# prints the transactions newest first, each with its package changes below it
+my $print_apt_history = sub {
+    my ($data, $schema, $options) = @_;
+
+    if (($options->{'output-format'} // 'text') ne 'text') {
+        PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+        return;
+    }
+
+    for my $entry (@$data) {
+        my ($start, $end) = $entry->@{qw(start-time end-time)};
+        my $status = 'OK';
+        if (defined(my $error = $entry->{error})) {
+            $status = "error: $error";
+        } elsif (!defined($end)) {
+            $status = 'interrupted or still running';
+        }
+        # APT logs local time, so a transaction can end before it started if the clock was set back
+        my $duration =
+            defined($end) && $end >= $start ? PVE::Format::render_duration($end - $start) : '-';
+        print PVE::Format::render_timestamp($start) . " ($duration) $status\n";
+        for my $key (qw(command-line requested-by comment)) {
+            print "    $key: $entry->{$key}\n" if defined($entry->{$key});
+        }
+        for my $change ($entry->{packages}->@*) {
+            my ($old, $new) = $change->@{qw(old-version new-version)};
+            my $versions = $new // $old // '';
+            $versions = "$old -> $new" if defined($old) && defined($new) && $old ne $new;
+            print "    $change->{action} $change->{package} $versions\n";
+        }
+        print "\n";
+    }
+};
+
 our $cmddef = {
     config => {
         get => [
@@ -234,6 +270,17 @@ our $cmddef = {
         ],
         delete =>
             ['PVE::API2::Certificates', 'remove_custom_cert', ['restart'], { node => $nodename }],
+    },
+
+    apt => {
+        history => [
+            'PVE::API2::APT',
+            'history',
+            [],
+            { node => $nodename },
+            $print_apt_history,
+            $PVE::RESTHandler::standard_output_options,
+        ],
     },
 
     task => {
