@@ -107,6 +107,7 @@ my $init_report_cmds = sub {
                 sub { dir2text('/etc/apt/sources.list.d/', '.+\.sources') },
                 'apt-cache policy | grep -vP "^ +origin "',
                 'apt-mark showhold',
+                'pvenode apt history --since ' . (time() - 14 * 24 * 60 * 60),
                 'lscpu',
                 'pvesh get /cluster/resources --type node --output-format=yaml',
             ],
