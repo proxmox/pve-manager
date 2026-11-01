@@ -278,6 +278,7 @@ Ext.define('PVE.node.Config', {
                     itemId: 'apt',
                     canRefresh: !!caps.nodes['Sys.Modify'],
                     canShowChangelog: !!caps.nodes['Sys.Modify'],
+                    canShowUpdateChangelogs: true,
                     upgradeBtn: {
                         xtype: 'pveConsoleButton',
                         disabled: Proxmox.UserName !== 'root@pam',
