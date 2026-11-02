@@ -67,6 +67,26 @@ my sub redact_section_config {
     return $class->redact_raw_config($raw, $redaction_placeholder);
 }
 
+# names like password, db_pass, ADMIN_TOKEN, SECRET_KEY or api_key
+my $credential_name_re = qr/
+    (?<![a-z0-9])
+    (?: (?:[a-z0-9]+_)* (?:password2?|passwd|pass|secret|token) (?:_[a-z0-9]+)* | (?:[a-z0-9]+_)+ key )
+/ix;
+
+# credentials in URLs, like in APT sources or proxy settings, in container environment variables
+# and in other name=value pairs, like mount options
+sub redact_credentials {
+    my ($text) = @_;
+
+    $text =~
+        s{(?<![a-z0-9+.-])([a-z][a-z0-9+.-]*+://[^\s/:]*):[^\s/]+@}{$1:$redaction_placeholder\@}gi;
+    my $env_key_re = qr/(?:lxc\.environment(?:\.\w+)?(?::|\s*=)|env:)/;
+    $text =~ s/^($env_key_re\s*$credential_name_re=).+$/$1$redaction_placeholder/gm;
+    $text =~ s/($credential_name_re=)(?:,,|[^\s,])+/$1$redaction_placeholder/g;
+
+    return $text;
+}
+
 # command -v is the posix equivalent of 'which'
 my sub cmd_exists { system("command -v '$_[0]' > /dev/null 2>&1") == 0 }
 
@@ -276,7 +296,7 @@ sub generate {
         }
     }
 
-    return $report;
+    return redact_credentials($report);
 }
 
 1;

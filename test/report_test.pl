@@ -91,4 +91,76 @@ like($report, qr/^\tsection 1$/m, 'other SDN values kept');
 like($report, qr/^\tipam pve$/m, 'other SDN configs kept');
 like($report, qr/^\tpath \/var\/lib\/vz$/m, 'other storage values kept');
 
+my $credential_tests = [
+    [
+        'APT source with credentials',
+        'deb https://user:s3cr:et@deb.example.com/debian trixie main',
+        'deb https://user:<redacted>@deb.example.com/debian trixie main',
+    ],
+    [
+        'URL with an unencoded @ in the password',
+        'http_proxy: http://user:p@ss@proxy.example.com:3128/',
+        'http_proxy: http://user:<redacted>@proxy.example.com:3128/',
+    ],
+    [
+        'URL with an @ in the user name',
+        'http_proxy: http://user@corp.example:s3cret@proxy.example.com:3128/',
+        'http_proxy: http://user@corp.example:<redacted>@proxy.example.com:3128/',
+    ],
+    [
+        'proxy URL with port and without credentials',
+        'http_proxy: http://proxy.example.com:3128/',
+        'http_proxy: http://proxy.example.com:3128/',
+    ],
+    [
+        'URL with user only',
+        'URIs: https://user@deb.example.com/debian',
+        'URIs: https://user@deb.example.com/debian',
+    ],
+    [
+        'URL with user and port only',
+        'ssh://root@host.example:22/srv',
+        'ssh://root@host.example:22/srv',
+    ],
+    [
+        'CIFS mount options',
+        '//srv/share /mnt cifs username=foo,password=bar,uid=0 0 0',
+        '//srv/share /mnt cifs username=foo,password=<redacted>,uid=0 0 0',
+    ],
+    [
+        'CIFS password with an escaped comma',
+        'username=foo,password=a,,b,password2=new,uid=0',
+        'username=foo,password=<redacted>,password2=<redacted>,uid=0',
+    ],
+    [
+        'Ceph mount options',
+        'mon1:/ /mnt ceph name=admin,secret=AQB+abc==,secretfile=/etc/ceph/s 0 0',
+        'mon1:/ /mnt ceph name=admin,secret=<redacted>,secretfile=/etc/ceph/s 0 0',
+    ],
+    [
+        'command line options',
+        'tool --pass=hunter2 --bypass=1 --db-password=x --api_key=y passthrough=on',
+        'tool --pass=<redacted> --bypass=1 --db-password=<redacted> --api_key=<redacted> passthrough=on',
+    ],
+    [
+        'container environment',
+        "lxc.environment.runtime: ADMIN_TOKEN=\$argon2id\$v=19\$m=65540,t=3,p=4\$c2FsdA\$aGFzaA\n"
+            . "lxc.environment.runtime: DB_PASSWORD=correct horse\n"
+            . "lxc.environment.runtime: TZ=Europe/Vienna\n",
+        "lxc.environment.runtime: ADMIN_TOKEN=<redacted>\n"
+            . "lxc.environment.runtime: DB_PASSWORD=<redacted>\n"
+            . "lxc.environment.runtime: TZ=Europe/Vienna\n",
+    ],
+    [
+        'container environment in the env property',
+        "env: DB_PASSWORD=correct horse\n",
+        "env: DB_PASSWORD=<redacted>\n",
+    ],
+];
+
+for my $test ($credential_tests->@*) {
+    my ($name, $in, $out) = $test->@*;
+    is(PVE::Report::redact_credentials($in), $out, $name);
+}
+
 done_testing();
