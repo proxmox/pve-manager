@@ -22,3 +22,35 @@ pvereport
 =head1 DESCRIPTION
 
 Display various information related to a Proxmox VE system
+
+The report replaces the following values with C<< <redacted> >>:
+
+=over
+
+=item *
+
+Values of options marked as secret in guest, storage, SDN IPAM and SDN DNS
+configurations, like the cloud-init password of guests and the API tokens of
+IPAM and DNS plugins.
+
+=item *
+
+Passwords in URLs, for example in APT sources or the HTTP proxy setting.
+
+=item *
+
+Values in C<name=value> form whose name suggests a credential, like
+C<password> in mount options or C<DB_PASSWORD> in the environment of a
+container. Outside of container environments, a value is only replaced up to
+the next space or comma.
+
+=back
+
+This only covers the cases above. Credentials can remain elsewhere, for example
+in command lines, in QEMU C<args>, in the output of C<ceph config dump>, in
+error messages, or in options of storage plugins that are not installed on this
+node. The report also contains other information that can be sensitive, like
+guest descriptions, user names, SSH public keys, IP addresses and host names.
+Check the report before you share it.
+
+The same applies to the system report generated in the web interface.
