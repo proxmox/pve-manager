@@ -4,11 +4,27 @@ use strict;
 use warnings;
 
 use PVE::IPRoute2;
+use PVE::JSONSchema;
+use PVE::LXC::Config;
+use PVE::Network::SDN::Dns;
+use PVE::Network::SDN::Ipams;
+use PVE::QemuServer;
+use PVE::Storage;
 use PVE::Tools;
+
+my $redaction_placeholder = '<redacted>';
+
+my sub file2text {
+    my ($path, $redact) = @_;
+
+    my $content = PVE::Tools::file_get_contents($path);
+    $content = $redact->($content, $path) if $redact;
+    return "\n# cat $path\n$content\n";
+}
 
 # output the content of all the files of a directory
 my sub dir2text {
-    my ($target_dir, $regexp) = @_;
+    my ($target_dir, $regexp, $redact) = @_;
 
     print STDERR "dir2text '${target_dir}${regexp}'...";
     my $text = "# output '${target_dir}${regexp}' file(s)\n";
@@ -18,11 +34,37 @@ my sub dir2text {
         sub {
             my ($file) = @_;
             return if $file eq '.' || $file eq '..';
-            $text .= "\n# cat $target_dir$file\n";
-            $text .= PVE::Tools::file_get_contents($target_dir . $file) . "\n";
+            $text .= file2text($target_dir . $file, $redact);
         },
     );
     return $text;
+}
+
+my sub redact_qemu_config {
+    my ($raw) = @_;
+
+    my $schema = { type => 'object', properties => PVE::QemuServer::json_config_properties({}) };
+    return PVE::JSONSchema::redact_raw_config($schema, $raw, $redaction_placeholder);
+}
+
+my sub redact_lxc_config {
+    my ($raw) = @_;
+
+    my $schema = { type => 'object', properties => PVE::LXC::Config->json_config_properties({}) };
+    return PVE::JSONSchema::redact_raw_config($schema, $raw, $redaction_placeholder);
+}
+
+my $section_configs = {
+    '/etc/pve/sdn/dns.cfg' => 'PVE::Network::SDN::Dns::Plugin',
+    '/etc/pve/sdn/ipams.cfg' => 'PVE::Network::SDN::Ipams::Plugin',
+    '/etc/pve/storage.cfg' => 'PVE::Storage::Plugin',
+};
+
+my sub redact_section_config {
+    my ($raw, $path) = @_;
+
+    my $class = $section_configs->{$path} // return $raw;
+    return $class->redact_raw_config($raw, $redaction_placeholder);
 }
 
 # command -v is the posix equivalent of 'which'
@@ -59,7 +101,7 @@ my $init_report_cmds = sub {
         storage => {
             order => 30,
             cmds => [
-                'cat /etc/pve/storage.cfg',
+                sub { file2text('/etc/pve/storage.cfg', \&redact_section_config) },
                 'pvesm status',
                 'cat /etc/fstab',
                 'findmnt --ascii',
@@ -71,9 +113,9 @@ my $init_report_cmds = sub {
             order => 40,
             cmds => [
                 'qm list',
-                sub { dir2text('/etc/pve/qemu-server/', '\d+\.conf') },
+                sub { dir2text('/etc/pve/qemu-server/', '\d+\.conf', \&redact_qemu_config) },
                 'pct list',
-                sub { dir2text('/etc/pve/lxc/', '\d+\.conf') },
+                sub { dir2text('/etc/pve/lxc/', '\d+\.conf', \&redact_lxc_config) },
             ],
         },
         network => {
@@ -85,7 +127,7 @@ my $init_report_cmds = sub {
                 'cat /etc/network/interfaces',
                 sub { dir2text('/etc/network/interfaces.d/', '.*') },
                 'cat /etc/pve/sdn/.running-config',
-                sub { dir2text('/etc/pve/sdn/', '.+\.cfg') },
+                sub { dir2text('/etc/pve/sdn/', '.+\.cfg', \&redact_section_config) },
                 sub { dir2text('/etc/pve/sdn/', '.+\.json') },
             ],
         },
