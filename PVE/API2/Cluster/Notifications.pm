@@ -11,6 +11,7 @@ use PVE::Tools qw(extract_param);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
 use PVE::Notify;
+use PVE::SafeSyslog;
 
 use base qw(PVE::RESTHandler);
 
@@ -54,6 +55,43 @@ sub raise_api_error {
     $exc->{line} = $line;
 
     die $exc;
+}
+
+my $matcher_expressions_version = "9.2.26";
+my $matcher_expressions_version_array = [9, 2, 26];
+
+my sub matcher_expression_supported_by_all_nodes {
+    my $version_info = PVE::Cluster::get_node_kv('version-info');
+    for my $node (sort keys $version_info->%*) {
+        my $node_info = eval { JSON::decode_json($version_info->{$node}); };
+        if (my $err = $@) {
+            # warn, but continue.
+            # Rejecting writes to notifications.cfg if a cluster node is
+            # not available or if has not yet published its version through
+            # pvestatd would be unreasonable.
+            syslog('warn', "cannot parse version info for $node as JSON - $err");
+        } elsif (!PVE::Tools::pvecfg_min_version(
+            $node_info->{version},
+            @$matcher_expressions_version_array,
+        )) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+# FIXME: MAJOR VERSION: This check can be dropped at the next major version bump.
+my sub ensure_expression_supported_if_used {
+    my ($config) = @_;
+
+    my $matchers = $config->get_matchers();
+    my $has_expression = grep { defined($_->{expression}) } $matchers->@*;
+
+    if ($has_expression && !matcher_expression_supported_by_all_nodes()) {
+        die "At least one cluster node does not support matcher expressions."
+            . " Please upgrade pve-manager to at least $matcher_expressions_version.\n";
+    }
 }
 
 __PACKAGE__->register_method({
@@ -1666,6 +1704,7 @@ __PACKAGE__->register_method({
 
                 $config->add_matcher($param);
 
+                ensure_expression_supported_if_used($config);
                 PVE::Notify::write_config($config);
             });
         };
@@ -1716,6 +1755,7 @@ __PACKAGE__->register_method({
                     $name, $param, $delete, $digest,
                 );
 
+                ensure_expression_supported_if_used($config);
                 PVE::Notify::write_config($config);
             });
         };
