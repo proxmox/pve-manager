@@ -545,7 +545,7 @@ sub send_notification {
         if ($email_configured && ($policy eq "always" || ($policy eq "failure" && $failed))) {
             # Start out with an empty config. Might still contain
             # built-ins, so we need to disable/remove them.
-            my $notification_config = Proxmox::RS::Notify->parse_config('', '');
+            my $notification_config = PVE::RS::Notify->parse_config('', '');
 
             # Remove built-in matchers, since we only want to send an
             # email to the specified recipients and nobody else.
