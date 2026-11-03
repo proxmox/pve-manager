@@ -518,21 +518,11 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $name = extract_param($param, 'name');
-        my $mailto = extract_param($param, 'mailto');
-        my $mailto_user = extract_param($param, 'mailto-user');
-        my $from_address = extract_param($param, 'from-address');
-        my $author = extract_param($param, 'author');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
-
         eval {
             PVE::Notify::lock_config(sub {
                 my $config = PVE::Notify::read_config();
 
-                $config->add_sendmail_endpoint(
-                    $name, $mailto, $mailto_user, $from_address, $author, $comment, $disable,
-                );
+                $config->add_sendmail_endpoint($param);
 
                 PVE::Notify::write_config($config);
             });
@@ -582,13 +572,6 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $name = extract_param($param, 'name');
-        my $mailto = extract_param($param, 'mailto');
-        my $mailto_user = extract_param($param, 'mailto-user');
-        my $from_address = extract_param($param, 'from-address');
-        my $author = extract_param($param, 'author');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
-
         my $delete = extract_param($param, 'delete');
         my $digest = extract_param($param, 'digest');
 
@@ -597,15 +580,7 @@ __PACKAGE__->register_method({
                 my $config = PVE::Notify::read_config();
 
                 $config->update_sendmail_endpoint(
-                    $name,
-                    $mailto,
-                    $mailto_user,
-                    $from_address,
-                    $author,
-                    $comment,
-                    $disable,
-                    $delete,
-                    $digest,
+                    $name, $param, $delete, $digest,
                 );
 
                 PVE::Notify::write_config($config);
@@ -789,18 +764,19 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $name = extract_param($param, 'name');
-        my $server = extract_param($param, 'server');
         my $token = extract_param($param, 'token');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
+        my $name = $param->{name};
 
         eval {
             PVE::Notify::lock_config(sub {
                 my $config = PVE::Notify::read_config();
 
                 $config->add_gotify_endpoint(
-                    $name, $server, $token, $comment, $disable,
+                    $param,
+                    {
+                        'name' => $name,
+                        'token' => $token,
+                    },
                 );
 
                 PVE::Notify::write_config($config);
@@ -850,10 +826,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $name = extract_param($param, 'name');
-        my $server = extract_param($param, 'server');
         my $token = extract_param($param, 'token');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
 
         my $delete = extract_param($param, 'delete');
         my $digest = extract_param($param, 'digest');
@@ -864,10 +837,10 @@ __PACKAGE__->register_method({
 
                 $config->update_gotify_endpoint(
                     $name,
-                    $server,
-                    $token,
-                    $comment,
-                    $disable,
+                    $param,
+                    {
+                        token => $token,
+                    },
                     $delete,
                     $digest,
                 );
@@ -1102,36 +1075,19 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $name = extract_param($param, 'name');
-        my $server = extract_param($param, 'server');
-        my $port = extract_param($param, 'port');
-        my $mode = extract_param($param, 'mode');
-        my $username = extract_param($param, 'username');
+        my $name = $param->{name};
         my $password = extract_param($param, 'password');
-        my $mailto = extract_param($param, 'mailto');
-        my $mailto_user = extract_param($param, 'mailto-user');
-        my $from_address = extract_param($param, 'from-address');
-        my $author = extract_param($param, 'author');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
 
         eval {
             PVE::Notify::lock_config(sub {
                 my $config = PVE::Notify::read_config();
 
                 $config->add_smtp_endpoint(
-                    $name,
-                    $server,
-                    $port,
-                    $mode,
-                    $username,
-                    $password,
-                    $mailto,
-                    $mailto_user,
-                    $from_address,
-                    $author,
-                    $comment,
-                    $disable,
+                    $param,
+                    {
+                        name => $name,
+                        password => $password,
+                    },
                 );
 
                 PVE::Notify::write_config($config);
@@ -1182,17 +1138,7 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $name = extract_param($param, 'name');
-        my $server = extract_param($param, 'server');
-        my $port = extract_param($param, 'port');
-        my $mode = extract_param($param, 'mode');
-        my $username = extract_param($param, 'username');
         my $password = extract_param($param, 'password');
-        my $mailto = extract_param($param, 'mailto');
-        my $mailto_user = extract_param($param, 'mailto-user');
-        my $from_address = extract_param($param, 'from-address');
-        my $author = extract_param($param, 'author');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
 
         my $delete = extract_param($param, 'delete');
         my $digest = extract_param($param, 'digest');
@@ -1203,17 +1149,10 @@ __PACKAGE__->register_method({
 
                 $config->update_smtp_endpoint(
                     $name,
-                    $server,
-                    $port,
-                    $mode,
-                    $username,
-                    $password,
-                    $mailto,
-                    $mailto_user,
-                    $from_address,
-                    $author,
-                    $comment,
-                    $disable,
+                    $param,
+                    {
+                        password => $password,
+                    },
                     $delete,
                     $digest,
                 );
@@ -1705,31 +1644,11 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $name = extract_param($param, 'name');
-        my $match_severity = extract_param($param, 'match-severity');
-        my $match_field = extract_param($param, 'match-field');
-        my $match_calendar = extract_param($param, 'match-calendar');
-        my $target = extract_param($param, 'target');
-        my $mode = extract_param($param, 'mode');
-        my $invert_match = extract_param($param, 'invert-match');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
-
         eval {
             PVE::Notify::lock_config(sub {
                 my $config = PVE::Notify::read_config();
 
-                $config->add_matcher(
-                    $name,
-                    $target,
-                    $match_severity,
-                    $match_field,
-                    $match_calendar,
-                    $mode,
-                    $invert_match,
-                    $comment,
-                    $disable,
-                );
+                $config->add_matcher($param);
 
                 PVE::Notify::write_config($config);
             });
@@ -1770,14 +1689,6 @@ __PACKAGE__->register_method({
         my ($param) = @_;
 
         my $name = extract_param($param, 'name');
-        my $match_severity = extract_param($param, 'match-severity');
-        my $match_field = extract_param($param, 'match-field');
-        my $match_calendar = extract_param($param, 'match-calendar');
-        my $target = extract_param($param, 'target');
-        my $mode = extract_param($param, 'mode');
-        my $invert_match = extract_param($param, 'invert-match');
-        my $comment = extract_param($param, 'comment');
-        my $disable = extract_param($param, 'disable');
         my $digest = extract_param($param, 'digest');
         my $delete = extract_param($param, 'delete');
 
@@ -1786,17 +1697,7 @@ __PACKAGE__->register_method({
                 my $config = PVE::Notify::read_config();
 
                 $config->update_matcher(
-                    $name,
-                    $target,
-                    $match_severity,
-                    $match_field,
-                    $match_calendar,
-                    $mode,
-                    $invert_match,
-                    $comment,
-                    $disable,
-                    $delete,
-                    $digest,
+                    $name, $param, $delete, $digest,
                 );
 
                 PVE::Notify::write_config($config);
