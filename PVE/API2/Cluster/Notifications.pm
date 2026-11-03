@@ -1603,6 +1603,14 @@ __PACKAGE__->register_method({
                 type => 'string',
                 format => 'pve-configid',
             },
+            'migrate-to-expression' => {
+                type => 'boolean',
+                default => 0,
+                description =>
+                    "Automatically translate existing 'match-*', 'invert-match' and 'mode' to"
+                    . " an equivalent matching 'expression'.",
+                optional => 1,
+            },
         },
     },
     returns => {
@@ -1614,10 +1622,11 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
         my $name = extract_param($param, 'name');
+        my $migrate_to_expression = extract_param($param, 'migrate-to-expression') // 0;
 
         my $config = PVE::Notify::read_config();
 
-        my $matcher = eval { $config->get_matcher($name) };
+        my $matcher = eval { $config->get_matcher($name, $migrate_to_expression) };
 
         raise_api_error($@) if $@;
         $matcher->{digest} = $config->digest();
