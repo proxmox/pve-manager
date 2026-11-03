@@ -217,15 +217,17 @@ Ext.define('PVE.lxc.RessourceView', {
             });
         };
 
-        var edit_btn = new Proxmox.button.Button({
+        let edit_btn = new Proxmox.button.AltText({
             text: gettext('Edit'),
+            defaultText: gettext('Edit'),
+            altText: gettext('Attach'),
             selModel: me.selModel,
             disabled: true,
             enableFn: function (rec) {
                 if (!rec) {
                     return false;
                 }
-                var rowdef = rows[rec.data.key];
+                let rowdef = rows[rec.data.key];
                 return !!rowdef.editor;
             },
             handler: function () {
@@ -332,6 +334,7 @@ Ext.define('PVE.lxc.RessourceView', {
                 }
             }
             edit_btn.setDisabled(noedit);
+            edit_btn.setText(isUnusedDisk ? edit_btn.altText : edit_btn.defaultText);
 
             volumeaction_btn.setDisabled(!isDisk || !diskCap);
             move_menuitem.setDisabled(isUnusedDisk);

@@ -472,8 +472,10 @@ Ext.define('PVE.qemu.HardwareView', {
             }
         };
 
-        let edit_btn = new Proxmox.button.Button({
+        let edit_btn = new Proxmox.button.AltText({
             text: gettext('Edit'),
+            defaultText: gettext('Edit'),
+            altText: gettext('Attach'),
             selModel: sm,
             disabled: true,
             handler: run_editor,
@@ -816,6 +818,10 @@ Ext.define('PVE.qemu.HardwareView', {
                     isCloudInit ||
                     (isCDRom && !cdromCap) ||
                     (isDisk && !diskCap),
+            );
+
+            edit_btn.setText(
+                isUnusedDisk && !isCloudInit ? edit_btn.altText : edit_btn.defaultText,
             );
 
             diskaction_btn.setDisabled(
