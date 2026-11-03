@@ -2276,5 +2276,7 @@ Ext.define('PVE.Utils', {
             replication: gettext('Replication job notifications'),
             fencing: gettext('Node fencing notifications'),
         });
+
+        Proxmox.Schema.notificationMatcherExpressions = true;
     },
 });
