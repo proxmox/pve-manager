@@ -633,7 +633,7 @@ Ext.define('PVE.qemu.HardwareView', {
             },
         });
 
-        let remove_btn = new Proxmox.button.Button({
+        let remove_btn = new Proxmox.button.AltText({
             text: gettext('Remove'),
             defaultText: gettext('Remove'),
             altText: gettext('Detach'),
@@ -678,21 +678,6 @@ Ext.define('PVE.qemu.HardwareView', {
                         }
                     },
                 });
-            },
-            listeners: {
-                render: function (btn) {
-                    // hack: calculate the max button width on first display to prevent the whole
-                    // toolbar to move when we switch between the "Remove" and "Detach" labels
-                    var def = btn.getSize().width;
-
-                    btn.setText(btn.altText);
-                    var alt = btn.getSize().width;
-
-                    btn.setText(btn.defaultText);
-
-                    var optimal = alt > def ? alt : def;
-                    btn.setSize({ width: optimal });
-                },
             },
         });
 

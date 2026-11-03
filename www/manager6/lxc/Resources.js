@@ -235,7 +235,7 @@ Ext.define('PVE.lxc.RessourceView', {
             },
         });
 
-        var remove_btn = new Proxmox.button.Button({
+        var remove_btn = new Proxmox.button.AltText({
             text: gettext('Remove'),
             defaultText: gettext('Remove'),
             altText: gettext('Detach'),
@@ -256,21 +256,6 @@ Ext.define('PVE.lxc.RessourceView', {
                 return msg;
             },
             handler: run_remove,
-            listeners: {
-                render: function (btn) {
-                    // hack: calculate the max button width on first display to prevent the whole
-                    // toolbar to move when we switch between the "Remove" and "Detach" labels
-                    let def = btn.getSize().width;
-
-                    btn.setText(btn.altText);
-                    let alt = btn.getSize().width;
-
-                    btn.setText(btn.defaultText);
-
-                    let optimal = alt > def ? alt : def;
-                    btn.setSize({ width: optimal });
-                },
-            },
         });
 
         let move_menuitem = new Ext.menu.Item({
