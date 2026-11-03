@@ -1480,6 +1480,13 @@ my $matcher_properties = {
         type => 'string',
         format => 'pve-configid',
     },
+    'expression' => {
+        type => 'string',
+        description => 'Match expression as inline JSON. This option is mutually exclusive with'
+            . ' the following options: match-field, match-calendar, match-severity, invert-match'
+            . ' and mode. All of these can be represented as (sub)-expressions of this expression',
+        optional => 1,
+    },
     'match-field' => {
         type => 'array',
         items => {
