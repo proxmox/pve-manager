@@ -557,6 +557,9 @@ Ext.define('PVE.window.BulkAction', {
         if (me.prefilterIncludeTag) {
             me.down('#includetagfilter').setValue(me.prefilterIncludeTag);
         }
+        if (me.prefilterPool) {
+            me.down('#poolfilter').setValue(me.prefilterPool);
+        }
 
         form.on('validitychange', function () {
             let valid = form.isValid();
