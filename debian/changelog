@@ -1,3 +1,53 @@
+pve-manager (9.2.26) trixie; urgency=medium
+
+  * api: backup: extract config: also allow it with the Datastore.Allocate
+    permission on the storage, like restoring a backup does.
+
+  * fix #8169: api: backup: extract config: allow extracting the
+    configuration of guest backups without a guest ID again, for example of
+    manually renamed backups.
+
+  * ceph: osd: create: rewrite an outdated bootstrap-osd keyring with the key
+    from the auth database. A stale key, for example on a node restored from
+    a backup taken before a key rotation, made OSD creation fail with "RADOS
+    permission denied".
+
+  * api: backup: only delete backup jobs. Passing the ID of another job, like
+    a realm sync job, deleted that job.
+
+  * jobs: keep jobs of unknown types in jobs.cfg. During a rolling upgrade,
+    editing any job on a node that was not upgraded yet removed jobs of newly
+    added types for the whole cluster.
+
+  * api: replication: describe the returned job status in the API schema, so
+    API clients, like the Proxmox Datacenter Manager, and the API viewer can
+    show the job states.
+
+  * fix #7513: certificates: check the permissions on the
+    '/nodes/<node>/certificates' path instead of the whole node, and offer it
+    in the permission path selector, so certificate management can be
+    delegated with least privileges.
+
+  * firewall: vnet: only list the VNets of the running SDN configuration in
+    the VNet firewall dialog, as the permissions are checked against it.
+
+  * ui: fix showing "(undefined)" in the title of the tag context menu in
+    clusters, and drop a redundant '#' from the ASN label of SDN controllers.
+
+  * fix #5001: ui: add a context menu with guest bulk actions to pools in the
+    pool view of the resource tree, like the tag view has.
+
+  * notifications: support nested match rules through the new 'expression'
+    option of matchers, which combines calendar, field and severity rules
+    with all-of, any-of, one-of and their negations at any depth:
+    - the matcher editor of the web interface uses it, and shows existing
+      matchers converted to an equivalent expression.
+    - the API refuses to save matchers with an expression while a cluster
+      node reports an older version, as such nodes cannot parse them. Nodes
+      without a reported version are not checked, so upgrade all nodes first.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 04 Nov 2026 22:30:08 +0100
+
 pve-manager (9.2.25) trixie; urgency=medium
 
   * ceph: allow the installation wizard to select any Ceph release supported
