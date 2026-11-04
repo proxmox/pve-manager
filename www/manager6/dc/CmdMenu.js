@@ -116,9 +116,6 @@ Ext.define('PVE.dc.TagCmdMenu', {
         }
 
         me.title = `${gettext('Tag')} '${me.tag}'`;
-        if (PVE.ClusterName?.length) {
-            me.title += ` (${me.nodename})`;
-        }
 
         me.extraHandlerArgs = {
             prefilterIncludeTag: me.tag,
