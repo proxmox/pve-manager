@@ -69,12 +69,12 @@ Ext.define('PVE.dc.UserTagAccessEdit', {
                 {
                     name: 'user-allow-list',
                     xtype: 'pveListField',
-                    emptyText: gettext('No Tags defined'),
                     fieldTitle: gettext('Tag'),
                     maskRe: PVE.Utils.tagCharRegex,
                     gridConfig: {
                         height: 200,
                         scrollable: true,
+                        emptyText: gettext('No Tags defined'),
                     },
                     listeners: {
                         change: 'tagChange',
