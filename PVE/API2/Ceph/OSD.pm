@@ -763,9 +763,11 @@ __PACKAGE__->register_method({
         my $osdid = $param->{osdid};
         my $rados = PVE::RADOS->new();
         my $metadata = $rados->mon_command({ prefix => 'osd metadata', id => int($osdid) });
+        my $host = PVE::Ceph::Services::metadata_host_node(
+            $metadata->{hostname}, { $nodename => 1 },
+        );
 
-        die "OSD '${osdid}' does not exists on host '${nodename}'\n"
-            if $nodename ne $metadata->{hostname};
+        die "OSD '${osdid}' does not exists on host '${nodename}'\n" if $nodename ne $host;
 
         my $pid;
         my $parser = sub {

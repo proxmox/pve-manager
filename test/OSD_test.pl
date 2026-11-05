@@ -200,4 +200,37 @@ eval {
 };
 like($@, qr/could not read 'client.bootstrap-osd' - access denied/, 'a failed read is reported');
 
+# Ceph metadata can report the FQDN of a node whose name is its first label.
+
+{
+
+    package FakeMetadataRados;
+
+    sub mon_command {
+        my ($self, $cmd) = @_;
+        return { hostname => $self->{hostname} };
+    }
+}
+
+my $node = PVE::INotify::nodename();
+my $osd_details = sub {
+    my ($hostname) = @_;
+    no warnings qw(once redefine);
+    local *PVE::Ceph::Tools::check_ceph_inited = sub { };
+    local *PVE::RADOS::new = sub { bless { hostname => $hostname }, 'FakeMetadataRados' };
+    # the first local query comes right after the host check
+    local *PVE::API2::Ceph::OSD::run_command = sub { die "host accepted\n" };
+    eval { PVE::API2::Ceph::OSD->osddetails({ node => $node, osdid => 3 }) };
+    return $@;
+};
+for my $test (
+    [$node, qr/^host accepted$/, 'the node name'],
+    ["$node.example.com", qr/^host accepted$/, 'the FQDN of the node'],
+    ["other$node", qr/does not exists on host/, 'another node name'],
+    ["other$node.example.com", qr/does not exists on host/, 'the FQDN of another node'],
+) {
+    my ($hostname, $expected, $what) = @$test;
+    like($osd_details->($hostname), $expected, "OSD details: $what as metadata host");
+}
+
 done_testing();
