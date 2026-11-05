@@ -124,34 +124,34 @@ Ext.define('PVE.form.ListField', {
         },
     },
 
-    items: [
-        {
-            xtype: 'grid',
-            reference: 'grid',
+    initComponent: function () {
+        let me = this;
 
-            viewConfig: {
-                deferEmptyText: false,
-            },
+        me.items = [
+            {
+                xtype: 'grid',
+                reference: 'grid',
 
-            store: {
-                listeners: {
-                    update: function () {
-                        this.commitChanges();
+                viewConfig: {
+                    deferEmptyText: false,
+                },
+
+                store: {
+                    listeners: {
+                        update: function () {
+                            this.commitChanges();
+                        },
                     },
                 },
             },
-        },
-        {
-            xtype: 'button',
-            text: gettext('Add'),
-            iconCls: 'fa fa-plus-circle',
-            handler: 'addLine',
-            margin: '5 0 0 0',
-        },
-    ],
-
-    initComponent: function () {
-        let me = this;
+            {
+                xtype: 'button',
+                text: gettext('Add'),
+                iconCls: 'fa fa-plus-circle',
+                handler: 'addLine',
+                margin: '5 0 0 0',
+            },
+        ];
 
         for (const [key, value] of Object.entries(me.gridConfig ?? {})) {
             me.items[0][key] = value;
