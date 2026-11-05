@@ -151,7 +151,7 @@ my $confdesc = {
         description => "OVS interface options.",
         optional => 1,
         type => 'string',
-        pattern => '[^\n\r]*',
+        pattern => '[^\n\r]+',
         maxLength => 1024,
     },
     ovs_bridge => {
