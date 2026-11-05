@@ -267,7 +267,7 @@ Ext.define('PVE.window.GuestImport', {
             let me = this;
             let vm = me.getViewModel();
 
-            return !vm.get('uniqueMACAdresses') && value ? value : 'auto';
+            return !vm.get('uniqueMACAdresses') && value ? Ext.htmlEncode(value) : 'auto';
         },
 
         control: {
@@ -711,7 +711,7 @@ Ext.define('PVE.window.GuestImport', {
                                     dataIndex: 'import-from',
                                     flex: 1,
                                     renderer: function (value) {
-                                        return value.replace(/^.*\//, '');
+                                        return Ext.htmlEncode(value.replace(/^.*\//, ''));
                                     },
                                 },
                                 {
@@ -976,7 +976,12 @@ Ext.define('PVE.window.GuestImport', {
                             },
                             columns: [
                                 { header: gettext('Key'), width: 150, dataIndex: 'key' },
-                                { header: gettext('Value'), flex: 1, dataIndex: 'value' },
+                                {
+                                    header: gettext('Value'),
+                                    flex: 1,
+                                    dataIndex: 'value',
+                                    renderer: Ext.htmlEncode,
+                                },
                             ],
                         },
                     ],
@@ -1051,7 +1056,7 @@ Ext.define('PVE.window.GuestImport', {
 
                 let disks = [];
                 for (const [id, value] of Object.entries(data.disks ?? {})) {
-                    let volid = Ext.htmlEncode('<none>');
+                    let volid = '<none>';
                     let size = 'auto';
                     if (Ext.isObject(value)) {
                         volid = value.volid;
