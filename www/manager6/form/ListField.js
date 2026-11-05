@@ -159,7 +159,7 @@ Ext.define('PVE.form.ListField', {
 
         me.items[0].columns = [
             {
-                header: me.fieldTtitle,
+                header: me.fieldTitle,
                 dataIndex: 'item',
                 xtype: 'widgetcolumn',
                 widget: {

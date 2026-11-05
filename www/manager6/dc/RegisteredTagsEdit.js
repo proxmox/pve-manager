@@ -54,6 +54,7 @@ Ext.define('PVE.dc.RegisteredTagsEdit', {
                 {
                     name: 'tags',
                     xtype: 'pveListField',
+                    fieldTitle: gettext('Tag'),
                     maskRe: PVE.Utils.tagCharRegex,
                     gridConfig: {
                         height: 200,
