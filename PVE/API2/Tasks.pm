@@ -415,7 +415,7 @@ __PACKAGE__->register_method({
 
             my $fh;
             if ($use_compression) {
-                open($fh, "-|", "/usr/bin/gzip", "-c", "$filename")
+                open($fh, "-|", "/usr/bin/gzip", "-c", "-n", "$filename")
                     or die "Could not create compressed file stream for file '$filename' - $!\n";
             } else {
                 open($fh, '<', $filename) or die "Could not open file '$filename' - $!\n";
