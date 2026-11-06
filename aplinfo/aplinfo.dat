@@ -30,44 +30,44 @@ sha512sum: 4c3c5c2616b46fbb0b831a87669e6f323167c2f67cca487723ff3b00284309c547fec
 Infopage: https://linuxcontainers.org
 Description: LXC default image for almalinux 9 (20240911)
 
-Package: alpine-3.22-default
-Version: 20250617
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.22-default_20250617_amd64.tar.xz
-md5sum: 7876712da358f2536dc0baa18169aed4
-sha512sum: 1900ccb1b092b5563c0430ff9d9ede63c23bf2fa4a872b8816d2b03d711c76c1d2ea2241796ebaa58292caee75a01e325b7a9c86f63e36d9f9425b45e0115469
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.22 (20250617)
-
 Package: alpine-3.23-default
-Version: 20260116
+Version: 20261105
 Type: lxc
 OS: alpine
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/alpine-3.23-default_20260116_amd64.tar.xz
-md5sum: 2538c3bc2ca5215cc0392383f838d643
-sha512sum: d6835836b59888d8bb3971668820483a246cfa46e992f62209464b6faabd6a223f4132bc0aa86675603223b6646edf4fc33b8b6e80673e1b31183fac191baee4
+Location: system/alpine-3.23-default_20261105_amd64.tar.xz
+md5sum: 6058a11f1248a11bf18ef8b1c75c37af
+sha512sum: 712f9409af44d5238685cf300b9ba95e78ff4b8d24d7238ccc67e6273157b574417bdad32666bb150fa37acf9c74ca5dc70a8076578129e3df9018e259fe4999
 Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.23 (20260116)
+Description: LXC default image for alpine 3.23 (20261105)
 
 Package: alpine-3.24-default
-Version: 20260714
+Version: 20261105
 Type: lxc
 OS: alpine
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/alpine-3.24-default_20260714_amd64.tar.xz
-md5sum: 640e03c8343d505ac1e883d480521efb
-sha512sum: 9877b74de4c4878b70450502618f7b02952e792afdbc91f146f6cba507432dae516674d0bb3a306484d58edc722ff63db1ed3c4e5b0954fb2a2773ec8d8f33bd
+Location: system/alpine-3.24-default_20261105_amd64.tar.xz
+md5sum: 4522ba53d9bc84d495e9bafa40eb987c
+sha512sum: 5f2ab800b1cf9b9eed768b0cd4b4c395d5bc00a7eda7a185c89111067a25e7ce28d86ffb6d1b3f3181d43d9935e708c713f6b3937f39a5f2839cb56214889c8b
 Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.24 (20260714)
+Description: LXC default image for alpine 3.24 (20261105)
+
+Package: alpine-3.24-default
+Version: 20261105
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: arm64
+Location: system/alpine-3.24-default_20261105_arm64.tar.xz
+md5sum: d4dbc8592ba81da2acce96d584fb6db8
+sha512sum: 5cdcbe5feb5a4b2cadf900ec69cb177a30fb91cf3f9bd1a41bbfdb8613a518eb87c3a406f3f8fbe8553b1554adb0588f5522f231e96c9916c1fb2ce3a4ad18e5
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.24 (20261105)
 
 Package: archlinux-base
 Version: 20260420-1
@@ -133,6 +133,20 @@ Architecture: amd64
 Location: system/debian-13-standard_13.6-1_amd64.tar.zst
 md5sum: a6148ff6f0d60e643a6e5f33497cecea
 sha512sum: 4c0c27ca6ceab5ef0b84db57825a00f26157ef1854bafe97297813e1cbe8ecb8cc9c453cab6b3b0efe1ba193a50c47ece1e41d950e411b8730b835b71e9e754b
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Debian 13 Trixie (standard)
+ A small Debian Trixie system including all standard packages.
+
+Package: debian-13-standard
+Version: 13.6-1
+Type: lxc
+OS: debian-13
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: arm64
+Location: system/debian-13-standard_13.6-1_arm64.tar.zst
+md5sum: 80897e64290def95f3218aa30bbe5566
+sha512sum: 9b1e8a5d79cdd8190e5dcd969d2d583ea570e1c2133f21a903a5b0eaad478a47df4a784e5ead59945a9abdebebe3241c1f3781d0a59974e09360f1e256e52838
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 13 Trixie (standard)
  A small Debian Trixie system including all standard packages.
@@ -283,20 +297,6 @@ sha512sum: 864bcf3f21fd8616d3cd9e2330f7372ad7b29b070b746c4a4bd73f372db7cc5d06f3e
 Infopage: https://linuxcontainers.org
 Description: LXC default image for rockylinux 9 (20240912)
 
-Package: ubuntu-22.04-standard
-Version: 22.04-1
-Type: lxc
-OS: ubuntu-22.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-22.04-standard_22.04-1_amd64.tar.zst
-md5sum: a1f167ac98a931abc333154354d475fc
-sha512sum: cf617c11232c3fbce1ba9f7146ac194561411c292c445b2a5c9affe5f09729f5c38315619de4d649ff63e31dd5b536ea081fdde1b7792e6e521d1694ac7c9cb8
-Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
-Description: Ubuntu 22.04 Jammy (standard)
- A small Ubuntu 22.04 Jammy Jellyfish system including all standard packages.
-
 Package: ubuntu-24.04-standard
 Version: 24.04-2
 Type: lxc
@@ -310,20 +310,6 @@ sha512sum: 45c2978e6b97fe292ada95fe06834276015e5739a594db4de2fdfd830fa0c37942e8a
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 24.04 Noble (standard)
  A small Ubuntu 24.04 Noble Numbat system including all standard packages.
-
-Package: ubuntu-25.04-standard
-Version: 25.04-1
-Type: lxc
-OS: ubuntu-25.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-25.04-standard_25.04-1.1_amd64.tar.zst
-md5sum: 1134f828d4e5fe894c1a96edc9cc75b5
-sha512sum: 779cf8bbdf788057234eb439e4f165a39bb90bf9e65b5eded73354425376fe93a0e27e46c5cfa30dbb242f22656caf7039eee5d730ac4a30131766cbf1d5d4db
-Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
-Description: Ubuntu 25.04 Plucky (standard)
- A small Ubuntu 25.04 Plucky Puffin system including all standard packages.
 
 Package: ubuntu-26.04-standard
 Version: 26.04-1
