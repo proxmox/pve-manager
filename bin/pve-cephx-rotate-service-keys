@@ -537,8 +537,10 @@ for my $spec (@specs) {
 }
 PERL_EOF
 
-# First-label mapping alone cannot authorize writes. Require the unique directory inventory and
-# the node-side evidence used by preflight again before mutation, including the current OSD UUID.
+# First-label mapping alone cannot authorize writes. Require the directory inventory and the
+# node-side evidence used by preflight again before mutation. The label of an OSD identifies it by
+# its current UUID, so a leftover directory of its ID on another node does not matter. A keyring
+# section only names other daemons, so their directory must be unique.
 my sub assert_daemon_location($rados, $daemon, $fsid, $probe = undef) {
     my ($type, $id) = $daemon->@{qw(type id)};
     my $location = daemon_location($type, $id, $daemon->{node});
@@ -555,8 +557,15 @@ my sub assert_daemon_location($rados, $daemon, $fsid, $probe = undef) {
     my $inventory = eval { PVE::Ceph::Services::get_cluster_service($type) };
     $refuse->('the pvestatd service inventory is unavailable') if $@ || ref($inventory) ne 'HASH';
     my $locations = configured_daemon_locations($inventory)->{$id} // [];
-    $refuse->('the pvestatd service inventory does not identify a unique data directory there')
-        if scalar(@$locations) != 1 || $locations->[0] ne $node;
+    my $here = scalar(grep { $_ eq $node } @$locations);
+    if (!$here || ($type ne 'osd' && scalar(@$locations) > 1)) {
+        my $listed = join(', ', map { "'$_'" } @$locations);
+        $refuse->(
+            !scalar(@$locations) ? 'pvestatd reports no data directory for it'
+            : $here ? "pvestatd reports a data directory for it on several nodes: $listed"
+            : "pvestatd reports a data directory for it only on: $listed",
+        );
+    }
 
     $probe //= parse_probe_output(node_perl(
         $node, $PROBE_SCRIPT,

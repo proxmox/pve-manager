@@ -6756,14 +6756,19 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
 
     my $daemon = { type => 'mgr', id => 'a', entity => 'mgr.a', node => 'node-a.foreign.invalid' };
     for my $case (
-        ['missing inventory', {}, qr/unique data directory/],
+        ['missing inventory', {}, qr/reports no data directory for it/],
         [
             'duplicate ID',
             {
                 'node-a' => { a => { direxists => 1 } },
                 'node-b' => { a => { direxists => 1 } },
             },
-            qr/unique data directory/,
+            qr/reports a data directory for it on several nodes: 'node-a', 'node-b'/,
+        ],
+        [
+            'directory on another node only',
+            { 'node-b' => { a => { direxists => 1 } } },
+            qr/reports a data directory for it only on: 'node-b'/,
         ],
         ['failed inventory', undef, qr/inventory is unavailable/],
     ) {
@@ -6797,6 +6802,43 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         );
     };
     like($@, qr/label does not identify/, 'a reused OSD ID cannot authorize a fallback write');
+
+    my $osd_probe = {
+        store => 'block',
+        'label-whoami' => 7,
+        'label-fsid' => 'cluster-fsid',
+        'label-osd-uuid' => 'osd-uuid',
+    };
+    my $assert_osd = sub {
+        my ($probe) = @_;
+        my $candidate = { %$osd, node => 'node-a.foreign.invalid' };
+        return eval {
+            $HOOKS->{assert_daemon_location}
+                ->($rados, $candidate, 'cluster-fsid', $probe // $osd_probe);
+            1;
+        };
+    };
+    $inventory = {
+        'node-a' => { 7 => { direxists => 1 } },
+        'node-b' => { 7 => { direxists => 1 } },
+    };
+    ok($assert_osd->(), 'the label identifies an OSD despite a remnant of its ID elsewhere');
+    for my $case (
+        ['ID', { %$osd_probe, 'label-whoami' => 8 }],
+        ['cluster', { %$osd_probe, 'label-fsid' => 'other-fsid' }],
+        ['UUID', { %$osd_probe, 'label-osd-uuid' => 'reused-uuid' }],
+    ) {
+        my ($what, $probe) = @$case;
+        ok(!$assert_osd->($probe), "a remnant does not excuse another $what in the label");
+        like($@, qr/label does not identify/, "the label with another $what is what refuses");
+    }
+    $inventory = { 'node-b' => { 7 => { direxists => 1 } } };
+    ok(!$assert_osd->(), 'an OSD without a data directory on its reported node is refused');
+    like(
+        $@,
+        qr/reports a data directory for it only on: 'node-b'/,
+        'the refusal names the other node',
+    );
 
     for my $node ('foreign.invalid', PVE::INotify::nodename()) {
         local *PVE::Cluster::get_nodelist = sub { ['node-a'] };

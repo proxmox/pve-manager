@@ -584,7 +584,7 @@ sub info_for {
         };
         @commands = ();
         eval { $HOOKS->{resume}->($rados, $state, $info) };
-        like($@, qr/not a node|unique data directory/, 'foreign lockbox recovery is refused');
+        like($@, qr/not a node|reports no data directory/, 'foreign lockbox recovery is refused');
         is_deeply(\@commands, [], 'foreign lockbox recovery sends no node command');
         is($rados->{auth}->{$ENTITY}->{pending_key}, $NEW, 'refusal leaves the pending key valid');
         ok($state->{lockbox}->{$ENTITY}, 'refusal preserves lockbox recovery state');
