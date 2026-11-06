@@ -1706,8 +1706,7 @@ my sub reconcile_client_fingerprints($state, $exported, $sessions, $opts) {
     ) {
         my $fp = key_fingerprint($exported->{$entity}->{key});
         if (defined($seen->{$entity}) && $seen->{$entity} ne $fp) {
-            log_warn("the key of '$entity' changed outside this script; retaining recorded"
-                . " instances and observed sessions not identified with the target key");
+            log_warn("the key of '$entity' was changed outside this script");
             $state->{client_refresh}->{$entity} = merge_refresh_record(
                 $state->{client_refresh}->{$entity},
                 $sessions,
@@ -2084,6 +2083,23 @@ my sub preflight_cluster(
         print_possible_consumers(\@possible_live, $opts);
         @possible_live = ();
     };
+    # An interrupted or externally performed rotation may lack a complete baseline. Its first
+    # confirmation only records old-key and unidentified sessions, it attests no unseen client yet.
+    my $report_first_measurement = sub($entity, $option, $live) {
+        my $measured =
+            "the first complete client measurement of '$entity' is recorded and shows";
+        if (!scalar(@$live)) {
+            log_info(
+                "$measured no session that may still hold the previous key. Repeat '$option'"
+                    . " to confirm that the clients this run cannot see are refreshed too.");
+            return;
+        }
+        log_fail("not accepting '$option' yet: $measured "
+            . scalar(@$live)
+            . " session(s) that may still hold the previous key ("
+            . $describe_for_section->($live)
+            . "). Refresh these clients, then repeat the confirmation.");
+    };
 
     my $confirmation_refused = 0;
     my $committed_copies = 0;
@@ -2165,15 +2181,7 @@ my sub preflight_cluster(
             if ($needs_measurement && $info->{sessions}->{complete}) {
                 my $live = complete_client_measurement($state, $info, $entity);
                 $measured = 1;
-                my $detail =
-                    scalar(@$live)
-                    ? scalar(@$live)
-                    . " possibly stale connected client(s) are recorded ("
-                    . $describe_for_section->($live) . ")"
-                    : "no possibly stale session is currently visible";
-                log_fail("not accepting '--confirm-all-clients-refreshed' yet: the rotation of"
-                    . " '$entity' needed its first complete measurement; $detail. Repeat the"
-                    . " confirmation after refreshing any recorded clients.");
+                $report_first_measurement->($entity, '--confirm-all-clients-refreshed', $live);
                 $confirmation_refused = 1;
             }
 
@@ -2240,23 +2248,10 @@ my sub preflight_cluster(
                 $confirmation_refused = 1;
                 next;
             }
-            # An interrupted or externally performed rotation may lack a complete baseline. Record
-            # old-key and unidentified sessions before accepting attestations for unseen clients.
             if ($verdict eq 'measure') {
                 my $live = complete_client_measurement($state, $info, $entity);
                 save_state($state);
-                my $count = scalar(@$live);
-                my $measurement =
-                    $count
-                    ? "$count currently connected "
-                    . ($count == 1 ? 'client is' : 'clients are')
-                    . " now recorded as possibly holding the previous key ("
-                    . $describe_for_section->($live) . ")"
-                    : "no possibly stale session is currently visible, and that complete measurement"
-                    . " is now recorded";
-                log_fail("not accepting '$option' yet: its rotation needed a first complete"
-                    . " measurement; $measurement. Repeat the confirmation after refreshing any"
-                    . " recorded clients; it then covers only clients this run cannot see.");
+                $report_first_measurement->($entity, $option, $live);
                 $confirmation_refused = 1;
                 next;
             }

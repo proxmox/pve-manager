@@ -1409,8 +1409,8 @@ sub open_options(
                 $waiting_details->{$entity} =
                     "the first complete client measurement is"
                     . " pending.$both After refreshing every client, run"
-                    . " '--confirm-clients-refreshed $entity --apply'; the first attempt records"
-                    . " the measurement without committing the key.";
+                    . " '--confirm-clients-refreshed $entity --apply'; the first attempt only"
+                    . " records the measurement.";
             } elsif ($verdict eq 'connected') {
                 my $count = scalar($decision->{held}->@*);
                 my $held = $decision->{held};

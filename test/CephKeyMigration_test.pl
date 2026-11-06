@@ -3407,7 +3407,7 @@ my sub cluster {
     $blockers = restrict_blockers($info, $state, $describe, $files);
     like(
         $blockers->[0],
-        qr/first complete client measurement.*first attempt records/,
+        qr/first complete client measurement.*first attempt only records the measurement\./,
         'a missing measurement does not look ready for retirement',
     );
 }

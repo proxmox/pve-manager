@@ -692,9 +692,10 @@ sub migrated_info {
     );
     like(
         $output,
-        qr/needed a first complete measurement; no possibly stale session is currently visible.*complete measurement is now recorded.*Repeat the confirmation/s,
-        'the refusal describes an empty measurement grammatically',
+        qr/INFO: the first complete client measurement of 'client\.app' is recorded and shows no session.*Repeat '--confirm-clients-refreshed client\.app'/s,
+        'an empty measurement explains the repeat',
     );
+    unlike($output, qr/FAIL/, 'an empty measurement is not reported as a failure');
 
     {
         no warnings qw(once redefine);
@@ -711,6 +712,83 @@ sub migrated_info {
         defined($state->{client_refresh}->{'client.app'}->{cleared}),
         'the repeated confirmation closes it',
     );
+}
+
+{
+    my $preflight = sub {
+        my ($state, $opts, @ids) = @_;
+        my $output = '';
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        my $verdict = $HOOKS->{preflight}->(
+            migrated_info(picture(1, @ids)), { apply => 1, %$opts }, 0, $state,
+        );
+        return ($verdict, $output);
+    };
+
+    for my $case (
+        [
+            '--confirm-clients-refreshed client.app',
+            { 'confirm-clients-refreshed' => ['client.app'] },
+        ],
+        ['--confirm-all-clients-refreshed', { 'confirm-all-clients-refreshed' => 1 }],
+    ) {
+        my ($option, $opts) = @$case;
+        my $unmeasured = sub {
+            return {
+                client_keys_seen => { 'client.app' => key_fingerprint($NEW) },
+                client_refresh =>
+                    { 'client.app' => { rotated => 1, measurement_incomplete => 1 } },
+            };
+        };
+
+        my $state = $unmeasured->();
+        my ($verdict, $output) = $preflight->($state, $opts);
+        cmp_ok($verdict, '<', 0, "$option still refuses after an empty measurement");
+        like(
+            $output,
+            qr/INFO: the first complete client measurement.*Repeat '\Q$option\E'/s,
+            "$option explains the repeat",
+        );
+        unlike($output, qr/FAIL/, "$option reports no failure for an empty measurement");
+        ok(!defined($state->{client_refresh}->{'client.app'}->{cleared}), "$option closes nothing");
+        ($verdict) = $preflight->($state, $opts);
+        cmp_ok($verdict, '>=', 0, "repeating $option is accepted");
+        ok(defined($state->{client_refresh}->{'client.app'}->{cleared}),
+            "repeating $option closes");
+
+        $state = $unmeasured->();
+        ($verdict, $output) = $preflight->($state, $opts, 40);
+        cmp_ok($verdict, '<', 0, "$option refuses with a possibly stale client");
+        like(
+            $output,
+            qr/FAIL: not accepting '\Q$option\E' yet: the first complete client measurement of 'client\.app'.*1 session\(s\) that may still hold the previous key \(node40/s,
+            "$option names that client as a failure",
+        );
+        is_deeply(
+            $state->{client_refresh}->{'client.app'}->{session_ids},
+            [40],
+            "$option records that client",
+        );
+    }
+
+    # a key rotated by hand and then confirmed, with its clients already refreshed
+    my $state = { client_keys_seen => { 'client.app' => key_fingerprint($OLD) } };
+    my $opts = { 'confirm-clients-refreshed' => ['client.app'] };
+    my ($verdict, $output) = $preflight->($state, $opts);
+    like(
+        $output,
+        qr/WARN: the key of 'client\.app' was changed outside this script$/m,
+        'a key changed by hand is announced',
+    );
+    cmp_ok($verdict, '<', 0, 'its first confirmation records the measurement');
+    unlike($output, qr/FAIL/, 'and is not a failure');
+    ($verdict, $output) = $preflight->($state, $opts);
+    cmp_ok($verdict, '>=', 0, 'its second confirmation is accepted');
+    unlike($output, qr/changed outside/, 'without announcing the same change again');
+    ok(defined($state->{client_refresh}->{'client.app'}->{cleared}), 'and closes the record');
 }
 
 {
