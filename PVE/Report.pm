@@ -246,7 +246,10 @@ my $init_report_cmds = sub {
 
     if (cmd_exists('multipath')) {
         push @{ $report_def->{'block devices'}->{cmds} },
+            'cat /etc/pve/multipath.cfg',
+            'cat /etc/pve/multipath-overrides.conf',
             'cat /etc/multipath.conf',
+            sub { dir2text('/etc/multipath/conf.d/', 'pve-.+\.conf') },
             'cat /etc/multipath/wwids',
             'multipath -ll',
             ;
