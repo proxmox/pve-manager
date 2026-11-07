@@ -64,6 +64,62 @@ Ext.define('PVE.storage.NFSScan', {
 Ext.define('PVE.storage.NFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    statics: {
+        // The connection fields, also used by the remote storage wizard. Fields of a new storage
+        // are editable.
+        connectionFields: function (isCreate) {
+            let server = {
+                xtype: isCreate ? 'textfield' : 'displayfield',
+                name: 'server',
+                value: '',
+                fieldLabel: gettext('Server'),
+                allowBlank: false,
+            };
+            if (isCreate) {
+                server.listeners = {
+                    change: function (field, value) {
+                        let exportField = field.up('inputpanel').down('field[name=export]');
+                        exportField.setServer(value);
+                        exportField.setValue('');
+                    },
+                };
+            }
+            return {
+                server: server,
+                export: {
+                    xtype: isCreate ? 'pveNFSScan' : 'displayfield',
+                    name: 'export',
+                    value: '',
+                    fieldLabel: 'Export',
+                    allowBlank: false,
+                },
+                version: {
+                    xtype: 'proxmoxKVComboBox',
+                    fieldLabel: gettext('NFS Version'),
+                    name: 'nfsversion',
+                    value: '__default__',
+                    deleteEmpty: false,
+                    comboItems: [
+                        ['__default__', Proxmox.Utils.defaultText],
+                        ['3', '3'],
+                        ['4', '4'],
+                        ['4.1', '4.1'],
+                        ['4.2', '4.2'],
+                    ],
+                },
+            };
+        },
+
+        // The mount options with the vers= option of the NFS version field.
+        optionsWithVersion: function (options, version) {
+            let res = options.filter((item) => !item.match(/^vers=(.*)$/));
+            if (version && version !== '__default__') {
+                res.push('vers=' + version);
+            }
+            return res.join(',');
+        },
+    },
+
     onlineHelp: 'storage_nfs',
 
     options: [],
@@ -71,19 +127,11 @@ Ext.define('PVE.storage.NFSInputPanel', {
     onGetValues: function (values) {
         var me = this;
 
-        var i;
-        var res = [];
-        for (i = 0; i < me.options.length; i++) {
-            let item = me.options[i];
-            if (!item.match(/^vers=(.*)$/)) {
-                res.push(item);
-            }
-        }
-        if (values.nfsversion && values.nfsversion !== '__default__') {
-            res.push('vers=' + values.nfsversion);
-        }
+        values.options = PVE.storage.NFSInputPanel.optionsWithVersion(
+            me.options,
+            values.nfsversion,
+        );
         delete values.nfsversion;
-        values.options = res.join(',');
         if (values.options === '') {
             delete values.options;
             if (!me.isCreate) {
@@ -111,30 +159,11 @@ Ext.define('PVE.storage.NFSInputPanel', {
     initComponent: function () {
         var me = this;
 
+        let connection = PVE.storage.NFSInputPanel.connectionFields(me.isCreate);
+
         me.column1 = [
-            {
-                xtype: me.isCreate ? 'textfield' : 'displayfield',
-                name: 'server',
-                value: '',
-                fieldLabel: gettext('Server'),
-                allowBlank: false,
-                listeners: {
-                    change: function (f, value) {
-                        if (me.isCreate) {
-                            let exportField = me.down('field[name=export]');
-                            exportField.setServer(value);
-                            exportField.setValue('');
-                        }
-                    },
-                },
-            },
-            {
-                xtype: me.isCreate ? 'pveNFSScan' : 'displayfield',
-                name: 'export',
-                value: '',
-                fieldLabel: 'Export',
-                allowBlank: false,
-            },
+            connection.server,
+            connection.export,
             {
                 xtype: 'pveContentTypeSelector',
                 name: 'content',
@@ -145,22 +174,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
             },
         ];
 
-        me.advancedColumn2 = [
-            {
-                xtype: 'proxmoxKVComboBox',
-                fieldLabel: gettext('NFS Version'),
-                name: 'nfsversion',
-                value: '__default__',
-                deleteEmpty: false,
-                comboItems: [
-                    ['__default__', Proxmox.Utils.defaultText],
-                    ['3', '3'],
-                    ['4', '4'],
-                    ['4.1', '4.1'],
-                    ['4.2', '4.2'],
-                ],
-            },
-        ];
+        me.advancedColumn2 = [connection.version];
 
         me.callParent();
     },
