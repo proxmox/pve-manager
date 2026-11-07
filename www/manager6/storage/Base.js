@@ -2,6 +2,69 @@ Ext.define('PVE.panel.StorageBase', {
     extend: 'Proxmox.panel.InputPanel',
     controller: 'storageEdit',
 
+    statics: {
+        // The fields every storage has, also used by the remote storage wizard.
+        commonFields: function (isCreate, storageId) {
+            return {
+                id: {
+                    xtype: isCreate ? 'textfield' : 'displayfield',
+                    name: 'storage',
+                    value: storageId || '',
+                    fieldLabel: 'ID',
+                    vtype: 'StorageId',
+                    allowBlank: false,
+                },
+                nodes: {
+                    xtype: 'pveNodeSelector',
+                    name: 'nodes',
+                    reference: 'storageNodeRestriction',
+                    disabled: storageId === 'local',
+                    fieldLabel: gettext('Nodes'),
+                    emptyText: gettext('All') + ' (' + gettext('No restrictions') + ')',
+                    multiSelect: true,
+                    autoSelect: false,
+                },
+                enable: {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'enable',
+                    checked: true,
+                    uncheckedValue: 0,
+                    fieldLabel: gettext('Enable'),
+                },
+            };
+        },
+
+        // The API takes the inverse of the enable checkbox.
+        submitEnable: function (values) {
+            values.disable = values.enable ? 0 : 1;
+            delete values.enable;
+        },
+
+        // The snapshot-as-volume-chain checkbox and its technology preview hint, also used by the
+        // remote storage wizard.
+        volumeChainFields: function (isCreate, type) {
+            return {
+                checkbox: {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'snapshot-as-volume-chain',
+                    // TRANSLATORS: As in "a chain of volumes, each referencing the next one".
+                    boxLabel: gettext('Allow Snapshots as Volume-Chain'),
+                    deleteEmpty: !isCreate,
+                    // can only allow to enable this on creation for storages that previously
+                    // already supported qcow2 to avoid ambiguity with existing volumes.
+                    disabled: !isCreate && type !== 'lvm',
+                    checked: false,
+                },
+                hint: {
+                    xtype: 'displayfield',
+                    name: 'external-snapshot-hint',
+                    userCls: 'pmx-hint',
+                    value: gettext('Snapshots as Volume-Chain are a technology preview.'),
+                },
+            };
+        },
+    },
+
     type: '',
 
     onGetValues: function (values) {
@@ -13,8 +76,7 @@ Ext.define('PVE.panel.StorageBase', {
             delete values.storage;
         }
 
-        values.disable = values.enable ? 0 : 1;
-        delete values.enable;
+        PVE.panel.StorageBase.submitEnable(values);
 
         return values;
     },
@@ -22,35 +84,11 @@ Ext.define('PVE.panel.StorageBase', {
     initComponent: function () {
         let me = this;
 
-        me.column1.unshift({
-            xtype: me.isCreate ? 'textfield' : 'displayfield',
-            name: 'storage',
-            value: me.storageId || '',
-            fieldLabel: 'ID',
-            vtype: 'StorageId',
-            allowBlank: false,
-        });
+        let common = PVE.panel.StorageBase.commonFields(me.isCreate, me.storageId);
+        me.column1.unshift(common.id);
 
         me.column2 = me.column2 || [];
-        me.column2.unshift(
-            {
-                xtype: 'pveNodeSelector',
-                name: 'nodes',
-                reference: 'storageNodeRestriction',
-                disabled: me.storageId === 'local',
-                fieldLabel: gettext('Nodes'),
-                emptyText: gettext('All') + ' (' + gettext('No restrictions') + ')',
-                multiSelect: true,
-                autoSelect: false,
-            },
-            {
-                xtype: 'proxmoxcheckbox',
-                name: 'enable',
-                checked: true,
-                uncheckedValue: 0,
-                fieldLabel: gettext('Enable'),
-            },
-        );
+        me.column2.unshift(common.nodes, common.enable);
 
         const addAdvancedWidget = (widget) => {
             me.advancedColumn1 = me.advancedColumn1 || [];
@@ -78,17 +116,8 @@ Ext.define('PVE.panel.StorageBase', {
         const externalStorageManagedSnapshotSupport = ['dir', 'nfs', 'cifs', 'lvm'];
 
         if (externalStorageManagedSnapshotSupport.includes(me.type)) {
-            addAdvancedWidget({
-                xtype: 'proxmoxcheckbox',
-                name: 'snapshot-as-volume-chain',
-                // TRANSLATORS: As in "a chain of volumes, each referencing the next one".
-                boxLabel: gettext('Allow Snapshots as Volume-Chain'),
-                deleteEmpty: !me.isCreate,
-                // can only allow to enable this on creation for storages that previously already
-                // supported qcow2 to avoid ambiguity with existing volumes.
-                disabled: !me.isCreate && me.type !== 'lvm',
-                checked: false,
-            });
+            let volumeChain = PVE.panel.StorageBase.volumeChainFields(me.isCreate, me.type);
+            addAdvancedWidget(volumeChain.checkbox);
 
             me.advancedColumnB = me.advancedColumnB || [];
             if (me.type === 'lvm') {
@@ -99,12 +128,7 @@ Ext.define('PVE.panel.StorageBase', {
                     value: gettext('Keep Snapshots as Volume-Chain enabled if qcow2 images exist!'),
                 });
             }
-            me.advancedColumnB.unshift({
-                xtype: 'displayfield',
-                name: 'external-snapshot-hint',
-                userCls: 'pmx-hint',
-                value: gettext('Snapshots as Volume-Chain are a technology preview.'),
-            });
+            me.advancedColumnB.unshift(volumeChain.hint);
         }
 
         me.callParent();
