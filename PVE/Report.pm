@@ -244,7 +244,7 @@ my $init_report_cmds = sub {
     }
 
     if (cmd_exists('multipath')) {
-        push @{ $report_def->{disks}->{cmds} },
+        push @{ $report_def->{'block devices'}->{cmds} },
             'cat /etc/multipath.conf',
             'cat /etc/multipath/wwids',
             'multipath -ll',
