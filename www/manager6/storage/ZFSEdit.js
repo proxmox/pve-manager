@@ -44,13 +44,25 @@ Ext.define('PVE.storage.ZFSInputPanel', {
             return {
                 portal: text({ name: 'portal', fieldLabel: gettext('Portal'), allowBlank: false }),
                 pool: text({ name: 'pool', fieldLabel: gettext('Pool'), allowBlank: false }),
-                blocksize: text({
+                blocksize: {
+                    xtype: 'pmxDisplayEditField',
                     name: 'blocksize',
                     value: '4k',
                     fieldLabel: gettext('Block Size'),
-                    allowBlank: false,
-                    validator: PVE.Utils.validateZfsBlocksize,
-                }),
+                    editable: isCreate,
+                    // the common sizes to pick, other valid sizes can still be typed
+                    editConfig: {
+                        xtype: 'proxmoxKVComboBox',
+                        editable: true,
+                        deleteEmpty: false,
+                        comboItems: ['4k', '8k', '16k', '32k', '64k', '128k'].map((size) => [
+                            size,
+                            size,
+                        ]),
+                        allowBlank: false,
+                        validator: PVE.Utils.validateZfsBlocksize,
+                    },
+                },
                 target: text({ name: 'target', fieldLabel: gettext('Target'), allowBlank: false }),
                 comstarTg: text({
                     name: 'comstar_tg',
