@@ -1,6 +1,7 @@
 /var/log/pveproxy/access.log {
         rotate 7
         daily	
+	nodateext
 	missingok
 	compress
 	delaycompress
