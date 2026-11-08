@@ -128,6 +128,7 @@ __PACKAGE__->register_method({
             'eab-hmac-key' => {
                 description => 'HMAC key for External Account Binding.',
                 type => 'string',
+                sensitive => 1,
                 requires => 'eab-kid',
                 optional => 1,
             },

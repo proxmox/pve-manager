@@ -39,6 +39,7 @@ sub properties {
                 "The InfluxDB access token. Only necessary when using the http v2 api."
                 . " If the v2 compatibility api is used, use 'user:password' instead.",
             type => 'string',
+            sensitive => 1,
             optional => 1,
         },
         'api-path-prefix' => {

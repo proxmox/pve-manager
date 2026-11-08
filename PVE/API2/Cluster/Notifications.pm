@@ -679,6 +679,7 @@ my $gotify_properties = {
     'token' => {
         description => 'Secret token',
         type => 'string',
+        sensitive => 1,
     },
     'comment' => {
         description => 'Comment',
@@ -960,6 +961,7 @@ my $smtp_properties = {
     password => {
         description => 'Password for SMTP authentication',
         type => 'string',
+        sensitive => 1,
         optional => 1,
     },
     mailto => {
@@ -1275,6 +1277,7 @@ my $webhook_properties = {
         type => 'array',
         items => {
             type => 'string',
+            sensitive => 1,
         },
         optional => 1,
     },
@@ -1290,6 +1293,10 @@ my $webhook_properties = {
         default => 0,
     },
 };
+
+# Reading a webhook only returns the names of its secrets, not their values.
+my $webhook_returned_properties = dclone($webhook_properties);
+delete $webhook_returned_properties->{secret}->{items}->{sensitive};
 
 __PACKAGE__->register_method({
     name => 'get_webhook_endpoints',
@@ -1310,7 +1317,7 @@ __PACKAGE__->register_method({
         items => {
             type => 'object',
             properties => {
-                %$webhook_properties,
+                %$webhook_returned_properties,
                 'origin' => {
                     description => 'Show if this entry was created by a user or was built-in',
                     type => 'string',
@@ -1357,7 +1364,7 @@ __PACKAGE__->register_method({
     returns => {
         type => 'object',
         properties => {
-            %$webhook_properties, digest => get_standard_option('pve-config-digest'),
+            %$webhook_returned_properties, digest => get_standard_option('pve-config-digest'),
         },
     },
     code => sub {

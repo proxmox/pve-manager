@@ -103,6 +103,7 @@ __PACKAGE__->register_method({
             },
             key => {
                 type => 'string',
+                sensitive => 1,
                 description => 'PEM encoded private key.',
                 format => 'pem-string',
                 optional => 1,
