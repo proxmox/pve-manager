@@ -75,6 +75,18 @@ if ($notify_on eq 'auto') {
 eval { PVE::API2::APT->update_database({ node => $nodename, notify => $notify, quiet => 1 }); };
 if (my $err = $@) {
     syslog('err', "update apt database failed: $err");
+} else {
+    my $prefetched = eval { PVE::API2::APT->prefetch_update_changelogs($nodename) };
+    if (my $err = $@) {
+        syslog('err', "prefetching the changelogs of pending updates failed: $err");
+    } elsif ($prefetched) {
+        my ($downloaded, $failed) = $prefetched->@{qw(downloaded failed)};
+        syslog('info', "prefetched $downloaded changelogs of pending updates") if $downloaded;
+        syslog(
+            'warning',
+            "could not prefetch $failed changelogs of pending updates: $prefetched->{error}",
+        ) if $failed;
+    }
 }
 
 eval {

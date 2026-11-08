@@ -130,6 +130,25 @@ my $assemble_pkginfo = sub {
 # we try to cache results
 my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
 my $changelog_cache_dir = "/var/cache/pve-manager/apt-changelogs";
+
+# The pending updates as package changes for the changelog bindings.
+my sub pending_update_changes {
+    my ($updates) = @_;
+
+    return [
+        map {
+            my $old = $_->{OldVersion};
+            my $installed = defined($old) && $old ne '';
+            {
+                package => $_->{Package},
+                arch => $_->{Arch},
+                action => $installed ? 'upgrade' : 'install',
+                'old-version' => $installed ? $old : undef,
+                'new-version' => $_->{Version},
+            }
+        } $updates->@*
+    ];
+}
 my $read_cached_pkgstatus = sub {
     my $data =
         eval { decode_json(PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5 * 1024 * 1024)) }
@@ -318,24 +337,22 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $updates = __PACKAGE__->list_updates($param);
-        my $changes = [
-            map {
-                my $old = $_->{OldVersion};
-                my $installed = defined($old) && $old ne '';
-                {
-                    package => $_->{Package},
-                    arch => $_->{Arch},
-                    action => $installed ? 'upgrade' : 'install',
-                    'old-version' => $installed ? $old : undef,
-                    'new-version' => $_->{Version},
-                }
-            } $updates->@*
-        ];
+        my $changes = pending_update_changes(__PACKAGE__->list_updates($param));
 
         return Proxmox::RS::APT::History::update_changelogs($changes, $changelog_cache_dir);
     },
 });
+
+# Downloads the changelogs of the pending updates into the cache of the update-changelogs endpoint,
+# if it got used in the last 30 days. Returns how many it downloaded and how many failed with the
+# first error, or undef if it did not run.
+sub prefetch_update_changelogs {
+    my ($class, $node) = @_;
+
+    my $changes = pending_update_changes($class->list_updates({ node => $node }));
+
+    return Proxmox::RS::APT::History::prefetch_update_changelogs($changes, $changelog_cache_dir);
+}
 
 __PACKAGE__->register_method({
     name => 'update_database',
