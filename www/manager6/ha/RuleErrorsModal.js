@@ -40,6 +40,7 @@ Ext.define('PVE.ha.RuleErrorsModal', {
                     xtype: 'displayfield',
                     padding: 20,
                     scrollable: true,
+                    htmlEncode: false,
                     value: renderHARuleErrors(me.errors),
                 },
             ],

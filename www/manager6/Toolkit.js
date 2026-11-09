@@ -31,12 +31,3 @@ Ext.apply(Ext.form.field.VTypes, {
     IP64FullRangeCIDRAddressText: gettext('Example') + ': 192.168.1.1/24 2001:DB8::42/64',
     IP64FullRangeCIDRAddressMask: /[A-Fa-f0-9.:/]/,
 });
-
-Ext.define('PVE.form.field.Display', {
-    override: 'Ext.form.field.Display',
-
-    setSubmitValue: function (value) {
-        // do nothing, this is only to allow generalized  bindings for the:
-        // `me.isCreate ? 'textfield' : 'displayfield'` cases we have.
-    },
-});

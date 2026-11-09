@@ -654,6 +654,7 @@ Ext.define('PVE.window.GuestImport', {
                             xtype: 'displayfield',
                             reference: 'warningText',
                             userCls: 'pmx-hint',
+                            htmlEncode: false,
                             hidden: true,
                             bind: {
                                 hidden: '{hideWarnings}',

@@ -153,6 +153,7 @@ Ext.define('PVE.CephCreateOsd', {
                     xtype: 'displayfield',
                     padding: '5 0 0 0',
                     userCls: 'pmx-hint',
+                    htmlEncode: false,
                     value:
                         'Note: Ceph is not compatible with disks backed by a hardware ' +
                         'RAID controller. For details see ' +
@@ -658,6 +659,7 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                         {
                             xtype: 'displayfield',
                             itemId: 'healthHint',
+                            htmlEncode: false,
                             fieldLabel: gettext('Health Issues'),
                             hidden: true,
                         },
