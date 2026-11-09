@@ -2554,6 +2554,46 @@ sub run_aggregate_confirmation {
 
 {
     my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    $rados->{entries}->{'client.b'} = { entity => 'client.b', key => $NEW };
+    $info->{exported}->{'client.b'} = { $rados->{entries}->{'client.b'}->%* };
+    delete $state->{staged}->{'client.b'};
+    $state->{client_keys_seen}->{'client.b'} = key_fingerprint($NEW);
+    my $poll = 0;
+    my $collector = sub {
+        my $sessions = { complete => 1, clients => {} };
+        $sessions->{clients}->{'client.b'} = [{ global_id => 101, host => 'node-b' }]
+            if ++$poll >= 2;
+        return { sessions => $sessions };
+    };
+    my ($verdict, @saved);
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { push @saved, decode_json($_[1]) };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-all-clients-refreshed' => 1 },
+            0,
+            $state,
+            {},
+            $collector,
+        );
+    }
+    cmp_ok(
+        $verdict,
+        '<',
+        0,
+        'a session appearing for a later record without a staged key refuses it',
+    );
+    is_deeply($rados->{committed}, ['client.a'], 'the commit before it stays');
+    ok(
+        !scalar(grep { defined($_->{client_refresh}->{'client.b'}->{cleared}) } @saved),
+        'that record is never saved as closed',
+    );
+}
+
+{
+    my ($rados, $info, $state) =
         aggregate_fixture({ complete => 1, clients => {} }, 'client.app');
     $info->{allowed_ciphers} = [qw(aes aes256k)];
     $info->{health_checks} = { AUTH_INSECURE_KEYS_ALLOWED => {} };

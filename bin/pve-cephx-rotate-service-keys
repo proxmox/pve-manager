@@ -2283,16 +2283,17 @@ my sub preflight_cluster(
                 if !$confirm_all;
             # The aggregate was checked as a whole on a fresh snapshot above. Recheck at the
             # mutation boundary so a client that appears while the batch runs preserves this
-            # key and its open record.
+            # key and its open record. The records after it are judged on this snapshot too.
             if ($staged && $collect_clients) {
                 my $fresh = collect_client_snapshot($info->{rados}, $collect_clients);
                 reconcile_client_fingerprints(
                     $state, $fresh->{exported}, $fresh->{sessions}, $opts,
                 );
-                my $action_stale = reopen_returning_clients(
+                $stale_clients = reopen_returning_clients(
                     $state, $fresh->{sessions}, $fresh->{exported},
                 );
-                my $action = ack_decision($entity, $state, $fresh->{sessions}, $action_stale);
+                update_cluster_info($info, $fresh);
+                my $action = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
                 if ($action->{verdict} ne 'accept') {
                     log_fail(
                         "not accepting '$option' at the commit boundary: a fresh client"
