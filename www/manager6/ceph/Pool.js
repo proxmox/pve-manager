@@ -338,7 +338,7 @@ Ext.define(
                 minWidth: 100,
                 flex: 1,
                 align: 'right',
-                renderer: (v, meta, rec) => `${v}/${rec.data.min_size}`,
+                renderer: (v, meta, rec) => Ext.htmlEncode(`${v}/${rec.data.min_size}`),
                 dataIndex: 'size',
             },
             {
@@ -356,10 +356,11 @@ Ext.define(
                 dataIndex: 'pg_num_final',
                 renderer: function (value, metaData) {
                     if (!value) {
-                        value = '<i class="fa fa-info-circle faded"></i> n/a';
                         metaData.tdAttr = 'data-qtip="Needs pg_autoscaler module enabled."';
+                        return '<i class="fa fa-info-circle faded"></i> n/a';
+                    } else {
+                        return Ext.htmlEncode(value);
                     }
-                    return value;
                 },
             },
             {

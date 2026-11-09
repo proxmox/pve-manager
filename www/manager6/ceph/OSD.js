@@ -1118,14 +1118,14 @@ Ext.define('PVE.node.CephOsdTree', {
             if (!value && rec.data.osdtype === 'bluestore' && rec.data.type === 'osd') {
                 return 'N/A';
             }
-            return value;
+            return Ext.htmlEncode(value);
         },
 
         render_version: function (value, metadata, rec) {
             let vm = this.getViewModel();
             let versions = vm.get('versions');
             let icon = '';
-            let version = value || '';
+            let version = Ext.htmlEncode(value || '');
             let maxversion = vm.get('maxversion');
             if (value && PVE.Utils.compare_ceph_versions(value, maxversion) !== 0) {
                 let host_version = rec.parentNode?.data?.version || versions[rec.data.host] || '';
@@ -1145,7 +1145,7 @@ Ext.define('PVE.node.CephOsdTree', {
         },
 
         render_osd_val: function (value, metaData, rec) {
-            return rec.data.type === 'osd' ? value : '';
+            return rec.data.type === 'osd' ? Ext.htmlEncode(value) : '';
         },
         render_osd_weight: function (value, metaData, rec) {
             if (rec.data.type !== 'osd') {
@@ -1160,7 +1160,7 @@ Ext.define('PVE.node.CephOsdTree', {
             }
             let commit_ms = rec.data.commit_latency_ms,
                 apply_ms = rec.data.apply_latency_ms;
-            return apply_ms + ' / ' + commit_ms;
+            return Ext.htmlEncode(`${apply_ms} / ${commit_ms}`);
         },
 
         render_osd_size: function (value, metaData, rec) {
@@ -1348,7 +1348,7 @@ Ext.define('PVE.node.CephOsdTree', {
                 },
                 tpl: [
                     '<tpl if="osd">',
-                    'osd.{osd}:',
+                    'osd.{osd:htmlEncode}:',
                     '<tpl else>',
                     gettext('No OSD selected'),
                     '</tpl>',

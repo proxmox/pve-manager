@@ -1410,7 +1410,7 @@ Ext.define('PVE.Utils', {
         // expecting the following format:
         // [v2:10.10.10.1:6802/2008,v1:10.10.10.1:6803/2008]
         render_ceph_osd_addr: function (value) {
-            value = value.trim();
+            value = Ext.htmlEncode(value.trim());
             if (value.startsWith('[') && value.endsWith(']')) {
                 value = value.slice(1, -1); // remove []
             }

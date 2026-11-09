@@ -17,7 +17,7 @@ Ext.define('PVE.widget.HealthWidget', {
         '<h3>{title}</h3>',
         '<i class="fa fa-5x {iconCls}"></i>',
         '<br /><br/>',
-        '{text}',
+        '{text:htmlEncode}',
         '<tpl if="hintHtml"><div class="pve-health-widget-hint">{hintHtml}</div></tpl>',
     ],
 

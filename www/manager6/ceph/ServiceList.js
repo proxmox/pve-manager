@@ -122,7 +122,7 @@ Ext.define('PVE.node.CephServiceController', {
         } else if (view.mixedversions) {
             icon = PVE.Utils.get_ceph_icon_html('HEALTH_OK');
         }
-        return icon + value;
+        return icon + Ext.htmlEncode(value);
     },
 
     getMaxVersions: function (store, records, success) {
@@ -659,7 +659,7 @@ Ext.define(
                 flex: 1,
                 sortable: true,
                 renderer: function (v) {
-                    return this.type + '.' + v;
+                    return Ext.htmlEncode(this.type + '.' + v);
                 },
                 dataIndex: 'name',
             },
@@ -668,7 +668,7 @@ Ext.define(
                 flex: 1,
                 sortable: true,
                 renderer: function (v) {
-                    return v || Proxmox.Utils.unknownText;
+                    return Ext.htmlEncode(v) || Proxmox.Utils.unknownText;
                 },
                 dataIndex: 'host',
             },
@@ -684,7 +684,7 @@ Ext.define(
                 flex: 3,
                 sortable: true,
                 renderer: function (v) {
-                    return v || Proxmox.Utils.unknownText;
+                    return Ext.htmlEncode(v) || Proxmox.Utils.unknownText;
                 },
                 dataIndex: 'addr',
             },

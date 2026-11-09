@@ -146,22 +146,27 @@ Ext.define('PVE.ceph.Services', {
             let ids = Object.keys(metadata[type] || {});
             me[type] = {};
 
-            for (let id of ids) {
+            for (let rawId of ids) {
+                let getProp = function (prop) {
+                    let value = metadata[type][rawId][prop];
+                    if (value !== undefined && value !== null) {
+                        return Ext.htmlEncode(value);
+                    }
+                    return undefined;
+                };
+                let id = Ext.htmlEncode(rawId);
                 const [name, host] = id.split('@');
                 let result = {
-                    id: id,
+                    id,
                     health: healthstates.HEALTH_OK,
                     statuses: [],
                     messages: [],
-                    name: name,
-                    title: metadata[type][id].name || name,
-                    host: host,
+                    name,
+                    title: getProp('name') || name,
+                    host,
                     version: PVE.Utils.parse_ceph_version(metadata[type][id]),
-                    service: metadata[type][id].service,
-                    addr:
-                        metadata[type][id].addr ||
-                        metadata[type][id].addrs ||
-                        Proxmox.Utils.unknownText,
+                    service: getProp('service'),
+                    addr: getProp('addr') || getProp('addrs') || Proxmox.Utils.unknownText,
                 };
 
                 result.statuses = [
