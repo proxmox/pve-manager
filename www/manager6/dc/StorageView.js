@@ -128,10 +128,7 @@ Ext.define(
                         sortable: true,
                         dataIndex: 'path',
                         renderer: function (value, metaData, record) {
-                            if (record.data.target) {
-                                return record.data.target;
-                            }
-                            return value;
+                            return Ext.htmlEncode(record.data.target || value);
                         },
                     },
                     {
