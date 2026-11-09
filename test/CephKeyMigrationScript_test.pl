@@ -2376,6 +2376,59 @@ sub run_aggregate_confirmation {
 
 {
     my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.ready client.blocked));
+    $info->{sessions}->{clients}->{'client.blocked'} =
+        [{ global_id => 101, host => 'node-b' }];
+    my $verdict;
+    {
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        $verdict = $HOOKS->{preflight}->(
+            $info,
+            { apply => 1, 'confirm-clients-refreshed' => [qw(client.ready client.blocked)] },
+            0,
+            $state,
+            {},
+        );
+    }
+    cmp_ok($verdict, '<', 0, 'one recorded connected client refuses a list of users');
+    is_deeply($rados->{committed}, [], 'the ready staged key of the list is not committed first');
+    ok(
+        !defined($state->{client_refresh}->{'client.ready'}->{cleared})
+            && !defined($state->{client_refresh}->{'client.blocked'}->{cleared}),
+        'no record of the list is closed',
+    );
+}
+
+for my $opts (
+    { 'confirm-clients-refreshed' => [qw(client.a client.b)] },
+    { 'confirm-all-clients-refreshed' => 1 },
+) {
+    # a recorded client is connected while the first complete measurement is still open
+    my ($option) = keys %$opts;
+    my ($rados, $info, $state) =
+        aggregate_fixture({ complete => 1, clients => {} }, qw(client.a client.b));
+    $state->{client_refresh}->{'client.b'}->{measurement_incomplete} = 1;
+    $info->{sessions}->{clients}->{'client.b'} = [{ global_id => 101, host => 'node-b' }];
+    my $run = sub {
+        my $output = '';
+        no warnings qw(once redefine);
+        local *main::file_set_contents = sub { };
+        open(my $stdout, '>', \$output) or die $!;
+        local *STDOUT = $stdout;
+        my $verdict = $HOOKS->{preflight}->($info, { apply => 1, %$opts }, 0, $state, {});
+        return ($verdict, $output);
+    };
+    my ($verdict, $output) = $run->();
+    my @failures = $output =~ m/^FAIL:/mg;
+    ok($verdict < 0 && scalar(@failures) == 1, "$option reports that client once");
+    $info->{sessions}->{clients} = {};
+    ($verdict) = $run->();
+    cmp_ok($verdict, '>=', 0, "$option is accepted in the next run once that client is gone");
+}
+
+{
+    my ($rados, $info, $state) =
         aggregate_fixture({ complete => 0, clients => {} }, qw(client.store client.admin));
     my ($verdict, $output);
     {
@@ -5819,8 +5872,6 @@ for my $case ([0, 0], [1, 0], [0, 1], [1, 1]) {
         'measurement adds no target-key IDs and preserves previously recorded history',
     );
     $info->{sessions}->{clients}->{'client.admin'} = $fresh_mounts;
-    is($run->(), -1, 'singular confirmation measures only after the connected blocker clears')
-        if !$aggregate && !$recorded_mounts;
     ok(
         !$state->{client_refresh}->{'client.admin'}->{measurement_incomplete},
         'the complete measurement does not require refreshing the target-key mounts',

@@ -2128,162 +2128,98 @@ my sub preflight_cluster(
             } grep {
                 !defined($state->{client_refresh}->{$_}->{cleared})
             } keys %{ $state->{client_refresh} // {} };
+        log_info("nothing left to confirm: no open client-key refresh record exists")
+            if !scalar(@confirm);
     }
 
+    # reports a reason once, as the aggregate option has the same one for every user
+    my $refusals = {};
+    my $refuse = sub($message) {
+        log_fail($message) if !$refusals->{$message}++;
+        return 0;
+    };
+    # Whether one record can be closed on the current picture, naming what stands in the way.
+    my $confirmable = sub($entity) {
+        my $option =
+            $confirm_all
+            ? '--confirm-all-clients-refreshed'
+            : "--confirm-clients-refreshed $entity";
+        my $ok = 1;
+        $ok = $refuse->($_) for staged_storage_problems($state, $info->{exported}, $entity)->@*;
+
+        my $staged = $state->{staged}->{$entity};
+        return $refuse->(
+            "not accepting '$option': the staged key of '$entity' is in rollback; use"
+                . " '--confirm-abort-clients-refreshed $entity' after reverse refresh")
+            if ($staged // {})->{aborting};
+
+        my $mark = ($state->{client_refresh} // {})->{$entity};
+        return $refuse->("nothing to confirm: no rotation record exists for '$entity'")
+            if !$mark;
+
+        # Measure before judging, so the clients visible right now count as recorded ones.
+        if (
+            ($mark->{measurement_incomplete} || !defined($mark->{session_ids}))
+            && $info->{sessions}->{complete}
+        ) {
+            my $live = complete_client_measurement($state, $info, $entity);
+            save_state($state);
+            $report_first_measurement->($entity, $option, $live);
+            return 0;
+        }
+
+        my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
+        my $verdict = $decision->{verdict};
+        if ($verdict eq 'connected') {
+            my $held = $decision->{held};
+            return $refuse->("not accepting '$option': "
+                . scalar(@$held)
+                . " session(s) of '$entity' may still hold the previous key ("
+                . $describe_for_section->($held)
+                . "). Refresh these clients first.");
+        }
+        return $refuse->(
+            "not accepting '$option': not every monitor answered the session query,"
+                . " so a client could be connected unseen")
+            if $verdict eq 'incomplete';
+        return $refuse->("not accepting '$option': the key used by "
+                . scalar($decision->{held}->@*)
+                . " session(s) of '$entity' cannot be verified. "
+                . session_key_support_hint())
+            if $verdict eq 'unidentified';
+        die "unexpected confirmation verdict '$verdict' for '$entity'\n"
+            if $verdict ne 'accept';
+
+        # Committing a staged key drops the one that copies not yet written still hold.
+        if ($staged && (!$staged->{written} || mount_refresh_pending($state, $entity))) {
+            my $why =
+                mount_refresh_pending($state, $entity)
+                ? mount_refresh_hint($state, $entity)
+                : "Managed key copies of '$entity' are incomplete. Rerun the rotation option with"
+                . " '--apply'.";
+            return $refuse->("not accepting '$option': $why");
+        }
+        return $ok;
+    };
+
+    # Every selected record has to pass before any is closed.
     for my $entity (@confirm) {
-        my $problems = staged_storage_problems($state, $info->{exported}, $entity);
-        if (@$problems) {
-            log_fail($_) for @$problems;
-            $confirmation_refused = 1;
-        }
-    }
-
-    if ($confirm_all) {
-        if (!scalar(@confirm)) {
-            log_info("nothing left to confirm: no open client-key refresh record exists");
-        }
-
-        if (scalar(@confirm) && !$info->{sessions}->{complete}) {
-            log_fail("not accepting '--confirm-all-clients-refreshed': not every monitor"
-                . " answered the session query");
-            $confirmation_refused = 1;
-        }
-
-        my $measured = 0;
-        for my $entity (@confirm) {
-            my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
-            if (($state->{staged}->{$entity} // {})->{aborting}) {
-                log_fail("not accepting '--confirm-all-clients-refreshed': the staged key of"
-                    . " '$entity' is in rollback; use '--confirm-abort-clients-refreshed"
-                    . " $entity' after reverse refresh");
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($decision->{verdict} eq 'connected') {
-                my $held = $decision->{held};
-                log_fail("not accepting '--confirm-all-clients-refreshed': "
-                    . scalar(@$held)
-                    . " recorded client(s) of '$entity' are still connected ("
-                    . $describe_for_section->($held)
-                    . ")");
-                $confirmation_refused = 1;
-            }
-            if ($decision->{verdict} eq 'unidentified') {
-                log_fail("not accepting '--confirm-all-clients-refreshed': the key used by "
-                    . scalar($decision->{held}->@*)
-                    . " session(s) of '$entity' cannot be verified. "
-                    . session_key_support_hint());
-                $confirmation_refused = 1;
-            }
-            my $mark = $state->{client_refresh}->{$entity};
-            my $needs_measurement =
-                $mark->{measurement_incomplete} || !defined($mark->{session_ids});
-            if ($needs_measurement && $info->{sessions}->{complete}) {
-                my $live = complete_client_measurement($state, $info, $entity);
-                $measured = 1;
-                $report_first_measurement->($entity, '--confirm-all-clients-refreshed', $live);
-                $confirmation_refused = 1;
-            }
-
-            if (my $staged = $state->{staged}->{$entity}) {
-                if (!$staged->{written} || mount_refresh_pending($state, $entity)) {
-                    log_fail("not accepting '--confirm-all-clients-refreshed': the staged key of"
-                        . " '$entity' is not written to every managed copy and loaded by every"
-                        . " managed CephFS mount yet");
-                    $confirmation_refused = 1;
-                }
-            }
-        }
-        save_state($state) if $measured;
+        $confirmation_refused = 1 if !$confirmable->($entity);
     }
 
     if (!$confirmation_refused) {
-        # every record passed the checks above, so the aggregate option is accepted as a whole
         log_warn("accepting '--confirm-all-clients-refreshed' for "
                 . join(', ', @confirm)
                 . ": every client of them that this run can see is refreshed, and you confirm"
                 . " the same for those it cannot see")
             if $confirm_all && scalar(@confirm);
         for my $entity (@confirm) {
-            my $decision = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
-            my $verdict = $decision->{verdict};
-            my $option =
-                $confirm_all
-                ? '--confirm-all-clients-refreshed'
-                : "--confirm-clients-refreshed $entity";
-
-            if (($state->{staged}->{$entity} // {})->{aborting}) {
-                log_fail("not accepting '$option': the staged key is in rollback; use"
-                    . " '--confirm-abort-clients-refreshed $entity' after reverse refresh");
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($verdict eq 'unknown') {
-                log_fail("nothing to confirm: no rotation record exists for '$entity'");
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($verdict eq 'connected') {
-                my $held = $decision->{held};
-                log_fail("not accepting '$option': "
-                    . scalar(@$held)
-                    . " recorded client(s) of it are still connected ("
-                    . $describe_for_section->($held)
-                    . "). Refresh those first, the confirmation covers only what this run cannot"
-                    . " see.");
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($verdict eq 'incomplete') {
-                log_fail("not accepting '$option': not every monitor answered the session query,"
-                    . " so a client of this Ceph user could be connected unseen");
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($verdict eq 'unidentified') {
-                log_fail("not accepting '$option': the key used by "
-                    . scalar($decision->{held}->@*)
-                    . " session(s) cannot be verified. "
-                    . session_key_support_hint());
-                $confirmation_refused = 1;
-                next;
-            }
-            if ($verdict eq 'measure') {
-                my $live = complete_client_measurement($state, $info, $entity);
-                save_state($state);
-                $report_first_measurement->($entity, $option, $live);
-                $confirmation_refused = 1;
-                next;
-            }
-
-            # Committing a staged key drops the one that copies not yet written still hold.
             my $staged = $state->{staged}->{$entity};
-            if ($staged && (!$staged->{written} || mount_refresh_pending($state, $entity))) {
-                my $why =
-                    mount_refresh_pending($state, $entity)
-                    ? mount_refresh_hint($state, $entity)
-                    : "Managed key copies are incomplete. Rerun the rotation option with '--apply'.";
-                log_fail("not accepting '$option': $why");
-                $confirmation_refused = 1;
-                next;
-            }
-            my $problems = staged_storage_problems($state, $info->{exported}, $entity);
-            if (@$problems) {
-                log_fail($_) for @$problems;
-                $confirmation_refused = 1;
-                next;
-            }
             die "cannot commit the staged key of '$entity' without a cluster connection\n"
                 if $staged && !$info->{rados};
 
-            # What is left are clients no run can see: disconnected ones, and copies of the key
-            # on hosts Proxmox VE does not manage. The aggregate option said so once, above.
-            log_warn("accepting '$option': every client of '$entity' that this run can see"
-                    . " is refreshed, and you confirm the same for those it cannot see")
-                if !$confirm_all;
-            # The aggregate was checked as a whole on a fresh snapshot above. Recheck at the
-            # mutation boundary so a client that appears while the batch runs preserves this
-            # key and its open record. The records after it are judged on this snapshot too.
+            # Judge again at the mutation boundary, on a fresh snapshot for a commit, so a client
+            # that appears or a key that changes while the batch runs keeps its record open.
             if ($staged && $collect_clients) {
                 my $fresh = collect_client_snapshot($info->{rados}, $collect_clients);
                 reconcile_client_fingerprints(
@@ -2293,21 +2229,18 @@ my sub preflight_cluster(
                     $state, $fresh->{sessions}, $fresh->{exported},
                 );
                 update_cluster_info($info, $fresh);
-                my $action = ack_decision($entity, $state, $info->{sessions}, $stale_clients);
-                if ($action->{verdict} ne 'accept') {
-                    log_fail(
-                        "not accepting '$option' at the commit boundary: a fresh client"
-                            . " check no longer proves that every visible client is refreshed"
-                            . (
-                                $action->{verdict} eq 'unidentified'
-                                ? '. ' . session_key_support_hint()
-                                : ''
-                            )
-                    );
-                    $confirmation_refused = 1;
-                    next;
-                }
             }
+            if (!$confirmable->($entity)) {
+                $confirmation_refused = 1;
+                next;
+            }
+
+            # What is left are clients no run can see: disconnected ones, and copies of the key
+            # on hosts Proxmox VE does not manage. The aggregate option said so once, above.
+            log_warn("accepting '--confirm-clients-refreshed $entity': every client of '$entity'"
+                    . " that this run can see is refreshed, and you confirm the same for those it"
+                    . " cannot see")
+                if !$confirm_all;
 
             # The record remains open if the commit fails, so the confirmation is retryable.
             $committed_copies = 1 if $staged && commit_staged_key($info->{rados}, $state, $entity);
