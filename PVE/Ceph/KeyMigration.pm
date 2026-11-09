@@ -1273,7 +1273,6 @@ sub open_options(
         ref($exported) eq 'HASH'
         ? staged_records({ exported => $exported }, $state)
         : {};
-    my $all_ready_for_aggregate = 1;
 
     my $entities = { %$records, %{ $state->{staged} // {} } };
     for my $entity (sort keys %$entities) {
@@ -1311,12 +1310,8 @@ sub open_options(
             && !scalar(@$copy_problems)
         ) {
             push @ready, $entity;
-            $all_ready_for_aggregate = 0
-                if $records->{$entity}->{measurement_incomplete}
-                || !defined($records->{$entity}->{session_ids});
         } else {
             push @waiting, $entity;
-            $all_ready_for_aggregate = 0;
 
             my $both = $key_state eq 'waiting' ? ' Both keys remain valid.' : '';
             if (scalar(@$copy_problems)) {
@@ -1466,7 +1461,7 @@ sub open_options(
         waiting_details => $waiting_details,
         waiting_sessions => $waiting_sessions,
         ready => \@ready,
-        all_ready_for_aggregate => $all_ready_for_aggregate,
+        all_ready_for_aggregate => scalar(@waiting) ? 0 : 1,
         stuck => [$clients->{other}->@*],
         orphaned_lockbox => $clients->{orphaned_lockbox},
         lockbox => $lockbox_open,
