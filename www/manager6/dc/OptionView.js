@@ -417,6 +417,9 @@ Ext.define('PVE.dc.OptionView', {
                     );
                     parts.push(Ext.String.format(gettext('Max. Lifetime: {0}'), lifetime));
                 }
+                if (Number(policy['default-to-max-lifetime'])) {
+                    parts.push(gettext('Default to Max. Lifetime'));
+                }
                 if (Number(policy['disallow-expiry-extension'])) {
                     parts.push(gettext('Disallow Extending Expiration'));
                 }
@@ -461,6 +464,9 @@ Ext.define('PVE.dc.OptionView', {
                             // values while a maximum lifetime implies it
                             if (me.down('field[name=require-expiry]').getValue()) {
                                 policy['require-expiry'] = 1;
+                            }
+                            if (values['default-to-max-lifetime']) {
+                                policy['default-to-max-lifetime'] = 1;
                             }
                             if (values['disallow-expiry-extension']) {
                                 policy['disallow-expiry-extension'] = 1;
@@ -516,7 +522,27 @@ Ext.define('PVE.dc.OptionView', {
                                         requireExpiry.setValue(
                                             implied || !!requireExpiry.explicitValue,
                                         );
+                                        let defaultToMax = field
+                                            .up('inputpanel')
+                                            .down('field[name=default-to-max-lifetime]');
+                                        defaultToMax.setDisabled(!implied);
+                                        if (!implied) {
+                                            defaultToMax.setValue(false);
+                                        }
                                     },
+                                },
+                            },
+                            {
+                                xtype: 'proxmoxcheckbox',
+                                name: 'default-to-max-lifetime',
+                                uncheckedValue: 0,
+                                disabled: true,
+                                fieldLabel: gettext('Default to Max. Lifetime'),
+                                autoEl: {
+                                    tag: 'div',
+                                    'data-qtip': gettext(
+                                        'Give tokens created without an expiration date the maximum lifetime instead of rejecting them.',
+                                    ),
                                 },
                             },
                             {
