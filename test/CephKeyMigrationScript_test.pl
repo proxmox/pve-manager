@@ -3635,6 +3635,28 @@ for my $opts (
 
 {
     my $help = $HOOKS->{usage}->();
+    for my $option (qw(
+        apply assume-yes verbose timeout force only restart-daemons rotate-cluster-keys
+        rotate-mon-key rotate-client-keys rotate-lockbox-keys rotate-admin-key
+        rotate-all-storage-keys rotate-storage-key abort-staged-key
+        confirm-abort-clients-refreshed confirm-clients-refreshed
+        confirm-all-clients-refreshed restrict-ciphers wipe-rotating-keys
+    ))
+    {
+        # an unknown option prints the help and returns a status, a known one may die later
+        local @ARGV = ("--$option", $option eq 'timeout' ? '5' : 'x');
+        local *STDERR;
+        open(STDERR, '>', \my $discarded) or die $!;
+        my (undef, $status) = eval { $HOOKS->{parse_options}->() };
+        ok(
+            !defined($status) && $help =~ m/^  --\Q$option\E\b/m,
+            "the published option '--$option' stays accepted and documented",
+        );
+    }
+}
+
+{
+    my $help = $HOOKS->{usage}->();
     like($help, qr/--confirm-clients-refreshed USER/, 'help uses the public USER placeholder');
     unlike(
         $help,
