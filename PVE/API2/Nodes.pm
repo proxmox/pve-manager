@@ -1671,6 +1671,10 @@ __PACKAGE__->register_method({
 
         PVE::INotify::update_file('resolvconf', $param);
 
+        # postfix copies resolv.conf into its chroot only on start; a reload does not refresh it
+        eval { PVE::Cmd::run(['systemctl', 'try-restart', 'postfix.service']) };
+        warn "failed to restart postfix - $@" if $@;
+
         return;
     },
 });
