@@ -105,6 +105,24 @@ Ext.define('PVE.dc.TokenEdit', {
                 minValue: 1,
                 fieldLabel: gettext('Lifetime (seconds)'),
             },
+            {
+                // offered when the policy allows extending the expiration date along with it
+                xtype: 'proxmoxcheckbox',
+                name: 'regenerate',
+                hidden: true,
+                disabled: true,
+                fieldLabel: gettext('Regenerate Secret'),
+                boxLabel: gettext('allows extending the expiration date'),
+            },
+            {
+                xtype: 'displayfield',
+                itemId: 'regenerateHint',
+                userCls: 'pmx-hint',
+                hidden: true,
+                value: gettext(
+                    'After saving, the current secret stops working and the new one is shown.',
+                ),
+            },
         ],
         columnB: [
             {
@@ -191,6 +209,16 @@ Ext.define('PVE.dc.TokenEdit', {
 
         // the policy may forbid moving the expiration date later or removing it
         let noExtension = !!Number(me.policy['disallow-expiry-extension']) && !!me.originalExpire;
+        if (noExtension && Number(me.policy['allow-extension-on-regenerate'])) {
+            let regenerateField = me.down('field[name=regenerate]');
+            let regenerateHint = me.down('#regenerateHint');
+            regenerateField.setVisible(true);
+            regenerateField.setDisabled(false);
+            regenerateField.on('change', (_field, regenerate) => {
+                regenerateHint.setVisible(regenerate);
+                me.applyExpiryBounds(!regenerate);
+            });
+        }
         me.applyExpiryBounds(noExtension);
     },
 
@@ -238,6 +266,7 @@ Ext.define('PVE.dc.TokenEdit', {
             bound = current;
         }
         expireField.setMaxValue(bound);
+        expireField.validate();
     },
 
     setValues: function (values) {

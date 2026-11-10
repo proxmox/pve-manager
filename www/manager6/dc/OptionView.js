@@ -423,6 +423,9 @@ Ext.define('PVE.dc.OptionView', {
                 if (Number(policy['disallow-expiry-extension'])) {
                     parts.push(gettext('Disallow Extending Expiration'));
                 }
+                if (Number(policy['allow-extension-on-regenerate'])) {
+                    parts.push(gettext('Allow Extension on Regeneration'));
+                }
                 if (Number(policy['require-privilege-separation'])) {
                     parts.push(gettext('Require Privilege Separation'));
                 }
@@ -470,6 +473,9 @@ Ext.define('PVE.dc.OptionView', {
                             }
                             if (values['disallow-expiry-extension']) {
                                 policy['disallow-expiry-extension'] = 1;
+                            }
+                            if (values['allow-extension-on-regenerate']) {
+                                policy['allow-extension-on-regenerate'] = 1;
                             }
                             if (values['require-privilege-separation']) {
                                 policy['require-privilege-separation'] = 1;
@@ -550,6 +556,32 @@ Ext.define('PVE.dc.OptionView', {
                                 name: 'disallow-expiry-extension',
                                 uncheckedValue: 0,
                                 fieldLabel: gettext('Disallow Extending Expiration'),
+                                listeners: {
+                                    // allowing an extension on regeneration only makes sense
+                                    // while extending is disallowed in general
+                                    change: function (field, value) {
+                                        let allowOnRegenerate = field
+                                            .up('inputpanel')
+                                            .down('field[name=allow-extension-on-regenerate]');
+                                        allowOnRegenerate.setDisabled(!value);
+                                        if (!value) {
+                                            allowOnRegenerate.setValue(false);
+                                        }
+                                    },
+                                },
+                            },
+                            {
+                                xtype: 'proxmoxcheckbox',
+                                name: 'allow-extension-on-regenerate',
+                                uncheckedValue: 0,
+                                disabled: true,
+                                fieldLabel: gettext('Allow Extension on Regeneration'),
+                                autoEl: {
+                                    tag: 'div',
+                                    'data-qtip': gettext(
+                                        'Allow extending the expiration date of a token when its secret is regenerated at the same time.',
+                                    ),
+                                },
                             },
                             {
                                 xtype: 'proxmoxcheckbox',
