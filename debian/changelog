@@ -1,3 +1,65 @@
+pve-manager (9.2.27) trixie; urgency=medium
+
+  * ui: encode values from the API and other external sources before showing
+    them, so that they cannot inject HTML into the web interface:
+    - guest import wizard: all values taken from the import source, like the
+      disk and network details read from an ESXi VMX file or an OVF.
+    - Ceph service, monitor and OSD details, storage targets and the PBS
+      encryption key fingerprint.
+    - read-only display fields now show their value as plain text by
+      default.
+
+  * ui: storage: iSCSI: fix an error when opening the edit dialog of an
+    existing storage.
+
+  * ui: datacenter options: show the column header and the correct empty text
+    in the Registered Tags and User Tag Access lists.
+
+  * update shipped appliance info index.
+
+  * ui: storage: NFS: show scan errors and explain an empty result in the
+    export selector, so an unreachable server can be told apart from one
+    without exports.
+
+  * ui: storage: CIFS: clear the selected share when the server changes, so a
+    share from the scan of the previous server is not submitted.
+
+  * ui: storage: ZFS over iSCSI: offer the common block sizes from 4k to 128k
+    for selection, while other valid sizes can still be typed.
+
+  * ui: pool create: select the parent pool from a list instead of typing the
+    full path, making it easier to create nested pools.
+
+  * fix #5713: backup: add the 'none' notification mode to disable
+    notifications for a single backup job without changing the global
+    notification settings.
+
+  * ui: guest hardware: label the edit button 'Attach' for unused disks, as
+    counterpart to the 'Detach' button of attached disks.
+
+  * api: DNS: restart postfix, if running, after changing the name servers.
+    It otherwise kept using the old ones, which could make mail delivery
+    fail.
+
+  * ceph: OSD details: fix opening the details of an OSD whose host name Ceph
+    reports as FQDN, which failed claiming the OSD does not exist on the node.
+
+  * ceph: Cephx key migration:
+    - on clusters where Ceph reports FQDN host names, do not refuse an OSD
+      because another node has a leftover data directory with the same OSD
+      ID. The BlueStore label still has to identify the OSD. A refusal now
+      names the nodes that report a directory.
+    - clarify the output after a Ceph user key was changed by hand. The
+      first confirmation of its client refresh only records which clients
+      are connected, and now reports this as information instead of a
+      failure if none of them may hold the previous key.
+    - check all users given with '--confirm-clients-refreshed' before
+      confirming any of them, instead of committing the keys of some while
+      refusing another.
+    - help: group the options by purpose.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Nov 2026 21:55:38 +0100
+
 pve-manager (9.2.26) trixie; urgency=medium
 
   * api: backup: extract config: also allow it with the Datastore.Allocate
