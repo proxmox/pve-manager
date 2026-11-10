@@ -187,7 +187,8 @@ Ext.define('PVE.window.Restore', {
         let items = [
             {
                 xtype: 'displayfield',
-                value: me.volidText || me.volid,
+                htmlEncode: false,
+                value: me.volidText || Ext.htmlEncode(me.volid),
                 fieldLabel: gettext('Source'),
             },
             storagesel,
