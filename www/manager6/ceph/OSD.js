@@ -554,7 +554,7 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
                                     ' to be refused for the same reason, so check the cluster' +
                                     ' status first.',
                             ),
-                            Ext.String.htmlEncode(response.htmlStatus || response.status),
+                            response.htmlStatus || Ext.String.htmlEncode(response.status),
                         ),
                 );
                 hint.setHidden(false);
