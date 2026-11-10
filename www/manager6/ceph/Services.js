@@ -146,15 +146,15 @@ Ext.define('PVE.ceph.Services', {
             let ids = Object.keys(metadata[type] || {});
             me[type] = {};
 
-            for (let rawId of ids) {
+            for (let id of ids) {
                 let getProp = function (prop) {
-                    let value = metadata[type][rawId][prop];
+                    let value = metadata[type][id][prop];
                     if (value !== undefined && value !== null) {
                         return Ext.htmlEncode(value);
                     }
                     return undefined;
                 };
-                let id = Ext.htmlEncode(rawId);
+                // keep ID, name and host raw, they are keys into the metadata and status maps
                 const [name, host] = id.split('@');
                 let result = {
                     id,
@@ -162,7 +162,7 @@ Ext.define('PVE.ceph.Services', {
                     statuses: [],
                     messages: [],
                     name,
-                    title: getProp('name') || name,
+                    title: getProp('name') || Ext.htmlEncode(name),
                     host,
                     version: PVE.Utils.parse_ceph_version(metadata[type][id]),
                     service: getProp('service'),
@@ -170,7 +170,7 @@ Ext.define('PVE.ceph.Services', {
                 };
 
                 result.statuses = [
-                    gettext('Host') + ': ' + host,
+                    gettext('Host') + ': ' + Ext.htmlEncode(host),
                     gettext('Address') + ': ' + result.addr,
                 ];
 
