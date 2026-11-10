@@ -80,7 +80,7 @@ Ext.define('PVE.ceph.Services', {
 
                         let severityIcon = PVE.Utils.get_ceph_icon_html(value.severity, true);
                         let details = value.detail.reduce((acc, v) => `${acc}\n${v.message}`, '');
-                        monmessages[monid].messages.push(severityIcon + details);
+                        monmessages[monid].messages.push(severityIcon + Ext.htmlEncode(details));
 
                         if (healthstates[value.severity] < monmessages[monid].worstSeverity) {
                             monmessages[monid].worstSeverity = healthstates[value.severity];
@@ -98,7 +98,7 @@ Ext.define('PVE.ceph.Services', {
 
             if (status.fsmap) {
                 status.fsmap.by_rank.forEach(function (mds) {
-                    mdsmessages[mds.name] = 'rank: ' + mds.rank + '; ' + mds.status;
+                    mdsmessages[mds.name] = Ext.htmlEncode(`rank: ${mds.rank}; ${mds.status}`);
                 });
             }
         }
@@ -190,7 +190,9 @@ Ext.define('PVE.ceph.Services', {
                 }
 
                 if (result.version) {
-                    result.statuses.push(gettext('Version') + ': ' + result.version);
+                    result.statuses.push(
+                        gettext('Version') + ': ' + Ext.htmlEncode(result.version),
+                    );
 
                     if (PVE.Utils.compare_ceph_versions(result.version, maxversion) !== 0) {
                         let host_version =
