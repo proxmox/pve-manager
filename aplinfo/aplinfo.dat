@@ -324,3 +324,17 @@ sha512sum: d5607f124d01f8ddfebd8e7da34c0022fb2a464e1662ee1e39a13f5ed1bae08a7364c
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 26.04 Resolute (standard)
  A small Ubuntu 26.04 Resolute Raccoon system including all standard packages.
+
+Package: ubuntu-26.10-standard
+Version: 26.10-1
+Type: lxc
+OS: ubuntu-26.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-26.10-standard_26.10-1_amd64.tar.zst
+md5sum: 2f618243da1e73d6d679977eae01c95e
+sha512sum: f4a63530196270cf35abf8e2fb896fc40673b8a2013694a5e72a076e287d56cc2e0d7c5c357eb822952ff5128f749a34ac8d120513672747f4715310e1f19948
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 26.10 Stonking (standard)
+ A small Ubuntu 26.10 Stonking Stingray system including all standard packages.
