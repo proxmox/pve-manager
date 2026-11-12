@@ -42,6 +42,11 @@ Ext.define('PVE.node.CreateLVM', {
                     fieldLabel: gettext('Add Storage'),
                     value: '1',
                 },
+                PVE.SANUtils.sanViewNote(
+                    gettext(
+                        'On a SAN LUN, Add Storage creates a shared storage for all nodes. For multipath or a node restriction, use Guided Setup in {0}.',
+                    ),
+                ),
             ],
         });
 

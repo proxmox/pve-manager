@@ -148,6 +148,9 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
     onlineHelp: 'storage_lvm',
 
+    // TRANSLATORS: "Guided Setup" is a button of the SAN view, {0} the menu path of that view.
+    sanNote: gettext('To set up shared LVM on a SAN LUN, use Guided Setup in {0}.'),
+
     onGetValues: function (values) {
         let me = this;
 

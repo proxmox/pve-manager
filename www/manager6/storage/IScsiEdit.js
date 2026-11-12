@@ -77,6 +77,9 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
     lunContent: 'images',
 
+    // TRANSLATORS: "Guided Setup" is a button of the SAN view, {0} the menu path of that view.
+    sanNote: gettext('To set up shared LVM with multipath on a LUN, use Guided Setup in {0}.'),
+
     // Loading sets the value before its original value, so use the dirty state.
     updateMultipathActivation: function () {
         let me = this;

@@ -153,6 +153,44 @@ Ext.define('PVE.SANUtils', {
         );
     },
 
+    // Selects Datacenter > Storage > SAN, as the TFA entry of the user menu does for its panel.
+    showSANView: function () {
+        Ext.state.Manager.getProvider().set('dctab', { value: 'san' }, true);
+        Ext.ComponentQuery.query('pveStdWorkspace')[0]?.selectById('root');
+    },
+
+    // A note for the add dialogs of storages on a SAN, which points to the guided setups of the
+    // SAN view. Its link closes the dialog and opens the view.
+    sanViewNote: function (text) {
+        let path = `${gettext('Datacenter')} > ${gettext('Storage')} > SAN`;
+        let link = `<a href="#" style="white-space: nowrap;">${Ext.htmlEncode(path)}</a>`;
+        return {
+            xtype: 'component',
+            margin: '5 0 0 0',
+            html:
+                `<span class="pmx-hint">${Ext.htmlEncode(gettext('Note:'))}</span> ` +
+                Ext.String.format(Ext.htmlEncode(text), link),
+            listeners: {
+                afterrender: function (cmp) {
+                    let follow = function (event) {
+                        event.stopEvent();
+                        cmp.up('window')?.close();
+                        PVE.SANUtils.showSANView();
+                    };
+                    cmp.mon(cmp.getEl(), 'click', follow, null, { delegate: 'a' });
+                    // an edit window handles Enter for its default button, so no click follows it
+                    cmp.mon(
+                        cmp.getEl(),
+                        'keydown',
+                        (event) => event.getKey() === event.ENTER && follow(event),
+                        null,
+                        { delegate: 'a' },
+                    );
+                },
+            },
+        };
+    },
+
     renderSanTransport: function (value) {
         return Ext.htmlEncode(
             {
