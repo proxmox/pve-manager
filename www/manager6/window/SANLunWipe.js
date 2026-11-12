@@ -1,6 +1,5 @@
 Ext.define('PVE.window.SANLunWipe', {
     extend: 'Proxmox.window.Edit',
-    title: gettext('Wipe LUN'),
     onlineHelp: 'storage_multipath',
     width: 550,
     isCreate: true,
@@ -12,6 +11,8 @@ Ext.define('PVE.window.SANLunWipe', {
         let me = this;
         let lun = me.lun;
         let name = lun.name || lun.wwid;
+        let nvme = lun.multipath === 'native';
+        me.title = nvme ? gettext('Wipe Namespace') : gettext('Wipe LUN');
         me.url = `/nodes/${me.node}/disks/wipedisk`;
         me.extraRequestParams = { disk: lun['by-id'] };
         me.items = [
@@ -20,9 +21,13 @@ Ext.define('PVE.window.SANLunWipe', {
                 cls: 'pmx-hint',
                 html: Ext.htmlEncode(
                     Ext.String.format(
-                        gettext(
-                            'Wipe LUN {0} using node "{1}"? All data on the LUN will be lost, for every host that accesses it!',
-                        ),
+                        nvme
+                            ? gettext(
+                                  'Wipe namespace {0} using node "{1}"? All data on the namespace will be lost, for every host that accesses it!',
+                              )
+                            : gettext(
+                                  'Wipe LUN {0} using node "{1}"? All data on the LUN will be lost, for every host that accesses it!',
+                              ),
                         name,
                         me.node,
                     ),
@@ -42,12 +47,15 @@ Ext.define('PVE.window.SANLunWipe', {
                 // the checks before the wipe see the storages of the cluster and the users of the LUN
                 // on this node, not what another host does with it
                 xtype: 'proxmoxcheckbox',
-                boxLabel: gettext('No other host uses the LUN'),
+                boxLabel: nvme
+                    ? gettext('No other host uses the namespace')
+                    : gettext('No other host uses the LUN'),
                 submitValue: false,
                 getErrors: function () {
-                    return this.getValue()
-                        ? []
-                        : [gettext('Confirm that no other host uses the LUN.')];
+                    let error = nvme
+                        ? gettext('Confirm that no other host uses the namespace.')
+                        : gettext('Confirm that no other host uses the LUN.');
+                    return this.getValue() ? [] : [error];
                 },
             },
             {

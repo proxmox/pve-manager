@@ -23,12 +23,12 @@ Ext.define('PVE.window.SANLunState', {
         let title = me.nvme
             ? gettext('Storage {0}: Namespace State')
             : gettext('Storage {0}: LUN State');
+        let pathsTitle = me.nvme
+            ? gettext('Namespace {0}: Paths by Node')
+            : gettext('LUN {0}: Paths by Node');
         me.title = me.storage
             ? Ext.String.format(title, me.storage)
-            : Ext.String.format(
-                  gettext('LUN {0}: Paths by Node'),
-                  Ext.htmlEncode(me.name || me.wwid),
-              );
+            : Ext.String.format(pathsTitle, Ext.htmlEncode(me.name || me.wwid));
         // The other nodes set up the LUN of a new storage with their next status updates.
         let pendingUntil = me.storage ? Date.now() + 60000 : 0;
         let rstore = Ext.create('Proxmox.data.UpdateStore', {

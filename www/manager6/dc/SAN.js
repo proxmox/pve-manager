@@ -15,6 +15,7 @@ Ext.define('pve-san-status', {
         'name',
         'explicit',
         'multipath-storage',
+        'native',
         'nodes',
         'size',
         'used-by-storage',
@@ -118,6 +119,7 @@ Ext.define('PVE.dc.SANView', {
             Ext.create('PVE.window.SANLunState', {
                 wwid: rec.get('wwid'),
                 name: rec.get('name'),
+                nvme: !!rec.get('native'),
                 autoShow: true,
             });
         let setupItem = (type) => ({
@@ -258,7 +260,11 @@ Ext.define('PVE.dc.SANView', {
                             disabled: !canModify,
                             handler: function (button) {
                                 let lun = button.up('grid').getSelection()[0];
-                                let wwid = lun?.get('explicit') ? undefined : lun?.get('wwid');
+                                // a namespace uses native multipath, which takes no entry
+                                let wwid =
+                                    lun?.get('explicit') || lun?.get('native')
+                                        ? undefined
+                                        : lun?.get('wwid');
                                 edit({ wwid, isCreate: true });
                             },
                         },
@@ -381,7 +387,13 @@ Ext.define('PVE.dc.SANView', {
                         width: 170,
                         renderer: (value, md, rec) => {
                             let storage = rec.get('multipath-storage');
-                            let kind = value ? 'manual' : storage ? 'storage' : 'unmanaged';
+                            let kind = rec.get('native')
+                                ? 'native'
+                                : value
+                                  ? 'manual'
+                                  : storage
+                                    ? 'storage'
+                                    : 'unmanaged';
                             return Ext.htmlEncode(PVE.SANUtils.multipathText(kind, storage));
                         },
                     },
