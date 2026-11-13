@@ -13,7 +13,14 @@ Ext.define(
         createStorageEditWindow: function (type, sid) {
             let schema = PVE.Utils.storageSchema[type];
             if (!schema || !schema.ipanel) {
-                throw 'no editor registered for storage type: ' + type;
+                Ext.Msg.alert(
+                    gettext('Error'),
+                    Ext.String.format(
+                        gettext("No editor registered for storage type '{0}'"),
+                        Ext.htmlEncode(type),
+                    ),
+                );
+                return;
             }
 
             Ext.create('PVE.storage.BaseEdit', {
