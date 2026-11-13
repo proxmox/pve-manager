@@ -17,6 +17,7 @@ PERLSOURCE = 			\
 	Network.pm		\
 	NodeConfig.pm		\
 	Nodes.pm		\
+	Plugins.pm		\
 	Pool.pm			\
 	Replication.pm		\
 	ReplicationConfig.pm	\
