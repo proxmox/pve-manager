@@ -22,6 +22,7 @@ use PVE::Tools qw(file_get_contents file_set_contents run_command);
 
 use PVE::Cluster;
 use PVE::Storage;
+use PVE::Storage::Common;
 
 use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
@@ -1333,6 +1334,8 @@ my sub client_key_files {
         next if defined($scfg->{monhost});
 
         my $secret = $type eq 'cephfs' ? 1 : 0;
+        my $rbd_map = $scfg->{krbd}
+            || PVE::Storage::Common::content_allows($scfg->{content} // {}, 'ct-vol');
         push $files->{ 'client.' . ($scfg->{username} // 'admin') }->@*, {
             path => "/etc/pve/priv/ceph/${storeid}." . ($secret ? 'secret' : 'keyring'),
             format => $secret ? 'secret' : 'keyring',
@@ -1340,10 +1343,7 @@ my sub client_key_files {
             store => $storeid,
             nodes => $scfg->{nodes},
             # a container root disk goes through 'rbd map' whether or not 'krbd' is set
-            kernel => (
-                ($secret && !$scfg->{fuse})
-                    || (!$secret && ($scfg->{krbd} || ($scfg->{content} // {})->{rootdir}))
-            ) ? 1 : 0,
+            kernel => (($secret && !$scfg->{fuse}) || (!$secret && $rbd_map)) ? 1 : 0,
         };
     }
 

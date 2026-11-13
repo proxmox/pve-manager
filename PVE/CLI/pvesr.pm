@@ -11,6 +11,7 @@ use PVE::RPCEnvironment;
 use PVE::Tools qw(extract_param);
 use PVE::SafeSyslog;
 use PVE::CLIHandler;
+use PVE::Storage::Common;
 
 use PVE::Cluster;
 use PVE::Replication;
@@ -39,8 +40,8 @@ my $check_wanted_volid = sub {
         if !$replicatable_storage_types->{ $scfg->{type} };
 
     my ($vtype, undef, $ownervm) = PVE::Storage::parse_volname($storecfg, $volid);
-    die "volume '$volid' has wrong vtype ($vtype != 'images')\n"
-        if $vtype ne 'images';
+    die "volume '$volid' has wrong vtype '$vtype'\n"
+        if !PVE::Storage::Common::is_guest_vtype($vtype);
     die "volume '$volid' has wrong owner\n"
         if !$ownervm || $vmid != $ownervm;
 

@@ -24,6 +24,7 @@ use PVE::NodeConfig;
 use PVE::ProcFSTools;
 use PVE::RPCEnvironment;
 use PVE::Storage;
+use PVE::Storage::Common;
 use PVE::Storage::Plugin;
 use PVE::Tools qw(run_command split_list file_get_contents trim);
 use PVE::QemuConfig;
@@ -1121,8 +1122,8 @@ sub check_storage_content {
             delete $scfg->{content}->{none}; # scan for guest images below
         }
 
-        next if $scfg->{content}->{images};
-        next if $scfg->{content}->{rootdir};
+        next if PVE::Storage::Common::content_allows($scfg->{content}, 'images');
+        next if PVE::Storage::Common::content_allows($scfg->{content}, 'rootdir');
 
         # Skip 'iscsi(direct)' (and foreign plugins with potentially similar behavior) with 'none',
         # because that means "use LUNs directly" and vdisk_list() in PVE 6.x still lists those.
@@ -1167,18 +1168,19 @@ sub check_storage_content {
             return;
         }
 
-        # cannot use parse_volname for containers, as it can return 'images'
-        # but containers cannot have ISO images attached, so assume 'rootdir'
-        my $vtype = 'rootdir';
+        # cannot use parse_volname for containers, as it can return the type of a VM volume
+        # but containers cannot have ISO images attached, so assume a container volume
+        my $vtype = 'ct-vol';
         if ($vmtype eq 'qemu') {
             ($vtype) = eval { PVE::Storage::parse_volname($storage_cfg, $volid); };
             return if $@;
         }
 
-        if (!$scfg->{content}->{$vtype}) {
+        if (!PVE::Storage::Common::content_allows($scfg->{content}, $vtype)) {
             $found = 1;
             $pass = 0;
-            log_warn("$prefix - storage does not have content type '$vtype' configured.");
+            my $ctype = PVE::Storage::Common::generic_vtype($vtype) // $vtype;
+            log_warn("$prefix - storage does not have content type '$ctype' configured.");
         }
     };
 
@@ -1266,9 +1268,15 @@ sub check_storage_content_dirs {
             next;
         }
 
+        my $dir_vtypes = {};
+        for my $vtype (keys $scfg->{content}->%*) {
+            $vtype = 'images' if PVE::Storage::Common::is_guest_vtype($vtype);
+            $dir_vtypes->{$vtype} = 1;
+        }
+
         my $resolved_subdirs = {};
         my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
-        for my $vtype (keys $scfg->{content}->%*) {
+        for my $vtype (keys $dir_vtypes->%*) {
             my $abs_subdir = Cwd::abs_path($plugin->get_subdir($scfg, $vtype));
             next if !defined($abs_subdir);
             push $resolved_subdirs->{$abs_subdir}->@*, $vtype;
