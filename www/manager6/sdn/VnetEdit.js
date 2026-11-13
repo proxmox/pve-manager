@@ -61,6 +61,13 @@ Ext.define('PVE.sdn.VnetInputPanel', {
             fieldLabel: gettext('Alias'),
             allowBlank: true,
             skipEmptyText: true,
+            maxLength: 256,
+            // Mirrors the backend pattern; the property classes match Perl's Unicode-aware \w.
+            regex: /^[\p{Alphabetic}\p{M}\p{Nd}\p{Pc}\p{Join_Control} ()*+,\-./:;<=>?@[\]^]*$/u,
+            regexText: Ext.String.format(
+                gettext('Only letters, digits, spaces and {0} are allowed.'),
+                Ext.htmlEncode('( ) * + , - . / : ; < = > ? @ [ ] ^ _'),
+            ),
             cbind: {
                 deleteEmpty: '{!isCreate}',
             },
