@@ -12,6 +12,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::Firewall;
 use PVE::GuestHelpers;
 use PVE::GuestID;
+use PVE::GuestIdentity;
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::INotify;
@@ -260,6 +261,10 @@ my sub can_access_network {
     return 0;
 }
 
+my $guest_identity_properties = PVE::GuestIdentity::meta_format_properties();
+$_->{description} =~ s/\.?$/ (for types 'qemu' and 'lxc')./
+    for values $guest_identity_properties->%*;
+
 __PACKAGE__->register_method({
     name => 'resources',
     path => 'resources',
@@ -475,6 +480,7 @@ __PACKAGE__->register_method({
                     optional => 1,
                     default => 0,
                 },
+                $guest_identity_properties->%*,
                 network => {
                     description => "The name of a Network entity (for type 'network').",
                     type => "string",
@@ -552,8 +558,9 @@ __PACKAGE__->register_method({
 
         # we try to generate 'numbers' by using "$X + 0"
         if (!$param->{type} || $param->{type} eq 'vm') {
+            # copied into the entry as they are, unlike 'meta', which only provides the identity
             my $prop_list = [qw(lock tags)];
-            my $props = PVE::Cluster::get_guest_config_properties($prop_list);
+            my $props = PVE::Cluster::get_guest_config_properties([@$prop_list, 'meta']);
 
             for my $vmid (sort keys %$idlist) {
 
@@ -592,6 +599,12 @@ __PACKAGE__->register_method({
                     if (defined(my $value = $props->{$vmid}->{$prop})) {
                         $entry->{$prop} = $value;
                     }
+                }
+
+                my $identity = PVE::GuestIdentity::parse_identity($props->{$vmid}->{meta});
+                if ($identity) {
+                    $entry->{uid} = $identity->{uid};
+                    $entry->{rtime} = int($identity->{rtime}) if defined($identity->{rtime});
                 }
 
                 if (
