@@ -363,6 +363,7 @@ JSSRC= 							\
 	storage/Browser.js				\
 	storage/CIFSEdit.js				\
 	storage/CephFSEdit.js				\
+	storage/CustomEdit.js				\
 	storage/DirEdit.js				\
 	storage/ImageView.js				\
 	storage/IScsiEdit.js				\

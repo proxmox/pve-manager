@@ -163,10 +163,13 @@ Ext.define('PVE.storage.BaseEdit', {
             type: me.type,
             isCreate: me.isCreate,
             storageId: me.storageId,
+            metadata: me.metadata,
         });
 
         Ext.apply(me, {
-            subject: PVE.Utils.format_storage_type(me.type),
+            subject: Ext.htmlEncode(
+                me.metadata?.['display-name'] || PVE.Utils.format_storage_type(me.type),
+            ),
             isAdd: true,
             bodyPadding: 0,
             items: {
@@ -179,7 +182,10 @@ Ext.define('PVE.storage.BaseEdit', {
                     {
                         xtype: 'pveBackupJobPrunePanel',
                         title: gettext('Backup Retention'),
-                        hasMaxProtected: true,
+                        // custom plugins do not necessarily support it
+                        hasMaxProtected:
+                            !me.metadata ||
+                            Object.hasOwn(me.metadata.schema, 'max-protected-backups'),
                         isCreate: me.isCreate,
                         keepAllDefaultForCreate: true,
                         showPBSHint: me.ipanel.isPBS,

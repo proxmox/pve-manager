@@ -10,9 +10,115 @@ Ext.define(
         stateful: true,
         stateId: 'grid-dc-storage',
 
+        loadPluginMetadata: function () {
+            let me = this;
+
+            me.pluginMetadataLoading = true;
+            delete me.pluginMetadataError;
+
+            let finishLoading = () => {
+                me.pluginMetadataLoading = false;
+                me.setLoading(false);
+
+                let openEditor = me.pendingEditor;
+                delete me.pendingEditor;
+                openEditor?.();
+            };
+
+            Proxmox.Utils.API2Request({
+                url: '/api2/extjs/plugins/storage/plugin',
+                params: { origin: 'custom' },
+                method: 'GET',
+                success: function ({ result: { data } }) {
+                    if (me.destroyed) {
+                        return;
+                    }
+                    me.addCustomPlugins(data);
+                    finishLoading();
+                },
+                failure: function ({ htmlStatus }) {
+                    if (me.destroyed) {
+                        return;
+                    }
+                    me.pluginMetadataError = htmlStatus;
+                    finishLoading();
+                },
+            });
+        },
+
+        addCustomPlugins: function (pluginMetadata) {
+            let me = this;
+
+            for (const metadata of pluginMetadata) {
+                me.pluginMetadata[metadata.type] = metadata;
+
+                // the UI knows some types, but deliberately does not offer them
+                if (PVE.Utils.storageSchema[metadata.type]?.hideAdd) {
+                    continue;
+                }
+
+                me.addMenu.add({
+                    text: me.renderStorageType(metadata.type),
+                    iconCls: 'fa fa-fw fa-folder',
+                    handler: () => me.createStorageEditWindow(metadata.type),
+                });
+            }
+
+            // show the display names of custom plugins
+            if (me.rendered) {
+                me.getView().refresh();
+            }
+        },
+
+        renderStorageType: function (type, metaData, record) {
+            let me = this;
+
+            let displayName = me.pluginMetadata[type]?.['display-name'];
+            if (displayName) {
+                return Ext.htmlEncode(displayName);
+            }
+
+            return Ext.htmlEncode(PVE.Utils.format_storage_type(type, metaData, record));
+        },
+
         createStorageEditWindow: function (type, sid) {
+            let me = this;
+
             let schema = PVE.Utils.storageSchema[type];
-            if (!schema || !schema.ipanel) {
+
+            let paneltype;
+            let canDoBackups;
+            let metadata;
+
+            // Built-in types have their own editor and must not depend on the plugin metadata,
+            // which might not be loaded (yet).
+            if (schema?.ipanel) {
+                paneltype = 'PVE.storage.' + schema.ipanel;
+                canDoBackups = schema.backups;
+            } else if (me.pluginMetadata[type] && me.pluginMetadata[type].origin === 'custom') {
+                metadata = me.pluginMetadata[type];
+                paneltype = 'PVE.storage.CustomInputPanel';
+                // the retention panel submits 'prune-backups' unless it is masked
+                canDoBackups =
+                    metadata.content.supported.includes('backup') &&
+                    Object.hasOwn(metadata.schema, 'prune-backups');
+            } else if (me.pluginMetadataLoading) {
+                // might be a custom plugin, so open the editor once the metadata is there
+                me.pendingEditor = () => me.createStorageEditWindow(type, sid);
+                me.setLoading(true);
+                return;
+            } else if (me.pluginMetadataError) {
+                Ext.Msg.alert(
+                    gettext('Error'),
+                    Ext.String.format(
+                        gettext("Cannot load the storage plugin information for type '{0}': {1}"),
+                        Ext.htmlEncode(type),
+                        me.pluginMetadataError,
+                    ),
+                );
+                me.loadPluginMetadata(); // try again for the next attempt
+                return;
+            } else {
                 Ext.Msg.alert(
                     gettext('Error'),
                     Ext.String.format(
@@ -24,13 +130,14 @@ Ext.define(
             }
 
             Ext.create('PVE.storage.BaseEdit', {
-                paneltype: 'PVE.storage.' + schema.ipanel,
+                paneltype: paneltype,
                 type: type,
                 storageId: sid,
-                canDoBackups: schema.backups,
+                canDoBackups: canDoBackups,
+                metadata: metadata,
                 autoShow: true,
                 listeners: {
-                    destroy: this.reloadStore,
+                    destroy: me.reloadStore,
                 },
             });
         },
@@ -51,6 +158,8 @@ Ext.define(
             });
 
             let sm = Ext.create('Ext.selection.RowModel', {});
+
+            me.pluginMetadata = {};
 
             let run_editor = function () {
                 let rec = sm.getSelection()[0];
@@ -91,6 +200,10 @@ Ext.define(
                 });
             }
 
+            me.addMenu = new Ext.menu.Menu({
+                items: addMenuItems,
+            });
+
             Ext.apply(me, {
                 store: store,
                 reloadStore: () => store.load(),
@@ -101,9 +214,7 @@ Ext.define(
                 tbar: [
                     {
                         text: gettext('Add'),
-                        menu: new Ext.menu.Menu({
-                            items: addMenuItems,
-                        }),
+                        menu: me.addMenu,
                     },
                     remove_btn,
                     edit_btn,
@@ -120,7 +231,8 @@ Ext.define(
                         flex: 1,
                         sortable: true,
                         dataIndex: 'type',
-                        renderer: PVE.Utils.format_storage_type,
+                        renderer: (value, metaData, record) =>
+                            me.renderStorageType(value, metaData, record),
                     },
                     {
                         header: gettext('Content'),
@@ -160,12 +272,20 @@ Ext.define(
                     },
                 ],
                 listeners: {
-                    activate: () => store.load(),
+                    activate: () => {
+                        store.load();
+                        // otherwise only editing a custom storage would retry
+                        if (me.pluginMetadataError && !me.pluginMetadataLoading) {
+                            me.loadPluginMetadata();
+                        }
+                    },
                     itemdblclick: run_editor,
                 },
             });
 
             me.callParent();
+
+            me.loadPluginMetadata();
         },
     },
     function () {
