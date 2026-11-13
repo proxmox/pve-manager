@@ -913,11 +913,6 @@ Ext.define('PVE.Utils', {
                 faIcon: 'floppy-o',
                 backups: true,
             },
-            drbd: {
-                name: 'DRBD',
-                hideAdd: true,
-                backups: false,
-            },
             esxi: {
                 name: 'ESXi',
                 ipanel: 'ESXIInputPanel',
