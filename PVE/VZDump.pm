@@ -1377,7 +1377,12 @@ sub exec_backup_task {
                 debugmsg('warn', "$@") if $@; # $@ contains already error prefix
             }
         } elsif ($self->{'backup-provider'}) {
-            $self->{'backup-provider'}->backup_handle_log_file($vmid, $task->{tmplog});
+            eval { $self->{'backup-provider'}->backup_handle_log_file($vmid, $task->{tmplog}); };
+            if (my $log_err = $@) {
+                debugmsg('warn', "handling backup task log by external provider failed - $log_err");
+                # stopping the job while the provider handles the log must still abort the job
+                $err = $log_err if $log_err =~ m/^interrupted by signal$/;
+            }
         } elsif ($task->{logfile}) {
             system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
         }
