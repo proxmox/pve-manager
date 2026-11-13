@@ -924,6 +924,13 @@ __PACKAGE__->register_method({
                     description =>
                         '[cluster] Indicates if there is a majority of nodes online to make decisions',
                 },
+                'cluster-id' => {
+                    type => 'string',
+                    optional => 1,
+                    description =>
+                        '[cluster] Random identifier of the cluster. A standalone node'
+                        . ' reports its own identifier on its node entry.',
+                },
                 nodeid => {
                     type => 'integer',
                     optional => 1,
@@ -964,6 +971,7 @@ __PACKAGE__->register_method({
         my $members = PVE::Cluster::get_members();
         my $nodename = PVE::INotify::nodename();
         my $rrd = PVE::Cluster::rrd_dump();
+        my $cluster_id = eval { PVE::Cluster::get_cluster_id() };
 
         if ($members) {
             my $res = [];
@@ -977,6 +985,7 @@ __PACKAGE__->register_method({
                         version => $d->{version},
                         name => $d->{name},
                         quorate => $d->{quorate},
+                        defined($cluster_id) ? ('cluster-id' => $cluster_id) : (),
                     };
             }
 
@@ -1018,6 +1027,7 @@ __PACKAGE__->register_method({
                 nodeid => 0,
                 online => 1,
                 level => $sublevel,
+                defined($cluster_id) ? ('cluster-id' => $cluster_id) : (),
             }];
         }
     },
