@@ -1286,6 +1286,11 @@ sub exec_backup_task {
     };
     my $err = $@;
 
+    # The task can still fail after the plugin's archive step succeeded, e.g. when marking the
+    # backup as protected or pruning. Let the plugin cleanup know, so it does not finalize state
+    # as if the backup was kept.
+    $task->{err} = $err if $err;
+
     if ($plugin) {
         # clean-up
 
