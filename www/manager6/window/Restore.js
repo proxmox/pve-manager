@@ -47,6 +47,9 @@ Ext.define('PVE.window.Restore', {
             if (values['live-restore']) {
                 params['live-restore'] = 1;
             }
+            if (values['allow-identity-mismatch']) {
+                params['allow-identity-mismatch'] = 1;
+            }
             if (values.storage) {
                 params.storage = values.storage;
             }
@@ -115,6 +118,15 @@ Ext.define('PVE.window.Restore', {
         afterRender: function () {
             let view = this.getView();
 
+            // The restore task only needs the override if the guest has another unique ID than
+            // the backup, so only offer it then, or if that cannot be told here.
+            let offerIdentityMismatch = function (mismatchIsKnown) {
+                if (view.vmid) {
+                    view.lookupReference('allowIdentityMismatch').setHidden(false);
+                    view.lookupReference('identityMismatchHint').setHidden(!mismatchIsKnown);
+                }
+            };
+
             Proxmox.Utils.API2Request({
                 url: `/nodes/${view.nodename}/vzdump/extractconfig`,
                 method: 'GET',
@@ -122,9 +134,13 @@ Ext.define('PVE.window.Restore', {
                 params: {
                     volume: view.volid,
                 },
-                failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
+                failure: (response) => {
+                    offerIdentityMismatch(false);
+                    Ext.Msg.alert('Error', response.htmlStatus);
+                },
                 success: function (response, options) {
                     let allStoragesAvailable = true;
+                    let backupUid;
 
                     response.result.data.split('\n').forEach((line) => {
                         let [_, key, value] = line.match(/^([^:]+):\s*(\S+)\s*$/) ?? [];
@@ -145,8 +161,25 @@ Ext.define('PVE.window.Restore', {
                             view.lookupReference('nameField').setEmptyText(value);
                         } else if (key === 'memory' || key === 'cores' || key === 'sockets') {
                             view.lookupReference(`${key}Field`).setEmptyText(value);
+                        } else if (key === 'meta') {
+                            backupUid = value.match(/(?:^|,)uid=([^,]+)/)?.[1];
                         }
                     });
+
+                    if (view.vmid && backupUid) {
+                        Proxmox.Utils.API2Request({
+                            url: `/nodes/${view.nodename}/${view.vmtype}/${view.vmid}/status/current`,
+                            method: 'GET',
+                            // the status needs a permission of its own
+                            failure: () => offerIdentityMismatch(false),
+                            success: function ({ result }) {
+                                let uid = result.data.uid;
+                                if (uid && uid !== backupUid) {
+                                    offerIdentityMismatch(true);
+                                }
+                            },
+                        });
+                    }
 
                     if (!allStoragesAvailable) {
                         let storagesel = view.down('pveStorageSelector[name=storage]');
@@ -255,6 +288,38 @@ Ext.define('PVE.window.Restore', {
                 ],
             },
         ];
+
+        if (me.vmid) {
+            let allowMismatchLabel = gettext('Allow restoring a backup of another guest');
+            items.push(
+                {
+                    xtype: 'proxmoxcheckbox',
+                    name: 'allow-identity-mismatch',
+                    reference: 'allowIdentityMismatch',
+                    boxLabel: allowMismatchLabel,
+                    checked: false,
+                    hidden: true,
+                    autoEl: {
+                        tag: 'div',
+                        'data-qtip': gettext(
+                            'The backup can be from another guest, for example from an earlier one with the same VMID. The restore replaces the data and configuration, but the guest keeps its current Unique ID and does not get the one of the backup.',
+                        ),
+                    },
+                },
+                {
+                    xtype: 'displayfield',
+                    reference: 'identityMismatchHint',
+                    value: Ext.String.format(
+                        gettext(
+                            "The backup and the existing guest have different Unique IDs. Restoring the backup requires '{0}'.",
+                        ),
+                        allowMismatchLabel,
+                    ),
+                    userCls: 'pmx-hint',
+                    hidden: true,
+                },
+            );
+        }
 
         if (me.vmtype === 'lxc') {
             items.push({
