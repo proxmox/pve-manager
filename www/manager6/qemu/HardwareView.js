@@ -203,7 +203,8 @@ Ext.define('PVE.qemu.HardwareView', {
                         PVE.Utils.is_windows(ostype) &&
                         (!machineType || machineType === 'pc' || machineType === 'q35')
                     ) {
-                        let meta = me.getObjectValue('meta', undefined, pending);
+                        // 'meta' is read-only, a pending change of it is never applied
+                        let meta = me.getObjectValue('meta');
                         let creationQemu;
                         if (meta) {
                             creationQemu = PVE.Parser.parsePropertyString(meta)['creation-qemu'];
