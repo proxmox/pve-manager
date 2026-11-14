@@ -219,6 +219,31 @@ Ext.define('PVE.window.Migrate', {
             me.lookup('formPanel').isValid();
         },
 
+        checkGuestIdentitySupport: function (migration, disallowed) {
+            let unsupported = disallowed['guest-identity-unsupported'];
+            if (!unsupported) {
+                return;
+            }
+
+            let text;
+            if (unsupported.version) {
+                text = Ext.String.format(
+                    gettext(
+                        'The selected target node runs Proxmox VE {0}, but keeping the guest identity requires {1} or newer. Upgrade the target node first.',
+                    ),
+                    unsupported.version,
+                    unsupported['required-version'],
+                );
+            } else {
+                text = gettext(
+                    'The selected target node does not report its Proxmox VE version, so support for guest identities cannot be verified.',
+                );
+            }
+
+            migration.possible = false;
+            migration.preconditions.push({ text, severity: 'error' });
+        },
+
         checkQemuPreconditions: async function (resetMigrationPossible) {
             let me = this,
                 vm = me.getViewModel(),
@@ -305,6 +330,8 @@ Ext.define('PVE.window.Migrate', {
                 migration.possible = false;
                 migration.preconditions.push({ text, severity: 'error' });
             }
+
+            me.checkGuestIdentitySupport(migration, disallowed);
 
             let blockingResources = [];
             let mappedResources = migrateStats['mapped-resource-info'] ?? {};
@@ -528,6 +555,8 @@ Ext.define('PVE.window.Migrate', {
             migration.preconditions = [];
             let targetNode = me.lookup('pveNodeSelector').value;
             let disallowed = migrateStats['not-allowed-nodes']?.[targetNode] ?? {};
+
+            me.checkGuestIdentitySupport(migration, disallowed);
 
             let blockingHAResources = disallowed['blocking-ha-resources'] ?? [];
             if (blockingHAResources.length) {
