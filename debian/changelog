@@ -1,3 +1,42 @@
+pve-manager (9.2.28) trixie; urgency=medium
+
+  * update shipped appliance info index.
+
+  * fix #8292: ui: node summary: stop leaking a repository status widget on
+    every display of the summary, which made the web interface use more and
+    more memory when navigating between nodes.
+
+  * api: network: reject interface comments with Mako template tags that
+    start a Python block. If python3-mako is installed, ifupdown2 evaluates
+    them, which would allow executing arbitrary code.
+
+  * fix #5327: ceph: OSD create: support a list of subnets as Ceph public or
+    cluster network, instead of failing the network check on every node.
+
+  * ui: VM create: preselect a storage for the EFI and TPM disks, like for
+    the other disks, also when such a disk gets enabled again.
+
+  * ui: SDN: VNet: check the alias already in the dialog, with the same rules
+    as the backend.
+
+  * pvescheduler: do not miss a reload or the exit of a child process that
+    happens right after starting the child.
+
+  * backup: external providers: do not abort the whole backup job if handing
+    over the task log of a guest fails, but log a warning and continue with
+    the next guest.
+
+  * backup: let the guest cleanup know if a backup task failed after the
+    archive step, so that VM backups to external providers do not advance the
+    dirty bitmaps past a failed backup.
+
+  * api server: drop the remaining support for legacy TFA tickets, which
+    libpve-access-control 9.2.1 no longer accepts. Also avoid bogus errors
+    and CSRF tokens for users whose name starts with '!tfa!', whose tickets
+    older libpve-access-control versions misread.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 14 Nov 2026 21:00:34 +0100
+
 pve-manager (9.2.27) trixie; urgency=medium
 
   * ui: encode values from the API and other external sources before showing
