@@ -45,7 +45,9 @@ Ext.define('PVE.storage.StatusView', {
             title: gettext('Type'),
             printBar: false,
             textField: 'type',
-            renderer: PVE.Utils.format_storage_type,
+            renderer: function (type) {
+                return this.up('pveStorageStatusView').renderStorageType(type);
+            },
         },
         {
             xtype: 'box',
@@ -64,6 +66,27 @@ Ext.define('PVE.storage.StatusView', {
             },
         },
     ],
+
+    renderStorageType: function (type) {
+        let me = this;
+
+        me.displayNames ??= {};
+        if (type && !PVE.Utils.storageSchema[type] && !Object.hasOwn(me.displayNames, type)) {
+            me.displayNames[type] = undefined;
+            Proxmox.Utils.API2Request({
+                url: `/plugins/storage/plugin/${encodeURIComponent(type)}`,
+                method: 'GET',
+                // the type is shown as is if the plugin is not available on this node
+                autoErrorAlert: false,
+                // shown by the next periodic update of the status
+                success: ({ result }) => {
+                    me.displayNames[type] = result.data['display-name'];
+                },
+            });
+        }
+
+        return Ext.htmlEncode(me.displayNames[type] || PVE.Utils.format_storage_type(type));
+    },
 
     updateTitle: function () {
         // nothing
