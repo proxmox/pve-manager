@@ -93,6 +93,9 @@ Ext.define('PVE.panel.GuestStatusView', {
             },
         },
         {
+            xtype: 'pveGuestIdentityInfo',
+        },
+        {
             xtype: 'box',
             height: 10,
         },

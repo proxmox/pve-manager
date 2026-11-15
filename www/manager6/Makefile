@@ -113,6 +113,7 @@ JSSRC= 							\
 	panel/IPView.js					\
 	panel/RunningChart.js				\
 	panel/StatusPanel.js				\
+	panel/GuestIdentity.js				\
 	panel/GuestStatusView.js			\
 	panel/GuestSummary.js				\
 	panel/TemplateStatusView.js			\

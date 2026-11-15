@@ -31,6 +31,9 @@ Ext.define('PVE.panel.TemplateStatusView', {
             title: gettext('Node'),
         },
         {
+            xtype: 'pveGuestIdentityInfo',
+        },
+        {
             xtype: 'box',
             height: 20,
         },
