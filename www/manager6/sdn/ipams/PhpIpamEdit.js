@@ -28,10 +28,12 @@ Ext.define('PVE.sdn.ipams.PhpIpamInputPanel', {
                 allowBlank: false,
             },
             {
-                xtype: 'textfield',
+                xtype: 'proxmoxtextfield',
+                inputType: 'password',
                 name: 'token',
                 fieldLabel: gettext('Token'),
-                allowBlank: false,
+                allowBlank: !me.isCreate,
+                emptyText: me.isCreate ? '' : gettext('Unchanged'),
             },
         ];
         me.column2 = [

@@ -28,10 +28,12 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
                 allowBlank: false,
             },
             {
-                xtype: 'textfield',
+                xtype: 'proxmoxtextfield',
+                inputType: 'password',
                 name: 'key',
                 fieldLabel: gettext('API Key'),
-                allowBlank: false,
+                allowBlank: !me.isCreate,
+                emptyText: me.isCreate ? '' : gettext('Unchanged'),
             },
         ];
         me.column2 = [

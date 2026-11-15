@@ -64,6 +64,7 @@ Ext.define('PVE.sdn.ipams.BaseEdit', {
                         values.nodes = values.nodes.split(',');
                     }
                     values.enable = values.disable ? 0 : 1;
+                    delete values.token; // write-only, an empty field keeps it
 
                     ipanel.setValues(values);
                 },
