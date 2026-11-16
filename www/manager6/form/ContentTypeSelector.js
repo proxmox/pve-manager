@@ -50,8 +50,19 @@ Ext.define('PVE.form.ContentTypeSelector', {
         me.showVolumeTypes = show;
 
         let value = me.getValue();
-        me.setComboItems(me.comboItemsFor(show || me.usesVolumeType(value)));
+        let items = me.comboItemsFor(show || me.usesVolumeType(value));
+        // the entries only ever differ in the volume types, so the same number means no change
+        if (items.length === me.getStore().getCount()) {
+            return;
+        }
+
+        // Selecting from scratch keeps a type that the selector does not offer at its position in
+        // the value, and the offered types changing is no change of the field.
+        me.suspendCheckChange++;
+        me.setComboItems(items);
+        me.setValue(null);
         me.setValue(value);
+        me.suspendCheckChange--;
     },
 
     setValue: function (value) {
