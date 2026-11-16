@@ -74,7 +74,7 @@ Ext.define('PVE.storage.Browser', {
                     pluginType: plugin,
                 });
             }
-            if (contents.includes('images')) {
+            if (PVE.Utils.contentAllows(contents, 'images')) {
                 me.items.push({
                     xtype: 'pveStorageImageView',
                     title: gettext('VM Disks'),
@@ -84,7 +84,7 @@ Ext.define('PVE.storage.Browser', {
                     pluginType: plugin,
                 });
             }
-            if (contents.includes('rootdir')) {
+            if (PVE.Utils.contentAllows(contents, 'rootdir')) {
                 me.items.push({
                     xtype: 'pveStorageImageView',
                     title: gettext('CT Volumes'),
