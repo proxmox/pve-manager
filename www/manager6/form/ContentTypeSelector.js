@@ -21,11 +21,6 @@ Ext.define('PVE.form.ContentTypeSelector', {
         },
     },
 
-    listConfig: {
-        getInnerTpl: (displayField) =>
-            `{${displayField}}{[PVE.form.ContentTypeSelector.genericHint(values.key, parent)]}`,
-    },
-
     comboItemsFor: function (withVolumeTypes) {
         let me = this;
 
@@ -72,6 +67,14 @@ Ext.define('PVE.form.ContentTypeSelector', {
         }
 
         me.comboItems = me.comboItemsFor(me.showVolumeTypes || me.usesVolumeType(me.value));
+
+        if (me.withVolumeTypes) {
+            let genericHint = 'PVE.form.ContentTypeSelector.genericHint';
+            me.listConfig = {
+                getInnerTpl: (field) => `{${field}}{[${genericHint}(values.key, parent)]}`,
+                ...me.listConfig,
+            };
+        }
 
         me.callParent();
     },
