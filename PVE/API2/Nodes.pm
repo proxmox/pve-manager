@@ -1637,7 +1637,7 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $res = PVE::INotify::read_file('resolvconf');
+        my $res = PVE::INotify::read_resolv_conf_with_search_list();
 
         return $res;
     },
