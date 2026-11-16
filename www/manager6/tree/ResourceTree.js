@@ -377,6 +377,7 @@ Ext.define('PVE.tree.ResourceTree', {
         let updateTree = function () {
             store.suspendEvents();
 
+            let anyChanged = false;
             let rootnode;
             if (firstUpdate) {
                 rootnode = Ext.create('PVETree', {
@@ -465,6 +466,7 @@ Ext.define('PVE.tree.ResourceTree', {
                     }
                     me.setIconCls(info);
                     olditem.commit();
+                    anyChanged = true;
                 }
                 if ((!item || moved) && olditem.isLeaf()) {
                     delete index[key];
@@ -482,6 +484,8 @@ Ext.define('PVE.tree.ResourceTree', {
                         let grandParent = parentNode.parentNode;
                         grandParent.removeChild(parentNode, true);
                     }
+
+                    anyChanged = true;
                 }
             }
 
@@ -501,10 +505,13 @@ Ext.define('PVE.tree.ResourceTree', {
                 if (child) {
                     index[item.data.id] = child;
                 }
+                anyChanged = true;
             });
 
             store.resumeEvents();
-            store.fireEvent('refresh', store);
+            if (anyChanged) {
+                store.fireEvent('refresh', store);
+            }
 
             let foundChild = findNode(rootnode, lastsel?.data.id);
 
@@ -663,6 +670,9 @@ Ext.define('PVE.tree.ResourceTree', {
                     return true;
                 },
             });
+
+            // some nodes need rerendering here, e.g. for tag colors
+            me.store.fireEvent('refresh', me.store);
         });
     },
 });
