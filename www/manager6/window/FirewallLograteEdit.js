@@ -4,6 +4,10 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 
     viewModel: {},
 
+    revalidateBurst: function () {
+        this.down('field[name=burst]')?.validate();
+    },
+
     items: [
         {
             xtype: 'proxmoxcheckbox',
@@ -11,6 +15,9 @@ Ext.define('PVE.FirewallLograteInputPanel', {
             reference: 'enable',
             fieldLabel: gettext('Enable'),
             value: true,
+            listeners: {
+                change: (field) => field.up('inputpanel').revalidateBurst(),
+            },
         },
         {
             layout: 'hbox',
@@ -25,6 +32,9 @@ Ext.define('PVE.FirewallLograteInputPanel', {
                     allowBlank: false,
                     flex: 2,
                     value: 1,
+                    listeners: {
+                        change: (field) => field.up('inputpanel').revalidateBurst(),
+                    },
                 },
                 {
                     xtype: 'box',
@@ -42,6 +52,9 @@ Ext.define('PVE.FirewallLograteInputPanel', {
                     allowBlank: false,
                     flex: 1,
                     value: 'second',
+                    listeners: {
+                        change: (field) => field.up('inputpanel').revalidateBurst(),
+                    },
                 },
             ],
         },
@@ -52,6 +65,26 @@ Ext.define('PVE.FirewallLograteInputPanel', {
             minValue: 1,
             maxValue: 99,
             value: 5,
+            validator: function (value) {
+                let panel = this.up('inputpanel');
+                let rate = panel.down('field[name=rate]').getValue();
+                let unit = panel.down('field[name=unit]').getValue();
+                if (!panel.down('field[name=enable]').getValue() || !rate || !unit) {
+                    return true;
+                }
+
+                // same limit as pve-firewall: the kernel stores the duration of the burst in 32
+                // bits, at 32000 credits per second
+                let unitSeconds = { second: 1, minute: 60, hour: 3600, day: 86400 }[unit];
+                let interval = Math.floor((10000 * unitSeconds) / rate);
+                let maxCredits = Math.floor(0xffffffff / 32000);
+                let maxBurst = Math.floor(((maxCredits + 1) * 10000 - 1) / interval);
+                let burst = value === '' ? 5 : Number(value);
+                if (burst > maxBurst) {
+                    return Ext.String.format(gettext('At most {0} for this rate'), maxBurst);
+                }
+                return true;
+            },
         },
     ],
 
