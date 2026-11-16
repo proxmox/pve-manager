@@ -27,6 +27,7 @@ Ext.define('PVE.storage.CustomInputPanel', {
             content: {
                 xtype: 'pveContentTypeSelector',
                 cts: me.metadata.content.supported,
+                withVolumeTypes: false,
                 fieldLabel: gettext('Content'),
                 name: 'content',
                 value: me.metadata.content.default,

@@ -75,18 +75,25 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
     onlineHelp: 'storage_open_iscsi',
 
+    lunContent: 'images',
+
     onGetValues: function (values) {
         let me = this;
 
-        values.content = values.luns ? 'images' : 'none';
+        values.content = values.luns ? me.lunContent : 'none';
         delete values.luns;
 
         return me.callParent([values]);
     },
 
     setValues: function (values) {
-        values.luns = values.content.indexOf('images') !== -1;
-        this.callParent([values]);
+        let me = this;
+
+        values.luns = PVE.Utils.contentAllows(values.content, 'vm-vol');
+        if (values.luns) {
+            me.lunContent = Ext.Array.from(values.content).join(',');
+        }
+        me.callParent([values]);
     },
 
     column1: [
