@@ -358,7 +358,7 @@ Ext.define('PVE.qemu.Options', {
                           width: 350,
                           items: {
                               xtype: 'pveStorageSelector',
-                              storageContent: 'images',
+                              storageContent: 'vm-state',
                               allowBlank: true,
                               emptyText: gettext("Automatic (Storage used by the VM, or 'local')"),
                               autoSelect: false,

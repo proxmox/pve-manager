@@ -71,6 +71,17 @@ Ext.define(
         reloadStorageList: function () {
             let me = this;
 
+            let filters = [];
+            if (me.storageContent) {
+                // A generic type asks for a storage for the disks of VMs or the volumes of
+                // containers, not for one that only allows another volume type of the guest.
+                let volumeType = { images: 'vm-vol', rootdir: 'ct-vol' }[me.storageContent];
+                let required = me.volumeTypes ?? [volumeType ?? me.storageContent];
+                filters.push((storage) =>
+                    required.every((type) => PVE.Utils.contentAllows(storage.data.content, type)),
+                );
+            }
+
             if (me.clusterView) {
                 me.getStore().setProxy({
                     type: 'proxmox',
@@ -78,13 +89,7 @@ Ext.define(
                 });
 
                 // filter here, back-end does not support it currently
-                let filters = [(storage) => !storage.data.disable];
-
-                if (me.storageContent) {
-                    filters.push((storage) =>
-                        storage.data.content.split(',').includes(me.storageContent),
-                    );
-                }
+                filters.push((storage) => !storage.data.disable);
 
                 if (me.nodename) {
                     filters.push(
@@ -92,9 +97,6 @@ Ext.define(
                             !storage.data.nodes || storage.data.nodes.includes(me.nodename),
                     );
                 }
-
-                me.getStore().clearFilter();
-                me.getStore().setFilters(filters);
             } else {
                 if (!me.nodename) {
                     return;
@@ -104,7 +106,9 @@ Ext.define(
                     format: 1,
                 };
                 if (me.storageContent) {
-                    params.content = me.storageContent;
+                    // nodes that do not know the volume types of guests only take the generic type
+                    params.content =
+                        PVE.Utils.genericContentType[me.storageContent] ?? me.storageContent;
                 }
                 if (me.targetNode) {
                     params.target = me.targetNode;
@@ -117,7 +121,23 @@ Ext.define(
                 });
             }
 
+            me.getStore().clearFilter();
+            me.getStore().setFilters(filters);
+
             me.store.load(() => me.validate());
+        },
+
+        // the volume types that a storage has to allow, if not the one storageContent stands for
+        setVolumeTypes: function (volumeTypes) {
+            let me = this;
+
+            if (Ext.Array.equals(me.volumeTypes ?? [], volumeTypes ?? [])) {
+                return;
+            }
+
+            me.volumeTypes = volumeTypes;
+
+            me.reloadStorageList();
         },
 
         setTargetNode: function (targetNode) {

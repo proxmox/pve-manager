@@ -363,6 +363,7 @@ Ext.define('PVE.window.Migrate', {
             }
 
             if (migrateStats.local_disks.length) {
+                let volumeTypes = new Set();
                 migrateStats.local_disks.forEach(function (disk) {
                     if (disk.cdrom && disk.cdrom === 1) {
                         if (!disk.volid.includes('vm-' + vm.get('vmid') + '-cloudinit')) {
@@ -385,7 +386,9 @@ Ext.define('PVE.window.Migrate', {
                         migration['with-local-disks'] = 1;
                         migration.preconditions.push({ text, severity: 'warning' });
                     }
+                    volumeTypes.add(disk.is_vmstate ? 'vm-state' : 'vm-vol');
                 });
+                migration.volumeTypes = [...volumeTypes].sort();
             }
 
             migration.bothHaveDbusVmstate =
@@ -631,6 +634,7 @@ Ext.define('PVE.window.Migrate', {
                             emptyText: gettext('Current layout'),
                             bind: {
                                 hidden: '{setStorageselectorHidden}',
+                                volumeTypes: '{migration.volumeTypes}',
                             },
                         },
                         {
