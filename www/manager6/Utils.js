@@ -761,6 +761,23 @@ Ext.define('PVE.Utils', {
             rootdir: gettext('Container'),
             snippets: gettext('Snippets'),
             import: gettext('Import'),
+            'vm-vol': gettext('VM Disk'),
+            'vm-state': gettext('VM State'),
+            'ct-vol': gettext('Container Volume'),
+        },
+
+        genericContentType: {
+            'vm-vol': 'images',
+            'vm-state': 'images',
+            'ct-vol': 'rootdir',
+        },
+
+        // Whether the content types of a storage, an array or a comma separated list, allow the
+        // given type. A generic type allows its volume types and is allowed by any of them.
+        contentAllows: function (content, type) {
+            let generic = PVE.Utils.genericContentType;
+            let list = Ext.isString(content) ? content.split(',') : Ext.Array.from(content);
+            return list.some((ct) => ct === type || ct === generic[type] || generic[ct] === type);
         },
 
         // volume can be a full volume info object, in which case the format parameter is ignored, or
