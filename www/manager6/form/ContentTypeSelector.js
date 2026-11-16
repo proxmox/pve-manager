@@ -11,13 +11,19 @@ Ext.define('PVE.form.ContentTypeSelector', {
     showVolumeTypes: false,
 
     statics: {
-        // what a generic type stands for, shown in the list while its volume types are offered too
-        genericHint: function (key, items) {
+        // The label of a type in the list. For a generic type it says what the type stands for
+        // while its volume types are offered too.
+        listLabel: function (label, key, items) {
             let generic = PVE.Utils.genericContentType;
             if (!items.some((item) => generic[item.key] === key)) {
-                return '';
+                return label;
             }
-            return ` (${key === 'images' ? gettext('all VM') : gettext('all CT')})`;
+            if (key === 'images') {
+                // TRANSLATORS: {0} is the content type 'Disk image', it allows all VM volume types
+                return Ext.String.format(gettext('{0} (all VM)'), label);
+            }
+            // TRANSLATORS: {0} is the content type 'Container', it allows all CT volume types
+            return Ext.String.format(gettext('{0} (all CT)'), label);
         },
     },
 
@@ -69,9 +75,9 @@ Ext.define('PVE.form.ContentTypeSelector', {
         me.comboItems = me.comboItemsFor(me.showVolumeTypes || me.usesVolumeType(me.value));
 
         if (me.withVolumeTypes) {
-            let genericHint = 'PVE.form.ContentTypeSelector.genericHint';
+            let listLabel = 'PVE.form.ContentTypeSelector.listLabel';
             me.listConfig = {
-                getInnerTpl: (field) => `{${field}}{[${genericHint}(values.key, parent)]}`,
+                getInnerTpl: (field) => `{[${listLabel}(values.${field}, values.key, parent)]}`,
                 ...me.listConfig,
             };
         }
