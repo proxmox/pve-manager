@@ -67,6 +67,15 @@ Ext.define('PVE.panel.StorageBase', {
 
     type: '',
 
+    setAdvancedVisible: function (visible) {
+        let me = this;
+
+        if (!me.emptyAdvanced) {
+            me.callParent([visible]);
+        }
+        me.down('pveContentTypeSelector')?.setShowVolumeTypes(visible);
+    },
+
     onGetValues: function (values) {
         let me = this;
 
@@ -129,6 +138,20 @@ Ext.define('PVE.panel.StorageBase', {
                 });
             }
             me.advancedColumnB.unshift(volumeChain.hint);
+        }
+
+        // The volume types of guests are only offered as content in the advanced mode, so a
+        // panel that can offer them needs the checkbox for it, even without advanced fields.
+        let offersVolumeTypes = [...me.column1, ...me.column2].some(
+            (field) =>
+                field.xtype === 'pveContentTypeSelector' &&
+                field.withVolumeTypes !== false &&
+                (!field.cts || PVE.Utils.contentAllows(field.cts, 'images')),
+        );
+        me.emptyAdvanced =
+            offersVolumeTypes && !me.advancedColumn1 && !me.advancedColumn2 && !me.advancedColumnB;
+        if (me.emptyAdvanced) {
+            me.advancedColumn1 = [];
         }
 
         me.callParent();
