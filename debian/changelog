@@ -1,3 +1,33 @@
+pve-manager (9.2.29) trixie; urgency=medium
+
+  * ui: SDN: IPAM, DNS: no longer load the stored token or API key into the
+    edit dialog, where it was shown in plain text. The field is masked now,
+    leaving it empty keeps the current value.
+
+  * fix #7339: ui: storage: LVM: add the 'Discard Removed Volumes' option to
+    issue discard (TRIM) requests for a volume before removing it, which
+    releases its space on thin-provisioned SAN LUNs.
+
+  * system report: redact the values of options marked as sensitive, like
+    cloud-init passwords and SDN API tokens, passwords in URLs and values
+    whose name suggests a credential. Still check a report before sharing
+    it, the pvereport man page describes what can remain.
+
+  * replication, pve8to9, Cephx key rotation: handle the volume types of
+    guests that libpve-storage-perl 9.1.17 tells apart: disks of VMs, saved
+    states of VMs and volumes of containers.
+
+  * ui: storage: allow adding and editing storages of third-party storage
+    plugins, with a dialog generated from the property schema of the plugin.
+    Such storages no longer need the CLI or the API for that.
+
+  * ui: support storages restricted to specific volume types of guests, for
+    example to keep VM states off a storage, and only offer storages that
+    allow the volume to place. Restricting a storage is only accepted once
+    all cluster nodes run pve-manager 9.2.29 or newer.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 16 Nov 2026 02:59:16 +0100
+
 pve-manager (9.2.28) trixie; urgency=medium
 
   * update shipped appliance info index.
