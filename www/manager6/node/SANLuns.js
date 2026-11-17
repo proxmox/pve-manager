@@ -96,7 +96,17 @@ Ext.define('PVE.node.SANLunList', {
             width: 100,
             renderer: PVE.SANUtils.renderSanTransport,
         },
-        { text: 'LUN', dataIndex: 'iscsi-lun', width: 60, hidden: true },
+        {
+            text: gettext(
+                // TRANSLATORS: The iSCSI target or the NVMe subsystem of a LUN.
+                'Target/Subsystem',
+            ),
+            dataIndex: 'target',
+            flex: 2,
+            hidden: true,
+            renderer: Ext.htmlEncode,
+        },
+        { text: 'LUN/NSID', dataIndex: 'lun', width: 100, hidden: true },
         {
             text: gettext('Vendor'),
             dataIndex: 'vendor',
@@ -195,6 +205,7 @@ Ext.define('PVE.node.SANLunList', {
                         'detail',
                         'multipath-storage',
                         'devpath',
+                        'target',
                         'path-search',
                         'vendor',
                         'model',

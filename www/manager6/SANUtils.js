@@ -26,6 +26,21 @@ Ext.define('pve-san-lun', {
         'multipath-storage',
         'iscsi-target',
         'iscsi-lun',
+        'nvme-subsystem',
+        'nvme-nsid',
+        // one column shows the target of a LUN and the subsystem of a namespace
+        {
+            name: 'target',
+            depends: ['iscsi-target', 'nvme-subsystem'],
+            calculate: (data) => data['iscsi-target'] || data['nvme-subsystem'] || '',
+            sortType: 'asUCString',
+        },
+        // and one the number of a LUN and the ID of a namespace
+        {
+            name: 'lun',
+            depends: ['iscsi-lun', 'nvme-nsid'],
+            calculate: (data) => data['iscsi-lun'] ?? data['nvme-nsid'],
+        },
         // the texts of the Name and Used By columns, which also sort by them
         {
             name: 'display-name',
