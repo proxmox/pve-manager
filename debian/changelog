@@ -1,3 +1,34 @@
+pve-manager (9.2.30) trixie; urgency=medium
+
+  * ui: storage: in the content selector, only offer specific volume types of
+    guests in advanced mode. In non-advanced mode, the selection becomes as
+    before the introduction of specific volume types.
+
+  * ui: resource tree: use pre-calculated 'diskuse' property instead of
+    calculating it every time to improve performance.
+
+  * ui: resource tree: only fire 'refresh' event when something changed to
+    improve performance.
+
+  * ui: guest ID selector: show the error returned by the 'next-id' API
+    endpoint. Before, it was a hard-coded message.
+
+  * fix #4369: next-id: add 'unique' property for only suggesting unique guest
+    IDs. With 'unique' enabled for the 'next-id' datacenter configuration
+    option, the /cluster/nextid API endpoint, for requesting the next free ID,
+    will only return IDs that were not used before. This also applies to the
+    guest creation dialogues in the UI.
+
+  * ui: dc options: rename VMID to guest ID to clarify that it also applies to
+    containers.
+
+  * api: next-id: add 'enforce' property for enforcing the lower and upper
+    bounds for guest IDs, as well as their uniqueness if 'unique' is set.
+    This makes creating a guest with an ID violating the 'next-id' settings
+    fail.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 17 Nov 2026 13:05:50 +0100
+
 pve-manager (9.2.29) trixie; urgency=medium
 
   * ui: SDN: IPAM, DNS: no longer load the stored token or API key into the
