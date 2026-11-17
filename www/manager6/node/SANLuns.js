@@ -169,7 +169,8 @@ Ext.define('PVE.node.SANLunList', {
                     enableFn: (rec) =>
                         Proxmox.UserName === 'root@pam' &&
                         !!rec.get('by-id') &&
-                        !rec.get('used-by-storage'),
+                        !rec.get('used-by-storage') &&
+                        !rec.get('used-by-process'),
                     handler: (button, event, rec) =>
                         Ext.create('PVE.window.SANLunWipe', {
                             node: me.nodename,
@@ -188,6 +189,8 @@ Ext.define('PVE.node.SANLunList', {
                         'name',
                         'wwid',
                         'used-by-storage',
+                        'used-by-guest',
+                        'used-by-process',
                         'vgname',
                         'detail',
                         'multipath-storage',

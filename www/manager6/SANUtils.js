@@ -20,6 +20,8 @@ Ext.define('pve-san-lun', {
         'vgname',
         'detail',
         'used-by-storage',
+        'used-by-guest',
+        'used-by-process',
         'multipath',
         'multipath-storage',
         'iscsi-target',
@@ -33,7 +35,14 @@ Ext.define('pve-san-lun', {
         },
         {
             name: 'used-by',
-            depends: ['used-by-storage', 'vgname', 'detail', 'usage'],
+            depends: [
+                'used-by-storage',
+                'used-by-guest',
+                'used-by-process',
+                'vgname',
+                'detail',
+                'usage',
+            ],
             calculate: (data) => PVE.SANUtils.usageText(data),
             sortType: 'asUCString',
         },
@@ -142,6 +151,10 @@ Ext.define('PVE.SANUtils', {
     usageText: function (row) {
         return (
             row['used-by-storage'] ||
+            // also if the LUN has a volume group, which is then usually the guest's own
+            (row['used-by-guest'] && `VM ${row['used-by-guest']}`) ||
+            (row['used-by-process'] &&
+                Ext.String.format(gettext('Process {0}'), row['used-by-process'])) ||
             row.vgname ||
             row.detail ||
             {

@@ -70,7 +70,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             rstore: me.rstore,
             sortAfterUpdate: true,
         });
-        let inUse = (row) => row['used-by-storage'];
+        let inUse = (row) => row['used-by-storage'] || row['used-by-process'];
         let noLunsText = gettext('No LUNs found. Check connections and array access.');
         let updateSelection = function () {
             let row = me.getSelection();
