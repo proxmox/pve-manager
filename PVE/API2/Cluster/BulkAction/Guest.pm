@@ -6,6 +6,7 @@ use warnings;
 use PVE::APIClient::LWP;
 use PVE::Cluster;
 use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
+use PVE::GuestIdentity;
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTEnvironment qw(log_warn);
@@ -759,6 +760,24 @@ __PACKAGE__->register_method({
         my ($vmlist, $vmlist_string) = extract_vmlist($param);
 
         check_guest_permissions($rpcenv, $authuser, $vmlist, ['VM.Migrate']);
+
+        my $target = $param->{target};
+        PVE::Cluster::check_node_exists($target);
+
+        # A source node that keeps the guest identity refuses an older target for each guest, so
+        # refuse once instead. Older source nodes do not check the target, so do not refuse for
+        # them.
+        my $cluster_vmlist = PVE::Cluster::get_vmlist() // {};
+        my $guests = $cluster_vmlist->{ids} // {};
+        my $sources = {};
+        # like for the worker, only a missing list selects all guests, an empty one selects none
+        for my $vmid (defined($vmlist_string) ? $vmlist->@* : keys $guests->%*) {
+            my $node = $guests->{$vmid} ? $guests->{$vmid}->{node} : undef;
+            $sources->{$node} = 1 if defined($node) && $node ne $target;
+        }
+        if (grep { !PVE::GuestIdentity::node_identity_unsupported($_) } keys $sources->%*) {
+            PVE::GuestIdentity::assert_node_supports_identity($target);
+        }
 
         my $code = sub {
             my $list =

@@ -23,6 +23,7 @@ use PVE::Cluster qw(cfs_read_file);
 use PVE::DataCenterConfig;
 use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
 use PVE::Firewall;
+use PVE::GuestIdentity;
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::INotify;
@@ -2767,6 +2768,8 @@ __PACKAGE__->register_method({
         PVE::Cluster::check_cfs_quorum();
 
         PVE::Cluster::check_node_exists($target);
+        # refuse once instead of failing the migration of every guest
+        PVE::GuestIdentity::assert_node_supports_identity($target);
 
         my $datacenterconfig = cfs_read_file('datacenter.cfg');
         # prefer parameter over datacenter cfg settings

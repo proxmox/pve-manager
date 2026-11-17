@@ -5,7 +5,7 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-services test-ceph-auth test-ceph-key-migration test-ceph-lockbox-migration test-custom-cpu-models test-pvesh test-report test-access-log test-cluster-resources test-cluster-status
+check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-services test-ceph-auth test-ceph-key-migration test-ceph-lockbox-migration test-custom-cpu-models test-pvesh test-report test-access-log test-cluster-resources test-cluster-status test-bulk-migrate
 
 .PHONY: test-balloon
 test-balloon:
@@ -76,6 +76,10 @@ test-cluster-resources:
 .PHONY: test-cluster-status
 test-cluster-status:
 	./ClusterStatus_test.pl
+
+.PHONY: test-bulk-migrate
+test-bulk-migrate:
+	./BulkMigrate_test.pl
 
 .PHONY: install
 install:
