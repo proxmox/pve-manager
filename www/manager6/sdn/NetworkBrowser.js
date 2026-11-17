@@ -26,27 +26,29 @@ Ext.define('PVE.network.Browser', {
         if (networkType === 'fabric') {
             me.onlineHelp = 'pvesdn_config_fabrics';
 
-            me.items.push({
-                nodename: node,
-                fabricId: name,
-                protocol: me.pveSelNode.data.protocol,
-                xtype: 'pveSDNFabricRoutesContentView',
-                title: gettext('Routes'),
-                iconCls: 'fa fa-exchange',
-                itemId: 'routes',
-                width: '100%',
-                store: {
-                    proxy: {
-                        type: 'proxmox',
-                        url: `/api2/json/nodes/${node}/sdn/fabrics/${name}/routes`,
-                        reader: {
-                            type: 'json',
-                            rootProperty: 'data',
+            if (me.pveSelNode.data.protocol !== 'wireguard') {
+                me.items.push({
+                    nodename: node,
+                    fabricId: name,
+                    protocol: me.pveSelNode.data.protocol,
+                    xtype: 'pveSDNFabricRoutesContentView',
+                    title: gettext('Routes'),
+                    iconCls: 'fa fa-exchange',
+                    itemId: 'routes',
+                    width: '100%',
+                    store: {
+                        proxy: {
+                            type: 'proxmox',
+                            url: `/api2/json/nodes/${node}/sdn/fabrics/${name}/routes`,
+                            reader: {
+                                type: 'json',
+                                rootProperty: 'data',
+                            },
                         },
+                        autoLoad: true,
                     },
-                    autoLoad: true,
-                },
-            });
+                });
+            }
 
             me.items.push({
                 nodename: node,
