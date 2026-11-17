@@ -46,6 +46,20 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             },
         },
         {
+            xtype: 'proxmoxcheckbox',
+            boxLabel: gettext(
+                'Synchronize guest clock after resume, snapshot, rollback or migration',
+            ),
+            name: 'sync-time-on-resume',
+            reference: 'sync_time_on_resume',
+            bind: {
+                disabled: '{!enabled.checked}',
+            },
+            disabled: true,
+            uncheckedValue: '0',
+            defaultValue: '0',
+        },
+        {
             xtype: 'displayfield',
             userCls: 'pmx-hint',
             value: gettext('Make sure the QEMU Guest Agent is installed in the VM'),
@@ -75,6 +89,10 @@ Ext.define('PVE.form.AgentFeatureSelector', {
             delete values['freeze-fs'];
         }
 
+        if (!PVE.Parser.parseBoolean(values['sync-time-on-resume'])) {
+            delete values['sync-time-on-resume'];
+        }
+
         const agentstr = PVE.Parser.printPropertyString(values, 'enabled');
         return { agent: agentstr };
     },
@@ -90,6 +108,9 @@ Ext.define('PVE.form.AgentFeatureSelector', {
         if (!Ext.isDefined(res['freeze-fs'])) {
             res['freeze-fs'] = 1;
         }
+
+        // the backend also accepts 'yes' or 'on', which the checkbox would load as unchecked
+        res['sync-time-on-resume'] = PVE.Parser.parseBoolean(res['sync-time-on-resume']) ? 1 : 0;
 
         this.callParent([res]);
     },
