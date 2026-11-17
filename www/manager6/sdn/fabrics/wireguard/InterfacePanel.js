@@ -369,6 +369,14 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     isFormField: false,
                 },
                 {
+                    fieldLabel: gettext('MTU'),
+                    bind: '{selectedInterface.mtu}',
+                    xtype: 'proxmoxintegerfield',
+                    minValue: 576,
+                    maxValue: 65535,
+                    isFormField: false,
+                },
+                {
                     xtype: 'pveSDNWireGuardPeerSelector',
                     reference: 'peerSelector',
                     bind: {
@@ -413,6 +421,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                 peers: [],
                 listen_port: listenPort,
                 isCreate: true,
+                mtu: 1420,
             });
 
             let interfaceGrid = me.lookupReference('interfaceGrid');
