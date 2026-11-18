@@ -2,6 +2,7 @@
 Description=Proxmox VE scheduler
 ConditionPathExists=/usr/bin/pvescheduler
 Wants=pve-cluster.service
+Wants=pve-notify-worker.service
 After=pve-cluster.service
 After=pve-guests.service
 After=pve-storage.target
