@@ -545,34 +545,10 @@ sub send_notification {
 
     if (($mode eq 'auto' && $email_configured) || $mode eq 'legacy-sendmail') {
         if ($email_configured && ($policy eq "always" || ($policy eq "failure" && $failed))) {
-            # Start out with an empty config. Might still contain
-            # built-ins, so we need to disable/remove them.
-            my $notification_config = PVE::RS::Notify->parse_config('', '');
-
-            # Remove built-in matchers, since we only want to send an
-            # email to the specified recipients and nobody else.
-            for my $matcher (@{ $notification_config->get_matchers() }) {
-                $notification_config->delete_matcher($matcher->{name});
-            }
-
-            # <, >, @ are not allowed in endpoint names, but that is only
-            # verified once the config is serialized. That means that
-            # we can rely on that fact that no other endpoint with this name exists.
-            my $endpoint_name = "<" . join(",", @$mailto) . ">";
-            $notification_config->add_sendmail_endpoint({
-                name => $endpoint_name,
+            my $notification_config = {
                 mailto => $mailto,
                 author => "vzdump backup tool",
-            });
-
-            my $endpoints = [$endpoint_name];
-
-            # Add a matcher that matches all notifications, set our
-            # newly created target as a target.
-            $notification_config->add_matcher({
-                name => "<matcher-$endpoint_name>",
-                target => $endpoints,
-            });
+            };
 
             PVE::Notify::notify(
                 $severity, "vzdump", $template_data, $fields, $notification_config,
