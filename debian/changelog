@@ -1,3 +1,103 @@
+pve-manager (9.2.31) trixie; urgency=medium
+
+  * ui: user edit: show the 'Key IDs' field only for legacy values, and only
+    as read-only text. Second factors are configured in the TFA window.
+
+  * report: show the multipath status with the other block devices, instead
+    of in an extra section at the end of the report.
+
+  * ui: token edit: keep the stored expiration date when editing other
+    settings of a token, like the comment. The date field resubmitted it
+    truncated to the start of its day, shortening it by up to a day.
+
+  * ui: allow editing the new datacenter API token policy in the datacenter
+    options. It can require an expiration date, bound the maximum lifetime,
+    forbid extending the expiration date of existing tokens and require
+    privilege separation, as compliance rules often mandate bounded
+    credential lifetimes:
+    - tokens created without an expiration date can get the maximum lifetime
+      instead of being rejected, and extending the expiration date can be
+      allowed when regenerating the secret, which the token edit dialog then
+      offers.
+    - the token dialogs adapt to the policy up front: they require and
+      pre-fill a compliant expiration date, bound the date picker and lock
+      privilege separation on. If no date fits the maximum lifetime, for
+      example one below a day, they ask for the lifetime instead.
+    - the cluster options return the policy also to users without Sys.Audit,
+      as anyone may create tokens for themselves. It only holds restrictions
+      that the token API enforces anyway.
+
+  * ui: firewall: log rate limit: reject a burst that iptables cannot apply
+    already in the editor, showing the highest burst possible for the
+    selected rate, instead of failing on save. The kernel stores the burst
+    duration in 32 bits, so long bursts at low rates, like 5 at 1/day, do
+    not fit. Also fix the 'rate=' key missing from the default shown in the
+    firewall options.
+
+  * add an API access log panel next to the system log of a node, which shows
+    who accessed the API, from where, and which requests failed, without
+    needing a shell on the node:
+    - lists the requests of pveproxy and spiceproxy newest first, including
+      those in the rotated copies, with a live mode, time range, search and
+      filters. Users with Sys.Syslog may read it, like the system log.
+    - query values can contain passwords, so they are redacted for all but
+      root@pam, who can read the log file anyway.
+    - a statistics window counts the requests and errors of a time range per
+      client, user, path group and status, and opening a value narrows the
+      list to its requests.
+    - each call reads at most 512 MiB of the log, and a node runs only one
+      scan at a time, answering further calls with an error, so scans cannot
+      take up all pvedaemon workers.
+
+  * logrotate: keep numbered names for the rotated copies of the API access
+    log even with a global 'dateext' setting, as the access log panel only
+    finds those. The file is a conffile, so an upgrade asks before replacing
+    a locally modified one.
+
+  * api, ui: allow listing pending updates and the repositories with
+    Sys.Audit, like Proxmox Backup Server and Proxmox Datacenter Manager do,
+    so auditors can check whether a node is up to date. Refreshing the
+    package index, showing changelogs and changing repositories keep
+    requiring Sys.Modify. The Updates section is no longer disabled without
+    Sys.Console, as only root@pam can open the upgrade console anyway.
+
+  * add an APT history panel to the Updates section of a node, listing the
+    past APT transactions with when and how they were invoked, what they
+    changed and whether they failed. This helps to find the update that
+    could have caused a regression, or what happened during a failed
+    upgrade:
+    - upgrades between major releases of Debian or Ceph are marked, and the
+      list can be filtered by them, by status, time range and changed
+      packages, and searched by command line and user.
+    - shows the changelogs of the changed packages from the changelogs that
+      the installed packages ship, so no network access is needed.
+    - listing the history and reading changelogs requires Sys.Audit, the
+      terminal output of a transaction Sys.Syslog, like other system logs.
+
+  * pvenode: add the 'apt history' command, which lists the past APT
+    transactions with their status and package changes, optionally limited
+    to a time range or to transactions that changed a package.
+
+  * report: include the APT history of the last 14 days, as package changes
+    are a common cause of the problems a report helps to investigate.
+
+  * ui: updates: add a view of the changelogs of all pending updates at once,
+    grouped by source package and limited to the new versions, to see what
+    an upgrade brings before installing it. Like the existing changelog
+    button it requires Sys.Modify, as the changelogs get downloaded from the
+    package repositories. The daily update job prefetches them on nodes where
+    the view got used in the last 30 days.
+
+  * fix #5032: ui: VM options: QEMU Guest Agent: add the option to synchronize
+    the guest clock after resume, snapshot, rollback or migration.
+
+  * ui: migrate: add the 'Config Check' checkbox, enabled by default. Clearing
+    it skips the new check whether the target node can parse the guest config,
+    for example to migrate to a node with an older version, accepting that it
+    may drop settings it cannot parse.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Nov 2026 02:36:33 +0100
+
 pve-manager (9.2.30) trixie; urgency=medium
 
   * ui: storage: in the content selector, only offer specific volume types of
