@@ -1,3 +1,26 @@
+pve-manager (9.2.32) trixie; urgency=medium
+
+  * ui: storage: drop the technology preview hint of snapshots as volume
+    chain, as the feature is ready for production use.
+
+  * ui: firewall options: drop the technology preview note of nftables, as the
+    nftables-based proxmox-firewall is not experimental anymore. It stays
+    opt-in, the option is still off by default.
+
+  * ui: qemu agent: show options stored as 'yes' or 'on' as enabled, for
+    example after 'qm set <vmid> --agent on'. Saving any agent setting of such
+    a VM disabled the agent, turned off freezing the guest file systems or
+    dropped the trim after a disk move.
+
+  * notifications: send all notifications through the notification queue of
+    the node, from which the new pve-notify-worker service sends them. The
+    service is a new dependency and its version is now shown by
+    'pveversion -v'. Messages about sending a notification are logged to the
+    journal of pve-notify-worker instead of the task log, for example of a
+    backup job.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Nov 2026 21:43:48 +0100
+
 pve-manager (9.2.31) trixie; urgency=medium
 
   * ui: user edit: show the 'Key IDs' field only for legacy values, and only
