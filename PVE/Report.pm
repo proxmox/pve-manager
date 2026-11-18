@@ -255,6 +255,12 @@ my $init_report_cmds = sub {
             ;
     }
 
+    if (cmd_exists('nvme')) {
+        push @{ $report_def->{'block devices'}->{cmds} }, 'cat /etc/nvme/hostnqn',
+            # nodes cloned from one image can share it, which the array cannot tell apart
+            'cat /etc/nvme/hostid', 'nvme list-subsys';
+    }
+
     return $report_def;
 };
 
