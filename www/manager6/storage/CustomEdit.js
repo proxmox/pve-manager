@@ -21,8 +21,6 @@ Ext.define('PVE.storage.CustomInputPanel', {
         let isFixed = !me.isCreate && Boolean(property.fixed);
         let fixedProps = { disabled: isFixed, readOnly: isFixed, submitValue: !isFixed };
 
-        let volumeChain = PVE.panel.StorageBase.volumeChainFields(me.isCreate, me.type);
-
         const predefinedFields = {
             content: {
                 xtype: 'pveContentTypeSelector',
@@ -60,7 +58,7 @@ Ext.define('PVE.storage.CustomInputPanel', {
                       }),
             },
             'snapshot-as-volume-chain': {
-                ...volumeChain.checkbox,
+                ...PVE.panel.StorageBase.volumeChainField(me.isCreate, me.type),
                 ...fixedProps,
             },
         };
@@ -114,18 +112,9 @@ Ext.define('PVE.storage.CustomInputPanel', {
             colB = me.columnB = me.columnB || [];
         }
 
-        const hintClasses = ['pmx-hint'];
-
         if (widget.xtype === 'proxmoxtextarea') {
             colB.push(widget);
             return;
-        }
-
-        for (const cls of hintClasses) {
-            if (widget.userCls && widget.userCls.search(cls) !== -1) {
-                colB.push(widget);
-                return;
-            }
         }
 
         if (col2.length >= col1.length) {
@@ -243,11 +232,6 @@ Ext.define('PVE.storage.CustomInputPanel', {
             }
 
             me.addWidget(fieldDef, propertySchema['x-advanced']);
-
-            if (propertyName === 'snapshot-as-volume-chain') {
-                let volumeChain = PVE.panel.StorageBase.volumeChainFields(me.isCreate, me.type);
-                me.addWidget(volumeChain.hint, propertySchema['x-advanced']);
-            }
         }
 
         me.callParent();

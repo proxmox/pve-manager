@@ -40,27 +40,18 @@ Ext.define('PVE.panel.StorageBase', {
             delete values.enable;
         },
 
-        // The snapshot-as-volume-chain checkbox and its technology preview hint, also used by the
-        // remote storage wizard.
-        volumeChainFields: function (isCreate, type) {
+        // The snapshot-as-volume-chain checkbox, shared with other views that add storages.
+        volumeChainField: function (isCreate, type) {
             return {
-                checkbox: {
-                    xtype: 'proxmoxcheckbox',
-                    name: 'snapshot-as-volume-chain',
-                    // TRANSLATORS: As in "a chain of volumes, each referencing the next one".
-                    boxLabel: gettext('Allow Snapshots as Volume-Chain'),
-                    deleteEmpty: !isCreate,
-                    // can only allow to enable this on creation for storages that previously
-                    // already supported qcow2 to avoid ambiguity with existing volumes.
-                    disabled: !isCreate && type !== 'lvm',
-                    checked: false,
-                },
-                hint: {
-                    xtype: 'displayfield',
-                    name: 'external-snapshot-hint',
-                    userCls: 'pmx-hint',
-                    value: gettext('Snapshots as Volume-Chain are a technology preview.'),
-                },
+                xtype: 'proxmoxcheckbox',
+                name: 'snapshot-as-volume-chain',
+                // TRANSLATORS: As in "a chain of volumes, each referencing the next one".
+                boxLabel: gettext('Allow Snapshots as Volume-Chain'),
+                deleteEmpty: !isCreate,
+                // can only allow to enable this on creation for storages that previously
+                // already supported qcow2 to avoid ambiguity with existing volumes.
+                disabled: !isCreate && type !== 'lvm',
+                checked: false,
             };
         },
     },
@@ -125,11 +116,10 @@ Ext.define('PVE.panel.StorageBase', {
         const externalStorageManagedSnapshotSupport = ['dir', 'nfs', 'cifs', 'lvm'];
 
         if (externalStorageManagedSnapshotSupport.includes(me.type)) {
-            let volumeChain = PVE.panel.StorageBase.volumeChainFields(me.isCreate, me.type);
-            addAdvancedWidget(volumeChain.checkbox);
+            addAdvancedWidget(PVE.panel.StorageBase.volumeChainField(me.isCreate, me.type));
 
-            me.advancedColumnB = me.advancedColumnB || [];
             if (me.type === 'lvm') {
+                me.advancedColumnB = me.advancedColumnB || [];
                 me.advancedColumnB.unshift({
                     xtype: 'displayfield',
                     name: 'external-snapshot-hint-lvm',
@@ -137,7 +127,6 @@ Ext.define('PVE.panel.StorageBase', {
                     value: gettext('Keep Snapshots as Volume-Chain enabled if qcow2 images exist!'),
                 });
             }
-            me.advancedColumnB.unshift(volumeChain.hint);
         }
 
         // The volume types of guests are only offered as content in the advanced mode, so a
