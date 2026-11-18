@@ -31,6 +31,7 @@ Ext.define('PVE.dc.Health', {
         let cluster = {
             iconCls: PVE.Utils.get_health_icon('good', true),
             text: gettext('Standalone node - no cluster defined'),
+            hintHtml: '',
         };
         let nodes = {
             online: 0,
@@ -47,6 +48,11 @@ Ext.define('PVE.dc.Health', {
                     cluster.iconCls = PVE.Utils.get_health_icon('critical', true);
                 }
                 numNodes = data.nodes;
+            }
+            // a standalone node has the ID on its node entry, a cluster only on the cluster entry
+            if (data['cluster-id']) {
+                let clusterId = Ext.htmlEncode(data['cluster-id']);
+                cluster.hintHtml = `${gettext('Cluster ID')}: ${clusterId}`;
             }
         }
 
