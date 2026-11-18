@@ -979,6 +979,7 @@ __PACKAGE__->register_method({
             pve-firmware
             pve-ha-manager
             pve-i18n
+            pve-notify-worker
             pve-qemu-kvm
             pve-xtermjs
             qemu-server
