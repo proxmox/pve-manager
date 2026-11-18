@@ -105,12 +105,20 @@ Ext.define('PVE.form.AgentFeatureSelector', {
         }
         delete res['freeze-fs-on-backup'];
 
-        if (!Ext.isDefined(res['freeze-fs'])) {
-            res['freeze-fs'] = 1;
+        let defaults = {
+            enabled: 0,
+            fstrim_cloned_disks: 0,
+            'freeze-fs': 1,
+            'sync-time-on-resume': 0,
+        };
+        for (const [key, defaultValue] of Object.entries(defaults)) {
+            if (Ext.isDefined(res[key])) {
+                // the backend also accepts 'yes' or 'on', which a checkbox would load as unchecked
+                res[key] = PVE.Parser.parseBoolean(res[key]) ? 1 : 0;
+            } else {
+                res[key] = defaultValue;
+            }
         }
-
-        // the backend also accepts 'yes' or 'on', which the checkbox would load as unchecked
-        res['sync-time-on-resume'] = PVE.Parser.parseBoolean(res['sync-time-on-resume']) ? 1 : 0;
 
         this.callParent([res]);
     },
