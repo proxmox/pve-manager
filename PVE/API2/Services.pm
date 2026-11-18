@@ -29,6 +29,7 @@ my $service_name_list = [
     'pve-ha-crm',
     'pve-ha-lrm',
     'pve-lxc-syscalld',
+    'pve-notify-worker',
     'pvedaemon',
     'pvefw-logger',
     'pveproxy',
