@@ -16,6 +16,7 @@ use Time::Local;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::DataCenterConfig;
 use PVE::Exception qw(raise_param_exc);
+use PVE::GuestIdentity;
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::JSONSchema qw(get_standard_option);
@@ -111,7 +112,7 @@ my $verify_notes_template = sub {
     while ($template =~ /\{\{([^\s{}]+)\}\}/g) {
         my $var = $1;
         push @problematic, "variable '$var' at char " . (pos($template) - length($var))
-            if $var !~ /^(cluster|guestname|node|vmid)$/;
+            if $var !~ /^(cluster|guestname|node|uid|vmid)$/;
     }
 
     die "found unknown: " . join(', ', @problematic) . "\n" if scalar(@problematic);
@@ -128,6 +129,15 @@ my $generate_notes = sub {
         node => PVE::INotify::nodename(),
         vmid => $task->{vmid},
     };
+
+    # The guest stays locked for the backup, so its stored identity is the one in the backup. Read
+    # it only for a template that uses it, so that a failed read cannot fail other notes.
+    if ($notes_template =~ /\{\{uid\}\}/) {
+        my $vmid = $task->{vmid};
+        my $props = PVE::Cluster::get_guest_config_properties(['meta'], $vmid);
+        my $identity = PVE::GuestIdentity::parse_identity($props->{$vmid}->{meta});
+        $info->{uid} = $identity ? $identity->{uid} : '';
+    }
 
     my $unescape = sub {
         my ($char) = @_;

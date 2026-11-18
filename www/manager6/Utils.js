@@ -2130,7 +2130,7 @@ Ext.define('PVE.Utils', {
             return value.replace(/(\\\\|\\n)/g, (match) => replace[match]);
         },
 
-        notesTemplateVars: ['cluster', 'guestname', 'node', 'vmid'],
+        notesTemplateVars: ['cluster', 'guestname', 'node', 'uid', 'vmid'],
 
         renderTags: function (tagstext, overrides) {
             let text = '';
