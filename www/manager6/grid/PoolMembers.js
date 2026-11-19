@@ -158,6 +158,124 @@ Ext.define('PVE.pool.AddStorage', {
     },
 });
 
+Ext.define('PVE.pool.AddVnet', {
+    extend: 'Proxmox.window.Edit',
+
+    viewModel: {
+        data: {
+            zone: '',
+            propagate: false,
+        },
+    },
+
+    initComponent: function () {
+        let me = this;
+
+        if (!me.pool) {
+            throw 'no pool specified';
+        }
+
+        me.isCreate = true;
+        me.isAdd = true;
+        me.url = '/pools/';
+        me.method = 'PUT';
+        me.extraRequestParams.poolid = me.pool;
+
+        Ext.apply(me, {
+            subject: gettext('VNet'),
+            width: 350,
+            items: [
+                {
+                    xtype: 'inputpanel',
+                    onGetValues: function (values) {
+                        let network = `vnet/${values.zone}/${values.vnet}`;
+
+                        if (values.propagate) {
+                            network += '/*';
+                        } else if (values.tag) {
+                            network += `/${values.tag}`;
+                        }
+
+                        delete values.zone;
+                        delete values.vnet;
+                        delete values.propagate;
+                        delete values.tag;
+
+                        values.network = network;
+
+                        return values;
+                    },
+                    items: [
+                        {
+                            xtype: 'pveSDNZoneSelector',
+                            fieldLabel: gettext('Zone'),
+                            name: 'zone',
+                            allowBlank: false,
+                            bind: {
+                                value: '{zone}',
+                            },
+                            listeners: {
+                                change: function (_f, _value) {
+                                    let vnetField = me.lookupReference('vnetField');
+                                    if (vnetField) {
+                                        vnetField.setValue('');
+                                    }
+                                },
+                            },
+                        },
+                        {
+                            xtype: 'pveSDNVnetSelector',
+                            fieldLabel: gettext('VNet'),
+                            name: 'vnet',
+                            reference: 'vnetField',
+                            allowBlank: false,
+                            bind: {
+                                disabled: '{!zone}',
+                            },
+                            listeners: {
+                                beforequery: function () {
+                                    let zone = me.getViewModel().get('zone');
+                                    let store = this.getStore();
+                                    store.clearFilter();
+                                    store.filter({
+                                        property: 'zone',
+                                        value: zone,
+                                        exactMatch: true,
+                                        caseSensitive: true,
+                                    });
+                                },
+                            },
+                        },
+                        {
+                            xtype: 'proxmoxintegerfield',
+                            name: 'tag',
+                            fieldLabel: gettext('VLAN Tag'),
+                            minValue: 1,
+                            maxValue: 4094,
+                            allowBlank: true,
+                            emptyText: gettext('No VLAN tag'),
+                            bind: {
+                                disabled: '{propagate}',
+                            },
+                        },
+                        {
+                            xtype: 'proxmoxcheckbox',
+                            name: 'propagate',
+                            fieldLabel: gettext('Propagate'),
+                            boxLabel: gettext('Include the VNet with all its VLAN tags'),
+                            bind: {
+                                value: '{propagate}',
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        me.callParent();
+    },
+});
+
 Ext.define('PVE.grid.PoolMembers', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pvePoolMembers'],
@@ -223,6 +341,11 @@ Ext.define('PVE.grid.PoolMembers', {
                     rec.data.type === 'openvz'
                 ) {
                     params.vms = rec.data.vmid;
+                } else if (rec.data.type === 'network') {
+                    if (rec.data['network-type'] !== 'vnet') {
+                        throw 'unknown network type';
+                    }
+                    params.network = rec.data.id;
                 } else {
                     throw 'unknown resource type';
                 }
@@ -264,6 +387,15 @@ Ext.define('PVE.grid.PoolMembers', {
                                 iconCls: 'fa fa-hdd-o',
                                 handler: function () {
                                     let win = Ext.create('PVE.pool.AddStorage', { pool: me.pool });
+                                    win.on('destroy', reload);
+                                    win.show();
+                                },
+                            },
+                            {
+                                text: gettext('VNet'),
+                                iconCls: 'fa fa-network-wired x-fa-pool-net',
+                                handler: function () {
+                                    let win = Ext.create('PVE.pool.AddVnet', { pool: me.pool });
                                     win.on('destroy', reload);
                                     win.show();
                                 },

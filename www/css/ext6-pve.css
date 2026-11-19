@@ -464,6 +464,21 @@ div.right-aligned {
     content: " ";
 }
 
+.x-fa-pool-net:before {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    opacity: 0.45;
+}
+
+.x-fa-pool-net-grid:before {
+    left: 14px;
+    top: 6px;
+    opacity: 0.65;
+}
+
 .x-fa-treepanel:before {
     width: 16px;
     height: 24px;

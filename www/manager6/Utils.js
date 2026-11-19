@@ -1355,6 +1355,7 @@ Ext.define('PVE.Utils', {
                 const networkTypeMapping = {
                     fabric: 'fa fa-road',
                     zone: 'fa fa-th',
+                    vnet: 'fa fa-network-wired x-fa-pool-net x-fa-pool-net-grid',
                 };
 
                 return networkTypeMapping[record['network-type']] ?? '';
