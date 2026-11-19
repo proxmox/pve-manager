@@ -37,6 +37,16 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
                 disabled: '{!isCreate}',
             },
         },
+        {
+            xtype: 'pveSDNZoneSelector',
+            fieldLabel: gettext('VRF Zone'),
+            labelWidth: 120,
+            name: 'zone',
+            vrfOnly: true,
+            allowBlank: true,
+            skipEmptyText: true,
+            emptyText: gettext('Default VRF'),
+        },
     ],
 
     additionalItems: [],
@@ -49,6 +59,11 @@ Ext.define('PVE.sdn.Fabric.Fabric.Edit', {
         me.isCreate = me.fabricId === undefined;
         me.autoLoad = !me.isCreate;
         me.method = me.isCreate ? 'POST' : 'PUT';
+
+        let supportsVrf = ['bgp', 'ospf'].includes(me.extraRequestParams.protocol);
+        let vrfZoneField = me.items.find((item) => item.name === 'zone');
+        vrfZoneField.hidden = !supportsVrf;
+        vrfZoneField.disabled = !supportsVrf || !me.isCreate;
 
         if (!me.isCreate) {
             me.url = `${me.baseUrl}/${me.fabricId}`;

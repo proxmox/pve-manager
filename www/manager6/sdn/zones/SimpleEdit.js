@@ -22,6 +22,15 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
         me.advancedItems = [
             {
                 xtype: 'proxmoxcheckbox',
+                name: 'dedicated-vrf',
+                fieldLabel: gettext('Dedicated VRF'),
+                checked: false,
+                uncheckedValue: 0,
+                defaultValue: 0,
+                deleteDefaultValue: !me.isCreate,
+            },
+            {
+                xtype: 'proxmoxcheckbox',
                 name: 'dhcp',
                 inputValue: 'dnsmasq',
                 uncheckedValue: null,

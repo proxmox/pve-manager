@@ -8,6 +8,9 @@ Ext.define(
         valueField: 'zone',
         displayField: 'zone',
 
+        // Only show simple zones which create a dedicated VRF.
+        vrfOnly: false,
+
         initComponent: function () {
             var me = this;
 
@@ -17,6 +20,13 @@ Ext.define(
                     property: 'zone',
                     direction: 'ASC',
                 },
+                filters: me.vrfOnly
+                    ? [
+                          function (record) {
+                              return record.get('type') === 'simple' && record.get('dedicated-vrf');
+                          },
+                      ]
+                    : [],
             });
 
             Ext.apply(me, {
@@ -42,7 +52,11 @@ Ext.define(
     function () {
         Ext.define('pve-sdn-zone', {
             extend: 'Ext.data.Model',
-            fields: ['zone', 'type'],
+            fields: [
+                'zone',
+                'type',
+                { name: 'dedicated-vrf', type: 'boolean', defaultValue: false },
+            ],
             proxy: {
                 type: 'proxmox',
                 url: '/api2/json/cluster/sdn/zones',
