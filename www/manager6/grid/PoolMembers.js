@@ -13,7 +13,7 @@ Ext.define('PVE.pool.AddVM', {
     },
 
     initComponent: function () {
-        var me = this;
+        let me = this;
 
         if (!me.pool) {
             throw 'no pool specified';
@@ -23,7 +23,7 @@ Ext.define('PVE.pool.AddVM', {
         me.method = 'PUT';
         me.extraRequestParams.poolid = me.pool;
 
-        var vmsField = Ext.create('Ext.form.field.Text', {
+        let vmsField = Ext.create('Ext.form.field.Text', {
             name: 'vms',
             hidden: true,
             allowBlank: false,
@@ -32,7 +32,7 @@ Ext.define('PVE.pool.AddVM', {
         let basicFilter = (data) =>
             (data.type === 'lxc' || data.type === 'qemu') && data.pool !== me.pool;
 
-        var vmStore = Ext.create('Ext.data.Store', {
+        let vmStore = Ext.create('Ext.data.Store', {
             model: 'PVEResources',
             sorters: [
                 {
@@ -43,7 +43,7 @@ Ext.define('PVE.pool.AddVM', {
             filters: [(item) => basicFilter(item.data)],
         });
 
-        var vmGrid = Ext.create('widget.grid', {
+        let vmGrid = Ext.create('widget.grid', {
             store: vmStore,
             border: true,
             height: 480,
@@ -53,7 +53,7 @@ Ext.define('PVE.pool.AddVM', {
                 mode: 'SIMPLE',
                 listeners: {
                     selectionchange: function (model, selected, opts) {
-                        var selectedVms = [];
+                        let selectedVms = [];
                         selected.forEach(function (vm) {
                             selectedVms.push(vm.data.vmid);
                         });
@@ -127,7 +127,7 @@ Ext.define('PVE.pool.AddStorage', {
     extend: 'Proxmox.window.Edit',
 
     initComponent: function () {
-        var me = this;
+        let me = this;
 
         if (!me.pool) {
             throw 'no pool specified';
@@ -166,7 +166,7 @@ Ext.define('PVE.grid.PoolMembers', {
     stateId: 'grid-pool-members',
 
     initComponent: function () {
-        var me = this;
+        let me = this;
 
         if (!me.pool) {
             throw 'no pool specified';
@@ -193,7 +193,7 @@ Ext.define('PVE.grid.PoolMembers', {
             ],
         });
 
-        var coldef = PVE.data.ResourceStore.defaultColumns().filter(
+        let coldef = PVE.data.ResourceStore.defaultColumns().filter(
             (c) => c.dataIndex !== 'tags' && c.dataIndex !== 'lock',
         );
 
@@ -201,9 +201,9 @@ Ext.define('PVE.grid.PoolMembers', {
             me.rstore.load();
         };
 
-        var sm = Ext.create('Ext.selection.RowModel', {});
+        let sm = Ext.create('Ext.selection.RowModel', {});
 
-        var remove_btn = new Proxmox.button.Button({
+        let remove_btn = new Proxmox.button.Button({
             text: gettext('Remove'),
             disabled: true,
             selModel: sm,
@@ -214,7 +214,7 @@ Ext.define('PVE.grid.PoolMembers', {
                 );
             },
             handler: function (btn, event, rec) {
-                var params = { delete: 1, poolid: me.pool };
+                let params = { delete: 1, poolid: me.pool };
                 if (rec.data.type === 'storage') {
                     params.storage = rec.data.storage;
                 } else if (
@@ -254,7 +254,7 @@ Ext.define('PVE.grid.PoolMembers', {
                                 text: gettext('Virtual Machine'),
                                 iconCls: 'fa fa-desktop',
                                 handler: function () {
-                                    var win = Ext.create('PVE.pool.AddVM', { pool: me.pool });
+                                    let win = Ext.create('PVE.pool.AddVM', { pool: me.pool });
                                     win.on('destroy', reload);
                                     win.show();
                                 },
@@ -263,7 +263,7 @@ Ext.define('PVE.grid.PoolMembers', {
                                 text: gettext('Storage'),
                                 iconCls: 'fa fa-hdd-o',
                                 handler: function () {
-                                    var win = Ext.create('PVE.pool.AddStorage', { pool: me.pool });
+                                    let win = Ext.create('PVE.pool.AddStorage', { pool: me.pool });
                                     win.on('destroy', reload);
                                     win.show();
                                 },
@@ -280,7 +280,7 @@ Ext.define('PVE.grid.PoolMembers', {
             listeners: {
                 itemcontextmenu: PVE.Utils.createCmdMenu,
                 itemdblclick: function (v, record) {
-                    var ws = me.up('pveStdWorkspace');
+                    let ws = me.up('pveStdWorkspace');
                     ws.selectById(record.data.id);
                 },
                 activate: reload,
