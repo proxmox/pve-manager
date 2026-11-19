@@ -60,7 +60,9 @@ Ext.define('PVE.sdn.DhcpTree', {
                             zones[element.zone].children.push(vnet);
                         }
 
-                        if (!(element.subnet in subnets)) {
+                        // subnets of different zones can overlap
+                        let subnetKey = `${element.zone}/${element.subnet}`;
+                        if (!(subnetKey in subnets)) {
                             let subnet = {
                                 name: element.subnet,
                                 zone: element.zone,
@@ -71,14 +73,14 @@ Ext.define('PVE.sdn.DhcpTree', {
                                 children: [],
                             };
 
-                            subnets[element.subnet] = subnet;
+                            subnets[subnetKey] = subnet;
                             vnets[element.vnet].children.push(subnet);
                         }
 
                         element.name = element.vmid; // for sorting
                         element.type = 'mapping';
                         element.iconCls = 'x-tree-icon-none';
-                        subnets[element.subnet].children.push(element);
+                        subnets[subnetKey].children.push(element);
                     });
 
                     me.getView().setRootNode(root);
