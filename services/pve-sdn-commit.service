@@ -3,6 +3,8 @@ Description=Commit Proxmox VE SDN changes
 DefaultDependencies=no
 Wants=pve-cluster.service network.target
 After=frr.service network.target corosync.service
+# guests must only start once the zone VRFs have their conntrack zones
+Before=pve-guests.service
 
 [Service]
 ExecStart=/usr/share/pve-manager/helpers/pve-sdn-commit

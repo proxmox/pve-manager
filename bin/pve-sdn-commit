@@ -6,6 +6,7 @@ use warnings;
 use Time::HiRes qw(usleep);
 
 use PVE::Cluster;
+use PVE::INotify;
 use PVE::IPRoute2;
 use PVE::Network::SDN;
 use PVE::Network::SDN::Zones;
@@ -20,6 +21,25 @@ for (my $i = 0; !PVE::Cluster::check_cfs_quorum(1); $i++) {
         if $i % 50 == 0;
 
     usleep(100 * 1000);
+}
+
+my $proxmox_firewall = '/usr/libexec/proxmox/proxmox-firewall';
+
+# The conntrack zones are set for the interfaces that the kernel reports as enslaved to a zone VRF,
+# so this needs to run after ifreload. The running config may have changed while the node was
+# offline, so apply them even without pending changes.
+sub apply_vrf_ct_zones {
+    if (!-x $proxmox_firewall) {
+        my $nodename = PVE::INotify::nodename();
+        my $zones = PVE::Network::SDN::running_config()->{zones}->{ids} // {};
+        warn "proxmox-firewall is not installed, connections are not isolated between zone VRFs\n"
+            if grep { defined($_->{'ct-zone'}) && (!$_->{nodes} || $_->{nodes}->{$nodename}) }
+            values $zones->%*;
+        return;
+    }
+
+    eval { PVE::Tools::run_command([$proxmox_firewall, 'sdn-ct-zones']) };
+    warn "failed to apply the conntrack zones of zone VRFs - $@" if $@;
 }
 
 sub has_pending_changes {
@@ -98,6 +118,7 @@ sub sdn_changed {
 
 if (!sdn_changed()) {
     print "No changes to SDN configuration detected, skipping reload\n";
+    apply_vrf_ct_zones();
     exit 0;
 }
 
@@ -118,6 +139,8 @@ my $err = sub {
 
 eval { PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err) };
 my $ifreload_err = $@;
+
+apply_vrf_ct_zones();
 
 # needs the zone VRFs created by ifreload, because dnsmasq is started inside
 # them with 'ip vrf exec'. Also done if ifreload failed, so that a single

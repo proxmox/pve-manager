@@ -8,6 +8,7 @@ use PVE::Tools qw(extract_param dir_glob_regex);
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Exception qw(raise_param_exc);
+use PVE::RESTEnvironment qw(log_warn);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
@@ -25,6 +26,32 @@ eval {
 };
 
 my $iflockfn = "/etc/network/.pve-interfaces.lock";
+
+my $proxmox_firewall = '/usr/libexec/proxmox/proxmox-firewall';
+
+# the conntrack zones are set for the interfaces that the kernel reports as enslaved to a zone VRF,
+# so this needs to run after ifreload
+# zones of this node with a conntrack zone
+my sub local_ct_zones {
+    my $nodename = PVE::INotify::nodename();
+    my $zones = PVE::Network::SDN::running_config()->{zones}->{ids} // {};
+    return
+        grep { defined($_->{'ct-zone'}) && (!$_->{nodes} || $_->{nodes}->{$nodename}) }
+        values $zones->%*;
+}
+
+my sub apply_vrf_ct_zones {
+    if (!-x $proxmox_firewall) {
+        if (local_ct_zones()) {
+            log_warn("proxmox-firewall is not installed, connections are not isolated between"
+                . " zone VRFs");
+        }
+        return;
+    }
+
+    eval { PVE::Tools::run_command([$proxmox_firewall, 'sdn-ct-zones']) };
+    log_warn("failed to apply the conntrack zones of zone VRFs - $@") if $@;
+}
 
 my $bond_mode_enum = [
     'balance-rr',
@@ -970,6 +997,8 @@ __PACKAGE__->register_method({
             };
             eval { PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err) };
             my $ifreload_err = $@;
+
+            apply_vrf_ct_zones() if $have_sdn;
 
             # needs the zone VRFs created by ifreload, because dnsmasq is started inside
             # them with 'ip vrf exec'. Also done if ifreload failed, so that a single
