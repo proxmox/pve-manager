@@ -16,10 +16,13 @@ Ext.define('PVE.ha.Status', {
             selectedLrmNode: null,
             // maintenance state of the selected LRM node
             maintenanceRequested: false,
+            maintenancePending: false,
         },
         formulas: {
             noMaintenanceAction: (get) =>
-                !get('selectedLrmNode') || !Ext.state.Manager.get('GuiCap').dc['Sys.Modify'],
+                !get('selectedLrmNode') ||
+                get('maintenancePending') ||
+                !Ext.state.Manager.get('GuiCap').dc['Sys.Modify'],
             // the CRM ignores requests to enable maintenance mode once disarming HA was requested
             noMaintenanceEnable: (get) => get('maintenanceRequested') || get('haDisarmRequested'),
         },
@@ -72,6 +75,7 @@ Ext.define('PVE.ha.Status', {
 
             vm.set('selectedLrmNode', isLrm ? rec.get('node') : null);
             vm.set('maintenanceRequested', isLrm && rec.get('maintenance-requested'));
+            vm.set('maintenancePending', isLrm && sv.isMaintenancePending(rec));
         },
 
         handleMaintenanceButton: function (menuItem) {
@@ -117,6 +121,11 @@ Ext.define('PVE.ha.Status', {
                     url: `/nodes/${node}/maintenance`,
                     params: { 'maintenance-mode': menuItem.maintenanceMode },
                     method: 'PUT',
+                    success: function () {
+                        let sv = me.getView().down('pveHAStatusView');
+                        sv.setMaintenancePending(node);
+                        me.updateMaintenanceState();
+                    },
                     failure: (response) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
                 });
             });

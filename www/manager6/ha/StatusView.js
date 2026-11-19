@@ -23,12 +23,30 @@ Ext.define(
             me.getView().refresh();
         },
 
+        setMaintenancePending: function (node) {
+            let me = this;
+            me.maintenanceRequestTime.set(node, Date.now());
+            me.getView().refresh();
+        },
+
+        isMaintenancePending: function (rec) {
+            return (
+                rec.get('maintenance-request-queued') ||
+                this.maintenanceRequestTime.has(rec.get('node'))
+            );
+        },
+
         initComponent: function () {
             var me = this;
 
             if (!me.rstore) {
                 throw 'no rstore given';
             }
+
+            // time of the last maintenance request per node, kept until a status load that started
+            // after the request finishes, as only such a load reliably reports whether the request
+            // is still queued for the CRM
+            me.maintenanceRequestTime = new Map();
 
             Proxmox.Utils.monStoreErrors(me, me.rstore);
 
@@ -51,7 +69,24 @@ Ext.define(
                 },
             });
 
-            me.rstore.on('load', function () {
+            // loads can overlap, so track the start time per load operation
+            me.rstore.on('beforeload', (_store, operation) => {
+                operation.loadStartTime = Date.now();
+            });
+
+            me.rstore.on('load', function (_store, _records, successful, operation) {
+                let pendingCleared = false;
+                for (const [node, requestTime] of me.maintenanceRequestTime) {
+                    // a failed load reports nothing about whether the request is still queued
+                    if (successful && requestTime < operation.loadStartTime) {
+                        me.maintenanceRequestTime.delete(node);
+                        pendingCleared = true;
+                    }
+                }
+                if (pendingCleared) {
+                    me.getView().refresh();
+                }
+
                 let fencing = store.findRecord('type', 'fencing');
                 let disarmed = fencing && fencing.get('armed-state') === 'disarmed';
 
@@ -76,7 +111,10 @@ Ext.define(
                         flex: 1,
                         dataIndex: 'status',
                         renderer: function (value, _metaData, rec) {
-                            if (rec.data.type === 'fencing' && me.pending) {
+                            if (
+                                (rec.data.type === 'fencing' && me.pending) ||
+                                (rec.data.type === 'lrm' && me.isMaintenancePending(rec))
+                            ) {
                                 return value + ' <i class="fa fa-spinner fa-spin"></i>';
                             }
                             return value;
@@ -134,6 +172,10 @@ Ext.define(
                 'armed-state',
                 {
                     name: 'maintenance-requested',
+                    type: 'boolean',
+                },
+                {
+                    name: 'maintenance-request-queued',
                     type: 'boolean',
                 },
             ],
