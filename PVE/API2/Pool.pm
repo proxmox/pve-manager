@@ -7,7 +7,12 @@ use PVE::AccessControl;
 use PVE::Cluster qw (cfs_read_file cfs_write_file);
 use PVE::Exception qw(raise_param_exc);
 use PVE::INotify;
+use PVE::JSONSchema;
+use PVE::Network::SDN;
+use PVE::Network::SDN::Vnets;
+use PVE::Network::SDN::Zones;
 use PVE::Storage;
+use PVE::Tools;
 
 use PVE::SafeSyslog;
 
@@ -15,6 +20,36 @@ use PVE::API2Tools;
 use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
+
+use constant NETWORK_VNET_REGEX => qr!^vnet/([^/]+)/([^/]+)(?:/([1-9][0-9]{0,3}|\*))?\z!;
+
+sub pve_verify_pool_network {
+    my ($value, $noerr) = @_;
+
+    if ($value !~ NETWORK_VNET_REGEX) {
+        return undef if $noerr;
+        die "'$value' is not a valid network resource, expected 'vnet/<zone>/<vnet>[/<tag>|/*]'\n";
+    }
+    my ($zone, $vnet, $tag) = ($1, $2, $3);
+
+    eval {
+        PVE::JSONSchema::check_format('pve-sdn-zone-id', $zone);
+        PVE::JSONSchema::check_format('pve-sdn-vnet-id', $vnet);
+
+        if (defined($tag) && $tag ne '*' && $tag > 4094) {
+            die "VLAN tag '$tag' out of range (1-4094)\n";
+        }
+    };
+
+    if (my $err = $@) {
+        return undef if $noerr;
+        die $err;
+    }
+
+    return $value;
+}
+
+PVE::JSONSchema::register_format('pve-pool-network', \&pve_verify_pool_network);
 
 __PACKAGE__->register_method({
     name => 'index',
@@ -36,7 +71,7 @@ __PACKAGE__->register_method({
             },
             type => {
                 type => 'string',
-                enum => ['qemu', 'lxc', 'storage'],
+                enum => ['qemu', 'lxc', 'storage', 'network'],
                 optional => 1,
                 requires => 'poolid',
             },
@@ -61,13 +96,14 @@ __PACKAGE__->register_method({
                         properties => {
                             type => {
                                 type => 'string',
-                                enum => ['qemu', 'lxc', 'openvz', 'storage'],
+                                enum => ['qemu', 'lxc', 'openvz', 'storage', 'network'],
                             },
                             id => {
                                 type => 'string',
                             },
                             node => {
                                 type => 'string',
+                                optional => 1,
                             },
                             vmid => {
                                 type => 'integer',
@@ -76,6 +112,13 @@ __PACKAGE__->register_method({
                             storage => {
                                 type => 'string',
                                 optional => 1,
+                            },
+                            'network-type' => {
+                                type => 'string',
+                                enum => ['vnet'],
+                                optional => 1,
+                                description =>
+                                    'Type of the network resource (only for network members).',
                             },
                         },
                     },
@@ -132,6 +175,27 @@ __PACKAGE__->register_method({
                     my $entry =
                         PVE::API2Tools::extract_storage_stats($storeid, $scfg, $storage_node, $rrd);
                     push @$members, $entry;
+                }
+            }
+
+            if (!defined($param->{type}) || $param->{type} eq 'network') {
+                for my $net_key (sort keys $pool_config->{network}->%*) {
+                    my ($type, @path) = split('/', $net_key);
+
+                    if ($type eq 'vnet') {
+                        my ($zoneid, $vnet, $tag) = @path;
+
+                        my $description = "$vnet ($zoneid)";
+                        $description = "$vnet.$tag ($zoneid)" if defined($tag);
+
+                        push @$members,
+                            {
+                                type => 'network',
+                                'network-type' => $type,
+                                id => $net_key,
+                                text => $description,
+                            };
+                    }
                 }
             }
 
@@ -243,6 +307,18 @@ __PACKAGE__->register_method({
                 format => 'pve-storage-id-list',
                 optional => 1,
             },
+            network => {
+                description => "List of network resources to add or remove from this pool."
+                    . " 'vnet/<zone>/<vnet>' allows network devices on the VNet without VLAN tag"
+                    . " or trunks, a trailing '/<tag>' allows that VLAN tag, and '/*' allows the"
+                    . " VNet with or without any VLAN tag. This only controls the network device"
+                    . " configuration, a device without VLAN tag can still carry tagged guest"
+                    . " traffic on a VLAN-aware VNet.",
+                type => 'string',
+                typetext => 'vnet/<zone>/<vnet>[/<tag>|/*]',
+                format => 'pve-pool-network-list',
+                optional => 1,
+            },
             'allow-move' => {
                 description => 'Allow adding a guest even if already in another pool.'
                     . ' The guest will be removed from its current pool and added to this one.',
@@ -252,7 +328,8 @@ __PACKAGE__->register_method({
             },
             delete => {
                 description =>
-                    'Remove the passed VMIDs and/or storage IDs instead of adding them.',
+                    'Remove the passed VMIDs, storage IDs and/or network resources instead of'
+                    . ' adding them.',
                 type => 'boolean',
                 optional => 1,
                 default => 0,
@@ -295,6 +372,18 @@ __PACKAGE__->register_method({
                 format => 'pve-storage-id-list',
                 optional => 1,
             },
+            network => {
+                description => "List of network resources to add or remove from this pool."
+                    . " 'vnet/<zone>/<vnet>' allows network devices on the VNet without VLAN tag"
+                    . " or trunks, a trailing '/<tag>' allows that VLAN tag, and '/*' allows the"
+                    . " VNet with or without any VLAN tag. This only controls the network device"
+                    . " configuration, a device without VLAN tag can still carry tagged guest"
+                    . " traffic on a VLAN-aware VNet.",
+                type => 'string',
+                typetext => 'vnet/<zone>/<vnet>[/<tag>|/*]',
+                format => 'pve-pool-network-list',
+                optional => 1,
+            },
             'allow-move' => {
                 description => 'Allow adding a guest even if already in another pool.'
                     . ' The guest will be removed from its current pool and added to this one.',
@@ -304,7 +393,8 @@ __PACKAGE__->register_method({
             },
             delete => {
                 description =>
-                    'Remove the passed VMIDs and/or storage IDs instead of adding them.',
+                    'Remove the passed VMIDs, storage IDs and/or network resources instead of'
+                    . ' adding them.',
                 type => 'boolean',
                 optional => 1,
                 default => 0,
@@ -318,65 +408,150 @@ __PACKAGE__->register_method({
         my $rpcenv = PVE::RPCEnvironment::get();
         my $authuser = $rpcenv->get_user();
 
-        PVE::AccessControl::lock_user_config(
-            sub {
-                my $usercfg = cfs_read_file("user.cfg");
-                my $pool = $param->{poolid};
-                my $pool_config = $usercfg->{pools}->{$pool};
+        my $update = sub {
+            PVE::AccessControl::lock_user_config(
+                sub {
+                    my $usercfg = cfs_read_file("user.cfg");
+                    my $pool = $param->{poolid};
+                    my $pool_config = $usercfg->{pools}->{$pool};
 
-                die "pool '$pool' does not exist\n" if !$pool_config;
+                    die "pool '$pool' does not exist\n" if !$pool_config;
 
-                $pool_config->{comment} = $param->{comment} if defined($param->{comment});
+                    $pool_config->{comment} = $param->{comment} if defined($param->{comment});
 
-                if (defined($param->{vms})) {
-                    for my $vmid (PVE::Tools::split_list($param->{vms})) {
-                        $rpcenv->check_perm_modify($authuser, "/vms/$vmid");
+                    if (defined($param->{vms})) {
+                        for my $vmid (PVE::Tools::split_list($param->{vms})) {
+                            $rpcenv->check_perm_modify($authuser, "/vms/$vmid");
 
-                        if ($param->{delete}) {
-                            die "VM $vmid is not a pool member\n"
-                                if !$pool_config->{vms}->{$vmid};
-                            delete $pool_config->{vms}->{$vmid};
-                            delete $usercfg->{vms}->{$vmid};
-                        } else {
-                            die "VM $vmid is already a pool member\n"
-                                if $pool_config->{vms}->{$vmid};
-                            if (defined(my $existing_pool = $usercfg->{vms}->{$vmid})) {
-                                die
-                                    "VM $vmid belongs already to pool '$existing_pool' and 'allow-move' is not set\n"
-                                    if !$param->{'allow-move'};
+                            if ($param->{delete}) {
+                                die "VM $vmid is not a pool member\n"
+                                    if !$pool_config->{vms}->{$vmid};
+                                delete $pool_config->{vms}->{$vmid};
+                                delete $usercfg->{vms}->{$vmid};
+                            } else {
+                                die "VM $vmid is already a pool member\n"
+                                    if $pool_config->{vms}->{$vmid};
+                                if (defined(my $existing_pool = $usercfg->{vms}->{$vmid})) {
+                                    die
+                                        "VM $vmid belongs already to pool '$existing_pool' and 'allow-move' is not set\n"
+                                        if !$param->{'allow-move'};
 
-                                $rpcenv->check(
-                                    $authuser, "/pool/$existing_pool", ['Pool.Allocate'],
-                                );
-                                delete $usercfg->{pools}->{$existing_pool}->{vms}->{$vmid};
+                                    $rpcenv->check(
+                                        $authuser, "/pool/$existing_pool", ['Pool.Allocate'],
+                                    );
+                                    delete $usercfg->{pools}->{$existing_pool}->{vms}->{$vmid};
+                                }
+                                $pool_config->{vms}->{$vmid} = 1;
+                                $usercfg->{vms}->{$vmid} = $pool;
                             }
-                            $pool_config->{vms}->{$vmid} = 1;
-                            $usercfg->{vms}->{$vmid} = $pool;
                         }
                     }
-                }
 
-                if (defined($param->{storage})) {
-                    for my $storeid (PVE::Tools::split_list($param->{storage})) {
-                        $rpcenv->check_perm_modify($authuser, "/storage/$storeid");
+                    if (defined($param->{storage})) {
+                        for my $storeid (PVE::Tools::split_list($param->{storage})) {
+                            $rpcenv->check_perm_modify($authuser, "/storage/$storeid");
 
-                        if ($param->{delete}) {
-                            die "Storage '$storeid' is not a pool member\n"
-                                if !$pool_config->{storage}->{$storeid};
-                            delete $pool_config->{storage}->{$storeid};
-                        } else {
-                            die "Storage '$storeid' is already a pool member\n"
-                                if $pool_config->{storage}->{$storeid};
+                            if ($param->{delete}) {
+                                die "Storage '$storeid' is not a pool member\n"
+                                    if !$pool_config->{storage}->{$storeid};
+                                delete $pool_config->{storage}->{$storeid};
+                            } else {
+                                die "Storage '$storeid' is already a pool member\n"
+                                    if $pool_config->{storage}->{$storeid};
 
-                            $pool_config->{storage}->{$storeid} = 1;
+                                $pool_config->{storage}->{$storeid} = 1;
+                            }
                         }
                     }
-                }
 
-                cfs_write_file("user.cfg", $usercfg);
-            },
-            "update pools failed",
-        );
+                    if (defined($param->{network})) {
+                        if (!$param->{delete}) {
+                            # FIXME: MAJOR VERSION: 10.0 remove gatekeeper
+                            # nodes without support for network pool members drop them when
+                            # rewriting user.cfg and keep them when an SDN apply deletes or moves
+                            # their VNet, so all nodes must support them before adding
+                            PVE::Cluster::assert_min_cluster_version(9, 2, 34);
+                        }
+
+                        my $zones_cfg = PVE::Network::SDN::Zones::config(1);
+                        my $vnets_cfg = PVE::Network::SDN::Vnets::config(1);
+
+                        my $network_param = $param->{network};
+                        for my $network (PVE::Tools::split_list($network_param)) {
+                            die "'$network' is not a valid network resource\n"
+                                if $network !~ NETWORK_VNET_REGEX;
+                            my ($zone, $vnetid, $tag) = ($1, $2, $3);
+
+                            my $network_key = "vnet/$zone/$vnetid";
+                            my $acl_path = "/sdn/zones/$zone/$vnetid";
+
+                            if (defined($tag)) {
+                                $network_key .= "/$tag";
+                                $acl_path .= "/$tag" if $tag ne '*';
+                            }
+
+                            $rpcenv->check_perm_modify($authuser, $acl_path);
+
+                            if ($param->{delete}) {
+                                die "Network resource '$network_key' is not a pool member\n"
+                                    if !$pool_config->{network}->{$network_key};
+
+                                delete $pool_config->{network}->{$network_key};
+                                next;
+                            }
+
+                            die "SDN zone '$zone' does not exist or is not applied\n"
+                                if !$zones_cfg->{ids}->{$zone};
+
+                            my $vnet_data = $vnets_cfg->{ids}->{$vnetid}
+                                or die "VNet '$vnetid' does not exist or is not applied\n";
+
+                            die "VNet '$vnetid' does not belong to zone '$zone'\n"
+                                if $zone ne $vnet_data->{zone};
+
+                            die
+                                "VNet '$vnetid' is not VLAN-aware, cannot assign a specific VLAN tag\n"
+                                if defined($tag) && !$vnet_data->{vlanaware};
+
+                            # a wildcard grants the pool's roles on all tags of the VNet, so the
+                            # user's SDN.Allocate must propagate to them
+                            if (defined($tag) && $tag eq '*') {
+                                my $auth_user_privs =
+                                    $rpcenv->permissions($authuser, $acl_path);
+
+                                if (
+                                    !defined($auth_user_privs->{'Permissions.Modify'})
+                                    && !$auth_user_privs->{'SDN.Allocate'}
+                                ) {
+                                    raise_param_exc({
+                                        network =>
+                                            "Cannot add '$network_key' - requires 'Permissions.Modify'"
+                                            . " or propagated 'SDN.Allocate' on '$acl_path'",
+                                    });
+                                }
+                            }
+
+                            die "Network resource '$network_key' is already a pool member\n"
+                                if $pool_config->{network}->{$network_key};
+
+                            $pool_config->{network}->{$network_key} = 1;
+                        }
+                    }
+
+                    cfs_write_file("user.cfg", $usercfg);
+                },
+                "update pools failed",
+            );
+        };
+
+        if (defined($param->{network})) {
+            # Network members are checked against the running SDN config, so serialize with
+            # applying the SDN config, which updates the members of deleted and moved VNets
+            # before writing the running config.
+            PVE::Network::SDN::lock_sdn_domain($update);
+        } else {
+            $update->();
+        }
 
         return;
     },
@@ -400,7 +575,7 @@ __PACKAGE__->register_method({
             },
             type => {
                 type => 'string',
-                enum => ['qemu', 'lxc', 'storage'],
+                enum => ['qemu', 'lxc', 'storage', 'network'],
                 optional => 1,
             },
         },
@@ -421,13 +596,14 @@ __PACKAGE__->register_method({
                     properties => {
                         type => {
                             type => 'string',
-                            enum => ['qemu', 'lxc', 'openvz', 'storage'],
+                            enum => ['qemu', 'lxc', 'openvz', 'storage', 'network'],
                         },
                         id => {
                             type => 'string',
                         },
                         node => {
                             type => 'string',
+                            optional => 1,
                         },
                         vmid => {
                             type => 'integer',
@@ -436,6 +612,13 @@ __PACKAGE__->register_method({
                         storage => {
                             type => 'string',
                             optional => 1,
+                        },
+                        'network-type' => {
+                            type => 'string',
+                            enum => ['vnet'],
+                            optional => 1,
+                            description =>
+                                'Type of the network resource (only for network members).',
                         },
                     },
                 },
@@ -522,6 +705,10 @@ __PACKAGE__->register_method({
                 for my $storeid (sort keys %{ $pool_config->{storage} }) {
                     next if !PVE::Storage::storage_config($storecfg, $storeid, 1);
                     die "pool '$pool' is not empty (contains storage '$storeid')\n";
+                }
+
+                for my $netid (sort keys $pool_config->{network}->%*) {
+                    die "pool '$pool' is not empty (contains network resource '$netid')\n";
                 }
 
                 delete($usercfg->{pools}->{$pool});
