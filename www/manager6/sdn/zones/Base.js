@@ -45,6 +45,8 @@ Ext.define('PVE.panel.SDNZoneBase', {
                 emptyText: gettext('All') + ' (' + gettext('No restrictions') + ')',
                 multiSelect: true,
                 autoSelect: false,
+                skipEmptyText: true,
+                deleteEmpty: !me.isCreate,
             },
             {
                 xtype: 'pveSDNIpamSelector',
@@ -110,10 +112,26 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
             zone: me.zone,
         });
 
+        let additionalTabs = ipanel.getAdditionalTabs?.() ?? [];
+        let items = [ipanel];
+        if (additionalTabs.length) {
+            ipanel.setTitle(gettext('General'));
+            me.width = 760;
+            me.bodyPadding = 0;
+            items = [
+                {
+                    xtype: 'tabpanel',
+                    bodyPadding: 10,
+                    deferredRender: false,
+                    items: [ipanel, ...additionalTabs],
+                },
+            ];
+        }
+
         Ext.apply(me, {
             subject: PVE.Utils.format_sdnzone_type(me.type),
             isAdd: true,
-            items: [ipanel],
+            items,
         });
 
         me.callParent();
@@ -136,7 +154,7 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
 
                     values.enable = values.disable ? 0 : 1;
 
-                    ipanel.setValues(values);
+                    me.setValues(values);
                 },
             });
         }

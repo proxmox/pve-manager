@@ -306,6 +306,7 @@ JSSRC= 							\
 	sdn/VnetPanel.js				\
 	sdn/SubnetEdit.js				\
 	sdn/SubnetView.js				\
+	sdn/StaticRoutes.js				\
 	sdn/ZoneContentView.js				\
 	sdn/ZoneContentPanel.js				\
 	sdn/ZoneBridgesPanel.js				\

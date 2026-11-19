@@ -3,6 +3,23 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
 
     onlineHelp: 'pvesdn_zone_plugin_simple',
 
+    getAdditionalTabs: function () {
+        return [
+            {
+                xtype: 'pveSDNStaticRoutes',
+                title: gettext('Static Routes'),
+                onlineHelp: this.onlineHelp,
+                name: 'route',
+                isCreate: this.isCreate,
+                // routes are installed in the dedicated VRF, enabled with its checkbox
+                disabled: true,
+                tabConfig: {
+                    tooltip: gettext('Requires a dedicated VRF'),
+                },
+            },
+        ];
+    },
+
     onGetValues: function (values) {
         var me = this;
 
@@ -28,6 +45,11 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
                 uncheckedValue: 0,
                 defaultValue: 0,
                 deleteDefaultValue: !me.isCreate,
+                listeners: {
+                    change: (field, checked) => {
+                        field.up('window')?.down('pveSDNStaticRoutes')?.setDisabled(!checked);
+                    },
+                },
             },
             {
                 xtype: 'proxmoxcheckbox',

@@ -17,7 +17,7 @@ Ext.apply(Ext.form.field.VTypes, {
 
     IP64FullRangeCIDRAddress: function (v) {
         let result = Proxmox.Utils.IP64_cidr_match.exec(v);
-        if (result === null) {
+        if (result === null || result[0] !== v) {
             return false;
         }
         if (result[1] !== undefined) {
