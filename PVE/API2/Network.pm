@@ -13,6 +13,8 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
+use PVE::Firewall;
+use PVE::Firewall::Helpers;
 use PVE::Network;
 use IO::File;
 
@@ -51,6 +53,17 @@ my sub apply_vrf_ct_zones {
 
     eval { PVE::Tools::run_command([$proxmox_firewall, 'sdn-ct-zones']) };
     log_warn("failed to apply the conntrack zones of zone VRFs - $@") if $@;
+}
+
+# For guests with the firewall enabled on a network device, pve-firewall tracks connections on their
+# firewall bridge, in a conntrack zone shared by all zone VRFs.
+my sub warn_vrf_zones_with_legacy_firewall {
+    return if !local_ct_zones();
+    return if PVE::Firewall::Helpers::is_nftables();
+    return if !PVE::Firewall::load_clusterfw_conf()->{options}->{enable};
+
+    log_warn("pve-firewall does not isolate the connections of guests with the firewall enabled on"
+        . " a network device between zone VRFs, use the nftables-based firewall instead");
 }
 
 my $bond_mode_enum = [
@@ -998,7 +1011,11 @@ __PACKAGE__->register_method({
             eval { PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err) };
             my $ifreload_err = $@;
 
-            apply_vrf_ct_zones() if $have_sdn;
+            if ($have_sdn) {
+                apply_vrf_ct_zones();
+                eval { warn_vrf_zones_with_legacy_firewall() };
+                warn $@ if $@;
+            }
 
             # needs the zone VRFs created by ifreload, because dnsmasq is started inside
             # them with 'ip vrf exec'. Also done if ifreload failed, so that a single
