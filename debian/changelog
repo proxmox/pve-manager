@@ -1,3 +1,26 @@
+pve-manager (9.2.33) trixie; urgency=medium
+
+  * fix #6144: ha: allow enabling and disabling the maintenance mode of a node
+    through the API and in the HA status panel of the web interface. This was
+    only possible with the 'ha-manager' command line tool before.
+
+  * guest identity and cluster ID: expose the new identity of VMs and containers
+    and the new ID of the cluster:
+    - api: return the 'uid' and the registration time of guests in the cluster
+      resources, and the cluster ID in the cluster status.
+    - ui: show the identity in the summary of VMs and containers and the cluster
+      ID in the datacenter summary.
+    - ui: restore: if a backup has another unique ID than the guest it gets
+      restored over, show a hint and offer to allow that. Such a restore is
+      refused otherwise.
+    - ui: migrate: tell if a target node is not allowed because its version
+      would drop the guest identity.
+    - bulk migration: refuse such a target node once, before the task starts,
+      instead of failing for every guest.
+    - vzdump: add the 'uid' variable for the backup notes template.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 19 Nov 2026 23:35:52 +0100
+
 pve-manager (9.2.32) trixie; urgency=medium
 
   * ui: storage: drop the technology preview hint of snapshots as volume
