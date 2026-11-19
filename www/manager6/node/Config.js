@@ -196,6 +196,18 @@ Ext.define('PVE.node.Config', {
                     nodename: nodename,
                     editOptions: {
                         enableBridgeVlanIds: true,
+                        vrfSelector: {
+                            xtype: 'pveSDNZoneSelector',
+                            running: true,
+                            vrfOnly: true,
+                            valueField: 'vrf',
+                            displayField: 'vrf',
+                            editable: true,
+                            forceSelection: false,
+                            anyMatch: true,
+                            maxLength: 15,
+                            notFoundIsValid: true,
+                        },
                     },
                     onlineHelp: 'sysadmin_network_configuration',
                 },

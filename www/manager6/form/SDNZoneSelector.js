@@ -5,11 +5,18 @@ Ext.define(
         alias: ['widget.pveSDNZoneSelector'],
 
         allowBlank: false,
+        // Use 'vrf' to submit the native VRF interface name instead of the zone ID.
         valueField: 'zone',
         displayField: 'zone',
 
         // Only show simple zones which create a dedicated VRF.
         vrfOnly: false,
+
+        // Only show zones available on this node, if specified.
+        nodename: undefined,
+
+        // Only show zones from the applied SDN configuration, not pending changes.
+        running: false,
 
         initComponent: function () {
             var me = this;
@@ -20,14 +27,28 @@ Ext.define(
                     property: 'zone',
                     direction: 'ASC',
                 },
-                filters: me.vrfOnly
-                    ? [
-                          function (record) {
-                              return record.get('type') === 'simple' && record.get('dedicated-vrf');
-                          },
-                      ]
-                    : [],
+                filters: [
+                    function (record) {
+                        return (
+                            !me.vrfOnly ||
+                            (record.get('type') === 'simple' && record.get('dedicated-vrf'))
+                        );
+                    },
+                    function (record) {
+                        let nodes = record.get('nodes');
+                        return !me.nodename || !nodes || nodes.split(',').includes(me.nodename);
+                    },
+                ],
             });
+
+            if (me.running) {
+                // Don't touch the shared model proxy, other selectors need the pending config.
+                store.setProxy({
+                    type: 'proxmox',
+                    url: '/api2/json/cluster/sdn/zones',
+                    extraParams: { running: 1 },
+                });
+            }
 
             Ext.apply(me, {
                 store: store,
@@ -55,6 +76,15 @@ Ext.define(
             fields: [
                 'zone',
                 'type',
+                'nodes',
+                {
+                    name: 'vrf',
+                    // Preserve custom values in the synthetic records created by ComboBox.
+                    convert: (value, record) => {
+                        let zone = record.get('zone');
+                        return value ?? (zone ? `vrf_${zone}` : value);
+                    },
+                },
                 { name: 'dedicated-vrf', type: 'boolean', defaultValue: false },
             ],
             proxy: {

@@ -165,6 +165,14 @@ my $confdesc = {
         minimum => 1,
         maximum => 4094,
     },
+    vrf => {
+        description => 'VRF master interface.',
+        type => 'string',
+        minLength => 1,
+        maxLength => 15,
+        pattern => '[a-zA-Z0-9_][a-zA-Z0-9_.-]*',
+        optional => 1,
+    },
     gateway => {
         description => 'Default gateway address.',
         type => 'string',
@@ -520,7 +528,9 @@ __PACKAGE__->register_method({
 my $check_duplicate = sub {
     my ($config, $newiface, $key, $name) = @_;
 
+    my $vrf = $config->{$newiface}->{vrf} // '';
     foreach my $iface (keys %$config) {
+        next if ($config->{$iface}->{vrf} // '') ne $vrf;
         raise_param_exc({ $key => "$name already exists on interface '$iface'." })
             if ($newiface ne $iface) && $config->{$iface}->{$key};
     }
@@ -652,10 +662,12 @@ __PACKAGE__->register_method({
             raise_param_exc({ iface => "interface already exists" })
                 if $ifaces->{$iface};
 
-            &$check_duplicate_gateway($ifaces, $iface)
-                if $param->{gateway};
-            &$check_duplicate_gateway6($ifaces, $iface)
-                if $param->{gateway6};
+            if ($have_sdn && $param->{vrf}) {
+                my $fabrics = PVE::Network::SDN::Fabrics::config();
+                raise_param_exc({
+                    vrf => "cannot set VRF on an interface that is part of a fabric" })
+                    if $fabrics->is_fabric_interface(PVE::INotify::nodename(), $iface);
+            }
 
             $check_duplicate_ports->($ifaces, $iface, $param);
 
@@ -704,6 +716,8 @@ __PACKAGE__->register_method({
                 if $param->{bridge_vids};
 
             $ifaces->{$iface} = $param;
+            $check_duplicate_gateway->($ifaces, $iface) if $param->{gateway};
+            $check_duplicate_gateway6->($ifaces, $iface) if $param->{gateway6};
 
             PVE::INotify::write_file('interfaces', $config);
         };
@@ -753,6 +767,15 @@ __PACKAGE__->register_method({
             raise_param_exc({ iface => "interface does not exist" })
                 if !$ifaces->{$iface};
 
+            if (
+                $have_sdn && $param->{vrf} && $param->{vrf} ne ($ifaces->{$iface}->{vrf} // '')
+            ) {
+                my $fabrics = PVE::Network::SDN::Fabrics::config();
+                raise_param_exc({
+                    vrf => "cannot set VRF on an interface that is part of a fabric" })
+                    if $fabrics->is_fabric_interface(PVE::INotify::nodename(), $iface);
+            }
+
             my $families = ($param->{families} ||= []);
             foreach my $k (PVE::Tools::split_list($delete)) {
                 delete $ifaces->{$iface}->{$k};
@@ -768,11 +791,6 @@ __PACKAGE__->register_method({
             }
 
             $map_cidr_to_address_netmask->($param);
-
-            &$check_duplicate_gateway($ifaces, $iface)
-                if $param->{gateway};
-            &$check_duplicate_gateway6($ifaces, $iface)
-                if $param->{gateway6};
 
             $check_duplicate_ports->($ifaces, $iface, $param);
 
@@ -795,6 +813,8 @@ __PACKAGE__->register_method({
             foreach my $k (keys %$param) {
                 $ifaces->{$iface}->{$k} = $param->{$k};
             }
+            $check_duplicate_gateway->($ifaces, $iface) if $ifaces->{$iface}->{gateway};
+            $check_duplicate_gateway6->($ifaces, $iface) if $ifaces->{$iface}->{gateway6};
 
             if (
                 $param->{bridge_vids}
@@ -842,6 +862,13 @@ __PACKAGE__->register_method({
             method => {
                 type => 'string',
             },
+            'vrf-readonly' => {
+                type => 'boolean',
+                optional => 1,
+                description =>
+                    'The interface belongs to an SDN fabric, an existing VRF can be removed but'
+                    . ' no VRF can be set.',
+            },
         },
     },
     code => sub {
@@ -855,10 +882,17 @@ __PACKAGE__->register_method({
         raise_param_exc({ iface => "interface does not exist" })
             if !$ifaces->{$iface};
 
+        my $data = { $ifaces->{$iface}->%* };
         my $altnames = extract_altnames($iface);
-        $ifaces->{$iface}->{altnames} = $altnames if defined($altnames);
+        $data->{altnames} = $altnames if defined($altnames);
 
-        return $ifaces->{$iface};
+        if ($have_sdn) {
+            my $fabrics = PVE::Network::SDN::Fabrics::config();
+            $data->{'vrf-readonly'} = 1
+                if $fabrics->is_fabric_interface(PVE::INotify::nodename(), $iface);
+        }
+
+        return $data;
     },
 });
 
