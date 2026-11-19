@@ -56,6 +56,21 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
                 deleteEmpty: '{!isCreate}',
             },
         },
+        {
+            xtype: 'proxmoxtextfield',
+            name: 'dhcp-dns-server',
+            vtype: 'IP64Address',
+            skipEmptyText: true,
+            fieldLabel: gettext('DHCP DNS Resolver'),
+            allowBlank: true,
+            autoEl: {
+                tag: 'div',
+                'data-qtip': gettext('DNS server advertised to guests via DHCP.'),
+            },
+            cbind: {
+                deleteEmpty: '{!isCreate}',
+            },
+        },
     ],
 });
 
