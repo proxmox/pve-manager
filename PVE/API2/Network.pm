@@ -959,7 +959,6 @@ __PACKAGE__->register_method({
 
             if ($have_sdn) {
                 PVE::Network::SDN::generate_etc_network_config();
-                PVE::Network::SDN::generate_dhcp_config();
                 PVE::Network::SDN::WireGuard::generate_wireguard_config();
             }
 
@@ -969,18 +968,40 @@ __PACKAGE__->register_method({
                     print "$2 : $line \n";
                 }
             };
-            PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
+            eval { PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err) };
+            my $ifreload_err = $@;
 
-            if (defined($regenerate_frr)) {
-                # SDN (or a manual invocation) is requesting a
-                # specific behavior, so we abide by the parameter set.
-                PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr;
-            } elsif (PVE::Network::SDN::running_config_has_frr()) {
-                # Reload is coming from the Web UI (or a manual
-                # invocation requesting no specific behavior), so we
-                # reload if there are FRR entities in the SDN config.
-                PVE::Network::SDN::generate_frr_config(1);
+            # needs the zone VRFs created by ifreload, because dnsmasq is started inside
+            # them with 'ip vrf exec'. Also done if ifreload failed, so that a single
+            # failing interface does not leave the DHCP config of all zones outdated.
+            eval { PVE::Network::SDN::generate_dhcp_config() if $have_sdn };
+            my $dhcp_err = $@;
+
+            if ($ifreload_err) {
+                warn "failed to generate the DHCP config - $dhcp_err" if $dhcp_err;
+                die $ifreload_err;
             }
+
+            # the FRR config does not depend on DHCP, keep it in line with the reloaded interfaces
+            eval {
+                if (defined($regenerate_frr)) {
+                    # SDN (or a manual invocation) is requesting a
+                    # specific behavior, so we abide by the parameter set.
+                    PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr;
+                } elsif (PVE::Network::SDN::running_config_has_frr()) {
+                    # Reload is coming from the Web UI (or a manual
+                    # invocation requesting no specific behavior), so we
+                    # reload if there are FRR entities in the SDN config.
+                    PVE::Network::SDN::generate_frr_config(1);
+                }
+            };
+            my $frr_err = $@;
+
+            if ($dhcp_err) {
+                warn "failed to regenerate the FRR config - $frr_err" if $frr_err;
+                die $dhcp_err;
+            }
+            die $frr_err if $frr_err;
         };
         return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
     },

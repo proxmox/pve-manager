@@ -108,7 +108,6 @@ my $new_config_has_frr = PVE::Network::SDN::running_config_has_frr();
 my $regenerate_frr = ($previous_config_has_frr || $new_config_has_frr);
 
 PVE::Network::SDN::generate_etc_network_config();
-PVE::Network::SDN::generate_dhcp_config();
 
 my $err = sub {
     my $line = shift;
@@ -117,8 +116,28 @@ my $err = sub {
     }
 };
 
-PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
+eval { PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err) };
+my $ifreload_err = $@;
 
-PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr;
+# needs the zone VRFs created by ifreload, because dnsmasq is started inside
+# them with 'ip vrf exec'. Also done if ifreload failed, so that a single
+# failing interface does not leave the DHCP config of all zones outdated.
+eval { PVE::Network::SDN::generate_dhcp_config() };
+my $dhcp_err = $@;
+
+if ($ifreload_err) {
+    warn "failed to generate the DHCP config - $dhcp_err" if $dhcp_err;
+    die $ifreload_err;
+}
+
+# the FRR config does not depend on DHCP, keep it in line with the reloaded interfaces
+eval { PVE::Network::SDN::generate_frr_config(1) if $regenerate_frr };
+my $frr_err = $@;
+
+if ($dhcp_err) {
+    warn "failed to regenerate the FRR config - $frr_err" if $frr_err;
+    die $dhcp_err;
+}
+die $frr_err if $frr_err;
 
 exit 0;
