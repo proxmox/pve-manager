@@ -11,6 +11,17 @@ Ext.define('PVE.ha.Status', {
     viewModel: {
         data: {
             haDisarmed: false,
+            // set as soon as disarming HA was requested, not only once HA is fully disarmed
+            haDisarmRequested: false,
+            selectedLrmNode: null,
+            // maintenance state of the selected LRM node
+            maintenanceRequested: false,
+        },
+        formulas: {
+            noMaintenanceAction: (get) =>
+                !get('selectedLrmNode') || !Ext.state.Manager.get('GuiCap').dc['Sys.Modify'],
+            // the CRM ignores requests to enable maintenance mode once disarming HA was requested
+            noMaintenanceEnable: (get) => get('maintenanceRequested') || get('haDisarmRequested'),
         },
     },
 
@@ -50,6 +61,65 @@ Ext.define('PVE.ha.Status', {
                     });
                 },
             );
+        },
+
+        updateMaintenanceState: function () {
+            let me = this;
+            let vm = me.getViewModel();
+            let sv = me.getView().down('pveHAStatusView');
+            let rec = sv.getSelection()[0];
+            let isLrm = rec?.get('type') === 'lrm';
+
+            vm.set('selectedLrmNode', isLrm ? rec.get('node') : null);
+            vm.set('maintenanceRequested', isLrm && rec.get('maintenance-requested'));
+        },
+
+        handleMaintenanceButton: function (menuItem) {
+            let me = this;
+            let node = me.getViewModel().get('selectedLrmNode');
+            if (!node) {
+                return;
+            }
+
+            let msg;
+            if (menuItem.maintenanceMode === 'disable') {
+                msg = Ext.String.format(
+                    gettext("Are you sure you want to disable maintenance mode for node '{0}'?"),
+                    node,
+                );
+                if (me.getViewModel().get('haDisarmRequested')) {
+                    msg +=
+                        '<br><br>' +
+                        Ext.String.format(
+                            gettext(
+                                "HA resources will be migrated back to node '{0}' once HA is re-armed.",
+                            ),
+                            node,
+                        );
+                }
+            } else if (menuItem.maintenanceMode === 'enable') {
+                msg = Ext.String.format(
+                    gettext("Are you sure you want to enable maintenance mode for node '{0}'?"),
+                    node,
+                );
+                msg +=
+                    '<br><br>' +
+                    gettext('HA resources on the node will be migrated to other nodes.');
+            } else {
+                throw `unknown maintenance mode '${menuItem.maintenanceMode}'`;
+            }
+
+            Ext.Msg.confirm(gettext('Confirm'), msg, function (btn) {
+                if (btn !== 'yes') {
+                    return;
+                }
+                Proxmox.Utils.API2Request({
+                    url: `/nodes/${node}/maintenance`,
+                    params: { 'maintenance-mode': menuItem.maintenanceMode },
+                    method: 'PUT',
+                    failure: (response) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+                });
+            });
         },
 
         openCRSOptions: function () {
@@ -121,6 +191,34 @@ Ext.define('PVE.ha.Status', {
                 },
             ],
         },
+        '-',
+        {
+            text: gettext('Node Maintenance'),
+            iconCls: 'fa fa-wrench',
+            bind: {
+                disabled: '{noMaintenanceAction}',
+            },
+            menu: [
+                {
+                    text: gettext('Enable'),
+                    iconCls: 'fa fa-wrench',
+                    maintenanceMode: 'enable',
+                    bind: {
+                        disabled: '{noMaintenanceEnable}',
+                    },
+                    handler: 'handleMaintenanceButton',
+                },
+                {
+                    text: gettext('Disable'),
+                    iconCls: 'fa fa-check',
+                    maintenanceMode: 'disable',
+                    bind: {
+                        disabled: '{!maintenanceRequested}',
+                    },
+                    handler: 'handleMaintenanceButton',
+                },
+            ],
+        },
         '->',
         {
             text: gettext('CRS Settings'),
@@ -153,11 +251,14 @@ Ext.define('PVE.ha.Status', {
                 collapsible: true,
                 padding: '0 0 20 0',
                 listeners: {
-                    hastatuschange: function (isDisarmed) {
+                    selectionchange: () => me.getController().updateMaintenanceState(),
+                    hastatuschange: function (isDisarmed, armedState) {
                         let vm = me.getViewModel();
                         let sv = me.query('pveHAStatusView')[0];
 
                         vm.set('haDisarmed', isDisarmed);
+                        vm.set('haDisarmRequested', ['disarming', 'disarmed'].includes(armedState));
+                        me.getController().updateMaintenanceState();
 
                         if (sv.isDisarmedPendingState === null) {
                             return;

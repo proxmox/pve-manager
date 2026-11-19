@@ -55,7 +55,7 @@ Ext.define(
                 let fencing = store.findRecord('type', 'fencing');
                 let disarmed = fencing && fencing.get('armed-state') === 'disarmed';
 
-                me.fireEvent('hastatuschange', disarmed);
+                me.fireEvent('hastatuschange', disarmed, fencing?.get('armed-state'));
             });
 
             Ext.apply(me, {
@@ -132,6 +132,10 @@ Ext.define(
                     },
                 },
                 'armed-state',
+                {
+                    name: 'maintenance-requested',
+                    type: 'boolean',
+                },
             ],
             idProperty: 'id',
         });
