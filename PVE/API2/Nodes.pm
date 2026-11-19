@@ -249,6 +249,7 @@ __PACKAGE__->register_method({
             { name => 'hosts' },
             { name => 'journal' },
             { name => 'lxc' },
+            { name => 'maintenance' },
             { name => 'migrateall' },
             { name => 'netstat' },
             { name => 'network' },
@@ -2905,6 +2906,50 @@ __PACKAGE__->register_method({
         die $@ if $@;
 
         return;
+    },
+});
+
+__PACKAGE__->register_method({
+    name => 'maintenance_set',
+    path => 'maintenance',
+    method => 'PUT',
+    description => "Enable or disable maintenance mode for the node. Currently, this only"
+        . " requests the HA node maintenance mode.",
+    protected => 1,
+    permissions => {
+        check => ['perm', '/', ['Sys.Modify']],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            'maintenance-mode' => {
+                description => "Specifies whether the maintenance mode for the specified"
+                    . " node should be enabled or disabled.",
+                type => 'string',
+                enum => ['enable', 'disable'],
+            },
+        },
+    },
+    returns => { type => 'null' },
+    code => sub {
+        my ($param) = @_;
+
+        my $node = $param->{node};
+        my $mode = $param->{'maintenance-mode'};
+
+        my $err = '';
+        eval {
+            PVE::Tools::run_command(
+                [
+                    'ha-manager', 'crm-command', 'node-maintenance', $mode, $node,
+                ],
+                errfunc => sub { $err .= "$_[0]\n" },
+            );
+        };
+        die($err || $@) if $@;
+
+        return undef;
     },
 });
 
