@@ -121,7 +121,8 @@ Ext.define('PVE.window.Restore', {
             // The restore task only needs the override if the guest has another unique ID than
             // the backup, so only offer it then, or if that cannot be told here.
             let offerIdentityMismatch = function (mismatchIsKnown) {
-                if (view.vmid) {
+                // the window can be closed by the time the status of the guest arrives
+                if (view.vmid && !view.destroyed) {
                     view.lookupReference('allowIdentityMismatch').setHidden(false);
                     view.lookupReference('identityMismatchHint').setHidden(!mismatchIsKnown);
                 }

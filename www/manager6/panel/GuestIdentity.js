@@ -114,10 +114,17 @@ Ext.define('PVE.panel.GuestIdentityInfo', {
                 method: 'GET',
             });
         } catch (error) {
-            Ext.Msg.alert(gettext('Error'), error.htmlStatus);
+            if (!me.destroyed) {
+                Ext.Msg.alert(gettext('Error'), error.htmlStatus);
+            }
             return;
         } finally {
             me.loadingDetails = false;
+        }
+
+        // another guest can be selected by now
+        if (me.destroyed) {
+            return;
         }
 
         Ext.create('PVE.window.GuestIdentity', {
