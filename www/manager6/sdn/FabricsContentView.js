@@ -39,6 +39,7 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
                 sortable: true,
                 dataIndex: 'neighbor',
                 flex: 1,
+                emptyCellText: '-',
             },
         ];
 
@@ -48,6 +49,7 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
                 sortable: true,
                 dataIndex: 'name',
                 flex: 1,
+                emptyCellText: '-',
             });
 
             me.columns = me.columns.concat([
@@ -74,6 +76,7 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
                     sortable: true,
                     dataIndex: 'allowed-ips',
                     flex: 1,
+                    emptyCellText: '-',
                 },
                 {
                     header: gettext('Latest Handshake'),
@@ -153,6 +156,7 @@ Ext.define('PVE.sdn.FabricInterfacesContentView', {
                 sortable: true,
                 dataIndex: 'type',
                 flex: 1,
+                emptyCellText: '-',
             },
             {
                 header: gettext('State'),
@@ -169,12 +173,14 @@ Ext.define('PVE.sdn.FabricInterfacesContentView', {
                     sortable: true,
                     dataIndex: 'public-key',
                     flex: 1,
+                    emptyCellText: '-',
                 },
                 {
                     header: gettext('Listen Port'),
                     sortable: true,
                     dataIndex: 'listen-port',
                     flex: 1,
+                    emptyCellText: '-',
                 },
             ]);
         }
