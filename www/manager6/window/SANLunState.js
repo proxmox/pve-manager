@@ -49,22 +49,41 @@ Ext.define('PVE.window.SANLunState', {
             sorters: ['node'],
             sortAfterUpdate: true,
         });
+        let added = Ext.String.format(gettext('Storage "{0}" was added.'), me.storage);
+        let missingAdvice = me.fc
+            ? gettext(
+                  'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and zoning on the array, then rescan the Fibre Channel hosts on {0}.',
+              )
+            : gettext(
+                  'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and initiator access on the array.',
+              );
+        let updateAdvice = function () {
+            if (me.destroyed) {
+                return;
+            }
+            let lacking = rstore
+                .getRange()
+                .filter((rec) => rec.get('state') === 'missing')
+                .map((rec) => rec.get('node'))
+                .sort()
+                .join(', ');
+            let pending = Date.now() < pendingUntil;
+            let waiting = pending ? lacking : '';
+            let missing = pending ? '' : lacking;
+            let text = [
+                added,
+                waiting &&
+                    Ext.String.format(gettext('Waiting for a LUN report from: {0}.'), waiting),
+                missing && Ext.String.format(missingAdvice, missing),
+            ];
+            me.down('#advice').setHtml(Ext.htmlEncode(text.filter(Boolean).join(' ')));
+        };
         me.items = [
             {
                 xtype: 'component',
+                itemId: 'advice',
                 margin: '0 0 10 0',
-                html: Ext.htmlEncode(
-                    Ext.String.format(
-                        me.fc
-                            ? gettext(
-                                  'Storage "{0}" was added. Guests on this storage cannot run on a node that stays on "Missing": check its access to the LUN on the array and rescan its Fibre Channel hosts.',
-                              )
-                            : gettext(
-                                  'Storage "{0}" was added. Guests on this storage cannot run on a node that stays on "Missing": check its access to the LUN on the array.',
-                              ),
-                        me.storage,
-                    ),
-                ),
+                html: Ext.htmlEncode(added),
             },
             {
                 xtype: 'grid',
@@ -110,7 +129,17 @@ Ext.define('PVE.window.SANLunState', {
         ];
         me.callParent();
         Proxmox.Utils.monStoreErrors(me.down('grid'), rstore);
+        me.mon(rstore, 'load', (s, records, success) => success && updateAdvice());
+        // nodes that did not set up the LUN in time turn from pending to missing without a change
+        // in the data
+        let expire = Ext.defer(function () {
+            if (!me.destroyed) {
+                me.down('grid').getView().refresh();
+                updateAdvice();
+            }
+        }, pendingUntil - Date.now());
         me.on('destroy', function () {
+            clearTimeout(expire);
             store.destroy();
             rstore.destroy();
         });
