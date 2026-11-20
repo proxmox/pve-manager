@@ -9,6 +9,11 @@ Ext.define('pve-san-status', {
         'apply-error',
         'time',
         'iscsi-initiator-name',
+        {
+            name: 'iscsi-missing',
+            depends: ['kind', 'state', 'iscsi-initiator-name'],
+            calculate: (data) => data.kind === 'node' && PVE.SANUtils.iscsiMissing(data),
+        },
         'other-maps',
         'nvme-host-nqn',
         'wwid',
@@ -190,7 +195,7 @@ Ext.define('PVE.dc.SANView', {
                         text: gettext('iSCSI Initiator Name'),
                         dataIndex: 'iscsi-initiator-name',
                         flex: 2,
-                        renderer: Ext.htmlEncode,
+                        renderer: PVE.SANUtils.renderInitiatorName,
                     },
                     {
                         text: gettext('NVMe Host NQN'),

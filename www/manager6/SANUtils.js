@@ -123,6 +123,14 @@ Ext.define('PVE.SANUtils', {
         return report.state !== 'no-report' && !report['iscsi-initiator-name'];
     },
 
+    renderInitiatorName: function (value, metaData, rec) {
+        if (rec.get('iscsi-missing')) {
+            let text = Ext.htmlEncode(gettext('open-iscsi not installed'));
+            return `<i class="fa fa-fw fa-info-circle faded"></i> ${text}`;
+        }
+        return Ext.htmlEncode(value);
+    },
+
     // A state with its icon, and with its label unless another text is given.
     stateHtml: function (state, text) {
         let display = {
