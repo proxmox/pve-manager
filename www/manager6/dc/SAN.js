@@ -104,10 +104,10 @@ Ext.define('PVE.dc.SANView', {
             sortAfterUpdate: true,
         });
         let reload = () => me.rstore.load();
-        let edit = (rec) =>
+        let edit = ({ wwid, isCreate }) =>
             Ext.create('PVE.dc.MultipathWwidEdit', {
-                wwid: rec?.get('wwid'),
-                isCreate: !rec,
+                wwid,
+                isCreate,
                 autoShow: true,
                 apiCallDone: (success) => success && reload(),
             });
@@ -226,17 +226,25 @@ Ext.define('PVE.dc.SANView', {
                 tbar: {
                     overflowHandler: 'scroller',
                     items: [
-                        { text: gettext('Add'), disabled: !canModify, handler: () => edit() },
                         {
-                            xtype: 'proxmoxButton',
-                            text: gettext('Edit'),
-                            disabled: true,
-                            enableFn: (rec) => canEdit && !!rec.get('explicit'),
-                            handler: (button, event, rec) => edit(rec),
+                            text: gettext('Add Multipath Entry'),
+                            disabled: !canModify,
+                            handler: function (button) {
+                                let lun = button.up('grid').getSelection()[0];
+                                let wwid = lun?.get('explicit') ? undefined : lun?.get('wwid');
+                                edit({ wwid, isCreate: true });
+                            },
                         },
                         {
                             xtype: 'proxmoxButton',
-                            text: gettext('Remove'),
+                            text: gettext('Edit Entry'),
+                            disabled: true,
+                            enableFn: (rec) => canEdit && !!rec.get('explicit'),
+                            handler: (button, event, rec) => edit({ wwid: rec.get('wwid') }),
+                        },
+                        {
+                            xtype: 'proxmoxButton',
+                            text: gettext('Remove Entry'),
                             disabled: true,
                             enableFn: (rec) => canModify && !!rec.get('explicit'),
                             confirmMsg: (rec) =>
