@@ -163,13 +163,21 @@ Ext.define('PVE.StdWorkspace', {
         if (loginData) {
             PVE.data.ResourceStore.startUpdate();
 
-            Proxmox.Utils.API2Request({
-                url: '/version',
-                method: 'GET',
-                success: function (response) {
-                    PVE.VersionInfo = response.result.data;
-                    me.updateVersionInfo();
+            me.versionTask ??= Ext.TaskManager.start({
+                run: () => {
+                    if (!Proxmox.Utils.authOK()) {
+                        return;
+                    }
+                    Proxmox.Utils.API2Request({
+                        url: `/nodes/${Proxmox.NodeName}/version`,
+                        method: 'GET',
+                        autoErrorAlert: false,
+                        success: function (response) {
+                            me.updateVersionInfo(response.result.data);
+                        },
+                    });
                 },
+                interval: 2 * 60 * 1000,
             });
 
             PVE.UIOptions.update();
@@ -200,18 +208,36 @@ Ext.define('PVE.StdWorkspace', {
         ui.updateLayout();
     },
 
-    updateVersionInfo: function () {
+    updateVersionInfo: function (versionInfo) {
         let me = this;
 
         let ui = me.query('#versioninfo')[0];
 
-        if (PVE.VersionInfo) {
-            let version = PVE.VersionInfo.version;
-            ui.update('Virtual Environment ' + version);
-        } else {
+        if (!PVE.VersionInfo && !versionInfo) {
             ui.update('Virtual Environment');
+            ui.updateLayout();
+            return;
         }
+
+        // keep showing the first reported version until the page is reloaded
+        PVE.VersionInfo ??= versionInfo;
+
+        ui.update('Virtual Environment ' + PVE.VersionInfo.version);
         ui.updateLayout();
+
+        // compare the versions the backend reports with the ones this page was loaded with
+        if (!versionInfo?.['ui-version']) {
+            return;
+        }
+
+        let notice = me.down('#uiUpdateNotice');
+        if (notice.isVisible()) {
+            return;
+        }
+
+        if (Proxmox.UIVersion !== versionInfo['ui-version']) {
+            notice.setVisible(true);
+        }
     },
 
     initComponent: function () {
@@ -273,6 +299,10 @@ Ext.define('PVE.StdWorkspace', {
         });
 
         let caps = appState.get('GuiCap');
+
+        let uiUpdateTip = gettext(
+            'A new version of the web interface was installed. Reload the page to use it.',
+        );
 
         let createVM = Ext.createWidget('button', {
             pack: 'end',
@@ -351,6 +381,34 @@ Ext.define('PVE.StdWorkspace', {
                                 'font-size': '16px',
                                 'line-height': '20px',
                             },
+                        },
+                        {
+                            xtype: 'container',
+                            itemId: 'uiUpdateNotice',
+                            hidden: true,
+                            layout: {
+                                type: 'hbox',
+                                align: 'middle',
+                            },
+                            margin: '0 5',
+                            items: [
+                                {
+                                    xtype: 'component',
+                                    autoEl: {
+                                        tag: 'div',
+                                        'data-qtip': uiUpdateTip,
+                                    },
+                                    html: `<i class="fa fa-info-circle info-blue"></i> ${gettext('New version')}`,
+                                    margin: '0 5 0 0',
+                                },
+                                {
+                                    xtype: 'button',
+                                    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+                                    text: gettext('Reload UI'),
+                                    tooltip: uiUpdateTip,
+                                    handler: () => window.location.reload(),
+                                },
+                            ],
                         },
                         {
                             flex: 2,
