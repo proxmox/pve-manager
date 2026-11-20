@@ -71,10 +71,13 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             sortAfterUpdate: true,
         });
         let inUse = (row) => row['used-by-storage'] || row['used-by-process'];
+        // the setup refuses a LUN with data, so do not offer one
+        let hasData = (row) => row.usage === 'lvm' || row.usage === 'other';
+        let blocked = (row) => inUse(row) || hasData(row);
         let noLunsText = gettext('No LUNs found. Check connections and array access.');
         let updateSelection = function () {
             let row = me.getSelection();
-            me.down('#selection').setValue(row && !inUse(row) ? row.wwid : '');
+            me.down('#selection').setValue(row && !blocked(row) ? row.wwid : '');
         };
         me.items = [
             {
@@ -89,7 +92,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                 cls: 'pmx-hint',
                 margin: '0 0 10 0',
                 html: gettext(
-                    'A LUN that is in use cannot be selected. A LUN with data that is no longer needed has to be wiped under Node > SAN first.',
+                    'LUNs with known data or users cannot be selected. To keep the volume group on a LUN, add it under Datacenter > Storage > Add > LVM instead. To discard the data of a LUN, stop its users on all hosts and wipe it under Node > SAN first.',
                 ),
             },
             ...(me.rescanNote
@@ -108,10 +111,10 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                 emptyText: noLunsText,
                 viewConfig: {
                     enableTextSelection: true,
-                    getRowClass: (rec) => (inUse(rec.data) ? 'x-item-disabled' : ''),
+                    getRowClass: (rec) => (blocked(rec.data) ? 'x-item-disabled' : ''),
                 },
                 listeners: {
-                    beforeselect: (sm, rec) => !inUse(rec.data),
+                    beforeselect: (sm, rec) => !blocked(rec.data),
                     selectionchange: updateSelection,
                 },
                 columns: [
@@ -144,6 +147,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                     },
                     {
                         text: gettext('Used By'),
+                        tooltip: gettext('As last seen by the scan node.'),
                         dataIndex: 'used-by',
                         width: 130,
                         renderer: Ext.htmlEncode,
