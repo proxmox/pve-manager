@@ -135,6 +135,11 @@ Ext.define('PVE.form.GlobalSearchField', {
                 }
             }
         }
+        // Only the full uid matches, so that short search terms do not match random IDs by chance.
+        let uid = item.data.uid;
+        if (uid && filterWords.includes(uid)) {
+            match += 2;
+        }
         item.data.relevance = match; // set the row's virtual 'relevance' value for ordering
         return match > 0;
     },

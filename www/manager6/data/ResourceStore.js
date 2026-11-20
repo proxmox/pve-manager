@@ -336,6 +336,13 @@ Ext.define('PVE.data.ResourceStore', {
                 sortable: true,
                 width: 100,
             },
+            uid: {
+                header: gettext('Unique ID'),
+                type: 'string',
+                hidden: true,
+                sortable: true,
+                width: 170,
+            },
             tags: {
                 header: gettext('Tags'),
                 renderer: (value) => PVE.Utils.renderTags(value, PVE.UIOptions.tagOverrides),
