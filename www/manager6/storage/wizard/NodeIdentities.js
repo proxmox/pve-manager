@@ -13,7 +13,7 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
     columns: [
         { text: gettext('Node'), dataIndex: 'node', width: 100, renderer: Ext.htmlEncode },
         {
-            text: gettext('State'),
+            text: gettext('Multipath Setup'),
             dataIndex: 'state',
             width: 175,
             renderer: PVE.SANUtils.renderState,

@@ -156,7 +156,7 @@ Ext.define('PVE.dc.SANView', {
                         renderer: Ext.htmlEncode,
                     },
                     {
-                        text: gettext('State'),
+                        text: gettext('Multipath Setup'),
                         dataIndex: 'state',
                         width: 170,
                         renderer: PVE.SANUtils.renderState,
