@@ -257,7 +257,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 waitMsgTarget: me,
                 failure: function (response) {
                     if (!me.destroyed) {
-                        me.up('window').showError(response.htmlStatus);
+                        Ext.Msg.alert(gettext('Error'), response.htmlStatus);
                     }
                 },
                 success: function (response) {
