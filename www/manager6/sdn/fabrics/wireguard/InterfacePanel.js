@@ -372,7 +372,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     fieldLabel: gettext('MTU'),
                     bind: '{selectedInterface.mtu}',
                     xtype: 'proxmoxintegerfield',
-                    minValue: 576,
+                    minValue: 1280,
                     maxValue: 65535,
                     isFormField: false,
                 },
