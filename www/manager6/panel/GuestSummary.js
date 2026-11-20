@@ -64,6 +64,9 @@ Ext.define('PVE.guest.Summary', {
                 xtype: 'pmxNotesView',
                 flex: 1,
                 padding: template ? '5' : '0 0 0 5',
+                // the row stretches it to the status view if that is taller, so this acts as a
+                // minimum, and long notes scroll instead of growing the row
+                height: template ? undefined : 350,
                 itemId: 'notesview',
                 pveSelNode: me.pveSelNode,
             },
@@ -75,10 +78,9 @@ Ext.define('PVE.guest.Summary', {
             items = [
                 {
                     xtype: 'container',
-                    height: 300,
                     layout: {
                         type: 'hbox',
-                        align: 'stretch',
+                        align: 'stretchmax',
                     },
                     items: items,
                 },

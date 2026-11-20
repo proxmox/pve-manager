@@ -175,6 +175,10 @@ Ext.define('PVE.panel.GuestStatusView', {
                 pveSelNode: '{pveSelNode}',
             },
         },
+        {
+            xtype: 'box',
+            height: 20,
+        },
     ],
 
     updateTitle: function () {
