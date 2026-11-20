@@ -11,6 +11,7 @@ use URI::QueryParam;
 use URI;
 
 use PVE::API2;
+use PVE::API2Tools;
 use PVE::APIServer::AnyEvent;
 use PVE::APIServer::Formatter::HTML;
 use PVE::APIServer::Formatter::Standard;
@@ -56,7 +57,7 @@ my $basedirs = {
     novnc => '/usr/share/novnc-pve',
     yew_mobile => '/usr/share/pve-yew-mobile-gui',
     i18n_yew => '/usr/share/pve-yew-mobile-i18n',
-    widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
+    widgettoolkit => PVE::API2Tools::pwt_base_dir(),
     xtermjs => '/usr/share/pve-xtermjs',
 };
 
@@ -261,8 +262,7 @@ sub get_index {
 
     my $version = PVE::pvecfg::version();
 
-    my $wtversionraw = PVE::Tools::file_read_firstline("$basedirs->{widgettoolkit}/proxmoxlib.js");
-    my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
+    my $wtversion = PVE::API2Tools::read_pwt_version();
 
     # while we could use the actual pkg version (e.g., shipped as pkg-version file in each
     # respective package's /usr/share/<pkg> folder, this way it should also work when using make

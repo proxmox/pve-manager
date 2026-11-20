@@ -12,6 +12,7 @@ use URI;
 use PVE::Cluster;
 use PVE::DataCenterConfig; # so we can cfs-read datacenter.cfg
 use PVE::Exception qw(raise_param_exc);
+use PVE::File;
 use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::SafeSyslog;
@@ -270,6 +271,19 @@ sub get_resource_pool_guest_members {
     my $pool_members = [grep { $idlist->{$_} } keys %{ $data->{vms} }];
 
     return $pool_members;
+}
+
+my $PWT_BASE_DIR = '/usr/share/javascript/proxmox-widget-toolkit';
+my $PWT_FILE = "$PWT_BASE_DIR/proxmoxlib.js";
+
+sub pwt_base_dir {
+    return $PWT_BASE_DIR;
+}
+
+sub read_pwt_version {
+    my $wtversionraw = PVE::File::file_read_first_line($PWT_FILE) // '';
+    my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
+    return $wtversion;
 }
 
 1;
