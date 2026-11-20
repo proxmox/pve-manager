@@ -132,6 +132,15 @@ Ext.define('PVE.dc.SANView', {
                     setupItem('fc', 'PVE.storage.wizard.FibreChannel', !canModify),
                 ],
             },
+            {
+                text: gettext('Multipath Overrides'),
+                disabled: !canEdit,
+                handler: () =>
+                    Ext.create('PVE.dc.MultipathOverridesEdit', {
+                        autoShow: true,
+                        apiCallDone: (success) => success && reload(),
+                    }),
+            },
         ];
         me.items = [
             {
@@ -278,15 +287,6 @@ Ext.define('PVE.dc.SANView', {
                                     success: reload,
                                 });
                             },
-                        },
-                        {
-                            text: gettext('Edit Overrides'),
-                            disabled: !canEdit,
-                            handler: () =>
-                                Ext.create('PVE.dc.MultipathOverridesEdit', {
-                                    autoShow: true,
-                                    apiCallDone: (success) => success && reload(),
-                                }),
                         },
                         '->',
                         gettext('Search') + ':',
