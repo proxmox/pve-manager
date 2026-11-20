@@ -463,7 +463,8 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
         me.getViewModel().set('availablePeers', availablePeers);
     },
 
-    setNode: async function (node) {
+    // returns the peers that were left out, since their interface is not configured on the node
+    loadInterfaces: function (node) {
         let me = this;
 
         let ifaces = {};
@@ -490,6 +491,34 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                 Ext.create('Pve.sdn.Fabric.WireGuard.InterfacePeer', peer),
             );
         }
+
+        me.getViewModel().set('currentNode', node);
+
+        me.setInterfaces(Object.values(ifaces));
+
+        me.selectFirstInterface();
+
+        return droppedPeers;
+    },
+
+    // replaces the interfaces, which also forgets the removed ones, unlike removing them
+    setInterfaces: function (interfaces) {
+        let me = this;
+
+        me.isLoading = true;
+        try {
+            me.getViewModel().getStore('interfaces').setData(interfaces);
+        } finally {
+            me.isLoading = false;
+        }
+    },
+
+    setNode: async function (node) {
+        let me = this;
+
+        me.loadedNode = node;
+
+        let droppedPeers = me.loadInterfaces(node);
         if (droppedPeers.length > 0) {
             console.warn(
                 `WireGuard: dropping ${droppedPeers.length} peer(s) referencing missing interfaces:`,
@@ -506,17 +535,20 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             );
         }
 
-        me.getViewModel().set('currentNode', node);
-
-        me.isLoading = true;
-        try {
-            me.getViewModel().getStore('interfaces').setData(Object.values(ifaces));
-        } finally {
-            me.isLoading = false;
-        }
         me.previousDirty = false;
+    },
 
-        me.selectFirstInterface();
+    reset: function () {
+        let me = this;
+
+        if (me.loadedNode) {
+            // the dropped peers were already reported when loading the node
+            me.loadInterfaces(me.loadedNode);
+        } else {
+            me.setInterfaces([]);
+        }
+
+        me.refreshState();
     },
 
     isDirty: function () {
@@ -569,6 +601,25 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             .items.every((iface) => me.isInterfaceValid(iface));
     },
 
+    refreshState: function () {
+        let me = this;
+
+        if (me.isLoading) {
+            return;
+        }
+        let dirtyStatus = me.isDirty();
+        if (dirtyStatus !== me.previousDirty) {
+            me.previousDirty = dirtyStatus;
+            me.fireEvent('dirtychange');
+        }
+
+        let validStatus = me.isValid();
+        if (validStatus !== me.previousValid) {
+            me.previousValid = validStatus;
+            me.fireEvent('validitychange', me, validStatus);
+        }
+    },
+
     initComponent: function () {
         let me = this;
 
@@ -576,31 +627,16 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
 
         let store = me.getViewModel().getStore('interfaces');
 
-        let refreshDirty = () => {
-            if (me.isLoading) {
-                return;
-            }
-            let dirtyStatus = me.isDirty();
-            if (dirtyStatus !== me.previousDirty) {
-                me.previousDirty = dirtyStatus;
-                me.fireEvent('dirtychange');
-            }
-
-            let validStatus = me.isValid();
-            if (validStatus !== me.previousValid) {
-                me.previousValid = validStatus;
-                me.fireEvent('validitychange', me, validStatus);
-            }
-        };
+        let refreshState = () => me.refreshState();
 
         me.lookupReference('peerSelector').on({
-            datachanged: refreshDirty,
-            update: refreshDirty,
+            datachanged: refreshState,
+            update: refreshState,
         });
         store.on({
-            add: refreshDirty,
-            remove: refreshDirty,
-            update: refreshDirty,
+            add: refreshState,
+            remove: refreshState,
+            update: refreshState,
         });
     },
 
