@@ -196,6 +196,7 @@ Ext.define('PVE.node.Config', {
                     nodename: nodename,
                     editOptions: {
                         enableBridgeVlanIds: true,
+                        enableIpForward: true,
                         vrfSelector: {
                             xtype: 'pveSDNZoneSelector',
                             running: true,
