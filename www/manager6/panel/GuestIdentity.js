@@ -97,19 +97,27 @@ Ext.define('PVE.panel.GuestIdentityInfo', {
     showDetails: async function () {
         let me = this;
 
+        // a second click while loading would open a second window
+        if (me.loadingDetails) {
+            return;
+        }
+
         let view = me.up('pmxStatusView');
         let { node, vmid, type } = view.pveSelNode.data;
 
+        // no load mask, for this short request it only flashes over the whole status view
+        me.loadingDetails = true;
         let response;
         try {
             response = await Proxmox.Async.api2({
                 url: `/nodes/${node}/${type}/${vmid}/config`,
                 method: 'GET',
-                waitMsgTarget: view,
             });
         } catch (error) {
             Ext.Msg.alert(gettext('Error'), error.htmlStatus);
             return;
+        } finally {
+            me.loadingDetails = false;
         }
 
         Ext.create('PVE.window.GuestIdentity', {
