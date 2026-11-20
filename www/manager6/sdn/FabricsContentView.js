@@ -44,6 +44,14 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
         ];
 
         if (me.protocol === 'wireguard') {
+            me.tbar = [
+                {
+                    text: gettext('Reload'),
+                    iconCls: 'fa fa-refresh',
+                    handler: () => me.getStore().load(),
+                },
+            ];
+
             me.columns.unshift({
                 header: gettext('Name'),
                 sortable: true,
@@ -167,6 +175,14 @@ Ext.define('PVE.sdn.FabricInterfacesContentView', {
         ];
 
         if (me.protocol === 'wireguard') {
+            me.tbar = [
+                {
+                    text: gettext('Reload'),
+                    iconCls: 'fa fa-refresh',
+                    handler: () => me.getStore().load(),
+                },
+            ];
+
             me.columns = me.columns.concat([
                 {
                     header: gettext('Public Key'),
