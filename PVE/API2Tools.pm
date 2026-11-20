@@ -18,6 +18,7 @@ use PVE::RPCEnvironment;
 use PVE::SafeSyslog;
 use PVE::Storage::Plugin;
 use PVE::Tools;
+use PVE::pvecfg;
 
 # each rrd key for a resource will only exist once. The key format might be different though. Therefore return on first hit
 sub get_rrd_key {
@@ -280,10 +281,33 @@ sub pwt_base_dir {
     return $PWT_BASE_DIR;
 }
 
+my $pwt_version_cache = {};
+
 sub read_pwt_version {
-    my $wtversionraw = PVE::File::file_read_first_line($PWT_FILE) // '';
-    my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
-    return $wtversion;
+    my $st = stat($PWT_FILE);
+    my $mtime = $st ? $st->mtime() : 0;
+
+    if (
+        !defined($pwt_version_cache->{version})
+        || $pwt_version_cache->{mtime} != $mtime
+    ) {
+        my $wtversionraw = PVE::File::file_read_first_line($PWT_FILE) // '';
+        my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
+        $pwt_version_cache->{version} = $wtversion;
+        $pwt_version_cache->{mtime} = $mtime;
+    }
+
+    return $pwt_version_cache->{version};
+}
+
+# returns a combined pve-manager and proxmox-widget-toolkit version string
+# or undef if the pwt version was not readable or parseable
+sub ui_version {
+    my $manager_version = PVE::pvecfg::version_text();
+    my $pwt_version = read_pwt_version();
+    return undef if !$pwt_version;
+
+    return "$manager_version-$pwt_version";
 }
 
 1;

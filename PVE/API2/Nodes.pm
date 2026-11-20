@@ -320,12 +320,24 @@ __PACKAGE__->register_method({
                 type => 'string',
                 description => 'The short git commit hash ID from which this version was build',
             },
+            'ui-version' => {
+                type => 'string',
+                optional => 1,
+                description =>
+                    'A string generated from UI package versions, to detect changes.',
+            },
         },
     },
     code => sub {
         my ($resp, $param) = @_;
 
-        return PVE::pvecfg::version_info();
+        my $res = PVE::pvecfg::version_info();
+
+        if (my $ui_version = PVE::API2Tools::ui_version()) {
+            $res->{'ui-version'} = $ui_version;
+        }
+
+        return $res;
     },
 });
 

@@ -264,6 +264,8 @@ sub get_index {
 
     my $wtversion = PVE::API2Tools::read_pwt_version();
 
+    my $uiversion = PVE::API2Tools::ui_version();
+
     # while we could use the actual pkg version (e.g., shipped as pkg-version file in each
     # respective package's /usr/share/<pkg> folder, this way it should also work when using make
     # install to directly install to local root filesystem.
@@ -287,6 +289,7 @@ sub get_index {
         debug => $debug,
         version => "$version",
         wtversion => $wtversion,
+        uiversion => $uiversion,
         theme => $theme,
         consenttext => $consent_text,
         i18n_js_mtime => $i18n_js_mtime,
