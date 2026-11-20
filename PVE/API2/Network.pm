@@ -213,6 +213,13 @@ my $confdesc = {
         pattern => '[a-zA-Z0-9_][a-zA-Z0-9_.-]*',
         optional => 1,
     },
+    'ip-forward' => {
+        description => 'Enable IPv4 forwarding on the interface, which is needed for interfaces'
+            . ' that receive routed traffic, for example the uplinks of an SDN zone with a'
+            . ' dedicated VRF. If not set, forwarding follows the defaults of the interface.',
+        type => 'boolean',
+        optional => 1,
+    },
     gateway => {
         description => 'Default gateway address.',
         type => 'string',
