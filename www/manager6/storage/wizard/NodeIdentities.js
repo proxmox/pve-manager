@@ -1,7 +1,17 @@
 Ext.define('pve-san-node-identity', {
     extend: 'Ext.data.Model',
     idProperty: 'node',
-    fields: ['node', 'state', 'iscsi-initiator-name', 'nvme-host-nqn'],
+    fields: [
+        'node',
+        'state',
+        'iscsi-initiator-name',
+        'nvme-host-nqn',
+        {
+            name: 'iscsi-missing',
+            depends: ['state', 'iscsi-initiator-name'],
+            calculate: (data) => PVE.SANUtils.iscsiMissing(data),
+        },
+    ],
 });
 
 // The nodes with their iSCSI initiator names or NVMe host NQNs, to allow them on the array, and to
@@ -66,7 +76,10 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
                 text: nvme ? gettext('Host NQN') : gettext('Initiator Name'),
                 dataIndex: me.identity,
                 flex: 1,
-                renderer: Ext.htmlEncode,
+                renderer: (value, meta, rec) =>
+                    !nvme && rec.get('iscsi-missing')
+                        ? PVE.SANUtils.stateHtml('no-iscsi')
+                        : Ext.htmlEncode(value),
             },
         ];
         me.rstore = Ext.create('Proxmox.data.UpdateStore', {

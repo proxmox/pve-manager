@@ -118,6 +118,11 @@ Ext.define('PVE.SANUtils', {
         );
     },
 
+    // nodes only report an initiator name if they have a usable open-iscsi
+    iscsiMissing: function (report) {
+        return report.state !== 'no-report' && !report['iscsi-initiator-name'];
+    },
+
     // A state with its icon, and with its label unless another text is given.
     stateHtml: function (state, text) {
         let display = {
@@ -129,6 +134,7 @@ Ext.define('PVE.SANUtils', {
             unknown: ['question-circle faded', gettext('Unknown')],
             unavailable: ['exclamation-circle warning', gettext('Multipath unavailable')],
             'no-report': ['question-circle faded', gettext('No current report')],
+            'no-iscsi': ['times-circle critical', gettext('open-iscsi not installed')],
             'logged-in': ['check-circle good', gettext('Connected')],
             recovering: ['exclamation-circle warning', gettext('Reconnecting')],
             'not-connected': ['times-circle faded', gettext('Not connected')],

@@ -200,6 +200,31 @@ Ext.define('PVE.storage.wizard.Target', {
         // all checked nodes, as all nodes can be more than a reused storage has
         let selectedNodes = identities.getSelectedNodes();
         let nodes = identities.getNodes().join(',');
+        let missing = nvme
+            ? []
+            : identities
+                  .getSelection()
+                  .filter((rec) => rec.get('iscsi-missing'))
+                  .map((rec) => rec.get('node'))
+                  .sort();
+        if (missing.length) {
+            // the node serving the web UI sets up the volume group, so it stays selected
+            wizard.showError(
+                Ext.htmlEncode(
+                    Ext.String.format(
+                        missing.includes(Proxmox.NodeName)
+                            ? gettext(
+                                  'open-iscsi is not installed on node(s) {0}. Install it there.',
+                              )
+                            : gettext(
+                                  'open-iscsi is not installed on node(s) {0}. Install it there, or deselect those nodes.',
+                              ),
+                        missing.join(', '),
+                    ),
+                ),
+            );
+            return;
+        }
         let connected = function (connection) {
             wizard.connection = connection;
             if (wizard.destroyed) {
