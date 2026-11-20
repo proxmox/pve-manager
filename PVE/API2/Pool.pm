@@ -120,6 +120,19 @@ __PACKAGE__->register_method({
                                 description =>
                                     'Type of the network resource (only for network members).',
                             },
+                            network => {
+                                type => 'string',
+                                optional => 1,
+                                description =>
+                                    "The network resource as passed to the 'network' parameter"
+                                    . " (only for network members).",
+                            },
+                            text => {
+                                type => 'string',
+                                optional => 1,
+                                description =>
+                                    'Human-readable description (only for network members).',
+                            },
                         },
                     },
                 },
@@ -192,7 +205,8 @@ __PACKAGE__->register_method({
                             {
                                 type => 'network',
                                 'network-type' => $type,
-                                id => $net_key,
+                                id => "network/$net_key",
+                                network => $net_key,
                                 text => $description,
                             };
                     }
@@ -619,6 +633,19 @@ __PACKAGE__->register_method({
                             optional => 1,
                             description =>
                                 'Type of the network resource (only for network members).',
+                        },
+                        network => {
+                            type => 'string',
+                            optional => 1,
+                            description =>
+                                "The network resource as passed to the 'network' parameter"
+                                . " (only for network members).",
+                        },
+                        text => {
+                            type => 'string',
+                            optional => 1,
+                            description =>
+                                'Human-readable description (only for network members).',
                         },
                     },
                 },

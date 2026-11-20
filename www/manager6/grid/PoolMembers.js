@@ -345,7 +345,7 @@ Ext.define('PVE.grid.PoolMembers', {
                     if (rec.data['network-type'] !== 'vnet') {
                         throw 'unknown network type';
                     }
-                    params.network = rec.data.id;
+                    params.network = rec.data.network;
                 } else {
                     throw 'unknown resource type';
                 }
