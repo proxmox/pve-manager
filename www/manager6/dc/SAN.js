@@ -304,59 +304,57 @@ Ext.define('PVE.dc.SANView', {
                     {
                         text: gettext('State'),
                         dataIndex: 'state',
-                        flex: 1,
+                        flex: 2,
                         minWidth: 160,
+                        cellWrap: true,
                         renderer: function (value, md, rec) {
                             let nodes = Object.entries(rec.get('nodes') || {})
                                 .map(([node, report]) => [
                                     node,
-                                    PVE.SANUtils.lunState(report.state, report['paths-total']),
-                                    report,
+                                    PVE.SANUtils.renderLunReport(report),
+                                    report.state,
                                 ])
                                 .sort(([a], [b]) => a.localeCompare(b));
+                            if (!nodes.length) {
+                                return PVE.SANUtils.renderState(value);
+                            }
                             let tip = nodes
-                                .map(([node, nodeState, report]) => {
-                                    let state = PVE.SANUtils.renderState(nodeState);
-                                    if (
-                                        nodeState !== 'single-path' &&
-                                        report['paths-active'] !== undefined &&
-                                        report['paths-total'] !== undefined
-                                    ) {
-                                        state += ` (${Ext.htmlEncode(PVE.SANUtils.pathCount(report))})`;
-                                    }
-                                    return `${Ext.htmlEncode(node)}: ${state}`;
-                                })
+                                .map(([node, label]) => `${Ext.htmlEncode(node)}: ${label}`)
                                 .join('<br>');
                             md.tdAttr = `data-qtip="${Ext.htmlEncode(tip)}"`;
-                            if (value === 'optimal' && nodes.some(([, s]) => s === 'single-path')) {
-                                value = 'single-path';
+                            // Nodes with the same state and path count form a group, worst first.
+                            // Next to a problem of the LUN, which a node without a report is not,
+                            // all groups that are not fine are listed, as a LUN missing on one node
+                            // can at the same time have lost paths on another.
+                            let groups = new Map();
+                            for (const [node, label, state] of nodes) {
+                                let group = groups.get(label) ?? { label, state, nodes: [] };
+                                group.nodes.push(node);
+                                groups.set(label, group);
                             }
-                            // a node in Unknown does not count for the state, it is listed after it
-                            let unknown = nodes.filter(([, s]) => s === 'unknown').map(([n]) => n);
-                            let suffix =
-                                value !== 'unknown' && unknown.length
-                                    ? `, ${PVE.SANUtils.renderState('unknown')} (${Ext.htmlEncode(unknown.join(', '))})`
-                                    : '';
-                            let affected = nodes
-                                .filter(([, s]) => s === value)
-                                .map(([node]) => node);
-                            // name the affected nodes if they are only a part of all
-                            if (
-                                value === 'optimal' ||
-                                value === 'unknown' ||
-                                affected.length === nodes.length - unknown.length
-                            ) {
-                                return PVE.SANUtils.renderState(value) + suffix;
-                            }
-                            let names = Ext.htmlEncode(affected.join(', '));
-                            if (value === 'single-path') {
-                                let text = Ext.String.format(
-                                    Ext.htmlEncode(gettext('OK (1 path on {0})')),
-                                    names,
-                                );
-                                return `<i class="fa fa-fw fa-check-circle good"></i> ${text}${suffix}`;
-                            }
-                            return `${PVE.SANUtils.renderState(value)} (${names})${suffix}`;
+                            let rank = {
+                                failed: 0,
+                                missing: 1,
+                                degraded: 2,
+                                unknown: 3,
+                                optimal: 5,
+                            };
+                            let list = [...groups.values()];
+                            let problem = list.some(
+                                (group) => !['optimal', 'unknown'].includes(group.state),
+                            );
+                            return list
+                                .filter((group) => !problem || group.state !== 'optimal')
+                                .sort((a, b) => (rank[a.state] ?? 4) - (rank[b.state] ?? 4))
+                                .map(function (group) {
+                                    let names =
+                                        group.nodes.length === nodes.length
+                                            ? ''
+                                            : ` (${Ext.htmlEncode(group.nodes.join(', '))})`;
+                                    // a wrapped list keeps each icon with its label
+                                    return `<span style="white-space: nowrap;">${group.label}</span>${names}`;
+                                })
+                                .join(', ');
                         },
                     },
                     {

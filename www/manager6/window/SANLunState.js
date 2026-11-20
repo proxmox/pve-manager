@@ -110,19 +110,8 @@ Ext.define('PVE.window.SANLunState', {
                                 metaData.tdAttr = `data-qtip="${Ext.htmlEncode(Ext.htmlEncode(tip))}"`;
                                 return `<i class="fa fa-fw fa-spinner fa-pulse"></i> ${Ext.htmlEncode(gettext('Pending'))}`;
                             }
-                            return PVE.SANUtils.renderState(
-                                PVE.SANUtils.lunState(value, rec.get('paths-total')),
-                            );
+                            return PVE.SANUtils.renderLunState(value, metaData, rec);
                         },
-                    },
-                    {
-                        text: gettext('Active Paths'),
-                        dataIndex: 'paths-active',
-                        width: 120,
-                        renderer: (value, metaData, rec) =>
-                            value === undefined
-                                ? ''
-                                : Ext.htmlEncode(PVE.SANUtils.pathCount(rec.data)),
                     },
                 ],
             },

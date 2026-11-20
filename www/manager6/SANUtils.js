@@ -82,11 +82,6 @@ Ext.define('pve-san-lun', {
 Ext.define('PVE.SANUtils', {
     singleton: true,
 
-    // A LUN with a single path is fine, but has no path to fail over to, so it is not optimal.
-    lunState: function (state, pathsTotal) {
-        return state === 'optimal' && Number(pathsTotal) === 1 ? 'single-path' : state;
-    },
-
     // Deselects the rows of a grid that the filters of its store hide. The buttons of a toolbar
     // act on the selected row, which must not be one that a search does not show.
     deselectHidden: function (grid) {
@@ -97,18 +92,17 @@ Ext.define('PVE.SANUtils', {
 
     // Usable paths of a node out of those it has, or out of those it should have if more.
     pathCount: function (report) {
-        let total = Math.max(report['paths-total'] ?? 0, report['paths-expected'] ?? 0);
-        return `${report['paths-active']}/${total}`;
+        if (report['paths-active'] === undefined || report['paths-total'] === undefined) {
+            return undefined;
+        }
+        let total = Math.max(report['paths-total'], report['paths-expected'] ?? 0);
+        return total ? `${report['paths-active']}/${total}` : undefined;
     },
 
-    // How the multipath of a LUN is managed, as plain text. A LUN with one path and no map has no
-    // other path to fail over to.
-    multipathText: function (value, storage, pathsTotal) {
+    // How the multipath of a LUN is managed, as plain text.
+    multipathText: function (value, storage) {
         if (value === 'storage' && storage) {
             return Ext.String.format(gettext('Storage "{0}"'), storage);
-        }
-        if (value === 'none' && Number(pathsTotal) === 1) {
-            return gettext('Single path');
         }
         return (
             {
@@ -124,14 +118,11 @@ Ext.define('PVE.SANUtils', {
         );
     },
 
-    renderState: function (value) {
-        if (!value) {
-            return '';
-        }
+    // A state with its icon, and with its label unless another text is given.
+    stateHtml: function (state, text) {
         let display = {
             ok: ['check-circle good', gettext('OK')],
             optimal: ['check-circle good', gettext('Optimal')],
-            'single-path': ['check-circle good', gettext('OK (1 path)')],
             degraded: ['exclamation-circle warning', gettext('Degraded')],
             failed: ['times-circle critical', gettext('Failed')],
             missing: ['times-circle critical', gettext('Missing')],
@@ -141,26 +132,59 @@ Ext.define('PVE.SANUtils', {
             'logged-in': ['check-circle good', gettext('Connected')],
             recovering: ['exclamation-circle warning', gettext('Reconnecting')],
             'not-connected': ['times-circle faded', gettext('Not connected')],
-        }[value];
-        let [icon, label] = display ?? ['question-circle faded', value];
-        return `<i class="fa fa-fw fa-${icon}"></i> ${Ext.htmlEncode(label)}`;
+        }[state];
+        let [icon, label] = display ?? ['question-circle faded', state];
+        return `<i class="fa fa-fw fa-${icon}"></i> ${Ext.htmlEncode(text ?? label)}`;
     },
 
-    // The path counts tell why a LUN is degraded while all of its listed paths are usable: the
-    // kernel removes a lost path after a while.
-    renderLunState: function (value, metaData, rec) {
-        let state = PVE.SANUtils.lunState(value, rec.get('paths-total'));
-        let text = PVE.SANUtils.renderState(state);
-        if (['degraded', 'failed'].includes(state) && rec.get('paths-active') !== undefined) {
-            text += ` (${Ext.htmlEncode(PVE.SANUtils.pathCount(rec.data))})`;
+    renderState: function (value) {
+        return value ? PVE.SANUtils.stateHtml(value) : '';
+    },
+
+    // The state of a LUN on a node, as its path count where the report has one. Without a map there
+    // is no failover, so a fine LUN gets no check.
+    renderLunReport: function (report, unmapped) {
+        let state = report.state;
+        let count = PVE.SANUtils.pathCount(report);
+        if (!count || !['optimal', 'degraded', 'failed'].includes(state)) {
+            return PVE.SANUtils.renderState(state);
+        } else if (state === 'failed') {
+            return PVE.SANUtils.stateHtml(state, Ext.String.format(gettext('Failed ({0})'), count));
+        } else if (unmapped && state === 'optimal') {
+            return Ext.htmlEncode(count);
         }
-        return text;
+        return PVE.SANUtils.stateHtml(state, count);
+    },
+
+    // The counts behind a path count, for its tooltip.
+    pathDetail: function (report) {
+        if (report['paths-active'] === undefined || report['paths-total'] === undefined) {
+            return '';
+        }
+        return report['paths-expected'] === undefined
+            ? Ext.String.format(
+                  gettext('{0} of {1} paths usable, no expected count set'),
+                  report['paths-active'],
+                  report['paths-total'],
+              )
+            : Ext.String.format(
+                  gettext('{0} of {1} paths usable, {2} expected'),
+                  report['paths-active'],
+                  report['paths-total'],
+                  report['paths-expected'],
+              );
+    },
+
+    renderLunState: function (value, metaData, rec) {
+        let detail = PVE.SANUtils.pathDetail(rec.data);
+        if (detail) {
+            metaData.tdAttr = `data-qtip="${Ext.htmlEncode(Ext.htmlEncode(detail))}"`;
+        }
+        return PVE.SANUtils.renderLunReport(rec.data, rec.get('multipath') === 'none');
     },
 
     renderSanLunMultipath: function (value, metaData, rec) {
-        return Ext.htmlEncode(
-            PVE.SANUtils.multipathText(value, rec.get('multipath-storage'), rec.get('paths-total')),
-        );
+        return Ext.htmlEncode(PVE.SANUtils.multipathText(value, rec.get('multipath-storage')));
     },
 
     usageText: function (row) {
