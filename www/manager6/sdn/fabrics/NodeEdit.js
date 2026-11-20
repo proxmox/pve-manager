@@ -17,6 +17,8 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
     fabricIpPrefix: undefined,
     fabricIp6Prefix: undefined,
 
+    fabricInVrf: false,
+
     disallowedNodes: [],
 
     baseUrl: '/cluster/sdn/fabrics/node',
@@ -153,7 +155,8 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
 
         let interfaces = result[0].result.data.map((iface) => ({
             name: iface.iface,
-            type: iface.type,
+            // a WireGuard interface in /etc/network/interfaces has no type of its own
+            type: iface['link-type'] === 'wireguard' ? 'wireguard' : iface.type,
             ip: iface.cidr,
             ip6: iface.cidr6,
         }));
@@ -188,6 +191,17 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
         Promise.all([me.loadNode(me.fabricId, me.nodeId), me.loadNodeInterfaces(me.nodeId)])
             .catch(Proxmox.Utils.alertResponseFailure)
             .then(([node, nodeInterfaces]) => {
+                if (me.fabricInVrf) {
+                    // only keep WireGuard interfaces the node already uses, so they can be removed
+                    let configured = new Set(
+                        (node.interfaces ?? []).map(
+                            (iface) => PVE.Parser.parsePropertyString(iface).name,
+                        ),
+                    );
+                    nodeInterfaces = nodeInterfaces.filter(
+                        (iface) => iface.type !== 'wireguard' || configured.has(iface.name),
+                    );
+                }
                 me.interfaceSelector.setNodeInterfaces(nodeInterfaces);
                 me.setValues(node);
             })
@@ -280,6 +294,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
         return Ext.create(componentName, {
             name: 'interfaces',
             reference: 'interfaceSelector',
+            fabricInVrf: me.fabricInVrf,
         });
     },
 });

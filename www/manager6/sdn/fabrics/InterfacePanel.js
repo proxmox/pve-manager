@@ -9,6 +9,9 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
     hasIpv4Support: true,
     hasIpv6Support: true,
 
+    // whether the fabric is in a zone, which WireGuard interfaces cannot be used for
+    fabricInVrf: false,
+
     selModel: {
         mode: 'SIMPLE',
         type: 'checkboxmodel',
@@ -29,6 +32,8 @@ Ext.define('PVE.sdn.Fabric.InterfacePanel', {
 
                 if (!nodeInterface) {
                     warning = gettext('Interface does not exist on node');
+                } else if (me.fabricInVrf && nodeInterface.type === 'wireguard') {
+                    warning = gettext('WireGuard interfaces cannot be used by fabrics in a zone');
                 } else if (
                     (nodeInterface.ip && record.data.ip) ||
                     (nodeInterface.ip6 && record.data.ip6)

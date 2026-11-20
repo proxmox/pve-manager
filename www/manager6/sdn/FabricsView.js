@@ -381,6 +381,7 @@ Ext.define('PVE.sdn.Fabric.View', {
                 protocol: fabric.protocol,
                 fabricIpPrefix: me.getFabricPrefix(fabric, 'ip_prefix'),
                 fabricIp6Prefix: me.getFabricPrefix(fabric, 'ip6_prefix'),
+                fabricInVrf: !!fabric?.zone,
                 disallowedNodes,
                 addAnotherCallback: () => {
                     let successCallback = () => {
@@ -428,6 +429,7 @@ Ext.define('PVE.sdn.Fabric.View', {
                 protocol: node.protocol,
                 fabricIpPrefix: me.getFabricPrefix(fabric, 'ip_prefix'),
                 fabricIp6Prefix: me.getFabricPrefix(fabric, 'ip6_prefix'),
+                fabricInVrf: !!fabric?.zone,
             });
 
             window.on('destroy', () => me.reload());
