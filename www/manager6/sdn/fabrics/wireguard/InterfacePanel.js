@@ -350,9 +350,19 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     xtype: 'proxmoxintegerfield',
                     fieldLabel: gettext('Listen Port'),
                     bind: '{selectedInterface.listen_port}',
+                    allowBlank: false,
                     minValue: 1,
                     maxValue: 65535,
                     isFormField: false,
+                    // publish invalid input as entered, so the interface does not silently keep
+                    // its previous value and the panel can block saving
+                    publishValue: function () {
+                        if (this.rendered) {
+                            let valid = this.getErrors().length === 0;
+                            let value = valid ? this.getValue() : this.getRawValue();
+                            this.publishState('value', value);
+                        }
+                    },
                 },
                 {
                     fieldLabel: gettext('IPv4 Address'),
@@ -375,6 +385,15 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                     minValue: 1280,
                     maxValue: 65535,
                     isFormField: false,
+                    // publish invalid input as entered, so the interface does not silently keep
+                    // its previous value and the panel can block saving
+                    publishValue: function () {
+                        if (this.rendered) {
+                            let valid = this.getErrors().length === 0;
+                            let value = valid ? this.getValue() : this.getRawValue();
+                            this.publishState('value', value);
+                        }
+                    },
                 },
                 {
                     xtype: 'pveSDNWireGuardPeerSelector',
@@ -393,6 +412,7 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
     ],
 
     previousDirty: false,
+    previousValid: true,
 
     controller: {
         xclass: 'Ext.app.ViewController',
@@ -518,6 +538,37 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
         );
     },
 
+    isInterfaceValid: function (iface) {
+        let { listen_port: listenPort, mtu } = iface.data;
+
+        // configured values are strings, invalid input is published as entered
+        let isUnset = (value) => value === null || value === undefined || value === '';
+        let isInRange = (value, min, max) => {
+            let number = Number(value);
+            return Number.isInteger(number) && number >= min && number <= max;
+        };
+
+        return (
+            !isUnset(listenPort) &&
+            isInRange(listenPort, 1, 65535) &&
+            (isUnset(mtu) || isInRange(mtu, 1280, 65535))
+        );
+    },
+
+    isValid: function () {
+        let me = this;
+
+        if (me.isDisabled()) {
+            return true;
+        }
+
+        return me
+            .getViewModel()
+            .getStore('interfaces')
+            .getData()
+            .items.every((iface) => me.isInterfaceValid(iface));
+    },
+
     initComponent: function () {
         let me = this;
 
@@ -533,6 +584,12 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
             if (dirtyStatus !== me.previousDirty) {
                 me.previousDirty = dirtyStatus;
                 me.fireEvent('dirtychange');
+            }
+
+            let validStatus = me.isValid();
+            if (validStatus !== me.previousValid) {
+                me.previousValid = validStatus;
+                me.fireEvent('validitychange', me, validStatus);
             }
         };
 
