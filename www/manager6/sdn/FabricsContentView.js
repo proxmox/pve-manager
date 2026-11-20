@@ -89,6 +89,14 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
                     },
                 },
                 {
+                    // TRANSLATORS: 's' is the SI symbol for seconds, the unit of the value
+                    header: gettext('Persistent Keepalive (s)'),
+                    sortable: true,
+                    dataIndex: 'persistent-keepalive',
+                    flex: 0.5,
+                    emptyCellText: gettext('off'),
+                },
+                {
                     header: gettext('Bytes transmitted'),
                     sortable: true,
                     dataIndex: 'bytes-tx',
