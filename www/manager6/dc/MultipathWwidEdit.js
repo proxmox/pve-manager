@@ -60,6 +60,19 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
                     ['queue', gettext('Queue I/O')],
                     ['fail', gettext('Fail I/O')],
                 ],
+                listeners: {
+                    change: (field, value) =>
+                        me.down('#queueWarning')?.setHidden(value !== 'queue'),
+                },
+            },
+            {
+                xtype: 'displayfield',
+                itemId: 'queueWarning',
+                userCls: 'pmx-hint',
+                hidden: true,
+                value: gettext(
+                    'While no path works, I/O waits until a path returns. Guests and processes using the LUN can hang, for example if the LUN is deleted on the array before it is removed from the nodes.',
+                ),
             },
             {
                 xtype: 'proxmoxintegerfield',
