@@ -111,6 +111,12 @@ Ext.define('PVE.dc.SANView', {
                 autoShow: true,
                 apiCallDone: (success) => success && reload(),
             });
+        let showPaths = (rec) =>
+            Ext.create('PVE.window.SANLunState', {
+                wwid: rec.get('wwid'),
+                name: rec.get('name'),
+                autoShow: true,
+            });
         let setupItem = (wizardType, className, disabled) => ({
             text: PVE.storage.wizard.SAN.subject(wizardType),
             iconCls: 'fa fa-fw fa-building',
@@ -223,9 +229,17 @@ Ext.define('PVE.dc.SANView', {
                 store: lunStore,
                 flex: 3,
                 viewConfig: { enableTextSelection: true },
+                listeners: { itemdblclick: (view, rec) => showPaths(rec) },
                 tbar: {
                     overflowHandler: 'scroller',
                     items: [
+                        {
+                            xtype: 'proxmoxButton',
+                            text: gettext('Paths by Node'),
+                            disabled: true,
+                            handler: (button, event, rec) => showPaths(rec),
+                        },
+                        '-',
                         {
                             text: gettext('Add Multipath Entry'),
                             disabled: !canModify,

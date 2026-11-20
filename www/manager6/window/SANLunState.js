@@ -4,7 +4,8 @@ Ext.define('pve-san-lun-node', {
     fields: ['node', 'state', 'paths-active', 'paths-total', 'paths-expected'],
 });
 
-// Shows the state of the LUN of a new storage on each of its nodes, from the cluster-wide status.
+// Shows the state of a LUN on each node, from the cluster-wide status: for a new storage on its
+// nodes, with advice for those that lack the LUN, or without a storage for diagnosis.
 Ext.define('PVE.window.SANLunState', {
     extend: 'Ext.window.Window',
 
@@ -16,12 +17,17 @@ Ext.define('PVE.window.SANLunState', {
 
     initComponent: function () {
         let me = this;
-        if (!me.wwid || !me.storage) {
-            throw 'no LUN or storage specified';
+        if (!me.wwid) {
+            throw 'no LUN specified';
         }
-        me.title = Ext.String.format(gettext('Storage {0}: LUN State'), me.storage);
-        // The other nodes set up a new LUN with their next status updates.
-        let pendingUntil = Date.now() + 60000;
+        me.title = me.storage
+            ? Ext.String.format(gettext('Storage {0}: LUN State'), me.storage)
+            : Ext.String.format(
+                  gettext('LUN {0}: Paths by Node'),
+                  Ext.htmlEncode(me.name || me.wwid),
+              );
+        // The other nodes set up the LUN of a new storage with their next status updates.
+        let pendingUntil = me.storage ? Date.now() + 60000 : 0;
         let rstore = Ext.create('Proxmox.data.UpdateStore', {
             storeid: 'san-lun-state',
             model: 'pve-san-lun-node',
@@ -58,7 +64,7 @@ Ext.define('PVE.window.SANLunState', {
                   'The LUN is missing on {0}, so guests on this storage cannot run there. Check the LUN mapping and initiator access on the array.',
               );
         let updateAdvice = function () {
-            if (me.destroyed) {
+            if (me.destroyed || !me.storage) {
                 return;
             }
             let lacking = rstore
@@ -83,6 +89,7 @@ Ext.define('PVE.window.SANLunState', {
                 xtype: 'component',
                 itemId: 'advice',
                 margin: '0 0 10 0',
+                hidden: !me.storage,
                 html: Ext.htmlEncode(added),
             },
             {
@@ -121,12 +128,14 @@ Ext.define('PVE.window.SANLunState', {
         me.mon(rstore, 'load', (s, records, success) => success && updateAdvice());
         // nodes that did not set up the LUN in time turn from pending to missing without a change
         // in the data
-        let expire = Ext.defer(function () {
-            if (!me.destroyed) {
-                me.down('grid').getView().refresh();
-                updateAdvice();
-            }
-        }, pendingUntil - Date.now());
+        let expire =
+            me.storage &&
+            Ext.defer(function () {
+                if (!me.destroyed) {
+                    me.down('grid').getView().refresh();
+                    updateAdvice();
+                }
+            }, pendingUntil - Date.now());
         me.on('destroy', function () {
             clearTimeout(expire);
             store.destroy();
