@@ -197,7 +197,8 @@ Ext.define('PVE.SANUtils', {
             row.vgname ||
             row.detail ||
             {
-                unused: gettext('Unused'),
+                // the usage comes from the cached data of one node and cannot rule out others
+                unused: gettext('No use detected'),
                 lvm: gettext('LVM physical volume'),
                 other: gettext('Other'),
             }[row.usage] ||
