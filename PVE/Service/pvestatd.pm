@@ -20,7 +20,10 @@ use PVE::RS::SDN::Fabrics;
 use PVE::NodeConfig;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
+use PVE::Multipath;
 use PVE::Multipath::Status;
+use PVE::MultipathNotification;
+use PVE::Notify;
 use PVE::QemuServer;
 use PVE::QemuServer::Monitor;
 use PVE::LXC;
@@ -62,6 +65,8 @@ sub shutdown {
     my ($self) = @_;
 
     syslog('info', "server closing");
+
+    flush_multipath_notifications();
 
     # wait for children
     1 while (waitpid(-1, POSIX::WNOHANG()) > 0);
@@ -799,6 +804,132 @@ my sub broadcast_version_info : prototype() {
     }
 }
 
+my sub notify_multipath {
+    my ($severity, $luns) = @_;
+
+    my $storage = eval { PVE::Storage::config() };
+    syslog('warning', "cannot read storage config for multipath notification: $@") if $@;
+    my (%by_vg, %by_wwid);
+    for my $sid (keys %{ $storage->{ids} // {} }) {
+        my $scfg = PVE::Storage::storage_check_node($storage, $sid, $nodename, 1) // next;
+        push $by_vg{ $scfg->{vgname} }->@*, $sid if defined($scfg->{vgname});
+        my $base = PVE::Multipath::parse_base_volume($scfg->{base});
+        push $by_wwid{ $base->{wwid} }->@*, $sid if $base && $base->{kind} ne 'nvme';
+    }
+
+    my $data = PVE::Notify::common_template_data();
+    $data->{severity} = $severity;
+    $data->{count} = scalar(@$luns);
+    my ($failed, $degraded, $restored, $cleared) = (0, 0, 0, 0);
+    for my $lun (@$luns) {
+        my $wwid = $lun->{wwid};
+        my %storages = map { $_ => 1 } (
+            ($lun->{storages} // [])->@*,
+            ($by_wwid{$wwid} // [])->@*,
+            ($by_vg{ $lun->{vgname} // '' } // [])->@*,
+        );
+        my @storage_list = sort keys %storages;
+        my $state_text =
+            $lun->{gone} ? 'no longer reported'
+            : $lun->{cleared} ? 'alert cleared'
+            : $severity eq 'info' ? 'restored'
+            : $lun->{state};
+        my $show_expected = defined($lun->{'paths-expected'})
+            && ($lun->{'paths-total'} // -1) != $lun->{'paths-expected'};
+        my $row = {
+            %$lun,
+            'state-text' => $state_text,
+            'has-path-count' => defined($lun->{'paths-total'}) ? 1 : 0,
+            'show-expected' => $show_expected ? 1 : 0,
+            'storage-label' => scalar(@storage_list) == 1 ? 'storage' : 'storages',
+            storages => join(', ', @storage_list),
+        };
+        push $data->{luns}->@*, $row;
+
+        if ($severity eq 'info') {
+            if ($lun->{gone} || $lun->{cleared}) {
+                $cleared++;
+            } else {
+                $restored++;
+            }
+        } elsif ($row->{state} eq 'failed') {
+            $failed++;
+        } else {
+            $degraded++;
+        }
+    }
+    my $plural = sub {
+        my ($n, $noun) = @_;
+        return $n == 1 ? "1 $noun" : "$n ${noun}s";
+    };
+    if ($severity eq 'info') {
+        if ($restored && $cleared) {
+            $data->{event} = 'alerts resolved';
+            $data->{summary} =
+                $plural->($restored, 'LUN')
+                . ' restored, '
+                . $plural->($cleared, 'alert')
+                . ' cleared';
+        } elsif ($cleared) {
+            $data->{event} = 'alert cleared';
+            $data->{summary} = $plural->($cleared, 'LUN');
+        } else {
+            $data->{event} = 'paths restored';
+            $data->{summary} = $plural->($restored, 'LUN');
+        }
+    } else {
+        $data->{event} = 'paths lost';
+        if ($failed && $degraded) {
+            $data->{summary} = $plural->($failed, 'LUN') . " failed, $degraded degraded";
+        } elsif ($failed) {
+            $data->{summary} = $plural->($failed, 'LUN') . ' failed';
+        } else {
+            $data->{summary} = $plural->($degraded, 'LUN') . ' degraded';
+        }
+    }
+    $data->{failed} = $failed if $failed;
+    $data->{degraded} = $degraded if $degraded;
+    $data->{restored} = $restored if $restored;
+    $data->{cleared} = $cleared if $cleared;
+    my $fields = { type => 'multipath', hostname => $nodename };
+    PVE::Notify::notify($severity, 'multipath', $data, $fields);
+}
+
+my sub queue_multipath_notification {
+    my $ok = eval { notify_multipath(@_); 1 };
+    syslog('err', "cannot queue multipath notification: $@") if !$ok;
+    return $ok;
+}
+
+my $multipath_notifications;
+my sub check_multipath_notifications {
+    my ($report) = @_;
+
+    $multipath_notifications //=
+        PVE::MultipathNotification->new('/run/pve/multipath-notified.json');
+    # a stop in the middle of the check could lose or repeat a notification
+    my $stop = POSIX::SigSet->new(POSIX::SIGTERM(), POSIX::SIGINT(), POSIX::SIGQUIT());
+    my $prev_mask = POSIX::SigSet->new();
+    POSIX::sigprocmask(POSIX::SIG_BLOCK(), $stop, $prev_mask);
+    eval { $multipath_notifications->update($report, \&queue_multipath_notification) };
+    my $err = $@;
+    POSIX::sigprocmask(POSIX::SIG_SETMASK(), $prev_mask);
+    die $err if $err;
+}
+
+sub flush_multipath_notifications {
+    return if !$multipath_notifications;
+    eval { $multipath_notifications->flush(\&queue_multipath_notification) };
+    syslog('err', "multipath notification error: $@") if $@;
+}
+
+sub restart_daemon {
+    my ($self, @args) = @_;
+
+    flush_multipath_notifications();
+    $self->SUPER::restart_daemon(@args);
+}
+
 sub update_status {
     # update worker list. This is not really required, but we want to make sure that we also have a
     # correct list in case of an unexpected crash.
@@ -833,9 +964,13 @@ sub update_status {
 
     # apply the multipath configuration before the storage status update, which can block in LVM
     # while all paths of a LUN are lost
-    eval { PVE::Multipath::Status::update_node_status(); };
+    my $multipath_report = eval { PVE::Multipath::Status::update_node_status(); };
     $err = $@;
     syslog('err', "multipath update error: $err") if $err;
+
+    eval { check_multipath_notifications($multipath_report); };
+    $err = $@;
+    syslog('err', "multipath notification check error: $err") if $err;
 
     eval { update_storage_status($status_cfg, $pull_txn); };
     $err = $@;

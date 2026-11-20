@@ -5,7 +5,11 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-releases test-ceph-services test-ceph-auth test-ceph-key-migration test-ceph-lockbox-migration test-custom-cpu-models test-pvesh test-report test-access-log test-cluster-resources test-cluster-status test-bulk-migrate
+check: test-replication test-balloon test-vzdump test-osd test-ceph-health test-ceph-releases test-ceph-services test-ceph-auth test-ceph-key-migration test-ceph-lockbox-migration test-custom-cpu-models test-pvesh test-report test-access-log test-cluster-resources test-cluster-status test-bulk-migrate test-multipath-notification
+
+.PHONY: test-multipath-notification
+test-multipath-notification:
+	./MultipathNotification_test.pl
 
 .PHONY: test-balloon
 test-balloon:

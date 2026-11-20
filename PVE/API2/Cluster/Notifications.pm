@@ -218,6 +218,10 @@ __PACKAGE__->register_method({
                 field => 'type',
             },
             {
+                value => 'multipath',
+                field => 'type',
+            },
+            {
                 value => 'replication',
                 field => 'type',
             },

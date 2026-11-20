@@ -5,6 +5,9 @@ NOTIFICATION_TEMPLATES=					\
 	default/vzdump-subject.txt.hbs			\
 	default/vzdump-body.txt.hbs			\
 	default/vzdump-body.html.hbs			\
+	default/multipath-subject.txt.hbs		\
+	default/multipath-body.txt.hbs			\
+	default/multipath-body.html.hbs			\
 	default/replication-subject.txt.hbs		\
 	default/replication-body.txt.hbs		\
 	default/replication-body.html.hbs		\

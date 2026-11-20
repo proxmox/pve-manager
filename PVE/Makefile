@@ -12,6 +12,7 @@ PERLSOURCE = 			\
 	ExtMetric.pm		\
 	HTTPServer.pm		\
 	Jobs.pm			\
+	MultipathNotification.pm	\
 	NodeConfig.pm		\
 	PullMetric.pm		\
 	Report.pm		\
