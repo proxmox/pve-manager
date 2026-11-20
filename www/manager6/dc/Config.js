@@ -130,7 +130,6 @@ Ext.define('PVE.dc.Config', {
                     title: gettext('Storage'),
                     iconCls: 'fa fa-database',
                     itemId: 'storage',
-                    expandedOnInit: true,
                 },
                 // storage admins need the node identities for the target ACLs too
                 {
@@ -138,7 +137,6 @@ Ext.define('PVE.dc.Config', {
                     title: 'SAN',
                     iconCls: 'fa fa-cubes',
                     itemId: 'san',
-                    groups: ['storage'],
                 },
             );
         }
