@@ -1,3 +1,77 @@
+pve-manager (9.2.34) trixie; urgency=medium
+
+  * ui: guest identity: load the details without a load mask, which only
+    flashed over the view, and ignore replies that arrive after their view is
+    gone. The Details button could otherwise open the window for a guest that
+    is no longer selected.
+
+  * SAN: add views and a guided setup for SAN storage with the cluster-wide
+    multipath management of the storage layer:
+    - Datacenter > Storage > SAN shows the multipath state of every node and of
+      the LUNs that Proxmox VE manages or has a storage on, and edits the
+      multipath entries and the array settings.
+    - its Guided Setup sets up shared LVM on a LUN: for iSCSI it connects or
+      reuses a target, with the initiator names of the nodes at hand, for Fibre
+      Channel it takes a LUN the nodes already see. It ends with the state of
+      the LUN on every node.
+    - Node > SAN lists the LUNs of a node with their paths, usage, target and
+      LUN number, can wipe a LUN that no storage uses after a confirmation, and
+      shows the iSCSI targets and sessions.
+    - the iSCSI dialog gets the Multipath option, the LVM dialog checks Shared
+      when a base storage is selected, and both point to the SAN view.
+
+  * pvestatd: apply the cluster-wide multipath configuration on every node and
+    report the multipath state of the node, before the storage status update,
+    which can block while all paths of a LUN are lost.
+
+  * api: mount the cluster-wide multipath endpoints and the iSCSI status of a
+    node.
+
+  * pvereport: include the managed multipath configuration.
+
+  * fix #7294: pools: allow adding SDN VNets as pool members, for a single
+    VLAN tag, without VLAN tag, or with all VLAN tags. Like storages, a VNet
+    can be in several pools. Adding them requires all cluster nodes to run at
+    least this version. The pool index returns network members in a 'network'
+    property.
+
+  * sdn: fabrics: wireguard: add the MTU option, prefilled with 1420 for new
+    interfaces, and show the status of interfaces and neighbors in the fabric
+    panel.
+
+  * sdn: allow OSPF and BGP fabrics to use a simple zone with a dedicated VRF,
+    whose option is in the advanced settings of simple zones.
+
+  * sdn: simple zones: add a tab for static routes, which require a dedicated
+    VRF.
+
+  * sdn: subnets: allow setting the DNS server announced via DHCP, for
+    example for zone VRFs that cannot reach the resolvers of the host.
+
+  * network: allow putting host interfaces into a VRF. Interfaces of fabrics
+    get their VRF from the fabric. The duplicate gateway check only compares
+    interfaces in the same VRF now.
+
+  * network: add an IPv4 forwarding setting, needed for interfaces that
+    receive routed traffic, such as the uplinks of zone VRFs. Enabling it is
+    suggested when selecting a VRF.
+
+  * network: apply the conntrack zones of zone VRFs after applying the network
+    configuration, and at boot before starting guests. Warn if
+    proxmox-firewall is not installed, or if pve-firewall is used, which does
+    not keep the connections of guests in different zone VRFs apart.
+
+  * network: generate the SDN DHCP configuration after reloading the network,
+    as dnsmasq of zone VRFs runs inside the VRF. It is also generated if the
+    reload fails, and the FRR configuration is regenerated if only the DHCP
+    configuration fails.
+
+  * pve-sdn-commit: take the SDN lock when committing the configuration at
+    boot, so that it does not race with an apply on another node or with
+    changes of the network members of pools.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 20 Nov 2026 05:46:16 +0100
+
 pve-manager (9.2.33) trixie; urgency=medium
 
   * fix #6144: ha: allow enabling and disabling the maintenance mode of a node
