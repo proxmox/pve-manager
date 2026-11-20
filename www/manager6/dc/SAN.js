@@ -54,7 +54,7 @@ Ext.define('PVE.dc.SANView', {
         let caps = allCaps.dc;
         let canModify = !!caps['Sys.Modify'];
         let canEdit = canModify && !!caps['Sys.Audit'];
-        // the setups also read the storage list and the LUNs of the connection storage
+        // the setups also read the storage list and the LUNs of the iSCSI storage
         let storageCaps = allCaps.storage;
         let canSetup =
             !!storageCaps['Datastore.Allocate'] &&

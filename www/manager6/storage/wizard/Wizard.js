@@ -101,7 +101,7 @@ Ext.define('PVE.storage.wizard.SAN', {
         let value = (name) => me.down(`field[name=${name}]`).getValue();
         return {
             storage: value('storage'),
-            vgname: value('vgname'),
+            vgname: value('vgname') || value('storage'),
             'snapshot-as-volume-chain': value('snapshot-as-volume-chain') ? 1 : 0,
             nodes:
                 me.wizardType === 'fc'
@@ -147,7 +147,7 @@ Ext.define('PVE.storage.wizard.SAN', {
 
     multipathSummary: function (lun) {
         let me = this;
-        // an explicit entry takes precedence, also for a LUN of the connection storage
+        // an explicit entry takes precedence, also for a LUN of the iSCSI storage
         if (lun.multipath === 'manual') {
             return PVE.SANUtils.multipathText('manual');
         }
@@ -164,24 +164,54 @@ Ext.define('PVE.storage.wizard.SAN', {
         let me = this;
         let values = me.volumeSettings();
         let lun = me.down('#luns').getSelection();
+        let connection = me.connection;
         let rows = [
-            [gettext('Storage ID'), values.storage],
+            ['ID', values.storage],
             [gettext('Volume Group'), values.vgname],
+            ...(connection
+                ? [
+                      [
+                          gettext('iSCSI Storage'),
+                          connection.added
+                              ? Ext.String.format(
+                                    gettext('{0}, added by this setup'),
+                                    connection.storage,
+                                )
+                              : connection.storage,
+                      ],
+                  ]
+                : []),
             ['WWID', lun.wwid],
             [gettext('Multipath'), me.multipathSummary(lun)],
             [gettext('Size'), Proxmox.Utils.format_size(lun.size)],
-            [gettext('Nodes'), values.nodes || gettext('All (No restrictions)')],
+            [
+                gettext('Nodes'),
+                values.nodes
+                    ? values.nodes.split(',').sort().join(', ')
+                    : gettext('All (No restrictions)'),
+            ],
+            [gettext('Scan node'), Proxmox.NodeName],
             [
                 gettext('Allow Snapshots as Volume-Chain'),
                 Proxmox.Utils.format_boolean(values['snapshot-as-volume-chain']),
             ],
         ];
-        if (me.connection) {
-            rows.unshift([gettext('Connection Storage'), me.connection.storage]);
-        }
         me.down('#summary')
             .getStore()
             .setData(rows.map(([key, value]) => ({ key, value })));
+        me.down('#action').setHtml(
+            Ext.htmlEncode(
+                Ext.String.format(
+                    gettext(
+                        // TRANSLATORS: {0} is the label of the Finish button.
+                        '{0} creates the volume group "{1}" on this LUN and adds it as shared LVM storage "{2}".',
+                    ),
+                    gettext('Finish'),
+                    values.vgname,
+                    values.storage,
+                ),
+            ),
+        );
     },
 
     finish: function () {
@@ -201,27 +231,39 @@ Ext.define('PVE.storage.wizard.SAN', {
         me.subject = PVE.storage.wizard.SAN.subject(me.wizardType);
         me.title = Proxmox.Utils.dialog_title(me.subject, true, true);
         let common = PVE.panel.StorageBase.commonFields(true);
+        let vgname = {
+            xtype: 'textfield',
+            name: 'vgname',
+            fieldLabel: gettext('Volume Group'),
+            allowBlank: true,
+            vtype: 'StorageId',
+        };
+        let followId = () =>
+            me.down('field[name=vgname]').setEmptyText(me.down('field[name=storage]').getValue());
         let settings = {
             xtype: 'inputpanel',
-            title: gettext('Volume Group'),
+            title: gettext('Storage'),
             onlineHelp: 'storage_multipath',
             items: [
-                { ...common.id, fieldLabel: gettext('Storage ID') },
-                {
-                    xtype: 'textfield',
-                    name: 'vgname',
-                    fieldLabel: gettext('Volume Group'),
-                    allowBlank: false,
-                    vtype: 'StorageId',
-                },
+                ...(iscsi
+                    ? []
+                    : [
+                          {
+                              ...common.id,
+                              emptyText: gettext('Storage for guest disks'),
+                              listeners: { change: followId },
+                          },
+                      ]),
                 PVE.panel.StorageBase.volumeChainField(true, 'lvm'),
             ],
+            advancedItems: [
+                vgname,
+                ...(iscsi
+                    ? []
+                    : [{ ...common.nodes, validator: PVE.storage.wizard.SAN.validateNodes }]),
+            ],
+            itemId: 'settings',
         };
-        if (!iscsi) {
-            settings.advancedItems = [
-                { ...common.nodes, validator: PVE.storage.wizard.SAN.validateNodes },
-            ];
-        }
         me.items = [
             ...(iscsi
                 ? [
@@ -250,11 +292,17 @@ Ext.define('PVE.storage.wizard.SAN', {
             settings,
             {
                 title: gettext('Confirm'),
-                layout: 'fit',
+                layout: { type: 'vbox', align: 'stretch' },
                 items: [
+                    {
+                        xtype: 'component',
+                        itemId: 'action',
+                        margin: '0 0 10 0',
+                    },
                     {
                         xtype: 'grid',
                         itemId: 'summary',
+                        flex: 1,
                         store: { fields: ['key', 'value'] },
                         columns: [
                             {
@@ -278,6 +326,7 @@ Ext.define('PVE.storage.wizard.SAN', {
             },
         ];
         me.callParent();
+        me.down('#settings').on('activate', followId);
         let tabs = me.down('#wizcontent');
         tabs.on('tabchange', function (tp, tab) {
             if (iscsi && tab === me.down('#luns')) {

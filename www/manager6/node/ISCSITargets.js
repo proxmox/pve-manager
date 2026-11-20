@@ -26,7 +26,7 @@ Ext.define('PVE.node.ISCSITargetTree', {
         { text: gettext('Session ID'), dataIndex: 'session-id', width: 100 },
         { text: 'LUN', dataIndex: 'lun', width: 70 },
         {
-            text: gettext('Connection Storage'),
+            text: gettext('iSCSI Storage'),
             dataIndex: 'used-by-storage',
             flex: 1,
             renderer: Ext.htmlEncode,
