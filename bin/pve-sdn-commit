@@ -123,7 +123,13 @@ if (!sdn_changed()) {
 }
 
 my $previous_config_has_frr = PVE::Network::SDN::running_config_has_frr();
-PVE::Network::SDN::commit_config();
+# serialize with applying the SDN config via the API on another node and with pool changes
+eval {
+    PVE::Network::SDN::lock_sdn_domain(sub { PVE::Network::SDN::commit_config() });
+};
+my $commit_err = $@;
+# still apply the running config on this node, but let the unit fail
+warn "failed to commit the SDN configuration - $commit_err" if $commit_err;
 
 my $new_config_has_frr = PVE::Network::SDN::running_config_has_frr();
 my $regenerate_frr = ($previous_config_has_frr || $new_config_has_frr);
@@ -163,4 +169,4 @@ if ($dhcp_err) {
 }
 die $frr_err if $frr_err;
 
-exit 0;
+exit($commit_err ? 1 : 0);
