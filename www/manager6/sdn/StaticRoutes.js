@@ -169,14 +169,23 @@ Ext.define('PVE.sdn.StaticRoutes', {
 
     getSubmitData: function () {
         let me = this;
-        if (me.disabled || !me.submitValue) {
+        if (!me.submitValue) {
             return null;
         }
         let value = me.getValue();
         if (value.length) {
-            return { [me.getName()]: value };
+            return me.disabled ? null : { [me.getName()]: value };
         }
-        return me.isCreate ? null : { delete: me.getName() };
+        if (me.isCreate) {
+            return null;
+        }
+        // The grid gets disabled together with the setting it depends on, e.g. the dedicated VRF
+        // of a zone. If the routes were cleared in the same edit, still submit their deletion, as
+        // the API only allows disabling that setting once no routes are configured.
+        if (me.disabled && !me.originalValue?.length) {
+            return null;
+        }
+        return { delete: me.getName() };
     },
 
     // The grid cannot show field errors itself. Proxmox.window.Edit marks the API errors on the
