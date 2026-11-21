@@ -660,10 +660,11 @@ __PACKAGE__->register_method({
                             last;
                         }
                     }
+                    my $conf_addr = $cfg->{$monsection}->{public_addr};
+                    push $addrs->@*, $conf_addr if !scalar($addrs->@*) && $conf_addr;
 
                     $assert_mon_can_remove->($monhash, $monlist, $monid, $mondir);
 
-                    # this also stops the service
                     $rados->mon_command(
                         { prefix => "mon remove", name => $monid, format => 'plain' });
 
@@ -694,9 +695,11 @@ __PACKAGE__->register_method({
                     }
 
                     cfs_write_file('ceph.conf', $cfg);
+                    for my $action (qw(stop disable)) {
+                        eval { PVE::Ceph::Services::ceph_service_cmd($action, $monsection) };
+                        warn $@ if $@;
+                    }
                     File::Path::remove_tree($mondir);
-                    eval { PVE::Ceph::Services::ceph_service_cmd('disable', $monsection) };
-                    warn $@ if $@;
                     PVE::Ceph::Services::broadcast_ceph_services();
                 },
             );
