@@ -1,7 +1,20 @@
 Ext.define('Pve.sdn.Fabric.WireGuard.Interface', {
     extend: 'Ext.data.Model',
     idProperty: 'name',
-    fields: ['name', 'ip', 'ip6', 'listen_port', 'peers'],
+    fields: [
+        'name',
+        'ip',
+        'ip6',
+        'listen_port',
+        {
+            name: 'peers',
+            // the peer selector publishes its selection as a new array, which only changes the
+            // interface if it has other peers
+            isEqual: (a, b) =>
+                (a?.length ?? 0) === (b?.length ?? 0) &&
+                (a ?? []).every((peer) => b.includes(peer)),
+        },
+    ],
 });
 
 Ext.define('Pve.sdn.Fabric.WireGuard.InterfacePeer', {
