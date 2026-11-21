@@ -156,8 +156,9 @@ __PACKAGE__->register_method({
                 },
                 'is-default' => {
                     type => 'boolean',
-                    description =>
-                        "Whether this is the release recommended for new installations.",
+                    description => "Whether this release gets installed on this node if none is"
+                        . " chosen, that is, the newest release running on other cluster nodes,"
+                        . " or else the default for new installations.",
                 },
                 unsupported => {
                     type => 'boolean',
@@ -168,9 +169,17 @@ __PACKAGE__->register_method({
         },
     },
     code => sub {
+        my ($param) = @_;
+
         my $all = PVE::Ceph::Releases::get_all_ceph_releases();
         my $available = PVE::Ceph::Releases::get_all_available_ceph_releases();
-        my $default = PVE::Ceph::Releases::get_default_ceph_release_codename();
+        # no release is the default if the cluster runs one unknown to this node
+        my $default = eval {
+            PVE::Ceph::Releases::get_install_ceph_release_codename(
+                PVE::Ceph::Services::get_ceph_versions() // {},
+                $param->{node},
+            );
+        } // '';
 
         my $res = [];
         for my $codename (sort keys $all->%*) {
