@@ -140,7 +140,7 @@ Ext.define('PVE.node.SANLunList', {
             interval: 5000,
             proxy: {
                 type: 'proxmox',
-                url: `/api2/json/nodes/${me.nodename}/scan/san-luns`,
+                url: `/api2/json/nodes/${me.nodename}/san/luns`,
             },
         });
         me.store = Ext.create('Proxmox.data.DiffStore', {

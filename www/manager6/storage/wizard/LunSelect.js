@@ -64,7 +64,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             storeid: 'san-wizard-luns',
             model: 'pve-san-lun',
             interval: 3000,
-            proxy: { type: 'proxmox', url: `/api2/json/nodes/${Proxmox.NodeName}/scan/san-luns` },
+            proxy: { type: 'proxmox', url: `/api2/json/nodes/${Proxmox.NodeName}/san/luns` },
         });
         me.store = Ext.create('Proxmox.data.DiffStore', {
             rstore: me.rstore,

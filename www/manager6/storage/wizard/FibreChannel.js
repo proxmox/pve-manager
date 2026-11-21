@@ -87,7 +87,7 @@ Ext.define('PVE.storage.wizard.FibreChannel', {
                 interval: 3000,
                 proxy: {
                     type: 'proxmox',
-                    url: `/api2/json/nodes/${Proxmox.NodeName}/scan/san-luns`,
+                    url: `/api2/json/nodes/${Proxmox.NodeName}/san/luns`,
                 },
             });
             let timer = Ext.defer(function () {

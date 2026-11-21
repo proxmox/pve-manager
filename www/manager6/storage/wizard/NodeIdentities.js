@@ -68,7 +68,7 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
             interval: 5000,
             proxy: {
                 type: 'proxmox',
-                url: '/api2/json/cluster/multipath/status',
+                url: '/api2/json/cluster/san/status',
                 reader: {
                     type: 'json',
                     rootProperty: 'data',

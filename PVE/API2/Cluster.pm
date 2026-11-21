@@ -39,6 +39,7 @@ use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
 use PVE::API2::Multipath;
 use PVE::API2::ReplicationConfig;
+use PVE::API2::SAN::Cluster;
 
 my $have_sdn;
 eval {
@@ -106,6 +107,11 @@ __PACKAGE__->register_method({
 __PACKAGE__->register_method({
     subclass => "PVE::API2::Multipath",
     path => 'multipath',
+});
+
+__PACKAGE__->register_method({
+    subclass => "PVE::API2::SAN::Cluster",
+    path => 'san',
 });
 
 __PACKAGE__->register_method({
@@ -184,6 +190,7 @@ __PACKAGE__->register_method({
             { name => 'qemu' },
             { name => 'replication' },
             { name => 'resources' },
+            { name => 'san' },
             { name => 'status' },
             { name => 'tasks' },
         ];

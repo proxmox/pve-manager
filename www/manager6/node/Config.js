@@ -398,7 +398,7 @@ Ext.define('PVE.node.Config', {
             );
         }
 
-        // the san-luns and iscsi reads accept either privilege
+        // the LUN and iSCSI reads of the node accept either privilege
         if (caps.nodes['Sys.Audit'] || caps.storage['Datastore.Allocate']) {
             me.items.push(
                 {

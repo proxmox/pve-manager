@@ -52,7 +52,6 @@ use PVE::API2::Certificates;
 use PVE::API2::Disks;
 use PVE::API2::Firewall::Host;
 use PVE::API2::Hardware;
-use PVE::API2::ISCSI;
 use PVE::API2::LXC::Status;
 use PVE::API2::LXC;
 use PVE::API2::Network;
@@ -61,6 +60,7 @@ use PVE::API2::NodeConfig;
 use PVE::API2::Qemu::CPU;
 use PVE::API2::Qemu;
 use PVE::API2::Replication;
+use PVE::API2::SAN::Node;
 use PVE::API2::Services;
 use PVE::API2::Storage::Scan;
 use PVE::API2::Storage::Status;
@@ -164,8 +164,8 @@ __PACKAGE__->register_method({
 });
 
 __PACKAGE__->register_method({
-    subclass => "PVE::API2::ISCSI",
-    path => 'iscsi',
+    subclass => "PVE::API2::SAN::Node",
+    path => 'san',
 });
 
 __PACKAGE__->register_method({
@@ -254,7 +254,6 @@ __PACKAGE__->register_method({
             { name => 'firewall' },
             { name => 'hardware' },
             { name => 'hosts' },
-            { name => 'iscsi' },
             { name => 'journal' },
             { name => 'lxc' },
             { name => 'maintenance' },
@@ -268,6 +267,7 @@ __PACKAGE__->register_method({
             { name => 'report' },
             { name => 'rrd' }, # fixme: remove?
             { name => 'rrddata' },
+            { name => 'san' },
             { name => 'scan' },
             { name => 'sdn' },
             { name => 'services' },

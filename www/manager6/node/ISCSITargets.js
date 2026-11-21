@@ -36,7 +36,7 @@ Ext.define('PVE.node.ISCSITargetTree', {
     reload: function () {
         let me = this;
         Proxmox.Utils.API2Request({
-            url: `/nodes/${me.nodename}/iscsi/status`,
+            url: `/nodes/${me.nodename}/san/iscsi/status`,
             method: 'GET',
             waitMsgTarget: me.getView(),
             failure: (response) => Proxmox.Utils.setErrorMask(me.getView(), response.htmlStatus),
@@ -54,7 +54,7 @@ Ext.define('PVE.node.ISCSITargetTree', {
                     return;
                 }
                 Proxmox.Utils.API2Request({
-                    url: `/nodes/${me.nodename}/iscsi/target`,
+                    url: `/nodes/${me.nodename}/san/iscsi/target`,
                     method: 'GET',
                     waitMsgTarget: me.getView(),
                     failure: (res) => Proxmox.Utils.setErrorMask(me.getView(), res.htmlStatus),
