@@ -32,6 +32,7 @@ Ext.define('PVE.ceph.CephVersionSelector', {
     queryMode: 'local',
     editable: false,
     forceSelection: true,
+    allowBlank: false,
 
     // node whose installable Ceph releases are offered
     nodename: undefined,
@@ -51,6 +52,7 @@ Ext.define('PVE.ceph.CephVersionSelector', {
                 'release',
                 'version',
                 'available',
+                'is-default',
                 'unsupported',
                 {
                     name: 'display',
@@ -68,6 +70,12 @@ Ext.define('PVE.ceph.CephVersionSelector', {
         });
 
         me.callParent();
+
+        me.mon(me.store, 'load', () => {
+            if (!me.getValue()) {
+                me.setValue(me.store.getData().findBy((rec) => rec.get('is-default')));
+            }
+        });
     },
 });
 
@@ -171,7 +179,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     viewModel: {
         data: {
             nodename: '',
-            cephRelease: 'tentacle', // default
             cephRepo: 'enterprise',
             configuration: true,
             isInstalled: false,
@@ -312,6 +319,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                         if (release === 'unknown') {
                             return;
                         }
+                        // FIXME: drop with PVE 10, is-default of older nodes ignores the cluster
                         let wizard = this.up('pveCephInstallWizard');
                         wizard.down('pveCephVersionSelector').setValue(release);
                     },
@@ -332,9 +340,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                             submitValue: false,
                             cbind: {
                                 nodename: '{nodename}',
-                            },
-                            bind: {
-                                value: '{cephRelease}',
                             },
                             listeners: {
                                 change: function (field, release) {
@@ -401,11 +406,13 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                         Ext.GlobalEvents.fireEvent('proxmoxShowHelp', this.onlineHelp);
                     }
                     let wizard = this.up('pveCephInstallWizard');
-                    let release = wizard.getViewModel().get('cephRelease');
+                    let release = wizard.down('pveCephVersionSelector').getValue();
                     wizard.down('#back').hide(true);
-                    wizard
-                        .down('#next')
-                        .setText(Ext.String.format(gettext('Start {0} installation'), release));
+                    if (release) {
+                        wizard
+                            .down('#next')
+                            .setText(Ext.String.format(gettext('Start {0} installation'), release));
+                    }
                 },
                 deactivate: function () {
                     if (this.onlineHelp) {
@@ -496,7 +503,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                     beforeLoad: function () {
                         let me = this;
                         let wizard = me.up('pveCephInstallWizard');
-                        let release = wizard.getViewModel().get('cephRelease');
+                        let release = wizard.down('pveCephVersionSelector').getValue();
                         let repo = wizard.getViewModel().get('cephRepo');
                         me.cmdOpts = `--version\0${release}\0--repository\0${repo}`;
                     },

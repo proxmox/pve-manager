@@ -25,9 +25,8 @@ my sub get_ceph_release_def {
     #  - `estimated-end-of-upstream-support`: the ISO 8601 formatted day when upstream will go EOL
     #  - `available-for-pve-release`: a hash that denotes for which PVE major release series a ceph
     #    release is available, where available does not necessarily means (already) fully supported
-    #  - `current-backend-default`: set to `1` if a release is currently used as default in the
-    #    backend, i.e. by pveceph. The wizard from the web UI often uses a newer release, which is
-    #    currently tracked manually there.
+    #  - `current-backend-default`: set to `1` for the release that pveceph and the web UI wizard
+    #    install by default if no other cluster node runs Ceph yet.
     #  - `unsupported`: set to `1` to mark a release as (currently) unsupported, which most often
     #    means that upstream either had no stable release yet, or we aren't 100 % finished with QA
     #    of that release yet.
