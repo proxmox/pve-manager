@@ -255,6 +255,11 @@ Ext.define('PVE.storage.wizard.SAN', {
                           },
                       ]),
                 PVE.panel.StorageBase.volumeChainField(true, 'lvm'),
+                {
+                    xtype: 'displayfield',
+                    userCls: 'pmx-hint',
+                    value: gettext('Enable before creating VM disks that need snapshots.'),
+                },
             ],
             advancedItems: [
                 vgname,
