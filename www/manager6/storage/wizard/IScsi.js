@@ -112,6 +112,24 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         note.setHidden(!conflict);
     },
 
+    // The portals of the enabled iSCSI storages, to discover the target of another LUN through one
+    // of them.
+    updatePortalSuggestions: function () {
+        let me = this;
+        let users = new Map();
+        for (const { type, portal, storage, disable } of me.storages ?? []) {
+            if (['iscsi', 'iscsidirect'].includes(type) && portal && !disable) {
+                users.set(portal, [...(users.get(portal) ?? []), storage]);
+            }
+        }
+        let suggestions = [...users.keys()]
+            .sort()
+            .map((portal) => ({ portal, storages: users.get(portal).sort().join(', ') }));
+        let field = me.down('field[name=portal]');
+        field.getStore().setData(suggestions);
+        field.setHideTrigger(!suggestions.length);
+    },
+
     onSubmit: function () {
         let me = this;
         let wizard = me.up('window');
@@ -150,6 +168,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 }
                 me.storages = response.result.data;
                 me.updateConnectionField();
+                me.updatePortalSuggestions();
                 // the step showed which storage it reuses, if any, which must still hold
                 if (me.existingConnection()?.storage !== shown) {
                     wizard.showError(
@@ -249,11 +268,28 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     ),
             },
             {
-                xtype: 'textfield',
+                xtype: 'combobox',
                 name: 'portal',
                 fieldLabel: gettext('Portal'),
                 labelWidth,
                 allowBlank: false,
+                queryMode: 'local',
+                valueField: 'portal',
+                displayField: 'portal',
+                forceSelection: false,
+                // a typed portal must not turn into the first suggestion that starts with it
+                autoSelect: false,
+                hideTrigger: true,
+                store: { fields: ['portal', 'storages'], data: [] },
+                // the toolkit opens an editable list on focus, which an empty one must not do
+                expand: function () {
+                    if (this.getStore().getCount()) {
+                        Ext.form.field.ComboBox.prototype.expand.call(this);
+                    }
+                },
+                listConfig: {
+                    getInnerTpl: () => '{portal:htmlEncode} ({storages:htmlEncode})',
+                },
                 listeners: {
                     change: {
                         buffer: 500,
@@ -327,6 +363,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     if (!me.destroyed) {
                         me.storages = response.result.data;
                         me.updateConnectionField();
+                        me.updatePortalSuggestions();
                         me.down('field[name=storage]').validate();
                     }
                 },
