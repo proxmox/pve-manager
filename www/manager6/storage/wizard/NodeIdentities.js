@@ -4,11 +4,13 @@ Ext.define('pve-san-node-identity', {
     fields: ['node', 'state', 'iscsi-initiator-name'],
 });
 
+// The nodes with their initiator names, to allow them on the array, and to select the nodes that
+// use the target. The node serving the web UI sets up the volume group, so it stays selected.
 Ext.define('PVE.storage.wizard.NodeIdentities', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveStorageWizardNodeIdentities',
     height: 220,
-    disableSelection: true,
+    selModel: { selType: 'checkboxmodel', mode: 'SIMPLE' },
     viewConfig: { enableTextSelection: true },
     columns: [
         { text: gettext('Node'), dataIndex: 'node', width: 100, renderer: Ext.htmlEncode },
@@ -26,15 +28,36 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
         },
     ],
 
-    // Lists only the given nodes, or all nodes for none, which Copy then follows.
+    getSelectedNodes: function () {
+        return this.getSelection()
+            .map((rec) => rec.get('node'))
+            .sort();
+    },
+
+    // The selected nodes, or none if all are selected, as a storage without restriction has.
+    getNodes: function () {
+        let me = this;
+        let selected = me.getSelectedNodes();
+        return selected.length === me.store.getCount() ? [] : selected;
+    },
+
+    // Selects the given nodes, or all for none.
     setNodes: function (nodes) {
         let me = this;
-        nodes = [].concat(nodes || []).filter(Boolean);
-        if (nodes.length) {
-            me.store.addFilter({ id: 'nodes', filterFn: (rec) => nodes.includes(rec.get('node')) });
-        } else {
-            me.store.removeFilter('nodes');
+        me.wantedNodes = [].concat(nodes || []).filter(Boolean);
+        if (!me.store.getCount()) {
+            return; // applied once the nodes are loaded
         }
+        let records = me.store
+            .getRange()
+            .filter(
+                (rec) =>
+                    !me.wantedNodes.length ||
+                    me.wantedNodes.includes(rec.get('node')) ||
+                    rec.get('node') === Proxmox.NodeName,
+            );
+        me.getSelectionModel().select(records, false, true);
+        me.fireEvent('nodeschange', me);
     },
 
     initComponent: function () {
@@ -68,7 +91,7 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
             {
                 xtype: 'tbtext',
                 text: gettext(
-                    'On the array, allow the initiator names of the nodes that will use the target.',
+                    'Select the nodes that will use the target and allow their initiator names on the array.',
                 ),
             },
             '->',
@@ -77,8 +100,8 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
                 iconCls: 'fa fa-clipboard',
                 handler: () =>
                     PVE.Utils.copyToClipboard(
-                        me.store
-                            .getRange()
+                        me
+                            .getSelection()
                             .map((rec) => rec.get('iscsi-initiator-name'))
                             .filter(Boolean)
                             .join('\n'),
@@ -87,6 +110,14 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
         ];
         me.callParent();
         Proxmox.Utils.monStoreErrors(me, me.rstore);
+        me.on('beforedeselect', (sm, rec) => rec.get('node') !== Proxmox.NodeName);
+        me.on('selectionchange', () => me.fireEvent('nodeschange', me));
+        me.mon(me.rstore, 'load', (store, records, success) => {
+            if (success && !me.loadedOnce) {
+                me.loadedOnce = true;
+                me.setNodes(me.wantedNodes);
+            }
+        });
         me.on('afterrender', () => me.rstore.startUpdate());
         me.on('destroy', () => {
             me.store.destroy();

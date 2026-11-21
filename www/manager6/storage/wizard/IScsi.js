@@ -95,22 +95,14 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let id = me.down('field[name=storage]').getValue();
         field.setEmptyText(id ? `${id}-base` : '');
 
-        // an empty Nodes field takes over the nodes of an existing storage
-        let nodesField = me.down('field[name=nodes]');
+        // the nodes of a storage that the setup uses are the default selection
+        let identities = me.down('pveStorageWizardNodeIdentities');
         let inherited = existing?.nodes ? existing.nodes.split(',') : [];
-        nodesField.setEmptyText(
-            inherited.length
-                ? Ext.String.format(
-                      gettext('{0} (from storage "{1}")'),
-                      inherited.join(', '),
-                      existing.storage,
-                  )
-                : gettext('All (No restrictions)'),
-        );
-        let nodes = [].concat(nodesField.getValue() || []).filter(Boolean);
-        me.down('pveStorageWizardNodeIdentities').setNodes(nodes.length ? nodes : inherited);
-
-        let conflict = me.reuseConflict(nodes);
+        if ((existing?.storage ?? null) !== me.shownStorage) {
+            me.shownStorage = existing?.storage ?? null;
+            identities.setNodes(inherited);
+        }
+        let conflict = me.reuseConflict(identities.getSelectedNodes());
         let note = me.down('#connectionNote');
         note.setHtml(
             conflict
@@ -125,10 +117,15 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let wizard = me.up('window');
         let values = me.getValues();
         let shown = me.existingConnection()?.storage;
-        let nodes = []
-            .concat(values.nodes || [])
-            .filter(Boolean)
-            .join(',');
+        let identities = me.down('pveStorageWizardNodeIdentities');
+        // without the node list, no selection would read as all nodes
+        if (!identities.loadedOnce) {
+            wizard.showError(gettext('Select the nodes once they are listed.'));
+            return;
+        }
+        // all checked nodes, as all nodes can be more than a reused storage has
+        let selectedNodes = identities.getSelectedNodes();
+        let nodes = identities.getNodes().join(',');
         let connected = function (connection) {
             if (wizard.destroyed) {
                 return;
@@ -153,7 +150,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 }
                 me.storages = response.result.data;
                 me.updateConnectionField();
-                // the note and the Nodes field showed what the step would do, which must still hold
+                // the step showed which storage it reuses, if any, which must still hold
                 if (me.existingConnection()?.storage !== shown) {
                     wizard.showError(
                         gettext(
@@ -185,7 +182,6 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     );
                     return;
                 }
-                let selectedNodes = nodes ? nodes.split(',') : [];
                 let conflict = me.reuseConflict(selectedNodes);
                 if (conflict) {
                     wizard.showError(Ext.htmlEncode(conflict));
@@ -193,13 +189,12 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 }
                 let base = me.existingConnection();
                 if (base) {
-                    let baseNodes = base.nodes ? base.nodes.split(',') : [];
-                    connected({
-                        storage: base.storage,
-                        target: base.target,
-                        nodes: (selectedNodes.length ? selectedNodes : baseNodes).join(','),
-                        added: false,
-                    });
+                    // within the nodes of a restricted storage, which the check ensured
+                    let restricted = base.nodes ? base.nodes.split(',') : [];
+                    if (restricted.length) {
+                        nodes = (selectedNodes.length ? selectedNodes : restricted).join(',');
+                    }
+                    connected({ storage: base.storage, target: base.target, nodes, added: false });
                     return;
                 }
                 if (params.storage === values.storage) {
@@ -312,7 +307,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 margin: '0 0 10 0',
                 hidden: true,
             },
-            { xtype: 'pveStorageWizardNodeIdentities' },
+            { xtype: 'pveStorageWizardNodeIdentities', listeners: { nodeschange: update } },
         ];
         me.advancedItems = [
             {
@@ -321,12 +316,6 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                 fieldLabel: gettext('iSCSI Storage ID'),
                 labelWidth,
                 allowBlank: true,
-            },
-            {
-                ...common.nodes,
-                labelWidth,
-                validator: PVE.storage.wizard.SAN.validateNodes,
-                listeners: { change: update },
             },
         ];
         me.callParent();
