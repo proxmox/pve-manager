@@ -38,7 +38,7 @@ Ext.define('PVE.storage.StatusView', {
             title: gettext('Content'),
             printBar: false,
             textField: 'content',
-            renderer: PVE.Utils.format_content_types,
+            renderer: PVE.Utils.format_storage_content,
         },
         {
             itemId: 'type',

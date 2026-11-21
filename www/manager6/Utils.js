@@ -1105,6 +1105,13 @@ Ext.define('PVE.Utils', {
                 .join(', ');
         },
 
+        // The configured content of a storage, where 'none' means that it holds no volumes.
+        format_storage_content: function (value) {
+            return value === 'none'
+                ? Proxmox.Utils.NoneText
+                : PVE.Utils.format_content_types(value);
+        },
+
         render_storage_content: function (value, metaData, record) {
             let data = record.data;
             let result;

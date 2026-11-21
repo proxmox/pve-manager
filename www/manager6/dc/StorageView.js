@@ -316,7 +316,7 @@ Ext.define(
                         flex: 3,
                         sortable: true,
                         dataIndex: 'content',
-                        renderer: PVE.Utils.format_content_types,
+                        renderer: PVE.Utils.format_storage_content,
                     },
                     {
                         header: gettext('Path') + '/' + gettext('Target'),
