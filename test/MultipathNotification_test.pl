@@ -92,13 +92,33 @@ pass_with(
 );
 $tracker = PVE::MultipathNotification->new($file);
 pass_with({}, [], 'notified LUNs left the report across a restart');
-pass_with({}, [], 'but an incomplete report does not count', 0);
-pass_with(
-    {},
+pass_with({}, [], 'but a report without the hints of LVM does not count', 0);
+report_with(
+    { luns => [], 'namespaces-unknown' => 1 },
     [['info', 'c:gone', 'd:gone']],
-    'two complete reports without them clear their alerts',
+    'one without the NVMe namespaces does for maps, so two reports clear their alerts',
 );
 pass_with({}, [], 'no duplicate removal');
+
+my $namespace = { n => { state => 'degraded', native => 1 } };
+pass_with($namespace, [], 'a namespace degrades');
+pass_with($namespace, [['warning', 'n:degraded']], 'which is notified');
+report_with({ luns => [], 'namespaces-unknown' => 1 }, [], 'a report without it does not count');
+report_with({ luns => [], 'namespaces-unknown' => 1 }, [], 'also not a second one');
+pass_with({}, [], 'but one without the hints of LVM does', 0);
+pass_with({}, [['info', 'n:gone']], 'and with another one its alert is cleared');
+
+my sub without_multipathd($state) {
+    return {
+        error => 'multipathd is not running',
+        luns => [{ wwid => 'm', state => $state, native => 1 }],
+    };
+}
+report_with(without_multipathd('failed'), [], 'without multipathd, a namespace fails');
+report_with(without_multipathd('failed'), [['error', 'm:failed']],
+    'which is notified all the same');
+report_with(without_multipathd('optimal'), [], 'it recovers');
+report_with(without_multipathd('optimal'), [['info', 'm:optimal']], 'which is notified too');
 
 pass_with($degraded, [], 'new incident');
 $accept = 0;

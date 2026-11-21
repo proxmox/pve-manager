@@ -814,7 +814,7 @@ my sub notify_multipath {
         my $scfg = PVE::Storage::storage_check_node($storage, $sid, $nodename, 1) // next;
         push $by_vg{ $scfg->{vgname} }->@*, $sid if defined($scfg->{vgname});
         my $base = PVE::Multipath::parse_base_volume($scfg->{base});
-        push $by_wwid{ $base->{wwid} }->@*, $sid if $base && $base->{kind} ne 'nvme';
+        push $by_wwid{ $base->{wwid} }->@*, $sid if $base;
     }
 
     my $data = PVE::Notify::common_template_data();
@@ -862,29 +862,31 @@ my sub notify_multipath {
         my ($n, $noun) = @_;
         return $n == 1 ? "1 $noun" : "$n ${noun}s";
     };
+    my %kinds = map { ($_->{native} ? 'namespace' : 'LUN') => 1 } $data->{luns}->@*;
+    my $device = scalar(keys %kinds) == 1 ? (keys %kinds)[0] : 'SAN device';
     if ($severity eq 'info') {
         if ($restored && $cleared) {
             $data->{event} = 'alerts resolved';
             $data->{summary} =
-                $plural->($restored, 'LUN')
+                $plural->($restored, $device)
                 . ' restored, '
                 . $plural->($cleared, 'alert')
                 . ' cleared';
         } elsif ($cleared) {
             $data->{event} = 'alert cleared';
-            $data->{summary} = $plural->($cleared, 'LUN');
+            $data->{summary} = $plural->($cleared, $device);
         } else {
             $data->{event} = 'paths restored';
-            $data->{summary} = $plural->($restored, 'LUN');
+            $data->{summary} = $plural->($restored, $device);
         }
     } else {
         $data->{event} = 'paths lost';
         if ($failed && $degraded) {
-            $data->{summary} = $plural->($failed, 'LUN') . " failed, $degraded degraded";
+            $data->{summary} = $plural->($failed, $device) . " failed, $degraded degraded";
         } elsif ($failed) {
-            $data->{summary} = $plural->($failed, 'LUN') . ' failed';
+            $data->{summary} = $plural->($failed, $device) . ' failed';
         } else {
-            $data->{summary} = $plural->($degraded, 'LUN') . ' degraded';
+            $data->{summary} = $plural->($degraded, $device) . ' degraded';
         }
     }
     $data->{failed} = $failed if $failed;

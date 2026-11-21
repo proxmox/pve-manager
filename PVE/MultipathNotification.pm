@@ -8,7 +8,7 @@ use List::Util qw(max);
 use PVE::File qw(file_get_contents file_set_contents);
 
 # the fields of a LUN that a notification shows, kept across a restart of the daemon
-my @KEEP = qw(wwid name state paths-active paths-expected paths-total storages vgname);
+my @KEEP = qw(wwid name native state paths-active paths-expected paths-total storages vgname);
 
 sub new($class, $file) {
     my $notified = -e $file ? eval { decode_json(file_get_contents($file)) } : {};
@@ -95,17 +95,19 @@ sub flush($self, $notify) {
 
 # Takes a multipath report of this node. A change counts once two reports in a row show it.
 sub update($self, $report, $notify) {
-    my $usable = ref($report) eq 'HASH' && !$report->{error} && !$report->{'scope-unknown'};
-    my $luns = $usable ? $report->{luns} : undef;
-    # without the hints of LVM, maps known only by their volume group can be left out
-    my $complete = $usable && !$report->{'vgs-unknown'};
+    my $valid = ref($report) eq 'HASH';
+    # Maps need multipathd, the namespaces of native NVMe multipath do not. Each row counts by its
+    # own source, so a node without multipathd still notifies on its namespaces.
+    my $maps = $valid && !$report->{error} && !$report->{'scope-unknown'};
+    my $namespaces = $valid && !$report->{'namespaces-unknown'};
     my $previous = $self->{previous};
     my $current = $self->{previous} = {};
-    if (!defined($luns)) {
+    if (!$maps && !$namespaces) {
         # problems confirmed before do not wait for a report that can confirm others
         flush($self, $notify);
         return;
     }
+    my $luns = [grep { $_->{native} ? $namespaces : $maps } ($report->{luns} // [])->@*];
 
     my $notified = $self->{notified};
     # a problem that is still to be notified comes before the recovery of its LUN
@@ -142,9 +144,12 @@ sub update($self, $report, $notify) {
             }
         }
     }
-    # a LUN can be left out of a report that is not complete, which does not mean it is gone
+    # A LUN can be left out of a report that is not complete, which does not mean it is gone:
+    # without the hints of LVM, maps known only by their volume group, and after a failed query the
+    # NVMe namespaces. Each counts by its own source.
     for my $wwid (sort keys %$notified) {
-        next if exists($current->{$wwid}) || !$complete;
+        next if exists($current->{$wwid});
+        next if $notified->{$wwid}->{native} ? !$namespaces : !$maps || $report->{'vgs-unknown'};
         if (++$self->{absent}->{$wwid} < 2) {
             $pending{recovery} = 1;
             next;
