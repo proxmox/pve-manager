@@ -183,6 +183,20 @@ Ext.define('PVE.storage.wizard.SAN', {
                 : []),
             ['WWID', lun.wwid],
             [gettext('Multipath'), me.multipathSummary(lun)],
+            // the Fibre Channel setup sets the expected paths of an entry it adds
+            ...(!connection && lun.multipath === 'none'
+                ? [
+                      [
+                          gettext('Expected Paths'),
+                          Ext.String.format(
+                              gettext(
+                                  'The paths of node {0} once its map is set up, if at least two',
+                              ),
+                              Proxmox.NodeName,
+                          ),
+                      ],
+                  ]
+                : []),
             [gettext('Size'), Proxmox.Utils.format_size(lun.size)],
             [
                 gettext('Nodes'),
