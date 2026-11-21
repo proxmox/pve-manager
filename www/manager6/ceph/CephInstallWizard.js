@@ -313,7 +313,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
                             return;
                         }
                         let wizard = this.up('pveCephInstallWizard');
-                        wizard.getViewModel().set('cephRelease', release);
+                        wizard.down('pveCephVersionSelector').setValue(release);
                     },
                 },
                 {
