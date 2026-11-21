@@ -167,4 +167,23 @@ sub get_default_ceph_release_codename {
     return $_default_ceph_release_codename;
 }
 
+# The release to install on a node if none is chosen explicitly: the newest release running on the
+# other cluster nodes, or else the default. $node_versions holds the Ceph versions that pvestatd
+# broadcasts per node.
+sub get_install_ceph_release_codename($node_versions, $nodename) {
+    my $newest;
+    for my $node (keys $node_versions->%*) {
+        next if $node eq $nodename; # a purged local installation leaves its entry behind
+        my $major = $node_versions->{$node}->{version}->{parts}->[0];
+        $newest = $major if defined($major) && (!defined($newest) || $major > $newest);
+    }
+    return get_default_ceph_release_codename() if !defined($newest);
+
+    my $ceph_releases = get_ceph_release_def();
+    for my $codename (keys $ceph_releases->%*) {
+        return $codename if int($ceph_releases->{$codename}->{release}) == $newest;
+    }
+    die "Ceph release $newest running in the cluster is unknown to this node\n";
+}
+
 1;

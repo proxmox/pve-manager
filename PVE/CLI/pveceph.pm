@@ -133,7 +133,9 @@ __PACKAGE__->register_method({
                 type => 'string',
                 enum => $available_ceph_release_codenames,
                 default => $default_ceph_version,
-                description => "Ceph version to install.",
+                description =>
+                    "Ceph version to install. Defaults to the newest version running on"
+                    . " other cluster nodes, if any.",
                 optional => 1,
             },
             repository => {
@@ -159,10 +161,15 @@ __PACKAGE__->register_method({
     code => sub {
         my ($param) = @_;
 
-        my $cephver = $param->{version} || $default_ceph_version;
+        my $cephver = $param->{version}
+            || PVE::Ceph::Releases::get_install_ceph_release_codename(
+                PVE::Ceph::Services::get_ceph_versions() // {}, $nodename,
+            );
 
+        # the schema validates an explicit version, so this only catches the cluster's release
         my $available_ceph_releases = PVE::Ceph::Releases::get_all_available_ceph_releases();
-        die "unsupported ceph version: $cephver"
+        die "Ceph release '$cephver' of the cluster is not available on this node - choose a"
+            . " release with '--version'\n"
             if !exists($available_ceph_releases->{$cephver});
 
         my $experimental_release = !!$available_ceph_releases->{$cephver}->{unsupported};
