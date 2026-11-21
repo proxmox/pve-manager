@@ -233,7 +233,33 @@ Ext.define('PVE.storage.wizard.SAN', {
         let values = me.volumeSettings();
         let lun = me.down('#luns').getSelection();
         me.down('#submit').disable();
-        me.createStorage(values, lun);
+        let create = () => !me.destroyed && me.createStorage(values, lun);
+        // The volume group is created on this node, which refuses a name it has. Catching that here
+        // can say how to fix it; without the list, the creation still checks the name.
+        Proxmox.Utils.API2Request({
+            url: `/nodes/${Proxmox.NodeName}/scan/lvm`,
+            method: 'GET',
+            waitMsgTarget: me,
+            failure: create,
+            success: function (response) {
+                let vgs = response.result.data ?? [];
+                if (!me.destroyed && vgs.some((entry) => entry.vg === values.vgname)) {
+                    me.showError(
+                        Ext.htmlEncode(
+                            Ext.String.format(
+                                gettext(
+                                    'Volume group "{0}" already exists on node "{1}". Go back to Storage and set another name under Advanced.',
+                                ),
+                                values.vgname,
+                                Proxmox.NodeName,
+                            ),
+                        ),
+                    );
+                    return;
+                }
+                create();
+            },
+        });
     },
 
     initComponent: function () {
