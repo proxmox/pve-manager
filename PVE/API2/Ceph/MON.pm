@@ -150,6 +150,19 @@ my $assert_mon_prerequisites = sub {
     }
 };
 
+my $assert_mon_release_supported = sub {
+    my ($rados) = @_;
+
+    my $monmap = $rados->mon_command({ prefix => 'mon dump' });
+    my $required = $monmap->{min_mon_release} or return;
+    my ($version, undef, $parts) = PVE::Ceph::Tools::get_local_version(1);
+    return if !defined($version) || $parts->[0] >= $required;
+
+    my $name = ucfirst($monmap->{min_mon_release_name});
+    die "installed Ceph $version is older than release $required ($name) required by the"
+        . " monitors of the cluster - upgrade Ceph on this node first\n";
+};
+
 my $assert_mon_can_remove = sub {
     my ($monhash, $monlist, $monid, $mondir) = @_;
 
@@ -368,6 +381,7 @@ __PACKAGE__->register_method({
         if (!defined($rados) && !$is_first_monitor) {
             die "Could not connect to ceph cluster despite configured monitors\n";
         }
+        $assert_mon_release_supported->($rados) if defined($rados);
 
         my $monid = $param->{monid} // $param->{node};
         my $monsection = "mon.$monid";
