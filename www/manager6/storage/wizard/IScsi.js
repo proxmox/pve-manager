@@ -134,6 +134,14 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let me = this;
         let wizard = me.up('window');
         let values = me.getValues();
+        // a disabled target field counts as valid, while the portal waits for its discovery
+        let target = me.down('field[name=target]');
+        if (!values.target || target.discoveredPortal !== values.portal) {
+            wizard.showError(
+                gettext('Select a target once the targets of this portal are listed.'),
+            );
+            return;
+        }
         let shown = me.existingConnection()?.storage;
         let identities = me.down('pveStorageWizardNodeIdentities');
         // without the node list, no selection would read as all nodes
@@ -254,6 +262,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         // wide enough for the longest label of the step
         let labelWidth = 150;
         let update = () => me.updateConnectionField();
+        let discovery = new Ext.util.DelayedTask(function () {
+            let portal = me.down('field[name=portal]').getValue();
+            let target = me.down('field[name=target]');
+            target.setDisabled(!portal);
+            target.setPortal(portal);
+        });
+        me.on('destroy', () => discovery.cancel());
         me.items = [
             {
                 ...common.id,
@@ -291,14 +306,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     getInnerTpl: () => '{portal:htmlEncode} ({storages:htmlEncode})',
                 },
                 listeners: {
-                    change: {
-                        buffer: 500,
-                        fn: function (field, value) {
-                            let target = me.down('field[name=target]');
-                            target.setDisabled(!value);
-                            target.setValue('');
-                            target.setPortal(value);
-                        },
+                    // A target found through another portal must not go with this one, also not
+                    // with a Next while typing. Only the discovery waits for the typing to end.
+                    change: function () {
+                        let target = me.down('field[name=target]');
+                        target.setValue('');
+                        target.disable();
+                        discovery.delay(500);
                     },
                 },
             },

@@ -27,13 +27,16 @@ Ext.define('PVE.storage.IScsiScan', {
 
     reload: function () {
         let me = this;
-        if (!me.isDisabled()) {
+        // without a portal there is nothing to discover
+        if (!me.isDisabled() && me.portal) {
             me.getStore().load();
         }
     },
 
     setPortal: function (portal) {
         let me = this;
+        // the result for the previous portal would come too late
+        me.pendingDiscovery?.abort();
         me.portal = portal;
         me.getStore().getProxy().setExtraParams({ portal });
         me.reload();
@@ -66,6 +69,25 @@ Ext.define('PVE.storage.IScsiScan', {
         });
 
         me.callParent();
+
+        me.mon(store, 'beforeload', (loading, operation) => {
+            me.pendingDiscovery = operation;
+        });
+        me.mon(store, 'load', function (loaded, records, success, operation) {
+            if (operation === me.pendingDiscovery) {
+                me.pendingDiscovery = undefined;
+            }
+            let portal = operation?.getRequest()?.getParams()?.portal;
+            if (portal !== me.portal) {
+                // an aborted discovery of a previous portal brings no records, others must go
+                if (success) {
+                    loaded.removeAll();
+                    me.setValue('');
+                }
+                return;
+            }
+            me.discoveredPortal = success ? portal : undefined;
+        });
     },
 });
 
