@@ -22,6 +22,20 @@ Ext.define('PVE.sdn.FabricRoutesContentView', {
             flex: 1,
         },
     ],
+
+    initComponent: function () {
+        let me = this;
+
+        me.tbar = [
+            {
+                text: gettext('Reload'),
+                iconCls: 'fa fa-refresh',
+                handler: () => me.getStore().load(),
+            },
+        ];
+
+        me.callParent();
+    },
 });
 
 Ext.define('PVE.sdn.FabricNeighborsContentView', {
@@ -32,6 +46,14 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
 
     initComponent: function () {
         let me = this;
+
+        me.tbar = [
+            {
+                text: gettext('Reload'),
+                iconCls: 'fa fa-refresh',
+                handler: () => me.getStore().load(),
+            },
+        ];
 
         me.columns = [
             {
@@ -44,14 +66,6 @@ Ext.define('PVE.sdn.FabricNeighborsContentView', {
         ];
 
         if (me.protocol === 'wireguard') {
-            me.tbar = [
-                {
-                    text: gettext('Reload'),
-                    iconCls: 'fa fa-refresh',
-                    handler: () => me.getStore().load(),
-                },
-            ];
-
             me.columns.unshift({
                 header: gettext('Name'),
                 sortable: true,
@@ -152,6 +166,14 @@ Ext.define('PVE.sdn.FabricInterfacesContentView', {
     initComponent: function () {
         let me = this;
 
+        me.tbar = [
+            {
+                text: gettext('Reload'),
+                iconCls: 'fa fa-refresh',
+                handler: () => me.getStore().load(),
+            },
+        ];
+
         me.columns = [
             {
                 header: gettext('Name'),
@@ -175,14 +197,6 @@ Ext.define('PVE.sdn.FabricInterfacesContentView', {
         ];
 
         if (me.protocol === 'wireguard') {
-            me.tbar = [
-                {
-                    text: gettext('Reload'),
-                    iconCls: 'fa fa-refresh',
-                    handler: () => me.getStore().load(),
-                },
-            ];
-
             me.columns = me.columns.concat([
                 {
                     header: gettext('Public Key'),
