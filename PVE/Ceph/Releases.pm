@@ -95,7 +95,7 @@ my sub get_ceph_release_def {
         },
         umbrella => {
             release => '21.2',
-            unsupported => 1,
+            'initial-upstream-release' => '2026-10-28',
             'available-for-pve-release' => {
                 9 => 1,
             },
