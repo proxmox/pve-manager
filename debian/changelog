@@ -1,3 +1,66 @@
+pve-manager (9.2.35) trixie; urgency=medium
+
+  * fix #6357: api: node dns: return all search domains. Before, only the
+    first one was returned, so saving the DNS settings of a node again
+    dropped the others.
+
+  * ui: search: find guests by their unique ID, as reported by backup
+    software and other tools, and add a Unique ID column, hidden by default,
+    to the resource grids.
+
+  * ceph: Ceph 21.2 Umbrella is now supported as opt-in, after its release on
+    2026-10-28. Tentacle stays the default release for new Ceph setups.
+
+  * fix #8011: pveceph: install: default to the newest Ceph release running
+    on the other cluster nodes, as the web UI wizard already does. Before, a
+    node joining a cluster got the default release for new setups. With a
+    manually configured repository for the cluster's release, the
+    installation then failed, and with a newer release in the cluster, the
+    monitor of the node never joined the quorum. If the cluster's release is
+    not available on the node, the installation now asks for an explicit
+    '--version'.
+
+  * api: ceph: releases: mark the release as default that 'pveceph install'
+    installs on the node without an explicit version, which accounts for the
+    release running in the cluster.
+
+  * ui: ceph wizard: preselect the default release reported by the API.
+    Before, the release detected in the cluster could be overwritten while
+    loading, so a node joining an Umbrella cluster could get Tentacle
+    preselected.
+
+  * api: ceph: monitor:
+    - refuse to create a monitor older than the minimum release the cluster
+      requires. Such a monitor never joins the quorum, yet its creation task
+      reported success.
+    - fully clean up a monitor that never joined the quorum when destroying
+      it. Before, its address stayed in 'mon_host' and its service kept
+      running, so creating it again failed.
+
+  * ui: sdn: zone: allow removing all static routes and disabling the
+    dedicated VRF in one edit, which failed before.
+
+  * ui: sdn: fabrics: do not offer WireGuard interfaces for OSPF and BGP
+    fabrics in a zone, as their routes do not work in the VRF. Interfaces
+    that are already used are still listed with a warning, so they can be
+    removed.
+
+  * ui: sdn: fabrics: wireguard:
+    - block saving with an invalid MTU or listen port and mark the affected
+      interfaces. Before, the previous value was saved silently.
+    - show the persistent keepalive of neighbors, and '-' for values that
+      WireGuard does not report.
+    - let 'Reset' also restore the interfaces of a node.
+    - do not propose a listen port that is already in use for a new
+      interface.
+    - do not mark an unchanged node as modified, which enabled 'OK' and
+      'Reset' right away.
+
+  * ui: sdn: fabrics: add a reload button to the routes, neighbors and
+    interfaces of all fabrics.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 21 Nov 2026 20:58:35 +0100
+
 pve-manager (9.2.34) trixie; urgency=medium
 
   * ui: guest identity: load the details without a load mask, which only
