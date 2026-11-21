@@ -189,7 +189,6 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
         me.setLoading(gettext('Fetching Node Information'));
 
         Promise.all([me.loadNode(me.fabricId, me.nodeId), me.loadNodeInterfaces(me.nodeId)])
-            .catch(Proxmox.Utils.alertResponseFailure)
             .then(([node, nodeInterfaces]) => {
                 if (me.fabricInVrf) {
                     // only keep WireGuard interfaces the node already uses, so they can be removed
@@ -205,6 +204,7 @@ Ext.define('PVE.sdn.Fabric.Node.Edit', {
                 me.interfaceSelector.setNodeInterfaces(nodeInterfaces);
                 me.setValues(node);
             })
+            .catch(Proxmox.Utils.alertResponseFailure)
             .finally(() => {
                 me.setLoading(false);
             });
