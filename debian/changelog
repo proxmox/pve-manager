@@ -1,3 +1,58 @@
+pve-manager (9.2.36) trixie; urgency=medium
+
+  * api: ceph: mon: allow destroying a second monitor that never joined the
+    quorum on a cluster with a single monitor.
+
+  * ui: migrate: drop the hint about a target node that reports no version,
+    which is no longer refused for keeping the guest identity.
+
+  * ui: storage: add storages through a searchable list that drops down below
+    Add, with all storage types and the guided setups for shared LVM on a SAN
+    LUN, grouped by what they add and with a short description of each
+    built-in entry.
+
+  * ui: storage: show LVM storages below their base storage, with their volume
+    group, and None for a storage without content.
+
+  * ui: show the SAN view as a Datacenter menu entry of its own, right after
+    Storage, with the guided setups under Add Shared LVM and the multipath
+    overrides in its main toolbar.
+
+  * ui: san: show the usable out of the existing or expected paths of a LUN,
+    for example 2/2, instead of words such as Optimal, list every state that
+    is not fine with its nodes, and add Paths by Node for a LUN.
+
+  * ui: multipath entry: warn that queued I/O can hang guests if a LUN does not
+    come back, and fill in the WWID of a selected LUN when adding an entry.
+
+  * ui: storage wizard: ask for one ID and derive the names of the volume group
+    and of an iSCSI storage that the setup adds, and select the iSCSI nodes in
+    the list of initiator names.
+
+  * ui: storage wizard: exclude LUNs with detected data, suggest the portals of
+    existing iSCSI storages, and check the volume group name before creating
+    the storage.
+
+  * ui: storage wizard: remove an iSCSI storage that the setup added when it is
+    closed before the end, and only warn about nodes that still lack the LUN
+    in the result.
+
+  * ui: storage wizard: never send a target found through a previous portal,
+    and keep Next disabled if the storage list fails to load.
+
+  * ui: clearer wording in the SAN views and guided setups, for example
+    "Multipath Setup" for the node state and "No use detected" for a LUN, and
+    hints on volume-chain snapshots and on the expected paths of a Fibre
+    Channel setup.
+
+  * pvestatd: notify about lost and restored paths of SAN LUNs, per node with
+    the notification type 'multipath'.
+
+  * api: mount the SAN endpoints below '/cluster/san' and '/nodes/{node}/san',
+    as moved by the storage library. The old paths are not kept.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 22 Nov 2026 00:30:58 +0100
+
 pve-manager (9.2.35) trixie; urgency=medium
 
   * fix #6357: api: node dns: return all search domains. Before, only the
