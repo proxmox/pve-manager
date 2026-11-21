@@ -6,7 +6,7 @@ Ext.define('PVE.storage.wizard.SAN', {
     statics: {
         subject: (type) =>
             Ext.String.format(
-                gettext('LVM on {0}'),
+                gettext('Shared LVM on {0}'),
                 type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
             ),
 

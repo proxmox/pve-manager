@@ -143,11 +143,6 @@ Ext.define('PVE.panel.StorageBase', {
             me.advancedColumn1 = [];
         }
 
-        // the add dialog of a SAN storage points to the guided setups of the SAN view
-        if (me.isCreate && me.sanNote) {
-            me.columnB = [...(me.columnB ?? []), PVE.SANUtils.sanViewNote(me.sanNote)];
-        }
-
         me.callParent();
     },
 });

@@ -206,42 +206,39 @@ Ext.define('PVE.SANUtils', {
         );
     },
 
-    // Selects Datacenter > Storage > SAN, as the TFA entry of the user menu does for its panel.
-    showSANView: function () {
-        Ext.state.Manager.getProvider().set('dctab', { value: 'san' }, true);
-        Ext.ComponentQuery.query('pveStdWorkspace')[0]?.selectById('root');
+    requiresText: function (privilege, path) {
+        return Ext.String.format(gettext('Requires {0} on {1}.'), privilege, path);
     },
 
-    // A note for the add dialogs of storages on a SAN, which points to the guided setups of the
-    // SAN view. Its link closes the dialog and opens the view.
-    sanViewNote: function (text) {
-        let path = `${gettext('Datacenter')} > ${gettext('Storage')} > SAN`;
-        let link = `<a href="#" style="white-space: nowrap;">${Ext.htmlEncode(path)}</a>`;
-        return {
-            xtype: 'component',
-            margin: '5 0 0 0',
-            html:
-                `<span class="pmx-hint">${Ext.htmlEncode(gettext('Note:'))}</span> ` +
-                Ext.String.format(Ext.htmlEncode(text), link),
-            listeners: {
-                afterrender: function (cmp) {
-                    let follow = function (event) {
-                        event.stopEvent();
-                        cmp.up('window')?.close();
-                        PVE.SANUtils.showSANView();
-                    };
-                    cmp.mon(cmp.getEl(), 'click', follow, null, { delegate: 'a' });
-                    // an edit window handles Enter for its default button, so no click follows it
-                    cmp.mon(
-                        cmp.getEl(),
-                        'keydown',
-                        (event) => event.getKey() === event.ENTER && follow(event),
-                        null,
-                        { delegate: 'a' },
-                    );
-                },
-            },
-        };
+    // Why the user cannot run a guided setup, if they cannot.
+    setupBlocker: function (type) {
+        let { storage, dc } = Ext.state.Manager.get('GuiCap');
+        if (!storage['Datastore.Allocate']) {
+            return PVE.SANUtils.requiresText('Datastore.Allocate', '/storage');
+        }
+        // The setups also read the storage list and the LUNs of the iSCSI storage.
+        if (!storage['Datastore.Audit'] && !storage['Datastore.AllocateSpace']) {
+            return Ext.String.format(
+                gettext('Requires {0} or {1} on {2}.'),
+                'Datastore.Audit',
+                'Datastore.AllocateSpace',
+                '/storage',
+            );
+        }
+        // the multipath entry of a Fibre Channel LUN is cluster-wide configuration
+        if (type === 'fc' && !dc['Sys.Modify']) {
+            return PVE.SANUtils.requiresText('Sys.Modify', '/');
+        }
+        return undefined;
+    },
+
+    canSetup: function (type) {
+        return !PVE.SANUtils.setupBlocker(type);
+    },
+
+    openSetup: function (type, reloadCallback) {
+        let wizard = type === 'fc' ? 'FibreChannel' : 'IScsi';
+        Ext.create(`PVE.storage.wizard.${wizard}`, { autoShow: true, reloadCallback });
     },
 
     renderSanTransport: function (value) {

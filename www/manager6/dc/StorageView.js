@@ -134,18 +134,8 @@ Ext.define(
 
             for (const metadata of pluginMetadata) {
                 me.pluginMetadata[metadata.type] = metadata;
-
-                // the UI knows some types, but deliberately does not offer them
-                if (PVE.Utils.storageSchema[metadata.type]?.hideAdd) {
-                    continue;
-                }
-
-                me.addMenu.add({
-                    text: me.renderStorageType(metadata.type),
-                    iconCls: 'fa fa-fw fa-folder',
-                    handler: () => me.createStorageEditWindow(metadata.type),
-                });
             }
+            me.fireEvent('addactionschange');
 
             // show the display names of custom plugins
             if (me.rendered) {
@@ -162,6 +152,141 @@ Ext.define(
             }
 
             return Ext.htmlEncode(PVE.Utils.format_storage_type(type, metaData, record));
+        },
+
+        // in the order they show
+        addCategories: [
+            {
+                id: 'local',
+                text: gettext('Filesystems and Volume Groups'),
+                note: gettext('To create a storage on an empty disk of a node, use Node > Disks.'),
+            },
+            { id: 'network', text: gettext('Network') },
+            { id: 'san', text: gettext('SAN') },
+            { id: 'backup', text: gettext('Backup') },
+            { id: 'import', text: gettext('Import') },
+            { id: 'custom', text: gettext('Custom Plugins') },
+            { id: 'other', text: gettext('Other') },
+        ],
+
+        // The ways to add a storage, with why the user cannot use one, if they cannot.
+        addActions: function () {
+            let me = this;
+
+            let allocate = Ext.state.Manager.get('GuiCap').storage['Datastore.Allocate']
+                ? undefined
+                : PVE.SANUtils.requiresText('Datastore.Allocate', '/storage');
+            let setup = (type, description, keywords) => ({
+                // the setups and the storage types, including custom ones, never share an ID
+                id: `setup:${type}`,
+                category: 'san',
+                text: PVE.storage.wizard.SAN.subject(type),
+                description,
+                keywords,
+                iconCls: 'fa fa-fw fa-magic',
+                disabledReason: PVE.SANUtils.setupBlocker(type),
+                handler: () => PVE.SANUtils.openSetup(type, () => me.reloadStore()),
+            });
+            let actions = [
+                setup(
+                    'iscsi',
+                    gettext('Set up shared LVM on an iSCSI LUN with multipath.'),
+                    'san lun multipath lvm guided',
+                ),
+                setup(
+                    'fc',
+                    gettext('Set up shared LVM on a Fibre Channel LUN with multipath.'),
+                    'san lun multipath lvm fc guided',
+                ),
+            ];
+
+            let types = {
+                iscsi: [
+                    'san',
+                    gettext(
+                        'Connect to an iSCSI target, to use its LUNs directly or as base of an LVM storage.',
+                    ),
+                    'lun target',
+                ],
+                zfs: [
+                    'san',
+                    gettext(
+                        'Guest disks as ZFS volumes on a storage server that exports them over iSCSI.',
+                    ),
+                    'lun target',
+                ],
+                nfs: ['network', gettext('Mount an NFS export.'), 'nas share'],
+                cifs: ['network', gettext('Mount an SMB/CIFS share.'), 'nas samba windows'],
+                pbs: [
+                    'backup',
+                    gettext('Back up to a datastore of a Proxmox Backup Server.'),
+                    'pbs',
+                ],
+                rbd: [
+                    'network',
+                    gettext('Guest disks in a Ceph pool, of this cluster or an external one.'),
+                    'ceph block',
+                ],
+                cephfs: [
+                    'network',
+                    gettext('Mount a Ceph file system, of this cluster or an external one.'),
+                    'ceph',
+                ],
+                dir: [
+                    'local',
+                    gettext('Use a directory, for example of a mounted file system.'),
+                    '',
+                ],
+                lvm: [
+                    'local',
+                    gettext(
+                        'Use an existing volume group, or create one on a LUN of an iSCSI storage.',
+                    ),
+                    'san lun shared',
+                ],
+                lvmthin: ['local', gettext('Use an existing LVM thin pool.'), ''],
+                zfspool: ['local', gettext('Use an existing ZFS pool or dataset.'), 'zpool'],
+                btrfs: ['local', gettext('Use a directory on a BTRFS file system.'), ''],
+                esxi: ['import', gettext('Import guests from VMware ESXi.'), 'vmware vcenter'],
+            };
+            let schema = PVE.Utils.storageSchema;
+            let addable = Object.keys(schema).filter((type) => !schema[type].hideAdd);
+            // the types in the order of the table above, then any the table does not know
+            let listed = (type) => Object.hasOwn(types, type);
+            let known = Object.keys(types).filter((type) => addable.includes(type));
+            for (const type of [...known, ...addable.filter((type) => !listed(type))]) {
+                let [category, description, keywords] = listed(type)
+                    ? types[type]
+                    : ['other', '', ''];
+                actions.push({
+                    id: `type:${type}`,
+                    category,
+                    text: PVE.Utils.format_storage_type(type),
+                    description,
+                    keywords: `${type} ${keywords}`,
+                    iconCls: `fa fa-fw fa-${schema[type].faIcon}`,
+                    disabledReason: allocate,
+                    handler: () => me.createStorageEditWindow(type),
+                });
+            }
+
+            for (const metadata of Object.values(me.pluginMetadata)) {
+                // a type that the UI knows is listed above or deliberately not offered
+                if (metadata.origin !== 'custom' || Object.hasOwn(schema, metadata.type)) {
+                    continue;
+                }
+                actions.push({
+                    id: `type:${metadata.type}`,
+                    category: 'custom',
+                    text: metadata['display-name'] ?? metadata.type,
+                    description: '',
+                    keywords: metadata.type,
+                    iconCls: 'fa fa-fw fa-folder',
+                    disabledReason: allocate,
+                    handler: () => me.createStorageEditWindow(metadata.type),
+                });
+            }
+            return actions;
         },
 
         createStorageEditWindow: function (type, sid) {
@@ -230,6 +355,26 @@ Ext.define(
 
             let sm = Ext.create('Ext.selection.TreeModel');
 
+            let addList;
+            let toggleAddList = function (button, open) {
+                if (addList) {
+                    if (!open) {
+                        addList.dismiss(true);
+                    }
+                    return;
+                }
+                addList = Ext.create('PVE.storage.TypePicker', {
+                    storageView: me,
+                    button,
+                    listeners: {
+                        destroy: () => {
+                            addList = undefined;
+                        },
+                    },
+                });
+                addList.showBelow();
+            };
+
             me.pluginMetadata = {};
 
             let run_editor = function () {
@@ -253,28 +398,6 @@ Ext.define(
                 callback: () => me.reloadStore(),
             });
 
-            // else we cannot dynamically generate the add menu handlers
-            let addHandleGenerator = function (type) {
-                return function () {
-                    me.createStorageEditWindow(type);
-                };
-            };
-            let addMenuItems = [];
-            for (const [type, storage] of Object.entries(PVE.Utils.storageSchema)) {
-                if (storage.hideAdd) {
-                    continue;
-                }
-                addMenuItems.push({
-                    text: PVE.Utils.format_storage_type(type),
-                    iconCls: 'fa fa-fw fa-' + storage.faIcon,
-                    handler: addHandleGenerator(type),
-                });
-            }
-
-            me.addMenu = new Ext.menu.Menu({
-                items: addMenuItems,
-            });
-
             Ext.apply(me, {
                 store: {
                     model: 'pve-storage',
@@ -289,7 +412,16 @@ Ext.define(
                 tbar: [
                     {
                         text: gettext('Add'),
-                        menu: me.addMenu,
+                        // the arrow of a menu button, as the entries drop down below it
+                        split: true,
+                        ariaAttributes: { 'aria-haspopup': 'dialog', 'aria-expanded': 'false' },
+                        handler: (button) => toggleAddList(button),
+                        // Down opens the list like the menu of a menu button
+                        onDownKey: function (event) {
+                            event.stopEvent();
+                            toggleAddList(this, true);
+                            return false;
+                        },
                     },
                     remove_btn,
                     edit_btn,

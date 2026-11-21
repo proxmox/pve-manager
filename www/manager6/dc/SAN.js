@@ -50,15 +50,9 @@ Ext.define('PVE.dc.SANView', {
 
     initComponent: function () {
         let me = this;
-        let allCaps = Ext.state.Manager.get('GuiCap');
-        let caps = allCaps.dc;
+        let caps = Ext.state.Manager.get('GuiCap').dc;
         let canModify = !!caps['Sys.Modify'];
         let canEdit = canModify && !!caps['Sys.Audit'];
-        // the setups also read the storage list and the LUNs of the iSCSI storage
-        let storageCaps = allCaps.storage;
-        let canSetup =
-            !!storageCaps['Datastore.Allocate'] &&
-            !!(storageCaps['Datastore.Audit'] || storageCaps['Datastore.AllocateSpace']);
         me.rstore = Ext.create('Proxmox.data.UpdateStore', {
             storeid: 'dc-san-status',
             model: 'pve-san-status',
@@ -117,20 +111,17 @@ Ext.define('PVE.dc.SANView', {
                 name: rec.get('name'),
                 autoShow: true,
             });
-        let setupItem = (wizardType, className, disabled) => ({
-            text: PVE.storage.wizard.SAN.subject(wizardType),
+        let setupItem = (type) => ({
+            text: PVE.storage.wizard.SAN.subject(type),
             iconCls: 'fa fa-fw fa-building',
-            disabled,
-            handler: () => Ext.create(className, { autoShow: true, reloadCallback: reload }),
+            disabled: !PVE.SANUtils.canSetup(type),
+            handler: () => PVE.SANUtils.openSetup(type, reload),
         });
         me.tbar = [
             {
                 text: gettext('Guided Setup'),
-                disabled: !canSetup,
-                menu: [
-                    setupItem('iscsi', 'PVE.storage.wizard.IScsi'),
-                    setupItem('fc', 'PVE.storage.wizard.FibreChannel', !canModify),
-                ],
+                disabled: !PVE.SANUtils.canSetup('iscsi'),
+                menu: [setupItem('iscsi'), setupItem('fc')],
             },
             {
                 text: gettext('Multipath Overrides'),

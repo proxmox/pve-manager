@@ -385,6 +385,7 @@ JSSRC= 							\
 	storage/StatusView.js				\
 	storage/Summary.js				\
 	storage/TemplateView.js				\
+	storage/TypePicker.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
 	storage/ESXIEdit.js				\
