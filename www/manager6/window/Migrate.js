@@ -225,20 +225,13 @@ Ext.define('PVE.window.Migrate', {
                 return;
             }
 
-            let text;
-            if (unsupported.version) {
-                text = Ext.String.format(
-                    gettext(
-                        'The selected target node runs Proxmox VE {0}, but keeping the guest identity requires {1} or newer. Upgrade the target node first.',
-                    ),
-                    unsupported.version,
-                    unsupported['required-version'],
-                );
-            } else {
-                text = gettext(
-                    'The selected target node does not report its Proxmox VE version, so support for guest identities cannot be verified.',
-                );
-            }
+            let text = Ext.String.format(
+                gettext(
+                    'The selected target node runs Proxmox VE {0}, but keeping the guest identity requires {1} or newer. Upgrade the target node first.',
+                ),
+                unsupported.version,
+                unsupported['required-version'],
+            );
 
             migration.possible = false;
             migration.preconditions.push({ text, severity: 'error' });
