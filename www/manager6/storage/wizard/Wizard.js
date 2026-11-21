@@ -10,6 +10,60 @@ Ext.define('PVE.storage.wizard.SAN', {
                 type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
             ),
 
+        // Removes the iSCSI storage that a closed setup added if it still has the settings of the
+        // setup and no storage uses it, and calls done in any case.
+        removeAddedConnection: function (connection, done) {
+            let id = connection.storage;
+            // the storage list adds these to the configuration of a storage
+            let derived = ['storage', 'type', 'digest', 'shared'];
+            let keys = (entry) =>
+                Object.keys(entry)
+                    .filter((key) => !derived.includes(key))
+                    .sort();
+            let text = (key, value) =>
+                key === 'nodes'
+                    ? `${value ?? ''}`.split(',').filter(Boolean).sort().join(',')
+                    : `${value ?? ''}`;
+            let failure = function (response) {
+                Ext.Msg.alert(
+                    gettext('Error'),
+                    Ext.htmlEncode(
+                        Ext.String.format(
+                            gettext('Could not remove iSCSI storage "{0}" of the closed setup'),
+                            id,
+                        ),
+                    ) + `: ${response.htmlStatus}`,
+                );
+                done();
+            };
+            Proxmox.Utils.API2Request({
+                url: '/storage',
+                method: 'GET',
+                failure,
+                success: function (response) {
+                    let storages = response.result.data;
+                    let own = storages.find((entry) => entry.storage === id);
+                    let created = connection.created;
+                    let unchanged =
+                        own?.type === 'iscsi' &&
+                        keys(own).join() === keys(created).join() &&
+                        keys(own).every((key) => text(key, own[key]) === text(key, created[key]));
+                    let used = storages.some((entry) => `${entry.base ?? ''}`.startsWith(`${id}:`));
+                    if (!unchanged || used) {
+                        done();
+                        return;
+                    }
+                    let digest = encodeURIComponent(own.digest);
+                    Proxmox.Utils.API2Request({
+                        url: `/storage/${encodeURIComponent(id)}?digest=${digest}`,
+                        method: 'DELETE',
+                        failure,
+                        success: done,
+                    });
+                },
+            });
+        },
+
         // a validator of a Nodes field, which ExtJS calls with the field as this
         validateNodes: function () {
             let nodes = [].concat(this.getValue() || []).filter(Boolean);
@@ -25,7 +79,9 @@ Ext.define('PVE.storage.wizard.SAN', {
     },
 
     stopWithError: function (message) {
-        this.close();
+        if (!this.destroyed) {
+            this.close();
+        }
         Ext.Msg.alert(gettext('Error'), message);
     },
 
@@ -113,6 +169,42 @@ Ext.define('PVE.storage.wizard.SAN', {
         };
     },
 
+    // Removes an iSCSI storage that the setup added for a storage it did not add, then reloads.
+    cleanUp: function () {
+        let me = this;
+        let done = () => me.reloadCallback?.();
+        if (me.connection?.created && !me.storageAdded) {
+            PVE.storage.wizard.SAN.removeAddedConnection(me.connection, done);
+        } else {
+            done();
+        }
+    },
+
+    // Adds a storage. If the setup is closed meanwhile, also by the callback, the cleanup waits for
+    // the result, so that it sees the added storage and a reload cannot come before it.
+    addStorage: function (params, success, failure) {
+        let me = this;
+        me.writing = true;
+        let finish = function (callback, response) {
+            try {
+                callback(response);
+            } finally {
+                me.writing = false;
+                if (me.destroyed) {
+                    me.cleanUp();
+                }
+            }
+        };
+        Proxmox.Utils.API2Request({
+            url: '/storage',
+            method: 'POST',
+            params,
+            waitMsgTarget: me,
+            failure: (response) => finish(failure, response),
+            success: (response) => finish(success, response),
+        });
+    },
+
     // Adds the LVM storage with the volume settings as the last request of a setup. Only the node
     // serving the web UI looked at the LUN, so show its state on the other nodes afterwards.
     addLVMStorage: function (values, failure) {
@@ -121,28 +213,22 @@ Ext.define('PVE.storage.wizard.SAN', {
         if (!params.nodes) {
             delete params.nodes;
         }
-        Proxmox.Utils.API2Request({
-            url: '/storage',
-            method: 'POST',
-            params,
-            waitMsgTarget: me,
-            failure,
-            success: function () {
-                // the storage is added, also if the setup got closed in the meantime
-                if (me.destroyed) {
-                    return;
-                }
-                let wwid = me.down('#luns').getSelection().wwid;
-                me.close();
-                Ext.create('PVE.window.SANLunState', {
-                    wwid,
-                    storage: values.storage,
-                    nodes: params.nodes,
-                    fc: me.wizardType === 'fc',
-                    autoShow: true,
-                });
-            },
-        });
+        let success = function () {
+            me.storageAdded = true;
+            if (me.destroyed) {
+                return;
+            }
+            let wwid = me.down('#luns').getSelection().wwid;
+            me.close();
+            Ext.create('PVE.window.SANLunState', {
+                wwid,
+                storage: values.storage,
+                nodes: params.nodes,
+                fc: me.wizardType === 'fc',
+                autoShow: true,
+            });
+        };
+        me.addStorage(params, success, failure);
     },
 
     multipathSummary: function (lun) {
@@ -172,7 +258,7 @@ Ext.define('PVE.storage.wizard.SAN', {
                 ? [
                       [
                           gettext('iSCSI Storage'),
-                          connection.added
+                          connection.created
                               ? Ext.String.format(
                                     gettext('{0}, added by this setup'),
                                     connection.storage,
@@ -384,6 +470,6 @@ Ext.define('PVE.storage.wizard.SAN', {
         if (iscsi) {
             me.down('#submit').setText(gettext('Next'));
         }
-        me.on('destroy', () => me.reloadCallback?.());
+        me.on('destroy', () => !me.writing && me.cleanUp());
     },
 });

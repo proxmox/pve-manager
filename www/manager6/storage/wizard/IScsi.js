@@ -127,10 +127,10 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let selectedNodes = identities.getSelectedNodes();
         let nodes = identities.getNodes().join(',');
         let connected = function (connection) {
+            wizard.connection = connection;
             if (wizard.destroyed) {
                 return;
             }
-            wizard.connection = connection;
             // the step does not come back, the cluster status of its initiator names is not needed
             me.down('pveStorageWizardNodeIdentities').rstore.stopUpdate();
             let tabs = wizard.down('#wizcontent');
@@ -159,17 +159,6 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     );
                     return;
                 }
-                let params = {
-                    type: 'iscsi',
-                    storage: me.newConnectionId(),
-                    portal: values.portal,
-                    target: values.target,
-                    content: 'none',
-                    'managed-multipath': 1,
-                };
-                if (nodes) {
-                    params.nodes = nodes;
-                }
                 let taken = (id) => me.storages.some((entry) => entry.storage === id);
                 if (taken(values.storage)) {
                     wizard.showError(
@@ -194,8 +183,19 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     if (restricted.length) {
                         nodes = (selectedNodes.length ? selectedNodes : restricted).join(',');
                     }
-                    connected({ storage: base.storage, target: base.target, nodes, added: false });
+                    connected({ storage: base.storage, target: base.target, nodes });
                     return;
+                }
+                let params = {
+                    type: 'iscsi',
+                    storage: me.newConnectionId(),
+                    portal: values.portal,
+                    target: values.target,
+                    content: 'none',
+                    'managed-multipath': 1,
+                };
+                if (nodes) {
+                    params.nodes = nodes;
                 }
                 if (params.storage === values.storage) {
                     wizard.showError(
@@ -218,20 +218,13 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                     );
                     return;
                 }
-                Proxmox.Utils.API2Request({
-                    url: '/storage',
-                    method: 'POST',
-                    params,
-                    waitMsgTarget: wizard,
-                    failure: fail,
-                    success: () =>
-                        connected({
-                            storage: params.storage,
-                            target: params.target,
-                            nodes,
-                            added: true,
-                        }),
-                });
+                let connection = {
+                    storage: params.storage,
+                    target: values.target,
+                    nodes,
+                    created: params,
+                };
+                wizard.addStorage(params, () => connected(connection), fail);
             },
         });
     },
