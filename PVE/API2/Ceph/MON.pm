@@ -176,7 +176,8 @@ my $assert_mon_can_remove = sub {
     }
 
     die "monitor filesystem '$mondir' does not exist on this node\n" if !-d $mondir;
-    die "can't remove last monitor\n" if scalar($monlist->@*) <= 1;
+    die "can't remove last monitor\n"
+        if !grep { defined($_->{name}) && $_->{name} ne $monid } $monlist->@*;
 };
 
 my $remove_addr_from_mon_host = sub {
