@@ -32,8 +32,9 @@ Ext.define(
                         let node = Ext.copy(
                             {},
                             config,
-                            'storage,type,content,path,target,monhost,shared,disable,bwlimit',
+                            'storage,type,content,monhost,shared,disable,bwlimit',
                         );
+                        node.location = me.storageLocation(config);
                         node.baseStorage =
                             config.type === 'lvm' ? config.base?.split(':', 1)[0] : undefined;
                         node.leaf = true;
@@ -65,6 +66,31 @@ Ext.define(
                     Proxmox.Utils.setErrorMask(me, false);
                 },
             });
+        },
+
+        // What a storage is on: the volume group or pool for the types without path or target.
+        storageLocation: function ({ type, vgname, thinpool, pool, target, path }) {
+            switch (type) {
+                case 'lvm':
+                    return vgname;
+                case 'lvmthin':
+                    return vgname && thinpool ? `${vgname}/${thinpool}` : vgname;
+                case 'zfspool':
+                    return pool;
+                default:
+                    return target || path;
+            }
+        },
+
+        // A sorter in the state saved by an older version still names the path, which the
+        // location replaced in this column.
+        applyState: function (state) {
+            for (const sorter of state?.storeState?.sorters ?? []) {
+                if (sorter.property === 'path') {
+                    sorter.property = 'location';
+                }
+            }
+            return this.callParent([state]);
         },
 
         loadPluginMetadata: function () {
@@ -296,10 +322,8 @@ Ext.define(
                         header: gettext('Path') + '/' + gettext('Target'),
                         flex: 2,
                         sortable: true,
-                        dataIndex: 'path',
-                        renderer: function (value, metaData, record) {
-                            return Ext.htmlEncode(record.data.target || value);
-                        },
+                        dataIndex: 'location',
+                        renderer: Ext.htmlEncode,
                     },
                     {
                         header: gettext('Shared'),
@@ -348,10 +372,9 @@ Ext.define(
         Ext.define('pve-storage', {
             extend: 'Ext.data.TreeModel',
             fields: [
-                'path',
+                'location',
                 'type',
                 'content',
-                'target',
                 'storage',
                 { name: 'shared', type: 'boolean' },
                 { name: 'disable', type: 'boolean' },
