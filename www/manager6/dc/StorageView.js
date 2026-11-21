@@ -1,7 +1,9 @@
 Ext.define(
     'PVE.dc.StorageView',
     {
-        extend: 'Ext.grid.GridPanel',
+        extend: 'Ext.tree.Panel',
+        rootVisible: false,
+        useArrows: true,
 
         alias: ['widget.pveStorageView'],
 
@@ -9,6 +11,61 @@ Ext.define(
 
         stateful: true,
         stateId: 'grid-dc-storage',
+
+        reloadStore: function () {
+            let me = this;
+            if (me.destroyed) {
+                return;
+            }
+            Proxmox.Utils.API2Request({
+                url: '/storage',
+                method: 'GET',
+                failure: (response) =>
+                    !me.destroyed && Proxmox.Utils.setErrorMask(me, response.htmlStatus),
+                success: function ({ result: { data } }) {
+                    if (me.destroyed) {
+                        return;
+                    }
+                    let nodes = new Map();
+                    for (let config of data) {
+                        // plugin properties must not become tree node attributes like href or cls
+                        let node = Ext.copy(
+                            {},
+                            config,
+                            'storage,type,content,path,target,monhost,shared,disable,bwlimit',
+                        );
+                        node.baseStorage =
+                            config.type === 'lvm' ? config.base?.split(':', 1)[0] : undefined;
+                        node.leaf = true;
+                        node.iconCls = 'fa fa-fw fa-database x-fa-tree';
+                        nodes.set(node.storage, node);
+                    }
+                    let children = [];
+                    for (let node of nodes.values()) {
+                        let parent = nodes.get(node.baseStorage);
+                        // keep every storage visible, also with a missing base, a chain or a cycle
+                        if (parent && !nodes.has(parent.baseStorage)) {
+                            (parent.children ??= []).push(node);
+                            parent.leaf = false;
+                            parent.expanded = true;
+                        } else {
+                            children.push(node);
+                        }
+                    }
+                    let sm = me.getSelectionModel();
+                    let selected = sm.getSelection()[0]?.getId();
+                    sm.deselectAll();
+                    me.setRootNode({ expanded: true, children });
+                    // the replaced nodes count as removed records, which nothing ever syncs
+                    me.getStore().commitChanges();
+                    let rec = selected && me.store.getNodeById(selected);
+                    if (rec) {
+                        sm.select(rec);
+                    }
+                    Proxmox.Utils.setErrorMask(me, false);
+                },
+            });
+        },
 
         loadPluginMetadata: function () {
             let me = this;
@@ -137,7 +194,7 @@ Ext.define(
                 metadata: metadata,
                 autoShow: true,
                 listeners: {
-                    destroy: me.reloadStore,
+                    destroy: () => me.reloadStore(),
                 },
             });
         },
@@ -145,19 +202,7 @@ Ext.define(
         initComponent: function () {
             let me = this;
 
-            let store = new Ext.data.Store({
-                model: 'pve-storage',
-                proxy: {
-                    type: 'proxmox',
-                    url: '/api2/json/storage',
-                },
-                sorters: {
-                    property: 'storage',
-                    direction: 'ASC',
-                },
-            });
-
-            let sm = Ext.create('Ext.selection.RowModel', {});
+            let sm = Ext.create('Ext.selection.TreeModel');
 
             me.pluginMetadata = {};
 
@@ -179,7 +224,7 @@ Ext.define(
             let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
                 selModel: sm,
                 baseurl: '/storage/',
-                callback: () => store.load(),
+                callback: () => me.reloadStore(),
             });
 
             // else we cannot dynamically generate the add menu handlers
@@ -205,11 +250,15 @@ Ext.define(
             });
 
             Ext.apply(me, {
-                store: store,
-                reloadStore: () => store.load(),
+                store: {
+                    model: 'pve-storage',
+                    defaultRootId: '/', // cannot collide with a storage ID
+                    sorters: ['storage'],
+                },
                 selModel: sm,
                 viewConfig: {
                     trackOver: false,
+                    toggleOnDblClick: false,
                 },
                 tbar: [
                     {
@@ -221,8 +270,10 @@ Ext.define(
                 ],
                 columns: [
                     {
+                        xtype: 'treecolumn',
                         header: 'ID',
                         flex: 2,
+                        minWidth: 200,
                         sortable: true,
                         dataIndex: 'storage',
                     },
@@ -273,10 +324,15 @@ Ext.define(
                 ],
                 listeners: {
                     activate: () => {
-                        store.load();
+                        me.reloadStore();
                         // otherwise only editing a custom storage would retry
                         if (me.pluginMetadataError && !me.pluginMetadataLoading) {
                             me.loadPluginMetadata();
+                        }
+                    },
+                    itemcollapse: (parent) => {
+                        if (sm.getSelection()[0]?.parentNode === parent) {
+                            sm.deselectAll();
                         }
                     },
                     itemdblclick: run_editor,
@@ -290,15 +346,12 @@ Ext.define(
     },
     function () {
         Ext.define('pve-storage', {
-            extend: 'Ext.data.Model',
+            extend: 'Ext.data.TreeModel',
             fields: [
                 'path',
                 'type',
                 'content',
-                'server',
-                'portal',
                 'target',
-                'export',
                 'storage',
                 { name: 'shared', type: 'boolean' },
                 { name: 'disable', type: 'boolean' },
