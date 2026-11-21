@@ -430,7 +430,10 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                 name = `wg${idx}`;
             }
 
-            let usedPorts = new Set(interfacesStore.getData().items.map((r) => r.data.listen_port));
+            // configured ports are strings
+            let usedPorts = new Set(
+                interfacesStore.getData().items.map((r) => Number(r.data.listen_port)),
+            );
             let listenPort = 51820;
             while (usedPorts.has(listenPort)) {
                 listenPort++;
