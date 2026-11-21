@@ -223,6 +223,20 @@ Ext.define('PVE.sdn.Fabric.WireGuard.InterfacePanel', {
                             text: gettext('Name'),
                             dataIndex: 'name',
                             flex: 1,
+                            // saving is blocked while any interface is invalid, so point out which
+                            renderer: function (value, metaData, record) {
+                                let name = Ext.htmlEncode(value);
+                                let panel = this.up('pveSDNFabricWireGuardInterfacePanel');
+                                if (!panel || panel.isInterfaceValid(record)) {
+                                    return name;
+                                }
+
+                                let error = Ext.htmlEncode(
+                                    Ext.htmlEncode(gettext('Invalid listen port or MTU')),
+                                );
+                                metaData.tdAttr = `data-qtip="${error}"`;
+                                return `${name} <i class="fa critical fa-exclamation-circle"></i>`;
+                            },
                         },
                         {
                             xtype: 'actioncolumn',
