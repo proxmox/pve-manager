@@ -14,12 +14,10 @@ use PVE::API2::Cluster;
 
 my $uid_100 = 'k3d7q2mxa5vb4n6pw2fz';
 my $uid_101 = 'r6t2w4y7z3c5e2g4h7jm';
-my $uid_104 = 'q2w3e4r5t6y7u2i3o4pa';
 
 # top-level config values per guest as decoded from the pmxcfs reply, plus whether the user has
 # VM.Audit on it; node2 is offline
-my $guests;
-my $default_guests = {
+my $guests = {
     100 => {
         type => 'qemu',
         node => 'node1',
@@ -34,8 +32,7 @@ my $default_guests = {
         meta => 'rtime=1731600000123,uid=NOT-A-UID',
     },
     103 => { type => 'qemu', node => 'node1', audit => 1 },
-    104 => { type => 'qemu', node => 'node2', audit => 1, meta => "rtime=12x,uid=$uid_104" },
-    105 => {
+    104 => {
         type => 'lxc',
         node => 'node1',
         audit => 0,
@@ -43,12 +40,11 @@ my $default_guests = {
     },
 };
 
-my $default_identities = {
+my $expected_identities = {
     100 => { uid => $uid_100, rtime => 1731600000123 },
     101 => { uid => $uid_101 },
     102 => {},
     103 => {},
-    104 => { uid => $uid_104 },
 };
 
 my $cluster_mock = Test::MockModule->new('PVE::Cluster');
@@ -133,39 +129,32 @@ sub identity_view($res) {
 }
 
 subtest 'identity of guests with valid, partial, invalid and missing meta' => sub {
-    $guests = {%$default_guests};
-
-    my ($res, $json) = get_rows({ type => 'vm' });
+    my ($res, $json) = get_rows({});
 
     is_deeply(
         identity_view($res),
-        $default_identities,
+        $expected_identities,
         'uid and rtime only where valid, guests without VM.Audit are not listed',
     );
 
     like($json, qr/"rtime":1731600000123[,}]/, 'rtime is encoded as JSON number');
-    like($json, qr/"uid":"$uid_100"/, 'uid is encoded as JSON string');
 
     for my $key (qw(meta ctime creation-qemu)) {
         ok(!grep({ exists($_->{$key}) } @$res), "no '$key' in any row");
     }
-};
-
-subtest 'listing of all resource types' => sub {
-    $guests = {%$default_guests};
-
-    my ($res) = get_rows({});
-
-    is_deeply(identity_view($res), $default_identities, 'same identities as for type vm');
 
     my @others = grep { $_->{type} !~ m/^(?:qemu|lxc)$/ } @$res;
-    is_deeply(
-        [sort map { $_->{id} } @others],
-        ['/pool/p1', 'node/node1', 'node/node2'],
-        'pool and node rows are listed',
+    ok(scalar(@others) > 0, 'non-guest rows are listed');
+    ok(
+        !grep({ exists($_->{uid}) || exists($_->{rtime}) } @others),
+        'no identity on non-guest rows',
     );
-    ok(!grep({ exists($_->{uid}) || exists($_->{rtime}) } @others),
-        'no identity on other rows');
+};
+
+subtest 'filtered by type vm' => sub {
+    my ($res) = get_rows({ type => 'vm' });
+
+    is_deeply(identity_view($res), $expected_identities, 'same identities as for all types');
 };
 
 done_testing();

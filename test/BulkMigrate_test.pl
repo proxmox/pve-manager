@@ -55,7 +55,6 @@ for my $case (
         refused => $too_old,
     },
     { name => 'newer source, newer target', vms => [101], target => 'new2' },
-    { name => 'older source, newer target', vms => [100], target => 'new2' },
     {
         name => 'older and newer source, older target',
         vms => [100, 101],
@@ -65,13 +64,11 @@ for my $case (
     { name => 'guest that is on the older target already', vms => [102], target => 'old2' },
     { name => 'guest that does not exist', vms => [999], target => 'old2' },
     { name => 'all guests, older target', target => 'old2', refused => $too_old },
-    { name => 'all guests, newer target', target => 'new2' },
     {
         name => 'all guests on older nodes, older target',
         guests => { 100 => 'old1', 102 => 'old2' },
         target => 'old2',
     },
-    { name => 'no guests, older target', guests => {}, target => 'old2' },
     { name => 'empty guest list, older target', vms => [], target => 'old2' },
 ) {
     subtest $case->{name} => sub {

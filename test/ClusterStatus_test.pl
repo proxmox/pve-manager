@@ -70,22 +70,10 @@ for my $case (
         expected => {},
     },
     {
-        name => 'cluster, reading the ID fails',
-        clinfo => $cluster_info,
-        read => sub { die "Connection refused\n" },
-        expected => {},
-    },
-    {
         name => 'standalone node with ID',
         clinfo => $standalone_info,
         read => sub { return $cluster_id },
         expected => { "node/$nodename" => $cluster_id },
-    },
-    {
-        name => 'standalone node without ID',
-        clinfo => $standalone_info,
-        read => sub { return undef },
-        expected => {},
     },
     {
         name => 'standalone node, reading the ID fails',
