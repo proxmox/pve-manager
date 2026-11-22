@@ -272,6 +272,7 @@ sub get_index {
     my $i18n_js_mtime = get_path_mtime('/usr/share/pve-i18n');
     my $i18n_yew_mtime = get_path_mtime('/usr/share/pve-yew-mobile-i18n');
     my $ui_yew_mtime = get_path_mtime('/usr/share/pve-yew-mobile-gui');
+    my $manager_mtime = get_path_mtime($basedirs->{manager});
 
     my $debug = $server->{debug};
     if (exists $args->{debug}) {
@@ -288,7 +289,7 @@ sub get_index {
         arch => PVE::Tools::get_host_dpkg_arch(),
         debug => $debug,
         version => "$version",
-        repoid => PVE::pvecfg::repoid(),
+        manager_mtime => $manager_mtime,
         wtversion => $wtversion,
         uiversion => $uiversion,
         theme => $theme,

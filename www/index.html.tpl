@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css?ver=7.0.0" />
     <link rel="stylesheet" type="text/css" href="/pve2/fa/css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/font-logos/css/font-logos.css" />
-    <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css?ver=[% version %]-[% repoid %]" />
+    <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css?ver=[% version %]-[% manager_mtime %]" />
     <link rel="stylesheet" type="text/css" href="/pwt/css/ext6-pmx.css?ver=[% wtversion %]" />
     [%- IF theme != 'crisp' %]
       [%- IF theme != 'auto' %]
@@ -53,7 +53,7 @@
     };
     </script>
     <script type="text/javascript" src="/proxmoxlib.js?ver=[% wtversion %]"></script>
-    <script type="text/javascript" src="/pve2/js/pvemanagerlib.js?ver=[% version %]-[% repoid %]"></script>
+    <script type="text/javascript" src="/pve2/js/pvemanagerlib.js?ver=[% version %]-[% manager_mtime %]"></script>
     <script type="text/javascript" src="/pve2/ext6/locale/locale-[% lang %].js?ver=7.0.0"></script>
 
     <script type="text/javascript">
