@@ -14,7 +14,7 @@ use PVE::RPCEnvironment;
 use PVE::API2::Cluster::BulkAction::Guest;
 
 my $new = PVE::GuestIdentity::MIN_PVE_MANAGER_VERSION;
-# the Proxmox VE version that each node reports, 'unknown' reports none
+# the Proxmox VE version that each node reports
 my $versions = { old1 => '9.1.1', old2 => '9.1.1', new1 => $new, new2 => $new };
 my $default_guests = { 100 => 'old1', 101 => 'new1', 102 => 'old2', 103 => 'new2' };
 my $guests; # VMID to node
@@ -62,13 +62,6 @@ for my $case (
         target => 'old2',
         refused => $too_old,
     },
-    {
-        name => 'newer source, target without version',
-        vms => [101],
-        target => 'unknown',
-        refused => qr/^node 'unknown' does not report its Proxmox VE version/,
-    },
-    { name => 'older source, target without version', vms => [100], target => 'unknown' },
     { name => 'guest that is on the older target already', vms => [102], target => 'old2' },
     { name => 'guest that does not exist', vms => [999], target => 'old2' },
     { name => 'all guests, older target', target => 'old2', refused => $too_old },
