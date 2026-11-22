@@ -24,77 +24,120 @@ Ext.define('PVE.window.GuestIdentity', {
         let renderTime = (seconds) =>
             Ext.isNumeric(seconds) ? PVE.Utils.render_timestamp_human_readable(seconds) : '';
 
+        let items = [
+            {
+                xtype: 'fieldcontainer',
+                fieldLabel: gettext('Unique ID'),
+                layout: 'hbox',
+                items: [
+                    {
+                        xtype: 'textfield',
+                        itemId: 'uid',
+                        value: meta.uid ?? '',
+                        emptyText: gettext('Assigned with the next configuration change'),
+                        editable: false,
+                        flex: 1,
+                    },
+                    {
+                        xtype: 'button',
+                        iconCls: 'fa fa-clipboard',
+                        tooltip: gettext('Copy to Clipboard'),
+                        ariaLabel: gettext('Copy to Clipboard'),
+                        disabled: !meta.uid,
+                        margin: '0 0 0 5',
+                        handler: () => PVE.Utils.copyToClipboard(meta.uid),
+                    },
+                ],
+            },
+        ];
+
         let fields = [
             {
-                xtype: 'textfield',
-                itemId: 'uid',
-                fieldLabel: gettext('Unique ID'),
-                value: meta.uid,
-                editable: false,
-            },
-            {
-                xtype: 'displayfield',
                 itemId: 'rtime',
                 fieldLabel: gettext('Registered'),
-                value: renderTime(meta.rtime / 1000),
+                value: Ext.isNumeric(meta.rtime) ? renderTime(meta.rtime / 1000) : '',
+                autoEl: {
+                    tag: 'div',
+                    'data-qtip': gettext(
+                        'Time the guest was registered in this cluster, for example by creation, a restore to a free VMID, or a migration from another cluster.',
+                    ),
+                },
             },
             {
-                xtype: 'displayfield',
                 itemId: 'ctime',
                 fieldLabel: gettext('Created'),
                 value: renderTime(meta.ctime),
             },
             {
-                xtype: 'displayfield',
                 itemId: 'creation-qemu',
                 fieldLabel: gettext('Created with QEMU'),
                 value: meta['creation-qemu'],
             },
         ];
-        me.items = fields.filter((field) => (field.value ?? '') !== '');
+
+        for (const field of fields) {
+            if ((field.value ?? '') !== '') {
+                items.push({
+                    xtype: 'displayfield',
+                    htmlEncode: true,
+                    ...field,
+                });
+            }
+        }
+
+        me.items = items;
 
         me.callParent();
     },
 });
 
-Ext.define('PVE.panel.GuestIdentityInfo', {
-    extend: 'Ext.container.Container',
-    alias: 'widget.pveGuestIdentityInfo',
+Ext.define('PVE.panel.GuestIdentityTool', {
+    extend: 'Ext.panel.Tool',
+    alias: 'widget.pveGuestIdentityTool',
 
-    hidden: true,
-    layout: {
-        type: 'hbox',
-        align: 'middle',
+    glyph: 'xf05a@FontAwesome', // fa-info-circle
+    tooltip: gettext('Guest Identity'),
+    lastUid: '',
+    style: {
+        // keep room from the right-aligned LXC distro label
+        paddingLeft: '5px',
     },
 
-    items: [
-        {
-            xtype: 'pmxInfoWidget',
-            flex: 1,
-            iconCls: 'fa fa-id-card-o fa-fw',
-            title: gettext('Unique ID'),
-            printBar: false,
-            textField: 'uid',
-            // the status view only updates info widgets, so this one shows or hides the whole row
-            renderer: function (uid) {
-                this.up('pveGuestIdentityInfo').setHidden(!uid);
-                return Ext.htmlEncode(uid);
-            },
-        },
-        {
-            xtype: 'button',
-            iconCls: 'fa fa-info-circle',
-            tooltip: gettext('Details'),
-            ariaLabel: gettext('Details'),
-            ui: 'default-toolbar',
-            margin: '0 0 0 5',
-            handler: function () {
-                this.up('pveGuestIdentityInfo').showDetails();
-            },
-        },
-    ],
+    callback: function (view, tool) {
+        tool.showDetails(view);
+    },
 
-    showDetails: async function () {
+    onAdded: function () {
+        let me = this;
+        me.callParent(arguments);
+
+        let view = me.toolOwner;
+        let rstore = view.getStore();
+        me.mon(rstore, 'load', (_store, _records, success) => {
+            if (success) {
+                me.updateFromStatus(view);
+            }
+        });
+        if (rstore.getCount() > 0) {
+            me.updateFromStatus(view);
+        }
+    },
+
+    updateFromStatus: function (view) {
+        let me = this;
+        let uid = view.getRecordValue('uid') || '';
+        if (uid === me.lastUid) {
+            return;
+        }
+        me.lastUid = uid;
+        me.setTooltip(
+            uid
+                ? Ext.String.format(gettext('Guest Identity ({0})'), Ext.htmlEncode(uid))
+                : gettext('Guest Identity'),
+        );
+    },
+
+    showDetails: async function (view) {
         let me = this;
 
         // a second click while loading would open a second window
@@ -102,8 +145,8 @@ Ext.define('PVE.panel.GuestIdentityInfo', {
             return;
         }
 
-        let view = me.up('pmxStatusView');
-        let { node, vmid, type } = view.pveSelNode.data;
+        let { node, vmid, type, name } = view.pveSelNode.data;
+        let guestName = view.getRecordValue('name') || name;
 
         // no load mask, for this short request it only flashes over the whole status view
         me.loadingDetails = true;
@@ -127,8 +170,10 @@ Ext.define('PVE.panel.GuestIdentityInfo', {
             return;
         }
 
+        let guestIdentifier = PVE.Utils.getFormattedGuestIdentifier(vmid, guestName);
         Ext.create('PVE.window.GuestIdentity', {
             autoShow: true,
+            title: `${gettext('Guest Identity')}: ${Ext.htmlEncode(guestIdentifier)}`,
             meta: PVE.Parser.parsePropertyString(response.result.data.meta) ?? {},
         });
     },

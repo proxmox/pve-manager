@@ -41,6 +41,12 @@ Ext.define('PVE.panel.GuestStatusView', {
         align: 'stretch',
     },
 
+    tools: [
+        {
+            xtype: 'pveGuestIdentityTool',
+        },
+    ],
+
     defaults: {
         xtype: 'pmxInfoWidget',
         padding: '2 25',
@@ -91,9 +97,6 @@ Ext.define('PVE.panel.GuestStatusView', {
             cbind: {
                 hidden: '{isQemu}',
             },
-        },
-        {
-            xtype: 'pveGuestIdentityInfo',
         },
         {
             xtype: 'box',

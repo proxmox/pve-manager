@@ -7,6 +7,12 @@ Ext.define('PVE.panel.TemplateStatusView', {
         align: 'stretch',
     },
 
+    tools: [
+        {
+            xtype: 'pveGuestIdentityTool',
+        },
+    ],
+
     defaults: {
         xtype: 'pmxInfoWidget',
         printBar: false,
@@ -29,9 +35,6 @@ Ext.define('PVE.panel.TemplateStatusView', {
             itemId: 'node',
             iconCls: 'fa fa-fw fa-building',
             title: gettext('Node'),
-        },
-        {
-            xtype: 'pveGuestIdentityInfo',
         },
         {
             xtype: 'box',
