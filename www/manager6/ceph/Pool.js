@@ -16,10 +16,8 @@ Ext.define('PVE.CephPoolInputPanel', {
 
         init: function (view) {
             let vm = this.getViewModel();
-            if (view.isCreate) {
-                vm.set('size', Number(view.defaultSize));
-                vm.set('minSize', Number(view.defaultMinSize));
-            }
+            vm.set('size', Number(view.defaultSize));
+            vm.set('minSize', Number(view.defaultMinSize));
         },
         sizeChange: function (field, val) {
             let vm = this.getViewModel();
@@ -243,6 +241,20 @@ Ext.define('PVE.CephPoolInputPanel', {
         });
 
         return values;
+    },
+
+    setValues: function (values) {
+        let me = this;
+        me.callParent([values]);
+        // the list entry the view model starts from may be outdated, and loading a different size
+        // suggests a min size, so take both values from the loaded status
+        let vm = me.getViewModel();
+        if (values.size !== undefined) {
+            vm.set('size', values.size);
+        }
+        if (values.min_size !== undefined) {
+            vm.set('minSize', values.min_size);
+        }
     },
 });
 
