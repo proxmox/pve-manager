@@ -22,12 +22,17 @@ Ext.define('PVE.grid.ResourceGrid', {
         });
 
         let textfilter = '';
-        let textfilterMatch = function (item) {
+        let textfilterMatch = function (item, orgNode) {
             for (const field of ['name', 'storage', 'node', 'type', 'text']) {
                 let v = item.data[field];
                 if (v && v.toLowerCase().indexOf(textfilter) >= 0) {
                     return true;
                 }
+            }
+            // Only the full uid matches, so short search terms do not match random IDs by chance.
+            let uid = orgNode.data.uid;
+            if (uid && uid === textfilter.trim()) {
+                return true;
             }
             return false;
         };
@@ -48,7 +53,7 @@ Ext.define('PVE.grid.ResourceGrid', {
                     if (orgNode) {
                         if (
                             (!filterfn || filterfn(child)) &&
-                            (!textfilter || textfilterMatch(child))
+                            (!textfilter || textfilterMatch(child, orgNode))
                         ) {
                             nodeidx[child.data.id] = orgNode;
                         }
