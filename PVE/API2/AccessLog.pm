@@ -32,8 +32,8 @@ my $access_log_filter = {
         optional => 1,
     },
     'auth-id' => {
-        description => "Only requests of this user or API token. A user also matches"
-            . " its own API tokens.",
+        description => "Only requests whose user or API token contains this text, ignoring"
+            . " case, so a user also matches its own API tokens.",
         type => 'string',
         maxLength => 1024,
         optional => 1,
@@ -64,8 +64,8 @@ my $access_log_filter = {
         optional => 1,
     },
     'auth-id-exact' => {
-        description => "Whether 'auth-id' only matches itself, so a user does not match its API"
-            . " tokens, and '-' matches requests without any.",
+        description => "Whether 'auth-id' only matches itself as a whole, so a user does not"
+            . " match its API tokens, and '-' matches requests without any.",
         type => 'boolean',
         optional => 1,
     },
