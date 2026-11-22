@@ -1,3 +1,25 @@
+pve-manager (9.2.37) trixie; urgency=medium
+
+  * ui: show a "New version" notice with a Reload UI button in the top bar
+    after pve-manager or proxmox-widget-toolkit got updated on the node. An open
+    web interface keeps running the code it was loaded with, which may no longer
+    fit the updated backend. The '/nodes/{node}/version' API endpoint now also
+    returns a 'ui-version' string for this.
+
+  * ui: guest summary: show the guest identity through an info button in the
+    header of the status panel instead of a row of its own, which broke the
+    layout of the panel. The button shows the unique ID on hover and opens the
+    details, which now also offer to copy the unique ID.
+
+  * ui: health status: keep a text selection, for example of the cluster ID in
+    the datacenter summary. The status got redrawn every three seconds, even if
+    nothing changed, which cleared the selection.
+
+  * ui: resource grids: also find guests by their full unique ID in the search
+    field, for example in Datacenter > Search, like the global search does.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 22 Nov 2026 18:50:00 +0100
+
 pve-manager (9.2.36) trixie; urgency=medium
 
   * api: ceph: mon: allow destroying a second monitor that never joined the
