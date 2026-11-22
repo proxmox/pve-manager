@@ -140,6 +140,10 @@ Ext.define('PVE.window.Restore', {
                     Ext.Msg.alert('Error', response.htmlStatus);
                 },
                 success: function (response, options) {
+                    if (view.destroyed) {
+                        return;
+                    }
+
                     let allStoragesAvailable = true;
                     let backupUid;
 
