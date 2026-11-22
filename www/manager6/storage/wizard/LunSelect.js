@@ -128,7 +128,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                     {
                         text: gettext('Name'),
                         dataIndex: 'display-name',
-                        flex: 1,
+                        flex: 2,
                         minWidth: 260,
                         renderer: Ext.htmlEncode,
                     },
@@ -137,20 +137,22 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                     {
                         text: gettext('Model'),
                         dataIndex: 'model',
-                        width: 160,
+                        flex: 1,
+                        minWidth: 120,
                         renderer: (value, md, rec) =>
                             Ext.htmlEncode([rec.get('vendor'), value].filter(Boolean).join(' ')),
                     },
                     {
                         text: gettext('State'),
                         dataIndex: 'state',
-                        width: 140,
+                        width: 130,
                         renderer: PVE.SANUtils.renderLunState,
                     },
                     {
                         text: gettext('Multipath'),
                         dataIndex: 'multipath',
-                        width: 170,
+                        flex: 1,
+                        minWidth: 110,
                         renderer: PVE.SANUtils.renderSanLunMultipath,
                         // native NVMe multipath needs no setup per namespace
                         hidden: me.nvme,
@@ -159,13 +161,14 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                         text: gettext('Used By'),
                         tooltip: gettext('As last seen by the scan node.'),
                         dataIndex: 'used-by',
-                        width: 130,
+                        flex: 1,
+                        minWidth: 110,
                         renderer: Ext.htmlEncode,
                     },
                     {
                         text: gettext('Size'),
                         dataIndex: 'size',
-                        width: 100,
+                        width: 90,
                         renderer: Proxmox.Utils.render_size,
                     },
                     {
