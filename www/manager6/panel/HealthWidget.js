@@ -22,7 +22,10 @@ Ext.define('PVE.widget.HealthWidget', {
     ],
 
     updateHealth: function (data) {
-        var me = this;
+        let me = this;
+        if (!Object.entries(data).some(([key, value]) => me.data[key] !== value)) {
+            return;
+        }
         me.update(Ext.apply(me.data, data));
     },
 
