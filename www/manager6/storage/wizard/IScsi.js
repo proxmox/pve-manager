@@ -264,6 +264,9 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let update = () => me.updateConnectionField();
         let discovery = new Ext.util.DelayedTask(function () {
             let portal = me.down('field[name=portal]').getValue();
+            if (portal && PVE.SANUtils.portalIncomplete(portal)) {
+                return;
+            }
             let target = me.down('field[name=target]');
             target.setDisabled(!portal);
             target.setPortal(portal);

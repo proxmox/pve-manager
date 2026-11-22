@@ -241,6 +241,15 @@ Ext.define('PVE.SANUtils', {
         Ext.create(`PVE.storage.wizard.${wizard}`, { autoShow: true, reloadCallback });
     },
 
+    // A portal that is still being typed: a lookup would take "192.168" for 192.0.0.168.
+    portalIncomplete: function (portal) {
+        return (
+            /[.:[]$/.test(portal) ||
+            (portal.startsWith('[') && !portal.includes(']')) ||
+            (/^[0-9.]+$/.test(portal) && !/^(\d+\.){3}\d+$/.test(portal))
+        );
+    },
+
     renderSanTransport: function (value) {
         return Ext.htmlEncode(
             {

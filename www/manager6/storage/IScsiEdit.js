@@ -150,8 +150,13 @@ Ext.define('PVE.storage.IScsiInputPanel', {
                             }
                             let exportField = panel.lookup('iScsiTargetScan');
                             if (exportField) {
+                                // still enabled and empty, so that the form stays invalid
+                                let typing = !!value && PVE.SANUtils.portalIncomplete(value);
                                 exportField.setDisabled(!value);
-                                exportField.setPortal(value);
+                                exportField.setPortal(typing ? '' : value);
+                                if (typing) {
+                                    exportField.getStore().removeAll();
+                                }
                                 exportField.setValue('');
                             }
                         },
