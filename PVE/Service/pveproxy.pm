@@ -288,6 +288,7 @@ sub get_index {
         arch => PVE::Tools::get_host_dpkg_arch(),
         debug => $debug,
         version => "$version",
+        repoid => PVE::pvecfg::repoid(),
         wtversion => $wtversion,
         uiversion => $uiversion,
         theme => $theme,
