@@ -359,7 +359,15 @@ Ext.define('PVE.storage.wizard.SAN', {
         });
     },
 
-    initComponent: function () {
+    // The ID field sets the default of the volume group name.
+    followId: function () {
+        let me = this;
+        me.down('field[name=vgname]').setEmptyText(me.down('field[name=storage]').getValue());
+    },
+
+    // The steps of the setup. They call the methods of the setup on their window, which can also
+    // be the Add Storage wizard with the methods of this class.
+    createSteps: function () {
         let me = this;
         if (!['iscsi', 'fc', 'nvmeof'].includes(me.wizardType)) {
             throw 'no SAN storage type specified';
@@ -378,8 +386,7 @@ Ext.define('PVE.storage.wizard.SAN', {
             allowBlank: true,
             vtype: 'StorageId',
         };
-        let followId = () =>
-            me.down('field[name=vgname]').setEmptyText(me.down('field[name=storage]').getValue());
+        let followId = () => me.followId();
         let settings = {
             xtype: 'inputpanel',
             title: gettext('Storage'),
@@ -408,8 +415,9 @@ Ext.define('PVE.storage.wizard.SAN', {
                     : [{ ...common.nodes, validator: PVE.storage.wizard.SAN.validateNodes }]),
             ],
             itemId: 'settings',
+            listeners: { activate: followId },
         };
-        me.items = [
+        return [
             ...(target
                 ? [
                       {
@@ -472,8 +480,13 @@ Ext.define('PVE.storage.wizard.SAN', {
                 onSubmit: () => me.finish(),
             },
         ];
+    },
+
+    initComponent: function () {
+        let me = this;
+        let target = me.wizardType !== 'fc';
+        me.items = me.createSteps();
         me.callParent();
-        me.down('#settings').on('activate', followId);
         let tabs = me.down('#wizcontent');
         tabs.on('tabchange', function (tp, tab) {
             if (target && tab === me.down('#luns')) {
