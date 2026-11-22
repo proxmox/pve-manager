@@ -315,6 +315,8 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
                         let target = me.down('field[name=target]');
                         target.setValue('');
                         target.disable();
+                        // an answer for the previous portal would select one of its targets
+                        target.setPortal('');
                         discovery.delay(500);
                     },
                 },
