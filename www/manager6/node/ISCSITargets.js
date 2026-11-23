@@ -45,7 +45,10 @@ Ext.define('PVE.node.ISCSITargetTree', {
                     return;
                 }
                 let status = response.result.data;
-                me.down('#initiator').setValue(status['initiator-name'] || '');
+                // a name left over from a removed but not purged open-iscsi is of no use
+                me.down('#initiator').setValue(
+                    status.supported ? status['initiator-name'] || '' : '',
+                );
                 if (!status.supported) {
                     Proxmox.Utils.setErrorMask(
                         me.getView(),
