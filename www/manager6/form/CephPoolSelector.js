@@ -39,9 +39,12 @@ Ext.define('PVE.form.CephPoolSelector', {
 
         store.load({
             callback: function (rec, op, success) {
+                // a failed load, as without Ceph on the node, has no records
+                if (!success || me.destroyed) {
+                    return;
+                }
                 let filteredRec = rec.filter(onlyRBDPools);
-
-                if (success && filteredRec.length > 0) {
+                if (filteredRec.length > 0) {
                     me.select(filteredRec[0]);
                 }
             },
