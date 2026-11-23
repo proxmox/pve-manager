@@ -6,6 +6,11 @@ use JSON qw(decode_json encode_json);
 use List::Util qw(max);
 
 use PVE::File qw(file_get_contents file_set_contents);
+use PVE::INotify;
+use PVE::Multipath;
+use PVE::Notify;
+use PVE::SafeSyslog;
+use PVE::Storage;
 
 # the fields of a LUN that a notification shows, kept across a restart of the daemon
 my @KEEP = qw(wwid name native state paths-active paths-expected paths-total storages vgname);
@@ -99,14 +104,14 @@ my sub save($self) {
 }
 
 # Sends the problems that wait for the next check, which a daemon that stops would lose.
-sub flush($self, $notify) {
+sub flush($self, $notify = \&queue_notification) {
     my $held = delete $self->{held}->{problem};
     notify_problems($self, $held, $notify) if $held;
     save($self);
 }
 
 # Takes a multipath report of this node. A change counts once two reports in a row show it.
-sub update($self, $report, $notify) {
+sub update($self, $report, $notify = \&queue_notification) {
     my $valid = ref($report) eq 'HASH';
     # Maps need multipathd, the namespaces of native NVMe multipath do not. Each row counts by its
     # own source, so a node without multipathd still notifies on its namespaces.
@@ -195,6 +200,110 @@ sub update($self, $report, $notify) {
     }
 
     save($self);
+}
+
+my sub plural($n, $noun) {
+    return $n == 1 ? "1 $noun" : "$n ${noun}s";
+}
+
+# Takes the rows of a notification, each with all storages of its LUN, sorted.
+sub template_data($severity, $luns) {
+    my $data = { severity => $severity, count => scalar(@$luns) };
+    my ($failed, $degraded, $restored, $cleared) = (0, 0, 0, 0);
+    for my $lun (@$luns) {
+        my $storages = $lun->{storages} // [];
+        my $state_text =
+            $lun->{gone} ? 'no longer reported'
+            : $lun->{cleared} ? 'alert cleared'
+            : $severity eq 'info' ? 'restored'
+            : $lun->{state};
+        my $show_expected = defined($lun->{'paths-expected'})
+            && ($lun->{'paths-total'} // -1) != $lun->{'paths-expected'};
+        my $row = {
+            %$lun,
+            'state-text' => $state_text,
+            'has-path-count' => defined($lun->{'paths-total'}) ? 1 : 0,
+            'show-expected' => $show_expected ? 1 : 0,
+            'storage-label' => scalar(@$storages) == 1 ? 'storage' : 'storages',
+            storages => join(', ', @$storages),
+        };
+        push $data->{luns}->@*, $row;
+
+        if ($severity eq 'info') {
+            if ($lun->{gone} || $lun->{cleared}) {
+                $cleared++;
+            } else {
+                $restored++;
+            }
+        } elsif ($row->{state} eq 'failed') {
+            $failed++;
+        } else {
+            $degraded++;
+        }
+    }
+    my %kinds = map { ($_->{native} ? 'namespace' : 'LUN') => 1 } $data->{luns}->@*;
+    my $device = scalar(keys %kinds) == 1 ? (keys %kinds)[0] : 'SAN device';
+    if ($severity eq 'info') {
+        if ($restored && $cleared) {
+            $data->{event} = 'alerts resolved';
+            $data->{summary} =
+                plural($restored, $device) . ' restored, ' . plural($cleared, 'alert') . ' cleared';
+        } elsif ($cleared) {
+            $data->{event} = 'alert cleared';
+            $data->{summary} = plural($cleared, $device);
+        } else {
+            $data->{event} = 'paths restored';
+            $data->{summary} = plural($restored, $device);
+        }
+    } else {
+        $data->{event} = 'paths lost';
+        if ($failed && $degraded) {
+            $data->{summary} = plural($failed, $device) . " failed, $degraded degraded";
+        } elsif ($failed) {
+            $data->{summary} = plural($failed, $device) . ' failed';
+        } else {
+            $data->{summary} = plural($degraded, $device) . ' degraded';
+        }
+    }
+    $data->{failed} = $failed if $failed;
+    $data->{degraded} = $degraded if $degraded;
+    $data->{restored} = $restored if $restored;
+    $data->{cleared} = $cleared if $cleared;
+    return $data;
+}
+
+# Queues a notification, with the storages of this node that each LUN belongs to. Returns whether
+# it was queued.
+sub queue_notification($severity, $luns) {
+    my $ok = eval {
+        my $nodename = PVE::INotify::nodename();
+        my $storage = eval { PVE::Storage::config() };
+        syslog('warning', "cannot read storage config for multipath notification: $@") if $@;
+        my (%by_vg, %by_wwid);
+        for my $sid (keys %{ $storage->{ids} // {} }) {
+            my $scfg = PVE::Storage::storage_check_node($storage, $sid, $nodename, 1) // next;
+            push $by_vg{ $scfg->{vgname} }->@*, $sid if defined($scfg->{vgname});
+            my $base = PVE::Multipath::parse_base_volume($scfg->{base});
+            push $by_wwid{ $base->{wwid} }->@*, $sid if $base;
+        }
+        my @rows;
+        for my $lun (@$luns) {
+            my %storages = map { $_ => 1 } (
+                ($lun->{storages} // [])->@*,
+                ($by_wwid{ $lun->{wwid} } // [])->@*,
+                ($by_vg{ $lun->{vgname} // '' } // [])->@*,
+            );
+            push @rows, { %$lun, storages => [sort keys %storages] };
+        }
+        my $data = {
+            PVE::Notify::common_template_data()->%*, template_data($severity, \@rows)->%*,
+        };
+        my $fields = { type => 'multipath', hostname => $nodename };
+        PVE::Notify::notify($severity, 'multipath', $data, $fields);
+        1;
+    };
+    syslog('err', "cannot queue multipath notification: $@") if !$ok;
+    return $ok;
 }
 
 1;

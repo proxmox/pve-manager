@@ -343,4 +343,43 @@ close($fh);
 pass_with($degraded, [], 'and monitoring starts over');
 pass_with($degraded, [['warning', 'a:degraded']], 'with alerts as on a fresh boot');
 
+my sub summary($severity, @luns) {
+    my $data = PVE::MultipathNotification::template_data($severity, \@luns);
+    return "$data->{event}: $data->{summary}";
+}
+is(
+    summary('error', { state => 'failed' }, { state => 'degraded' }, { state => 'degraded' }),
+    'paths lost: 1 LUN failed, 2 degraded',
+    'summary of lost paths',
+);
+is(
+    summary('info', { state => 'optimal' }, { gone => 1 }, { state => 'optimal', cleared => 1 }),
+    'alerts resolved: 1 LUN restored, 2 alerts cleared',
+    'summary of a recovery with cleared alerts',
+);
+is(
+    summary('info', { gone => 1, native => 1 }, { state => 'optimal', cleared => 1 }),
+    'alert cleared: 2 SAN devices',
+    'a namespace and a LUN',
+);
+my $rows = PVE::MultipathNotification::template_data(
+    'info',
+    [
+        { wwid => 'a', gone => 1, storages => ['s1', 's2'] },
+        {
+            wwid => 'b',
+            state => 'degraded',
+            'paths-active' => 1,
+            'paths-total' => 2,
+            'paths-expected' => 3,
+            storages => ['s1'],
+        },
+    ],
+)->{luns};
+is_deeply(
+    [map { [$_->@{qw(has-path-count show-expected storage-label storages)}] } @$rows],
+    [[0, 0, 'storages', 's1, s2'], [1, 1, 'storage', 's1']],
+    'path counts and storages of the rows',
+);
+
 done_testing();
