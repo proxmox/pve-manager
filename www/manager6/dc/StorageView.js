@@ -38,7 +38,8 @@ Ext.define(
                         node.baseStorage =
                             config.type === 'lvm' ? config.base?.split(':', 1)[0] : undefined;
                         node.leaf = true;
-                        node.iconCls = 'fa fa-fw fa-database x-fa-tree';
+                        let icon = PVE.Utils.storageSchema[config.type]?.faIcon ?? 'folder';
+                        node.iconCls = `fa fa-fw fa-${icon} x-fa-tree`;
                         nodes.set(node.storage, node);
                     }
                     let children = [];
