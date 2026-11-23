@@ -31,11 +31,10 @@ Ext.define('PVE.window.GuestIdentity', {
                 layout: 'hbox',
                 items: [
                     {
-                        xtype: 'textfield',
+                        xtype: 'displayfield',
                         itemId: 'uid',
-                        value: meta.uid ?? '',
-                        emptyText: gettext('Assigned with the next configuration change'),
-                        editable: false,
+                        value: meta.uid ?? gettext('Assigned with the next configuration change'),
+                        userCls: meta.uid ? '' : 'pmx-opacity-50',
                         flex: 1,
                     },
                     {

@@ -701,6 +701,10 @@ table.osds td:first-of-type {
     color: #3892d4;
 }
 
+.pmx-opacity-50 {
+    opacity: 0.50;
+}
+
 .pmx-opacity-75 {
     opacity: 0.75;
 }
