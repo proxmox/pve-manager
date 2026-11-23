@@ -32,7 +32,7 @@ Ext.define('PVE.form.CephFSSelector', {
 
         store.load({
             callback: function (rec, op, success) {
-                if (success && rec.length > 0) {
+                if (success && !me.destroyed && rec.length > 0) {
                     me.select(rec[0]);
                 }
             },
