@@ -36,6 +36,7 @@ Ext.define('PVE.ClusterAdministration', {
         parent: null,
         data: {
             totem: {},
+            pveVersion: undefined,
             nodelist: [],
             preferred_node: {
                 name: '',
@@ -79,6 +80,7 @@ Ext.define('PVE.ClusterAdministration', {
                             }
                         }
                         vm.set('totem', {});
+                        vm.set('pveVersion', undefined);
                         vm.set('isInCluster', false);
                         vm.set('nodelist', []);
                         vm.set('preferred_node', {
@@ -89,6 +91,7 @@ Ext.define('PVE.ClusterAdministration', {
                         return;
                     }
                     vm.set('totem', data.totem);
+                    vm.set('pveVersion', data['pve-version']);
                     vm.set('isInCluster', !!data.totem.cluster_name);
                     vm.set('nodelist', data.nodelist);
 
@@ -125,15 +128,21 @@ Ext.define('PVE.ClusterAdministration', {
 
                 onClusterInfo: function () {
                     let vm = this.getViewModel();
+                    let joinInfo = {
+                        ipAddress: vm.get('preferred_node.addr'),
+                        fingerprint: vm.get('preferred_node.fp'),
+                        peerLinks: vm.get('preferred_node.peerLinks'),
+                        ring_addr: vm.get('preferred_node.ring_addr'),
+                        totem: vm.get('totem'),
+                    };
+                    // older clusters do not expose their version
+                    let pveVersion = vm.get('pveVersion');
+                    if (pveVersion) {
+                        joinInfo.pveVersion = pveVersion;
+                    }
                     Ext.create('PVE.ClusterInfoWindow', {
                         autoShow: true,
-                        joinInfo: {
-                            ipAddress: vm.get('preferred_node.addr'),
-                            fingerprint: vm.get('preferred_node.fp'),
-                            peerLinks: vm.get('preferred_node.peerLinks'),
-                            ring_addr: vm.get('preferred_node.ring_addr'),
-                            totem: vm.get('totem'),
-                        },
+                        joinInfo,
                     });
                 },
 
