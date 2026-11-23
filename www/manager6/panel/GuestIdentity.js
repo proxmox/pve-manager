@@ -44,6 +44,7 @@ Ext.define('PVE.window.GuestIdentity', {
                         tooltip: gettext('Copy to Clipboard'),
                         ariaLabel: gettext('Copy to Clipboard'),
                         disabled: !meta.uid,
+                        hidden: !meta.uid,
                         margin: '0 0 0 5',
                         handler: () => PVE.Utils.copyToClipboard(meta.uid),
                     },
