@@ -20,6 +20,8 @@ sub new($class, $file) {
     return bless { file => $file, notified => $notified, previous => {}, absent => {} }, $class;
 }
 
+# A missing map is no problem, as a storage can expect one that the node did not set up yet, for
+# example before it logs in to the target. Its row still keeps a notified LUN from counting as gone.
 my sub problem($lun) {
     return $lun->{state} eq 'degraded' || $lun->{state} eq 'failed';
 }
