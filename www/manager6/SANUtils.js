@@ -90,6 +90,18 @@ Ext.define('PVE.SANUtils', {
         selModel.deselect(selModel.getSelection().filter((rec) => !store.contains(rec)));
     },
 
+    // Like deselectHidden, and lets the toolbar buttons check the selected row again. A DiffStore
+    // updates rows in place, which keeps them selected without an event, so a button would still
+    // offer an action that no longer applies, like removing a multipath entry that is gone.
+    refreshSelection: function (grid) {
+        PVE.SANUtils.deselectHidden(grid);
+        let selModel = grid.getSelectionModel();
+        let selection = selModel.getSelection();
+        if (selection.length) {
+            selModel.fireEvent('selectionchange', selModel, selection);
+        }
+    },
+
     // Usable paths of a node out of those it has, or out of those it should have if more.
     pathCount: function (report) {
         if (report['paths-active'] === undefined || report['paths-total'] === undefined) {

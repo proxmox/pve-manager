@@ -225,7 +225,7 @@ Ext.define('PVE.node.SANLunList', {
         };
         me.callParent();
         Proxmox.Utils.monStoreErrors(me, me.rstore);
-        me.mon(me.store, 'refresh', () => PVE.SANUtils.deselectHidden(me));
+        me.mon(me.store, 'refresh', () => PVE.SANUtils.refreshSelection(me));
         me.on('activate', () => me.rstore.startUpdate());
         me.on('deactivate', () => me.rstore.stopUpdate());
         me.on('destroy', () => {

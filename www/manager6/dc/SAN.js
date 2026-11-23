@@ -423,7 +423,7 @@ Ext.define('PVE.dc.SANView', {
         ];
         me.callParent();
         me.query('grid').forEach((grid) => Proxmox.Utils.monStoreErrors(grid, me.rstore));
-        me.mon(lunStore, 'refresh', () => PVE.SANUtils.deselectHidden(me.down('#luns')));
+        me.mon(lunStore, 'refresh', () => PVE.SANUtils.refreshSelection(me.down('#luns')));
         me.mon(me.rstore, 'load', () =>
             me
                 .down('gridcolumn[dataIndex=other-maps]')
