@@ -1,3 +1,40 @@
+pve-manager (9.2.38) trixie; urgency=medium
+
+  * ui: storage: Add now opens a wizard. Its first step lists the storage types
+    and guided setups, grouped and searchable, and the steps of the chosen
+    entry follow in the same window.
+
+  * ui: storage: add a dialog for NVMe over Fabrics storages with subsystem
+    discovery, and a guided setup for shared LVM on an NVMe over Fabrics
+    namespace.
+
+  * ui: node: list the NVMe over Fabrics controllers of a node under Node > SAN,
+    with the option to disconnect one.
+
+  * ui: SAN: show the NVMe host NQN of each node, and when a namespace uses the
+    native NVMe multipath.
+
+  * pvestatd: notify about lost and restored paths of NVMe over Fabrics
+    namespaces, like for multipath maps.
+
+  * report: include the NVMe host NQN and the NVMe subsystems of the node.
+
+  * ui: storage: iSCSI setup: wait for a complete portal before discovering
+    targets, ignore the answer for a portal that was replaced meanwhile, and
+    ignore spaces around a typed portal.
+
+  * ui: storage: RBD and CephFS: avoid errors when the Ceph monitors, pools or
+    file systems cannot be loaded, for example without Ceph on the node, or when
+    the dialog was closed meanwhile.
+
+  * ui: ceph pool: fix the empty min size field when editing a pool.
+
+  * api: network: refuse Mako template tags in the OVS options, as ifupdown2
+    renders the whole interfaces file as a template when python3-mako is
+    installed.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Nov 2026 07:38:33 +0100
+
 pve-manager (9.2.37) trixie; urgency=medium
 
   * ui: show a "New version" notice with a Reload UI button in the top bar
