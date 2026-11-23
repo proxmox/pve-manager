@@ -33,17 +33,18 @@ my sub single_path($lun) {
     return !defined($lun->{'paths-expected'}) && ($lun->{'paths-total'} // 0) == 1;
 }
 
-# A map that the kernel shrank to its last path after a failure is optimal for multipath, but its
-# redundancy is not restored, unless the LUN had no other path when it was notified.
-my sub healthy($lun, $last) {
-    return $lun->{state} eq 'optimal' && (!single_path($lun) || notified_paths($last) <= 1);
-}
-
 # Without an expected count, the kernel removing failed paths can leave a map optimal with fewer
 # paths than it had when the problem was notified.
 my sub shrunk($lun, $last) {
     return 0 if defined($lun->{'paths-expected'});
     return ($lun->{'paths-total'} // 0) < ($last->{'paths-total'} // 0);
+}
+
+# A map that the kernel shrank to its last path after a failure is optimal for multipath, but its
+# redundancy is not restored, unless the LUN had no other path when it was notified.
+my sub healthy($lun, $last) {
+    return 0 if $lun->{state} ne 'optimal' || shrunk($lun, $last);
+    return !single_path($lun) || notified_paths($last) <= 1;
 }
 
 # A problem keeps the most paths that its LUN had, as the kernel can remove some before it recovers.
@@ -140,14 +141,12 @@ sub update($self, $report, $notify) {
             }
         } elsif ($last && healthy($lun, $last) && !$unsent{$wwid}) {
             if ($before && healthy($before, $last)) {
-                if (!shrunk($lun, $last) && !shrunk($before, $last)) {
-                    # The kernel removes failed paths and the expected count can be lowered, so the
-                    # alert can be over without the paths being known to be back.
-                    my $cleared = ($lun->{'paths-active'} // 0) < notified_paths($last)
-                        || single_path($lun);
-                    push @recovery, $cleared ? { %$lun, cleared => 1 } : $lun;
-                }
-            } elsif (!shrunk($lun, $last)) {
+                # The kernel removes failed paths and the expected count can be lowered, so the
+                # alert can be over without the paths being known to be back.
+                my $cleared = ($lun->{'paths-active'} // 0) < notified_paths($last)
+                    || single_path($lun);
+                push @recovery, $cleared ? { %$lun, cleared => 1 } : $lun;
+            } else {
                 $pending{recovery} = 1;
             }
         }

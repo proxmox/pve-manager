@@ -300,6 +300,14 @@ pass_with(
 );
 pass_with({ %$two, b => 'degraded' }, [], 'two paths are back');
 pass_with({ %$two, b => 'degraded' }, [], 'which are fewer than the LUN had');
+pass_with({ %$two, b => 'optimal' }, [], 'the other LUN recovers');
+my $all_of_four = { a => { state => 'optimal', 'paths-active' => 4, 'paths-total' => 4 } };
+pass_with({ %$all_of_four, b => 'optimal' }, [], 'which waits as all paths of the first come back');
+pass_with(
+    { %$all_of_four, b => 'optimal' },
+    [['info', 'a:optimal', 'b:optimal']],
+    'one recovery for both',
+);
 
 $tracker = PVE::MultipathNotification->new("$dir/held-stop.json");
 pass_with({ a => 'failed', b => 'optimal' }, [], 'a LUN loses all paths');
