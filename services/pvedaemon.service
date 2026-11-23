@@ -1,7 +1,7 @@
 [Unit]
 Description=PVE API Daemon
 ConditionPathExists=/usr/bin/pvedaemon
-Wants=corosync.service pve-cluster.service pve-notify-worker.service
+Wants=corosync.service pve-cluster.service
 After=corosync.service pve-cluster.service
 
 [Service]
