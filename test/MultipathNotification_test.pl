@@ -288,6 +288,19 @@ pass_with({ a => 'failed', b => 'optimal' }, [], 'a LUN loses all paths');
 pass_with({ a => 'failed', b => 'degraded' }, [], 'which waits while another one starts to');
 pass_with(undef, [['error', 'a:failed']], 'and does not wait for a usable report');
 
+$tracker = PVE::MultipathNotification->new("$dir/held-shrunk.json");
+my $half_of_four = { a => { state => 'degraded', 'paths-active' => 2, 'paths-total' => 4 } };
+pass_with({ %$half_of_four, b => 'optimal' }, [], 'a LUN loses two of four paths');
+pass_with({ %$half_of_four, b => 'degraded' }, [], 'which waits while another one starts to');
+my $rest_failed = { a => { state => 'failed', 'paths-active' => 0, 'paths-total' => 2 } };
+pass_with(
+    { %$rest_failed, b => 'degraded' },
+    [['error', 'a:failed', 'b:degraded']],
+    'the kernel removed the failed paths when the rest fail',
+);
+pass_with({ %$two, b => 'degraded' }, [], 'two paths are back');
+pass_with({ %$two, b => 'degraded' }, [], 'which are fewer than the LUN had');
+
 $tracker = PVE::MultipathNotification->new("$dir/held-stop.json");
 pass_with({ a => 'failed', b => 'optimal' }, [], 'a LUN loses all paths');
 pass_with({ a => 'failed', b => 'degraded' }, [], 'which waits while another one starts to');

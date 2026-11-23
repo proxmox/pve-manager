@@ -46,14 +46,26 @@ my sub shrunk($lun, $last) {
     return ($lun->{'paths-total'} // 0) < ($last->{'paths-total'} // 0);
 }
 
+# A problem keeps the most paths that its LUN had, as the kernel can remove some before it recovers.
+my sub keep_paths($row, $earlier) {
+    for my $key (qw(paths-total paths-expected)) {
+        $row->{$key} = $earlier->{$key}
+            if defined($earlier->{$key}) && $earlier->{$key} > ($row->{$key} // 0);
+    }
+}
+
 # One row per LUN, the first one unless a later one shows a failure, which a partial recovery after
 # it was confirmed must not hide.
 my sub merge_problems(@rows) {
     my %by_wwid;
     for my $row (@rows) {
         my $known = $by_wwid{ $row->{wwid} };
-        $by_wwid{ $row->{wwid} } = $row
-            if !$known || ($row->{state} eq 'failed' && $known->{state} ne 'failed');
+        if (!$known || ($row->{state} eq 'failed' && $known->{state} ne 'failed')) {
+            $by_wwid{ $row->{wwid} } = {%$row};
+            keep_paths($by_wwid{ $row->{wwid} }, $known) if $known;
+        } else {
+            keep_paths($known, $row);
+        }
     }
     return map { $by_wwid{$_} } sort keys %by_wwid;
 }
@@ -68,12 +80,8 @@ my sub notify_problems($self, $problem, $notify) {
     my $notified = $self->{notified};
     for my $lun (@$problem) {
         my $row = { map { exists($lun->{$_}) ? ($_ => $lun->{$_}) : () } @KEEP };
-        # an escalation keeps the path counts of the first notification for the recovery
-        my $known = $notified->{ $lun->{wwid} } // {};
-        for my $key (qw(paths-total paths-expected)) {
-            $row->{$key} = $known->{$key}
-                if defined($known->{$key}) && $known->{$key} > ($row->{$key} // 0);
-        }
+        # an escalation keeps the paths of the first notification
+        keep_paths($row, $notified->{ $lun->{wwid} } // {});
         $notified->{ $lun->{wwid} } = $row;
     }
     $self->{dirty} = 1;
