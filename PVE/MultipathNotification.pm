@@ -13,7 +13,8 @@ my @KEEP = qw(wwid name native state paths-active paths-expected paths-total sto
 sub new($class, $file) {
     my $notified = -e $file ? eval { decode_json(file_get_contents($file)) } : {};
     if (ref($notified) ne 'HASH') {
-        warn "ignoring unreadable multipath notification state '$file' - $@";
+        warn "ignoring unreadable multipath notification state '$file' - "
+            . ($@ || "not a JSON object\n");
         $notified = {};
     }
     return bless { file => $file, notified => $notified, previous => {}, absent => {} }, $class;
