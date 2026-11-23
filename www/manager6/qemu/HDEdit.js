@@ -320,7 +320,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
             {
                 xtype: 'proxmoxcheckbox',
                 name: 'iothread',
-                fieldLabel: 'IO thread',
+                fieldLabel: gettext('IO thread'),
                 clearOnDisable: true,
                 bind:
                     me.insideWizard || me.isCreate
