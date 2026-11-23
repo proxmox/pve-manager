@@ -134,6 +134,8 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let me = this;
         let wizard = me.up('window');
         let values = me.getValues();
+        // a pasted portal can come with spaces around it
+        values.portal = values.portal?.trim();
         // a disabled target field counts as valid, while the portal waits for its discovery
         let target = me.down('field[name=target]');
         if (!values.target || target.discoveredPortal !== values.portal) {
@@ -263,7 +265,7 @@ Ext.define('PVE.storage.wizard.IScsiTarget', {
         let labelWidth = 150;
         let update = () => me.updateConnectionField();
         let discovery = new Ext.util.DelayedTask(function () {
-            let portal = me.down('field[name=portal]').getValue();
+            let portal = me.down('field[name=portal]').getValue()?.trim();
             if (portal && PVE.SANUtils.portalIncomplete(portal)) {
                 return;
             }
