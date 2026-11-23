@@ -157,6 +157,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
                 clusterName: '',
             },
             hasAssistedInfo: false,
+            versionHint: '',
         },
         formulas: {
             submittxt: function (get) {
@@ -206,8 +207,58 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
                 linkEditor.setDefaultLinks();
             }
         },
+        updateVersionHint: function (clusterVersion) {
+            let vm = this.getViewModel();
+
+            let localVersion = PVE.VersionInfo?.version;
+            // the cluster version comes from pasted, possibly older or malformed join information
+            let parseVersion = (version) =>
+                typeof version === 'string'
+                    ? version
+                          .match(/^(\d+)\.(\d+)/)
+                          ?.slice(1)
+                          .map((v) => parseInt(v, 10))
+                    : undefined;
+
+            let local = parseVersion(localVersion);
+            let cluster = parseVersion(clusterVersion);
+
+            let hint = '';
+            if (local && cluster && (local[0] !== cluster[0] || local[1] !== cluster[1])) {
+                let localIsOlder =
+                    local[0] < cluster[0] || (local[0] === cluster[0] && local[1] < cluster[1]);
+                let text = Ext.String.format(
+                    gettext(
+                        'This node runs Proxmox VE {0}, but the newest cluster node runs Proxmox VE {1}.',
+                    ),
+                    Ext.htmlEncode(localVersion),
+                    Ext.htmlEncode(clusterVersion),
+                );
+
+                if (local[0] !== cluster[0]) {
+                    let upgradeText = localIsOlder
+                        ? gettext('Upgrade this node before joining.')
+                        : gettext('Upgrade the cluster before joining.');
+                    let supportText = gettext(
+                        'Mixed major versions are only supported temporarily during an upgrade.',
+                    );
+                    hint =
+                        '<i class="fa fa-fw fa-exclamation-triangle warning"></i> ' +
+                        `${text} ${supportText} ${upgradeText}`;
+                } else {
+                    let upgradeText = localIsOlder
+                        ? gettext('Consider upgrading this node before joining.')
+                        : gettext('Consider upgrading the cluster before joining.');
+                    hint = `${text} ${upgradeText}`;
+                }
+            }
+
+            vm.set('versionHint', hint);
+        },
         recomputeSerializedInfo: function (field, value) {
             let vm = this.getViewModel();
+
+            this.updateVersionHint(undefined);
 
             let assistedEntryBox = this.lookup('assistedEntry');
 
@@ -270,6 +321,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
                 };
                 field.valid = true;
                 vm.set('hasAssistedInfo', true);
+                this.updateVersionHint(joinInfo.pveVersion);
             }
             vm.set('info', info);
         },
@@ -339,6 +391,15 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
                 hidden: '{!assistedEntry.checked}',
             },
             value: '',
+        },
+        {
+            xtype: 'displayfield',
+            userCls: 'pmx-hint',
+            htmlEncode: false,
+            bind: {
+                value: '{versionHint}',
+                hidden: '{!versionHint}',
+            },
         },
         {
             xtype: 'panel',
