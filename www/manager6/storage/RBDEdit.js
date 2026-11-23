@@ -58,6 +58,10 @@ Ext.define('PVE.storage.Ceph.Controller', {
             method: 'GET',
             scope: this,
             callback: function (options, success, response) {
+                // the panel can be gone meanwhile, for example with another type chosen
+                if (view.destroyed) {
+                    return;
+                }
                 var data = response.result.data;
                 if (response.status === 200) {
                     if (data.length > 0) {
