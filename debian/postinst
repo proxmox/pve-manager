@@ -103,6 +103,31 @@ update_ceph_conf() {
     fi
 }
 
+# TODO: remove with PVE 10
+replace_iso_nvme_host_identity() {
+    if [ "$(cat /etc/nvme/hostnqn 2>/dev/null)" != 'nqn.2014-08.org.nvmexpress:uuid:e655a800-6677-11f0-8000-7cc2558920a9' ] \
+        || [ "$(cat /etc/nvme/hostid 2>/dev/null)" != '5507e6d3-f647-4fae-ad18-609e276d2bd6' ] \
+        || ! command -v nvme >/dev/null \
+        || ! command -v uuidgen >/dev/null;
+    then
+        return 0
+    fi
+
+    if grep -qsx -e tcp -e rdma -e fc /sys/class/nvme/*/transport \
+        || test -s /etc/nvme/config.json \
+        || grep -qsv -e '^[[:space:]]*#' -e '^[[:space:]]*$' /etc/nvme/discovery.conf \
+        || grep -qs '^nvmeof:' /etc/pve/storage.cfg;
+    then
+        printf '\nWARNING: Shared NVMe host identity from Proxmox VE 9.2-1 arm64 ISO detected; replace manually with:\n'
+        printf '  nvme gen-hostnqn > /etc/nvme/hostnqn && uuidgen > /etc/nvme/hostid\n\n'
+        return 0
+    fi
+
+    if nvme gen-hostnqn > /etc/nvme/hostnqn && uuidgen > /etc/nvme/hostid; then
+        echo "Replaced shared NVMe host identity from Proxmox VE 9.2-1 arm64 ISO."
+    fi
+}
+
 # Copied from dh_installtmpfiles/13.24.2
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
        if [ -x "$(command -v systemd-tmpfiles)" ]; then
@@ -202,6 +227,10 @@ case "$1" in
             printf '\nNOTE: Detected override for 'thin_check_options' without '--clear-needs-check-flag' option in /etc/lvm/lvm.conf\n'
             printf 'Add the option to the override or thin pools with minor issues might not automatically activate anymore!\n\n'
         fi
+    fi
+
+    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '9.2.39~'; then
+        replace_iso_nvme_host_identity
     fi
 
     ;;
