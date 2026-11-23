@@ -372,15 +372,28 @@ Ext.define('PVE.dc.OptionView', {
                     minValue: 100,
                     maxValue: 1000 * 1000 * 1000 - 1,
                     submitValue: true,
+                    listeners: {
+                        change: (field) =>
+                            field.up('inputpanel').down('field[name=upper]').validate(),
+                    },
                 },
                 {
                     xtype: 'proxmoxintegerfield',
                     name: 'upper',
                     fieldLabel: gettext('Upper'),
                     emptyText: '1.000.000',
-                    minValue: 100,
-                    maxValue: 1000 * 1000 * 1000 - 1,
+                    minValue: 101,
+                    maxValue: 1000 * 1000 * 1000,
                     submitValue: true,
+                    validator: function () {
+                        let lower =
+                            this.up('inputpanel').down('field[name=lower]').getValue() ?? 100;
+                        let upper = this.getValue() ?? 1000 * 1000;
+                        if (upper <= lower) {
+                            return gettext('Must be greater than the lower boundary');
+                        }
+                        return true;
+                    },
                 },
                 {
                     xtype: 'proxmoxcheckbox',
