@@ -135,6 +135,7 @@ my $init_report_cmds = sub {
             cmds => [
                 'qm list',
                 sub { dir2text('/etc/pve/qemu-server/', '\d+\.conf', \&redact_qemu_config) },
+                'cat /etc/pve/virtual-guest/cpu-models.conf',
                 'pct list',
                 sub { dir2text('/etc/pve/lxc/', '\d+\.conf', \&redact_lxc_config) },
             ],
