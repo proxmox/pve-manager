@@ -242,8 +242,11 @@ Ext.define('PVE.SANUtils', {
     },
 
     openSetup: function (type, reloadCallback) {
-        let wizard = { fc: 'FibreChannel', nvmeof: 'NVMeOF' }[type] ?? 'IScsi';
-        Ext.create(`PVE.storage.wizard.${wizard}`, { autoShow: true, reloadCallback });
+        Ext.create('PVE.storage.AddWizard', {
+            preselect: `setup:${type}`,
+            autoShow: true,
+            reloadCallback,
+        });
     },
 
     // A portal that is still being typed: a lookup would take "192.168" for 192.0.0.168.

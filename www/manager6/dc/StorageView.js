@@ -157,18 +157,20 @@ Ext.define(
             return Ext.htmlEncode(PVE.Utils.format_storage_type(type, metaData, record));
         },
 
-        // in the order they show
+        // In the order they show. Storages added for the whole cluster are mostly shared ones,
+        // while the installer or Node > Disks usually set up the local ones. Custom plugins are
+        // installed to be used.
         addCategories: [
-            {
-                id: 'local',
-                text: gettext('Filesystems and Volume Groups'),
-                note: gettext('To create a storage on an empty disk of a node, use Node > Disks.'),
-            },
             { id: 'network', text: gettext('Network') },
             { id: 'san', text: gettext('SAN') },
             { id: 'backup', text: gettext('Backup') },
             { id: 'import', text: gettext('Import') },
             { id: 'custom', text: gettext('Custom Plugins') },
+            {
+                id: 'local',
+                text: gettext('Filesystems and Volume Groups'),
+                note: gettext('To create a storage on an empty disk of a node, use Node > Disks.'),
+            },
             { id: 'other', text: gettext('Other') },
         ],
 
@@ -188,7 +190,6 @@ Ext.define(
                 keywords,
                 iconCls: 'fa fa-fw fa-magic',
                 disabledReason: PVE.SANUtils.setupBlocker(type),
-                handler: () => PVE.SANUtils.openSetup(type, () => me.reloadStore()),
             });
             let actions = [
                 setup(
@@ -281,7 +282,6 @@ Ext.define(
                     keywords: `${type} ${keywords}`,
                     iconCls: `fa fa-fw fa-${schema[type].faIcon}`,
                     disabledReason: allocate,
-                    handler: () => me.createStorageEditWindow(type),
                 });
             }
 
@@ -298,7 +298,6 @@ Ext.define(
                     keywords: metadata.type,
                     iconCls: 'fa fa-fw fa-folder',
                     disabledReason: allocate,
-                    handler: () => me.createStorageEditWindow(metadata.type),
                 });
             }
             return actions;
@@ -370,26 +369,6 @@ Ext.define(
 
             let sm = Ext.create('Ext.selection.TreeModel');
 
-            let addList;
-            let toggleAddList = function (button, open) {
-                if (addList) {
-                    if (!open) {
-                        addList.dismiss(true);
-                    }
-                    return;
-                }
-                addList = Ext.create('PVE.storage.TypePicker', {
-                    storageView: me,
-                    button,
-                    listeners: {
-                        destroy: () => {
-                            addList = undefined;
-                        },
-                    },
-                });
-                addList.showBelow();
-            };
-
             me.pluginMetadata = {};
 
             let run_editor = function () {
@@ -427,16 +406,13 @@ Ext.define(
                 tbar: [
                     {
                         text: gettext('Add'),
-                        // the arrow of a menu button, as the entries drop down below it
-                        split: true,
-                        ariaAttributes: { 'aria-haspopup': 'dialog', 'aria-expanded': 'false' },
-                        handler: (button) => toggleAddList(button),
-                        // Down opens the list like the menu of a menu button
-                        onDownKey: function (event) {
-                            event.stopEvent();
-                            toggleAddList(this, true);
-                            return false;
-                        },
+                        ariaAttributes: { 'aria-haspopup': 'dialog' },
+                        handler: () =>
+                            Ext.create('PVE.storage.AddWizard', {
+                                storageView: me,
+                                autoShow: true,
+                                reloadCallback: () => me.reloadStore(),
+                            }),
                     },
                     remove_btn,
                     edit_btn,
