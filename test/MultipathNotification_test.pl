@@ -336,24 +336,40 @@ is(
     'alert cleared: 2 SAN devices',
     'a namespace and a LUN',
 );
-my $rows = PVE::MultipathNotification::template_data(
-    'info',
-    [
-        { wwid => 'a', gone => 1, storages => ['s1', 's2'] },
-        {
-            wwid => 'b',
-            state => 'degraded',
-            'paths-active' => 1,
-            'paths-total' => 2,
-            'paths-expected' => 3,
-            storages => ['s1'],
-        },
-    ],
-)->{luns};
+my $lost = {
+    wwid => 'a',
+    state => 'degraded',
+    'paths-active' => 1,
+    'paths-total' => 2,
+    'paths-expected' => 3,
+    size => 1024,
+    vgname => 'vg',
+    storages => ['s1'],
+};
 is_deeply(
-    [map { [$_->@{qw(has-path-count show-expected storage-label storages)}] } @$rows],
-    [[0, 0, 'storages', 's1, s2'], [1, 1, 'storage', 's1']],
-    'path counts and storages of the rows',
+    PVE::MultipathNotification::template_data('warning', [$lost])->{luns},
+    [{
+        $lost->%{qw(wwid state paths-active paths-total paths-expected)},
+        'state-text' => 'degraded',
+        'path-count' => '1/3',
+        storages => 's1',
+        'storage-label' => 'storage',
+    }],
+    'a row counts the expected paths that a LUN lacks',
+);
+is_deeply(
+    PVE::MultipathNotification::template_data(
+        'info',
+        [{ wwid => 'a', gone => 1, storages => ['s1', 's2'] }],
+    )->{luns},
+    [{
+        wwid => 'a',
+        gone => 1,
+        'state-text' => 'no longer reported',
+        storages => 's1, s2',
+        'storage-label' => 'storages',
+    }],
+    'one for a LUN that is gone has no path count',
 );
 
 done_testing();

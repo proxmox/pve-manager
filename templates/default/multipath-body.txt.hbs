@@ -1,7 +1,7 @@
 Multipath {{event}} on {{hostname}} ({{summary}}):
 
 {{#each luns}}
-- {{#if name}}{{name}} ({{wwid}}){{else}}{{wwid}}{{/if}}: {{state-text}}{{#if has-path-count}}, {{paths-active}}/{{paths-total}} paths active{{/if}}{{#if show-expected}} ({{paths-expected}} expected){{/if}}{{#if storages}}; {{storage-label}}: {{storages}}{{/if}}
+- {{#if name}}{{name}} ({{wwid}}){{else}}{{wwid}}{{/if}}: {{state-text}}{{#if path-count}}, {{path-count}} paths usable{{/if}}{{#if storages}}; {{storage-label}}: {{storages}}{{/if}}
 {{/each}}
 
 See Datacenter > SAN for the cluster overview and Node > SAN on {{hostname}} for individual paths.

@@ -14,6 +14,8 @@ use PVE::Storage;
 
 # the fields of a notified LUN that later checks and notifications use, kept across a restart
 my @KEEP = qw(wwid name native state paths-expected paths-total storages vgname);
+# the fields of a LUN that notification templates get, besides those made for them
+my @SHOW = qw(wwid name native state paths-active paths-total paths-expected gone cleared);
 
 sub new($class, $file) {
     my $notified = -e $file ? eval { decode_json(file_get_contents($file)) } : {};
@@ -202,7 +204,7 @@ my sub plural($n, $noun) {
 
 # Takes the rows of a notification, each with all storages of its LUN, sorted.
 sub template_data($severity, $luns) {
-    my $data = { severity => $severity, count => scalar(@$luns) };
+    my $data = {};
     my ($failed, $degraded, $restored, $cleared) = (0, 0, 0, 0);
     for my $lun (@$luns) {
         my $storages = $lun->{storages} // [];
@@ -211,16 +213,16 @@ sub template_data($severity, $luns) {
             : $lun->{cleared} ? 'alert cleared'
             : $severity eq 'info' ? 'restored'
             : $lun->{state};
-        my $show_expected = defined($lun->{'paths-expected'})
-            && ($lun->{'paths-total'} // -1) != $lun->{'paths-expected'};
         my $row = {
-            %$lun,
+            (map { exists($lun->{$_}) ? ($_ => $lun->{$_}) : () } @SHOW),
             'state-text' => $state_text,
-            'has-path-count' => defined($lun->{'paths-total'}) ? 1 : 0,
-            'show-expected' => $show_expected ? 1 : 0,
             'storage-label' => scalar(@$storages) == 1 ? 'storage' : 'storages',
             storages => join(', ', @$storages),
         };
+        # the usable paths out of those the LUN has, or should have if more, as the UI shows them
+        my $paths = max($lun->{'paths-total'} // 0, $lun->{'paths-expected'} // 0);
+        $row->{'path-count'} = ($lun->{'paths-active'} // 0) . "/$paths"
+            if defined($lun->{'paths-total'}) && $paths;
         push $data->{luns}->@*, $row;
 
         if ($severity eq 'info') {
@@ -259,10 +261,6 @@ sub template_data($severity, $luns) {
             $data->{summary} = plural($degraded, $device) . ' degraded';
         }
     }
-    $data->{failed} = $failed if $failed;
-    $data->{degraded} = $degraded if $degraded;
-    $data->{restored} = $restored if $restored;
-    $data->{cleared} = $cleared if $cleared;
     return $data;
 }
 
