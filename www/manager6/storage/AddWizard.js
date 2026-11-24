@@ -182,6 +182,14 @@ Ext.define('PVE.storage.TypeList', {
                 selectionchange: (sm, selection) =>
                     me.fireEvent('select', me, selection[0]?.get('id')),
                 itemdblclick: (view, rec) => me.choose(rec),
+                // category headers share the DOM row of their first entry, so select it on click
+                groupclick: (view, node) => {
+                    let rec = view.getRecord(view.findItemByChild(node));
+                    if (rec) {
+                        view.focusRow(rec);
+                        me.grid.getSelectionModel().select(rec);
+                    }
+                },
                 itemkeydown: (view, rec, item, index, event) => {
                     if (event.getKey() === event.ENTER) {
                         event.stopEvent();
