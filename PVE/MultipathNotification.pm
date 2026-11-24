@@ -12,8 +12,8 @@ use PVE::Notify;
 use PVE::SafeSyslog;
 use PVE::Storage;
 
-# the fields of a LUN that a notification shows, kept across a restart of the daemon
-my @KEEP = qw(wwid name native state paths-active paths-expected paths-total storages vgname);
+# the fields of a notified LUN that later checks and notifications use, kept across a restart
+my @KEEP = qw(wwid name native state paths-expected paths-total storages vgname);
 
 sub new($class, $file) {
     my $notified = -e $file ? eval { decode_json(file_get_contents($file)) } : {};
@@ -165,7 +165,7 @@ sub update($self, $report, $notify = \&queue_notification) {
             next;
         }
         my $lun = { $notified->{$wwid}->%*, gone => 1 };
-        delete $lun->@{qw(state paths-active paths-expected paths-total)};
+        delete $lun->@{qw(state paths-expected paths-total)};
         push @recovery, $lun;
     }
 
