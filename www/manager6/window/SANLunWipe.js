@@ -12,6 +12,12 @@ Ext.define('PVE.window.SANLunWipe', {
         let lun = me.lun;
         let name = lun.name || lun.wwid;
         let nvme = lun.multipath === 'native';
+        // FIXME: remove once storage plugin has proper backing-device support for external plugins
+        // types of external plugins have no schema here, built-in iSCSI direct has none either
+        let external = PVE.data.ResourceStore.getRange().some((rec) => {
+            let type = rec.get('type') === 'storage' && rec.get('plugintype');
+            return !!type && type !== 'iscsidirect' && !PVE.Utils.storageSchema[type];
+        });
         me.title = nvme ? gettext('Wipe Namespace') : gettext('Wipe LUN');
         me.url = `/nodes/${me.node}/disks/wipedisk`;
         me.extraRequestParams = { disk: lun['by-id'] };
@@ -47,14 +53,22 @@ Ext.define('PVE.window.SANLunWipe', {
                 // the checks before the wipe see the storages of the cluster and the users of the
                 // LUN on this node, not what other hosts or third-party storage plugins do with it
                 xtype: 'proxmoxcheckbox',
-                boxLabel: nvme
-                    ? gettext('No other host uses the namespace')
-                    : gettext('No other host uses the LUN'),
+                boxLabel: external
+                    ? nvme
+                        ? gettext('No other host or storage plugin uses the namespace')
+                        : gettext('No other host or storage plugin uses the LUN')
+                    : nvme
+                      ? gettext('No other host uses the namespace')
+                      : gettext('No other host uses the LUN'),
                 submitValue: false,
                 getErrors: function () {
-                    let error = nvme
-                        ? gettext('Confirm that no other host uses the namespace.')
-                        : gettext('Confirm that no other host uses the LUN.');
+                    let error = external
+                        ? nvme
+                            ? gettext('Confirm that no other host or storage plugin uses the namespace.')
+                            : gettext('Confirm that no other host or storage plugin uses the LUN.')
+                        : nvme
+                          ? gettext('Confirm that no other host uses the namespace.')
+                          : gettext('Confirm that no other host uses the LUN.');
                     return this.getValue() ? [] : [error];
                 },
             },
