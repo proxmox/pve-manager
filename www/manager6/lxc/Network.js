@@ -392,7 +392,7 @@ Ext.define(
                     let net = structuredClone(config);
                     net.id = key;
 
-                    let iface = interfaces[config.hwaddr.toLowerCase()];
+                    let iface = interfaces[config.hwaddr?.toLowerCase()];
                     if (iface) {
                         net.name = iface.name;
                         net.ip = [];
