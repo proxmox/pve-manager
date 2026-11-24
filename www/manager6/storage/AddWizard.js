@@ -219,6 +219,11 @@ Ext.define('PVE.storage.TypeList', {
                         grid.getView().focusRow(me.store.getAt(0));
                         grid.getSelectionModel().select(0);
                     } else if (key === event.ENTER) {
+                        // with an empty search, as after Back, go on with the selected entry
+                        if (!field.getValue().trim() && me.selectedId()) {
+                            me.choose(me.grid.getSelection()[0]);
+                            return;
+                        }
                         let enabled = me.store.getRange().filter((r) => !r.get('disabledReason'));
                         // an entry whose name has all words beats one found by its description
                         let words = field.getValue().toLowerCase().split(/\s+/).filter(Boolean);
@@ -567,7 +572,6 @@ Ext.define('PVE.storage.AddWizard', {
 
         if (active === me.typeTab) {
             next.show();
-            // a setup closed by going back mounts again on Next, without a new selection
             next.setDisabled(!me.typeTab.selectedId());
             submit.hide();
         } else if (flow.kind === 'plain') {
@@ -606,10 +610,6 @@ Ext.define('PVE.storage.AddWizard', {
         let idx = tp.items.indexOf(newcard);
         me.maxidx = Math.max(me.maxidx ?? 0, idx);
         if (newcard === me.typeTab) {
-            // a setup polls and discovers in its steps; Next mounts it again from the selection
-            if (me.flow?.kind === 'san' && !me.connection) {
-                me.unmountFlow();
-            }
             Ext.GlobalEvents.fireEvent('proxmoxShowHelp', 'chapter_storage');
             me.typeTab.focusSearch();
         }

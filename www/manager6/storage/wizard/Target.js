@@ -495,6 +495,10 @@ Ext.define('PVE.storage.wizard.Target', {
         ];
         me.callParent();
         me.updateConnectionField();
+        // the Add Storage wizard keeps this step while its type list shows
+        let identities = me.down('pveStorageWizardNodeIdentities');
+        me.on('activate', () => identities.rstore.startUpdate());
+        me.on('deactivate', () => identities.rstore.stopUpdate());
         me.on('afterrender', () =>
             Proxmox.Utils.API2Request({
                 url: '/storage',
