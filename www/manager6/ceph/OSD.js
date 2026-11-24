@@ -746,6 +746,10 @@ Ext.define('PVE.node.CephOsdTree', {
         xclass: 'Ext.app.ViewController',
 
         reload: function () {
+            this.reloadTree(true);
+        },
+
+        reloadTree: function (showMask) {
             let me = this;
             let view = me.getView();
             let vm = me.getViewModel();
@@ -753,9 +757,12 @@ Ext.define('PVE.node.CephOsdTree', {
             let sm = view.getSelectionModel();
             Proxmox.Utils.API2Request({
                 url: '/nodes/' + nodename + '/ceph/osd',
-                waitMsgTarget: view,
+                waitMsgTarget: showMask ? view : undefined,
                 method: 'GET',
                 failure: function (response, opts) {
+                    if (view.destroyed) {
+                        return;
+                    }
                     let msg = response.htmlStatus;
                     PVE.Utils.showCephInstallOrMask(view, msg, nodename, (win) =>
                         view.mon(win, 'cephInstallWindowClosed', () => {
@@ -764,6 +771,9 @@ Ext.define('PVE.node.CephOsdTree', {
                     );
                 },
                 success: function (response, opts) {
+                    if (view.destroyed) {
+                        return;
+                    }
                     let data = response.result.data;
                     let selected = view.getSelection();
                     let name;
@@ -873,13 +883,35 @@ Ext.define('PVE.node.CephOsdTree', {
             }
         },
 
+        clearDelayedReloads: function () {
+            for (const timer of this.delayedReloads ?? []) {
+                clearTimeout(timer);
+            }
+            this.delayedReloads = [];
+        },
+
         create_osd: function () {
             let me = this;
             let vm = this.getViewModel();
             Ext.create('PVE.CephCreateOsd', {
                 nodename: vm.get('nodename'),
-                taskDone: () => {
+                taskDone: (success) => {
+                    if (me.destroyed) {
+                        return;
+                    }
                     me.reload();
+                    if (!success) {
+                        return;
+                    }
+                    // OSD joins the CRUSH map only after its service starts, seconds after task end
+                    me.clearDelayedReloads();
+                    me.delayedReloads = [5000, 15000].map((delay) =>
+                        Ext.defer(() => {
+                            if (!me.destroyed) {
+                                me.reloadTree(false);
+                            }
+                        }, delay),
+                    );
                 },
             }).show();
         },
@@ -1172,6 +1204,8 @@ Ext.define('PVE.node.CephOsdTree', {
         control: {
             '#': {
                 selectionchange: 'set_selection_status',
+                // the controller is already gone when the view fires its destroy event
+                beforedestroy: 'clearDelayedReloads',
             },
         },
 
