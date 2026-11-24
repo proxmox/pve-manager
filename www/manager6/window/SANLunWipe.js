@@ -14,10 +14,27 @@ Ext.define('PVE.window.SANLunWipe', {
         let nvme = lun.multipath === 'native';
         // FIXME: remove once storage plugin has proper backing-device support for external plugins
         // types of external plugins have no schema here, built-in iSCSI direct has none either
-        let external = PVE.data.ResourceStore.getRange().some((rec) => {
-            let type = rec.get('type') === 'storage' && rec.get('plugintype');
-            return !!type && type !== 'iscsidirect' && !PVE.Utils.storageSchema[type];
-        });
+        let isExternalType = (type) =>
+            !!type && type !== 'iscsidirect' && !Object.hasOwn(PVE.Utils.storageSchema, type);
+        let external = PVE.data.ResourceStore.getRange().some(
+            (rec) => rec.get('type') === 'storage' && isExternalType(rec.get('plugintype')),
+        );
+        let confirmLabel = () =>
+            external
+                ? nvme
+                    ? gettext('No other host or storage plugin uses the namespace')
+                    : gettext('No other host or storage plugin uses the LUN')
+                : nvme
+                  ? gettext('No other host uses the namespace')
+                  : gettext('No other host uses the LUN');
+        let confirmError = () =>
+            external
+                ? nvme
+                    ? gettext('Confirm that no other host or storage plugin uses the namespace.')
+                    : gettext('Confirm that no other host or storage plugin uses the LUN.')
+                : nvme
+                  ? gettext('Confirm that no other host uses the namespace.')
+                  : gettext('Confirm that no other host uses the LUN.');
         me.title = nvme ? gettext('Wipe Namespace') : gettext('Wipe LUN');
         me.url = `/nodes/${me.node}/disks/wipedisk`;
         me.extraRequestParams = { disk: lun['by-id'] };
@@ -53,23 +70,11 @@ Ext.define('PVE.window.SANLunWipe', {
                 // the checks before the wipe see the storages of the cluster and the users of the
                 // LUN on this node, not what other hosts or third-party storage plugins do with it
                 xtype: 'proxmoxcheckbox',
-                boxLabel: external
-                    ? nvme
-                        ? gettext('No other host or storage plugin uses the namespace')
-                        : gettext('No other host or storage plugin uses the LUN')
-                    : nvme
-                      ? gettext('No other host uses the namespace')
-                      : gettext('No other host uses the LUN'),
+                itemId: 'confirmUnused',
+                boxLabel: confirmLabel(),
                 submitValue: false,
                 getErrors: function () {
-                    let error = external
-                        ? nvme
-                            ? gettext('Confirm that no other host or storage plugin uses the namespace.')
-                            : gettext('Confirm that no other host or storage plugin uses the LUN.')
-                        : nvme
-                          ? gettext('Confirm that no other host uses the namespace.')
-                          : gettext('Confirm that no other host uses the LUN.');
-                    return this.getValue() ? [] : [error];
+                    return this.getValue() ? [] : [confirmError()];
                 },
             },
             {
@@ -86,5 +91,24 @@ Ext.define('PVE.window.SANLunWipe', {
             },
         ];
         me.callParent();
+
+        // ResourceStore only lists enabled storages; check /storage for disabled external ones too
+        if (!external) {
+            Proxmox.Utils.API2Request({
+                url: '/storage',
+                method: 'GET',
+                autoErrorAlert: false,
+                success: function ({ result: { data } }) {
+                    if (me.destroyed || !data?.some((entry) => isExternalType(entry.type))) {
+                        return;
+                    }
+                    external = true;
+                    let cb = me.down('#confirmUnused');
+                    cb.setBoxLabel(confirmLabel());
+                    cb.setValue(false);
+                    cb.validate();
+                },
+            });
+        }
     },
 });
