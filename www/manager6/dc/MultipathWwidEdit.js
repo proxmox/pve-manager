@@ -21,15 +21,94 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
                 },
             };
         }
-        me.items = [
-            {
-                xtype: me.isCreate ? 'proxmoxtextfield' : 'displayfield',
-                name: 'wwid',
-                fieldLabel: 'WWID',
-                value: me.wwid,
+        let wwidField = {
+            xtype: 'displayfield',
+            name: 'wwid',
+            fieldLabel: 'WWID',
+            value: me.wwid,
+        };
+        if (me.isCreate) {
+            // editable comboboxes auto-expand on focus and would cover the form
+            me.defaultFocus = me.wwid ? 'field[name=alias]' : undefined;
+            wwidField = {
+                ...wwidField,
+                xtype: 'proxmoxComboGrid',
                 allowBlank: false,
                 maxLength: 128,
-            },
+                editable: true,
+                notFoundIsValid: true, // allow WWIDs only visible on other nodes
+                // Enter submits the typed text, also if it only matches a listed WWID in part or
+                // in another case, as the list does
+                validator: function (value) {
+                    let data = this.getStore().getData();
+                    let wwids = (data.getSource() ?? data).getRange().map((r) => r.get('wwid'));
+                    let typed = value.toLowerCase();
+                    return (
+                        !value ||
+                        wwids.includes(value) ||
+                        !wwids.some((wwid) => wwid.toLowerCase().includes(typed)) ||
+                        gettext('Select the LUN from the list or enter its full WWID.')
+                    );
+                },
+                autoSelect: false,
+                anyMatch: true,
+                valueField: 'wwid',
+                displayField: 'wwid',
+                store: {
+                    model: 'pve-san-lun',
+                    autoLoad: true,
+                    proxy: {
+                        type: 'proxmox',
+                        url: `/api2/json/nodes/${Proxmox.NodeName}/san/luns`,
+                    },
+                    // namespaces use native NVMe multipath, the entry API refuses their WWIDs
+                    filters: [
+                        (rec) =>
+                            ['none', 'unmanaged'].includes(rec.get('multipath')) &&
+                            !(rec.get('transport') ?? '').startsWith('nvme') &&
+                            !/^(?:eui|uuid|nvme)\./.test(rec.get('wwid') ?? ''),
+                    ],
+                    sorters: 'wwid',
+                },
+                listConfig: {
+                    width: 640,
+                    columns: [
+                        {
+                            header: 'WWID',
+                            dataIndex: 'wwid',
+                            flex: 1,
+                            renderer: Ext.htmlEncode,
+                        },
+                        {
+                            header: gettext('Name'),
+                            dataIndex: 'name',
+                            width: 100,
+                            renderer: Ext.htmlEncode,
+                        },
+                        {
+                            header: gettext('Transport'),
+                            dataIndex: 'transport',
+                            width: 80,
+                            renderer: PVE.SANUtils.renderSanTransport,
+                        },
+                        {
+                            header: gettext('Multipath'),
+                            dataIndex: 'multipath',
+                            width: 100,
+                            renderer: PVE.SANUtils.renderSanLunMultipath,
+                        },
+                        {
+                            header: gettext('Size'),
+                            dataIndex: 'size',
+                            width: 90,
+                            renderer: Proxmox.Utils.render_size,
+                        },
+                    ],
+                },
+            };
+        }
+        me.items = [
+            wwidField,
             {
                 xtype: 'proxmoxtextfield',
                 name: 'alias',
