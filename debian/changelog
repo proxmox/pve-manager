@@ -1,3 +1,67 @@
+pve-manager (9.2.39) trixie; urgency=medium
+
+  * ui: guest identity: show the UID as plain text instead of in a text box
+    that looked editable. If the guest has no UID yet, grey out the
+    placeholder and hide the copy button.
+
+  * pvestatd: multipath notifications:
+    - keep the highest path count of a LUN for its problem notification.
+      Before, paths that the kernel removed before the notification was sent
+      were missing from it, and a map left optimal with its remaining paths
+      counted as recovered.
+    - also combine the recovery of a LUN without an expected path count,
+      whose failed paths the kernel removed, with the recoveries of other
+      LUNs one check apart into one notification. Before, it got a separate
+      notification once its paths came back.
+    - retry a problem notification that could not be queued only while the
+      problem lasts. Before, it was sent later even if the LUN had recovered
+      by then, and the recovery notification waited for it.
+    - pass a defined set of fields per LUN to the notification templates,
+      including the usable paths out of those the LUN has or should have, as
+      Datacenter > SAN shows them. The default templates now say, for
+      example, "2/4 paths usable" instead of "2/2 paths active (4 expected)".
+
+  * postinst: warn or, if possible, regenerate the NVMe host NQN and host ID
+    that all arm64 systems installed from the Proxmox VE 9.2-1 ISO share, as
+    NVMe over Fabrics targets identify hosts by them. If the system already
+    uses NVMe over Fabrics and still has the static ID, only print a warning
+    with the commands to replace them, as a target that only allows the
+    current NQN would refuse a new one.
+
+  * ui: cluster join: include the Proxmox VE version of the cluster in the
+    join information, if the cluster provides it with pve-cluster 9.1.17 or
+    newer. The join dialog then points out a version mismatch: a different
+    minor version shows a hint to upgrade the older side first, a different
+    major version shows a warning, as mixed major versions are only meant to
+    exist during an upgrade. Joining remains possible in both cases.
+
+  * ui: datacenter options: next-id: check in the edit window that the upper
+    boundary is above the lower one, instead of only failing on save, and
+    allow an upper boundary of 1,000,000,000, so that the range can include
+    the highest guest ID.
+
+  * report: include custom QEMU CPU models.
+
+  * ui: guest summary: let the row with the status and notes panels grow to
+    fit the status panel. Before, a status title that wrapped into a second
+    line, for example for a container with a long name, cut off the IP
+    addresses and their More button.
+
+  * ui: san:
+    - show 'open-iscsi not installed' instead of the initiator name for nodes
+      without open-iscsi, in the node list of the SAN view and of the guided
+      iSCSI setup. The setup refuses to continue with such a node selected,
+      as it cannot activate the iSCSI storage there.
+    - Node > SAN > iSCSI: do not show an initiator name that a removed but
+      not purged open-iscsi left behind.
+    - update the toolbar buttons of the LUN lists when the selected LUN
+      changes on a reload. Before, Edit Entry and Remove Entry stayed enabled
+      after the multipath entry of the LUN was removed, or disabled after one
+      was added, until another LUN was selected, and Enable Multipath stayed
+      enabled after multipath was enabled.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2026 08:16:16 +0100
+
 pve-manager (9.2.38) trixie; urgency=medium
 
   * ui: storage: Add now opens a wizard. Its first step lists the storage types
