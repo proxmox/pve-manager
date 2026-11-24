@@ -1,3 +1,42 @@
+pve-manager (9.2.40) trixie; urgency=medium
+
+  * fix #8206: ui: ceph: make the column headers of the OSD list translatable.
+
+  * ui: storage: add wizard:
+    - keep the input of a guided SAN setup when going back to the type list.
+      Enter in the empty search then goes on with the selected setup.
+    - select the first entry of a category on a click on its header.
+    - show the general settings after a failed add without a field error, as
+      the cause, like a path or server the node cannot use, is usually there.
+    - check NVMe over Fabrics portals while they are typed, and start no
+      discovery for an invalid one.
+
+  * ui: datacenter: storage: show the icon of each storage type in the tree,
+    as in the Add Storage wizard.
+
+  * ui: SAN:
+    - offer the LUNs of the node without a multipath entry or a managing
+      storage in a list when adding a multipath entry, instead of requiring
+      the WWID to be typed.
+    - let the ID of a LUN be selected and copied in the wipe confirmation.
+    - explain the Multipath column of the LUN list in a tooltip.
+    - if a storage of an external plugin is configured, ask in the wipe
+      confirmation to also make sure that no storage plugin uses the LUN, as
+      the checks before a wipe do not see the LUNs of such plugins.
+
+  * ui: migrate: always check the preconditions for the selected target.
+    Before, the window could warn on opening that the target lacks conntrack
+    state support and then migrate without it, show the results of a
+    previously selected target, or allow migrating to an offline node.
+
+  * ui: guest context menu: keep the menu usable for a guest with a volume on
+    a removed storage. Before, an error window opened over it and blocked it.
+
+  * ui: ceph: reload the OSD tree again 5 and 15 seconds after creating an
+    OSD, so that the new OSD shows up without a manual reload.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2026 22:05:53 +0100
+
 pve-manager (9.2.39) trixie; urgency=medium
 
   * ui: guest identity: show the UID as plain text instead of in a text box
