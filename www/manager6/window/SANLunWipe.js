@@ -44,8 +44,8 @@ Ext.define('PVE.window.SANLunWipe', {
                 value: Proxmox.Utils.format_size(lun.size),
             },
             {
-                // the checks before the wipe see the storages of the cluster and the users of the LUN
-                // on this node, not what another host does with it
+                // the checks before the wipe see the storages of the cluster and the users of the
+                // LUN on this node, not what other hosts or third-party storage plugins do with it
                 xtype: 'proxmoxcheckbox',
                 boxLabel: nvme
                     ? gettext('No other host uses the namespace')

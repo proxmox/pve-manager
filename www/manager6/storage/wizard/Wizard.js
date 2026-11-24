@@ -10,8 +10,6 @@ Ext.define('PVE.storage.wizard.SAN', {
                 type === 'fc' ? gettext('Fibre Channel') : PVE.Utils.format_storage_type(type),
             ),
 
-        // Removes the iSCSI or NVMe over Fabrics storage that a closed setup added if it still has
-        // the settings of the setup and no storage uses it, and calls done in any case.
         removeAddedConnection: function (connection, done) {
             let id = connection.storage;
             // the storage list adds these to the configuration of a storage
@@ -64,7 +62,6 @@ Ext.define('PVE.storage.wizard.SAN', {
             });
         },
 
-        // a validator of a Nodes field, which ExtJS calls with the field as this
         validateNodes: function () {
             let nodes = [].concat(this.getValue() || []).filter(Boolean);
             return (
@@ -93,11 +90,7 @@ Ext.define('PVE.storage.wizard.SAN', {
         Ext.Msg.alert(gettext('Error'), message);
     },
 
-    // Waits for a task with the setup masked and continues with next() once it succeeded. A task
-    // window of its own could be closed while the task runs, which would end the setup there. The
-    // setup cannot be closed during the wait either, for example with the Escape key.
-    // If the state of the task cannot be read for some time, lost() gets the error: the task may
-    // still be running then, so the setup must not start it again.
+    // poll inline while keeping the wizard open instead of a separate TaskProgress window
     waitForTask: function (upid, message, next, lost) {
         let me = this;
         let task = Proxmox.Utils.parse_task_upid(upid);
@@ -169,7 +162,6 @@ Ext.define('PVE.storage.wizard.SAN', {
         };
     },
 
-    // Removes a connection storage that the setup added for a storage it did not add, then reloads.
     cleanUp: function () {
         let me = this;
         let done = () => me.reloadCallback?.();
@@ -180,8 +172,7 @@ Ext.define('PVE.storage.wizard.SAN', {
         }
     },
 
-    // Adds a storage. If the setup is closed meanwhile, also by the callback, the cleanup waits for
-    // the result, so that it sees the added storage and a reload cannot come before it.
+    // defer cleanup until the request finishes if the wizard closes mid-flight
     addStorage: function (params, success, failure) {
         let me = this;
         me.writing = true;
@@ -205,8 +196,6 @@ Ext.define('PVE.storage.wizard.SAN', {
         });
     },
 
-    // Adds the LVM storage with the volume settings as the last request of a setup. Only the node
-    // serving the web UI looked at the LUN, so show its state on the other nodes afterwards.
     addLVMStorage: function (values, failure) {
         let me = this;
         let params = { type: 'lvm', shared: 1, content: 'images,rootdir', ...values };
@@ -244,7 +233,6 @@ Ext.define('PVE.storage.wizard.SAN', {
         if (me.connection) {
             return PVE.SANUtils.multipathText('storage', me.connection.storage);
         }
-        // the Fibre Channel setup adds an entry for a LUN without multipath
         return lun.multipath === 'none'
             ? gettext('Explicit entry, added by this setup')
             : PVE.SANUtils.multipathText(lun.multipath, lun['multipath-storage']);
@@ -275,7 +263,6 @@ Ext.define('PVE.storage.wizard.SAN', {
                 : []),
             ['WWID', lun.wwid],
             [gettext('Multipath'), me.multipathSummary(lun)],
-            // the Fibre Channel setup sets the expected paths of an entry it adds
             ...(!connection && lun.multipath === 'none'
                 ? [
                       [
@@ -331,8 +318,7 @@ Ext.define('PVE.storage.wizard.SAN', {
         let lun = me.down('#luns').getSelection();
         me.down('#submit').disable();
         let create = () => !me.destroyed && me.createStorage(values, lun);
-        // The volume group is created on this node, which refuses a name it has. Catching that here
-        // can say how to fix it; without the list, the creation still checks the name.
+        // pre-check existing VGs on this node for a friendlier error; proceed if scan fails
         Proxmox.Utils.API2Request({
             url: `/nodes/${Proxmox.NodeName}/scan/lvm`,
             method: 'GET',
@@ -359,20 +345,16 @@ Ext.define('PVE.storage.wizard.SAN', {
         });
     },
 
-    // The ID field sets the default of the volume group name.
     followId: function () {
         let me = this;
         me.down('field[name=vgname]').setEmptyText(me.down('field[name=storage]').getValue());
     },
 
-    // The steps of the setup. They call the methods of the setup on their window, which can also
-    // be the Add Storage wizard with the methods of this class.
     createSteps: function () {
         let me = this;
         if (!['iscsi', 'fc', 'nvmeof'].includes(me.wizardType)) {
             throw 'no SAN storage type specified';
         }
-        // the iSCSI and NVMe over Fabrics setups connect to the array with a storage first
         let target = me.wizardType !== 'fc';
         let nvme = me.wizardType === 'nvmeof';
         let onlineHelp = nvme ? 'storage_nvmeof' : 'storage_multipath';
@@ -434,7 +416,6 @@ Ext.define('PVE.storage.wizard.SAN', {
                 itemId: 'luns',
                 nvme,
                 onlineHelp,
-                // the nodes only see a newly mapped Fibre Channel LUN after a rescan
                 rescanNote: target
                     ? undefined
                     : Ext.String.format(

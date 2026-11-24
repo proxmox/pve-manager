@@ -210,7 +210,6 @@ Ext.define('PVE.dc.SANView', {
                         ),
                         dataIndex: 'other-maps',
                         width: 110,
-                        // shown once a node has such maps
                         hidden: true,
                     },
                     {
@@ -351,10 +350,7 @@ Ext.define('PVE.dc.SANView', {
                                 .map(([node, label]) => `${Ext.htmlEncode(node)}: ${label}`)
                                 .join('<br>');
                             md.tdAttr = `data-qtip="${Ext.htmlEncode(tip)}"`;
-                            // Nodes with the same state and path count form a group, worst first.
-                            // Next to a problem of the LUN, which a node without a report is not,
-                            // all groups that are not fine are listed, as a LUN missing on one node
-                            // can at the same time have lost paths on another.
+                            // group nodes by state; hide optimal ones when any node has a problem
                             let groups = new Map();
                             for (const [node, label, state] of nodes) {
                                 let group = groups.get(label) ?? { label, state, nodes: [] };
@@ -380,7 +376,6 @@ Ext.define('PVE.dc.SANView', {
                                         group.nodes.length === nodes.length
                                             ? ''
                                             : ` (${Ext.htmlEncode(group.nodes.join(', '))})`;
-                                    // a wrapped list keeps each icon with its label
                                     return `<span style="white-space: nowrap;">${group.label}</span>${names}`;
                                 })
                                 .join(', ');

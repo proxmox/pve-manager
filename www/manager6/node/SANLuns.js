@@ -161,7 +161,6 @@ Ext.define('PVE.node.SANLunList', {
                         !!caps.dc['Sys.Modify'] &&
                         rec.get('multipath') === 'none' &&
                         ['fc', 'fcoe'].includes(rec.get('transport')),
-                    // the entry is for all nodes unless restricted, which the dialog shows
                     handler: (button, event, rec) =>
                         Ext.create('PVE.dc.MultipathWwidEdit', {
                             wwid: rec.get('wwid'),
@@ -213,7 +212,6 @@ Ext.define('PVE.node.SANLunList', {
                     ],
                     targetStore: me.store,
                     listeners: {
-                        // no hit for a search is no sign of a connection problem
                         searchchange: (field, query) =>
                             me.rendered &&
                             me.setEmptyText(

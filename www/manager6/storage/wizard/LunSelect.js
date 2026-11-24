@@ -27,9 +27,7 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             me.rstore.startUpdate();
             return;
         }
-        // The scan names one target per LUN, also for a LUN reached through several. The content
-        // listing has the LUNs of the connection, and a LUN that shows up later is listed once the
-        // scan names the target of the connection for it.
+        // /san/luns only reports one target per multi-target LUN, so also match WWIDs from /content
         let targetKey = wizard.wizardType === 'nvmeof' ? 'nvme-subsystem' : 'iscsi-target';
         let filter = {
             id: 'connection',
@@ -72,7 +70,6 @@ Ext.define('PVE.storage.wizard.LunSelect', {
             sortAfterUpdate: true,
         });
         let inUse = (row) => row['used-by-storage'] || row['used-by-process'];
-        // the setup refuses a LUN with data, so do not offer one
         let hasData = (row) => row.usage === 'lvm' || row.usage === 'other';
         let blocked = (row) => inUse(row) || hasData(row);
         let noLunsText = me.nvme
@@ -154,7 +151,6 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                         flex: 1,
                         minWidth: 110,
                         renderer: PVE.SANUtils.renderSanLunMultipath,
-                        // native NVMe multipath needs no setup per namespace
                         hidden: me.nvme,
                     },
                     {
@@ -198,7 +194,6 @@ Ext.define('PVE.storage.wizard.LunSelect', {
                         emptyText: gettext('Name, WWID, Path'),
                         searchFields: ['name', 'wwid', 'devpath', 'path-search'],
                         listeners: {
-                            // no hit for a search is no sign of a connection problem
                             searchchange: function (field, query) {
                                 let grid = me.down('grid');
                                 if (grid?.rendered) {

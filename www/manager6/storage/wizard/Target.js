@@ -1,12 +1,9 @@
-// The step of a guided setup that connects to the target of an iSCSI or the subsystem of an NVMe
-// over Fabrics array, through a storage of that type.
 Ext.define('PVE.storage.wizard.Target', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveStorageWizardTarget',
 
     storageType: 'iscsi',
 
-    // The storage the target already has, which the setup uses instead of adding one.
     existingConnection: function () {
         let me = this;
         let target = me.down('field[name=target]').getValue();
@@ -15,15 +12,12 @@ Ext.define('PVE.storage.wizard.Target', {
         );
     },
 
-    // The ID of the storage the setup adds, named after the storage on the LUN by default.
     newConnectionId: function () {
         let me = this;
         let id = me.down('field[name=storage]').getValue();
         return me.down('field[name=connection]').getValue() || (id ? `${id}-base` : '');
     },
 
-    // Why the storages that use the target cannot serve the setup, if they cannot. The note of the
-    // step and Next both use it, so that the note does not promise what Next then refuses.
     reuseConflict: function (selectedNodes) {
         let me = this;
         let nvme = me.storageType === 'nvmeof';
@@ -116,7 +110,6 @@ Ext.define('PVE.storage.wizard.Target', {
         field.setReadOnly(!!existing);
         let id = me.down('field[name=storage]').getValue();
         field.setEmptyText(id ? `${id}-base` : '');
-        // a reused storage keeps its own portals
         let portals = me.down('field[name=portals]');
         if (portals) {
             if (existing) {
@@ -125,7 +118,6 @@ Ext.define('PVE.storage.wizard.Target', {
             portals.setReadOnly(!!existing);
         }
 
-        // the nodes of a storage that the setup uses are the default selection
         let identities = me.down('pveStorageWizardNodeIdentities');
         let inherited = existing?.nodes ? existing.nodes.split(',') : [];
         if ((existing?.storage ?? null) !== me.shownStorage) {
@@ -142,9 +134,6 @@ Ext.define('PVE.storage.wizard.Target', {
         note.setHidden(!conflict);
     },
 
-    // The portals of the enabled storages of the type, to discover the target of another LUN
-    // through one of them. An NVMe over Fabrics storage lists the I/O portals of its subsystem,
-    // whose default port would skip the discovery port 8009, so the suggestion leaves it out.
     updatePortalSuggestions: function () {
         let me = this;
         let users = new Map();
@@ -153,7 +142,7 @@ Ext.define('PVE.storage.wizard.Target', {
             if (disable) {
                 continue;
             } else if (me.storageType === 'nvmeof' && type === 'nvmeof') {
-                // as the storage splits its list
+                // drop default I/O port 4420 so discovery tries port 8009 first
                 list = `${portals ?? ''}`
                     .split(/[\s,;]+/)
                     .filter(Boolean)
@@ -178,7 +167,6 @@ Ext.define('PVE.storage.wizard.Target', {
         let nvme = me.storageType === 'nvmeof';
         let wizard = me.up('window');
         let values = me.getValues();
-        // a pasted portal can come with spaces around it
         values.portal = values.portal?.trim();
         // a disabled target field counts as valid, while the portal waits for its discovery
         let target = me.down('field[name=target]');
@@ -208,7 +196,6 @@ Ext.define('PVE.storage.wizard.Target', {
                   .map((rec) => rec.get('node'))
                   .sort();
         if (missing.length) {
-            // the node serving the web UI sets up the volume group, so it stays selected
             wizard.showError(
                 Ext.htmlEncode(
                     Ext.String.format(
@@ -230,7 +217,6 @@ Ext.define('PVE.storage.wizard.Target', {
             if (wizard.destroyed) {
                 return;
             }
-            // the step does not come back, the cluster status of its initiator names is not needed
             me.down('pveStorageWizardNodeIdentities').rstore.stopUpdate();
             let tabs = wizard.down('#wizcontent');
             wizard.down('#luns').enable();
@@ -250,7 +236,6 @@ Ext.define('PVE.storage.wizard.Target', {
                 me.storages = response.result.data;
                 me.updateConnectionField();
                 me.updatePortalSuggestions();
-                // the step showed which storage it reuses, if any, which must still hold
                 if (me.existingConnection()?.storage !== shown) {
                     wizard.showError(
                         nvme
@@ -282,7 +267,6 @@ Ext.define('PVE.storage.wizard.Target', {
                 }
                 let base = me.existingConnection();
                 if (base) {
-                    // within the nodes of a restricted storage, which the check ensured
                     let restricted = base.nodes ? base.nodes.split(',') : [];
                     if (restricted.length) {
                         nodes = (selectedNodes.length ? selectedNodes : restricted).join(',');
@@ -295,8 +279,7 @@ Ext.define('PVE.storage.wizard.Target', {
                     storage: me.newConnectionId(),
                     content: 'none',
                     ...(nvme
-                        ? // the storage configuration does not keep outer spaces, so neither may the
-                          // copy that the cleanup compares
+                        ? // trim so cleanup comparison matches the saved storage config
                           { subsysnqn: values.target, portals: values.portals.trim() }
                         : {
                               portal: values.portal,
@@ -354,7 +337,6 @@ Ext.define('PVE.storage.wizard.Target', {
         me.onlineHelp = nvme ? 'storage_nvmeof' : 'storage_open_iscsi';
         let targetLabel = nvme ? gettext('Subsystem') : gettext('Target');
         let common = PVE.panel.StorageBase.commonFields(true);
-        // wide enough for the longest label of the step
         let labelWidth = nvme ? 200 : 150;
         let update = () => me.updateConnectionField();
         let discovery = new Ext.util.DelayedTask(function () {
@@ -408,15 +390,12 @@ Ext.define('PVE.storage.wizard.Target', {
                     getInnerTpl: () => '{portal:htmlEncode} ({storages:htmlEncode})',
                 },
                 listeners: {
-                    // A target found through another portal must not go with this one, also not
-                    // with a Next while typing. Only the discovery waits for the typing to end.
                     change: function () {
                         let target = me.down('field[name=target]');
                         target.setValue('');
                         target.disable();
-                        // and the I/O portals of its subsystem
                         me.down('field[name=portals]')?.setValue('');
-                        // an answer for the previous portal would select one of its targets
+                        // abort any in-flight discovery for the previous portal
                         target.setPortal('');
                         discovery.delay(500);
                     },
@@ -432,7 +411,6 @@ Ext.define('PVE.storage.wizard.Target', {
                 nodename: Proxmox.NodeName,
                 listeners: {
                     change: function (field, value) {
-                        // the I/O portals that the discovery reported for the subsystem
                         let rec =
                             nvme &&
                             field.getStore().findRecord('subsysnqn', value, 0, false, true, true);
@@ -528,7 +506,6 @@ Ext.define('PVE.storage.wizard.Target', {
     },
 });
 
-// Both add the LVM storage the same way; only the volume ID that names its base differs.
 Ext.define('PVE.storage.wizard.IScsi', {
     extend: 'PVE.storage.wizard.SAN',
     wizardType: 'iscsi',

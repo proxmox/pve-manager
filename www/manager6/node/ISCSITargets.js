@@ -74,8 +74,6 @@ Ext.define('PVE.node.ISCSITargetTree', {
         });
     },
 
-    // Shows the loaded portals that match the search text, in one of their own values or in a
-    // device of their session, below their targets.
     updateTree: function () {
         let me = this;
         if (!me.sessions) {

@@ -56,7 +56,6 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
             xtype: 'textfield',
             name: 'discovery-portal',
             fieldLabel: gettext('Discovery Portal'),
-            // without discovery, the subsystem and portals can be entered as they are
             allowBlank: true,
             validator: (value) => PVE.SANUtils.validateNVMePortals(value),
             submitValue: false,
@@ -65,8 +64,6 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
                 disabled: '{!isCreate}',
             },
             listeners: {
-                // The subsystem and the I/O portals of a previous discovery go at once, also its
-                // pending request. The next discovery waits until the portal is typed.
                 change: function (field, value) {
                     let panel = field.up('inputpanel');
                     let scan = panel.lookup('subsystemScan');
@@ -75,7 +72,6 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
                     scan.setValue('');
                     scan.getStore().removeAll();
                     panel.down('field[name=portals]')?.setValue('');
-                    // a pasted portal can come with spaces around it
                     let typed = (value ?? '').trim();
                     let portal = typed && PVE.SANUtils.nvmePortalValid(typed) ? typed : '';
                     field.discovery ??= new Ext.util.DelayedTask();
@@ -103,10 +99,8 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
                 xtype: (get) => (get('isCreate') ? 'pveNVMeOFScan' : 'displayfield'),
                 hideTrigger: '{isCreate}',
             },
-            // an NQN can also be typed, if the array offers no discovery
             editable: true,
             notFoundIsValid: true,
-            // the list needs a discovery portal
             expand: function () {
                 if (this.portal) {
                     this.self.prototype.expand.call(this);

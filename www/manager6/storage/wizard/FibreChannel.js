@@ -53,12 +53,9 @@ Ext.define('PVE.storage.wizard.FibreChannel', {
             });
         };
         let hasMultipath = (row) => ['manual', 'storage', 'unmanaged'].includes(row.multipath);
-        // the volume group is created on the by-id path of the map, which names the WWID
         let ready = (row) => hasMultipath(row) && !!row['by-id'];
-        // Fibre Channel has no storage that knows how many paths a node should have, so an entry
-        // the setup adds expects the paths of this node. A node with fewer paths then shows as
-        // degraded. The wizard remembers the entry it added, so that a retry still sets the
-        // expected paths before it creates the volume group.
+        // FC has no backing storage to derive paths-expected, so record this node's path count
+        // on the newly added entry (keeping me.addedEntry until done so retries still apply it)
         let expectPaths = function (row) {
             if (!(row['paths-total'] >= 2)) {
                 delete me.addedEntry;
@@ -167,8 +164,7 @@ Ext.define('PVE.storage.wizard.FibreChannel', {
                 });
             }
         };
-        // The storage is added last. Its ID has to be free before anything is created: once the
-        // volume group exists, the setup cannot create it again.
+        // verify the storage ID is free before creating the multipath entry and VG
         Proxmox.Utils.API2Request({
             url: '/storage',
             method: 'GET',

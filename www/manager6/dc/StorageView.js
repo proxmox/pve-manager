@@ -69,8 +69,6 @@ Ext.define(
             });
         },
 
-        // What a storage is on: the volume group, pool or subsystem for the types without path or
-        // target.
         storageLocation: function ({ type, vgname, thinpool, pool, subsysnqn, target, path }) {
             switch (type) {
                 case 'lvm':
@@ -86,8 +84,7 @@ Ext.define(
             }
         },
 
-        // A sorter in the state saved by an older version still names the path, which the
-        // location replaced in this column.
+        // migrate saved 'path' column sorter state to 'location'
         applyState: function (state) {
             for (const sorter of state?.storeState?.sorters ?? []) {
                 if (sorter.property === 'path') {
@@ -158,9 +155,6 @@ Ext.define(
             return Ext.htmlEncode(PVE.Utils.format_storage_type(type, metaData, record));
         },
 
-        // In the order they show. Storages added for the whole cluster are mostly shared ones,
-        // while the installer or Node > Disks usually set up the local ones. Custom plugins are
-        // installed to be used.
         addCategories: [
             { id: 'network', text: gettext('Network') },
             { id: 'san', text: gettext('SAN') },
@@ -175,7 +169,6 @@ Ext.define(
             { id: 'other', text: gettext('Other') },
         ],
 
-        // The ways to add a storage, with why the user cannot use one, if they cannot.
         addActions: function () {
             let me = this;
 
@@ -183,7 +176,6 @@ Ext.define(
                 ? undefined
                 : PVE.SANUtils.requiresText('Datastore.Allocate', '/storage');
             let setup = (type, description, keywords) => ({
-                // the setups and the storage types, including custom ones, never share an ID
                 id: `setup:${type}`,
                 category: 'san',
                 text: PVE.storage.wizard.SAN.subject(type),
@@ -268,7 +260,6 @@ Ext.define(
             };
             let schema = PVE.Utils.storageSchema;
             let addable = Object.keys(schema).filter((type) => !schema[type].hideAdd);
-            // the types in the order of the table above, then any the table does not know
             let listed = (type) => Object.hasOwn(types, type);
             let known = Object.keys(types).filter((type) => addable.includes(type));
             for (const type of [...known, ...addable.filter((type) => !listed(type))]) {

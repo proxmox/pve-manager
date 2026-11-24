@@ -224,7 +224,6 @@ Ext.define('PVE.storage.LVMInputPanel', {
                     vgNameField.setVisible(!!value);
                     vgNameField.setDisabled(!value);
 
-                    // a volume group on a LUN of a base storage is meant to be shared
                     me.up('inputpanel').down('field[name=shared]').setValue(!!value);
                 },
             },

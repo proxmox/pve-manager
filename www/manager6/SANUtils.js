@@ -28,20 +28,17 @@ Ext.define('pve-san-lun', {
         'iscsi-lun',
         'nvme-subsystem',
         'nvme-nsid',
-        // one column shows the target of a LUN and the subsystem of a namespace
         {
             name: 'target',
             depends: ['iscsi-target', 'nvme-subsystem'],
             calculate: (data) => data['iscsi-target'] || data['nvme-subsystem'] || '',
             sortType: 'asUCString',
         },
-        // and one the number of a LUN and the ID of a namespace
         {
             name: 'lun',
             depends: ['iscsi-lun', 'nvme-nsid'],
             calculate: (data) => data['iscsi-lun'] ?? data['nvme-nsid'],
         },
-        // the texts of the Name and Used By columns, which also sort by them
         {
             name: 'display-name',
             depends: ['name', 'wwid'],
@@ -61,7 +58,6 @@ Ext.define('pve-san-lun', {
             calculate: (data) => PVE.SANUtils.usageText(data),
             sortType: 'asUCString',
         },
-        // what identifies the paths, as text for the search
         {
             name: 'path-search',
             depends: ['path-list'],
@@ -82,17 +78,14 @@ Ext.define('pve-san-lun', {
 Ext.define('PVE.SANUtils', {
     singleton: true,
 
-    // Deselects the rows of a grid that the filters of its store hide. The buttons of a toolbar
-    // act on the selected row, which must not be one that a search does not show.
+    // deselect rows hidden by store filters so toolbar actions cannot target them
     deselectHidden: function (grid) {
         let selModel = grid.getSelectionModel();
         let store = grid.getStore();
         selModel.deselect(selModel.getSelection().filter((rec) => !store.contains(rec)));
     },
 
-    // Like deselectHidden, and lets the toolbar buttons check the selected row again. A DiffStore
-    // updates rows in place, which keeps them selected without an event, so a button would still
-    // offer an action that no longer applies, like removing a multipath entry that is gone.
+    // DiffStore updates rows in place without firing selectionchange, so re-notify toolbar buttons
     refreshSelection: function (grid) {
         PVE.SANUtils.deselectHidden(grid);
         let selModel = grid.getSelectionModel();
@@ -102,7 +95,6 @@ Ext.define('PVE.SANUtils', {
         }
     },
 
-    // Usable paths of a node out of those it has, or out of those it should have if more.
     pathCount: function (report) {
         if (report['paths-active'] === undefined || report['paths-total'] === undefined) {
             return undefined;
@@ -111,7 +103,6 @@ Ext.define('PVE.SANUtils', {
         return total ? `${report['paths-active']}/${total}` : undefined;
     },
 
-    // How the multipath of a LUN is managed, as plain text.
     multipathText: function (value, storage) {
         if (value === 'storage' && storage) {
             return Ext.String.format(gettext('Storage "{0}"'), storage);
@@ -143,7 +134,6 @@ Ext.define('PVE.SANUtils', {
         return Ext.htmlEncode(value);
     },
 
-    // A state with its icon, and with its label unless another text is given.
     stateHtml: function (state, text) {
         let display = {
             ok: ['check-circle good', gettext('OK')],
@@ -172,8 +162,7 @@ Ext.define('PVE.SANUtils', {
         return value ? PVE.SANUtils.stateHtml(value) : '';
     },
 
-    // The state of a LUN on a node, as its path count where the report has one. Without a map there
-    // is no failover, so a fine LUN gets no check.
+    // unmapped LUNs have no failover, so omit the green check icon for optimal ones
     renderLunReport: function (report, unmapped) {
         let state = report.state;
         let count = PVE.SANUtils.pathCount(report);
@@ -187,7 +176,6 @@ Ext.define('PVE.SANUtils', {
         return PVE.SANUtils.stateHtml(state, count);
     },
 
-    // The counts behind a path count, for its tooltip.
     pathDetail: function (report) {
         if (report['paths-active'] === undefined || report['paths-total'] === undefined) {
             return '';
@@ -221,14 +209,13 @@ Ext.define('PVE.SANUtils', {
     usageText: function (row) {
         return (
             row['used-by-storage'] ||
-            // also if the LUN has a volume group, which is then usually the guest's own
+            // prefer guest over vgname, which is usually the guest's own VG
             (row['used-by-guest'] && `VM ${row['used-by-guest']}`) ||
             (row['used-by-process'] &&
                 Ext.String.format(gettext('Process {0}'), row['used-by-process'])) ||
             row.vgname ||
             row.detail ||
             {
-                // the usage comes from the cached data of one node and cannot rule out others
                 unused: gettext('No use detected'),
                 lvm: gettext('LVM physical volume'),
                 other: gettext('Other'),
@@ -241,7 +228,6 @@ Ext.define('PVE.SANUtils', {
         return Ext.String.format(gettext('Requires {0} on {1}.'), privilege, path);
     },
 
-    // Why the user cannot run a guided setup, if they cannot.
     setupBlocker: function (type) {
         let { storage, dc } = Ext.state.Manager.get('GuiCap');
         if (!storage['Datastore.Allocate']) {

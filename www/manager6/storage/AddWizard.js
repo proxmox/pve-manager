@@ -1,6 +1,3 @@
-// The storage types and setups of Datacenter > Storage > Add, grouped and searchable, as the first
-// step of the Add Storage wizard. A selection mounts the steps of the entry; a double click, Enter
-// on an entry or Enter in the search with a single match goes on to them.
 Ext.define('PVE.storage.TypeList', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveStorageTypeList',
@@ -18,7 +15,6 @@ Ext.define('PVE.storage.TypeList', {
         let categories = me.categories;
         let order = Object.fromEntries(categories.map((category, i) => [category.id, i]));
         let actions = me.getActions();
-        // one reason for all entries, such as a missing privilege, shows once above the list
         let reasons = new Set(actions.map((action) => action.disabledReason));
         me.sharedReason = reasons.size === 1 ? [...reasons][0] : undefined;
         let notice = me.down('#sharedReason');
@@ -34,7 +30,6 @@ Ext.define('PVE.storage.TypeList', {
                 let group = order[action.category] ?? order.other;
                 return {
                     ...action,
-                    // the category is found by its name too
                     keywords: `${action.keywords} ${categories[group].text}`,
                     group,
                     order: i,
@@ -58,14 +53,12 @@ Ext.define('PVE.storage.TypeList', {
             [rec.get('text'), rec.get('description'), rec.get('keywords')].join(' ').toLowerCase();
         me.store.clearFilter(true);
         me.store.filterBy((rec) => words.every((word) => text(rec).includes(word)));
-        // Next must not go on to an entry that the search hides
         let selected = me.grid.getSelection()[0];
         if (selected && me.store.indexOf(selected) === -1) {
             me.grid.getSelectionModel().deselectAll();
         }
     },
 
-    // the ID of the selected entry, if it is shown and can be used
     selectedId: function () {
         let me = this;
         let rec = me.grid.getSelection()[0];
@@ -74,7 +67,6 @@ Ext.define('PVE.storage.TypeList', {
             : undefined;
     },
 
-    // Selects an entry and goes on to its steps.
     choose: function (rec) {
         let me = this;
         if (!rec || rec.get('disabledReason')) {
@@ -88,7 +80,6 @@ Ext.define('PVE.storage.TypeList', {
         this.down('#search').focus();
     },
 
-    // applies a search that still waits for its delay
     flushSearch: function () {
         this.applyFilter(this.down('#search').getValue());
     },
@@ -205,7 +196,6 @@ Ext.define('PVE.storage.TypeList', {
         let search = Ext.create('Ext.form.field.Text', {
             itemId: 'search',
             emptyText: gettext('Search storage type'),
-            // not a value of the storage
             submitValue: false,
             isFormField: false,
             enableKeyEvents: true,
@@ -220,7 +210,6 @@ Ext.define('PVE.storage.TypeList', {
                         return;
                     }
                     event.stopEvent();
-                    // the search may still be buffered
                     me.applyFilter(field.getValue());
                     let grid = me.grid;
                     if (key === event.DOWN && me.store.getCount()) {
@@ -233,12 +222,10 @@ Ext.define('PVE.storage.TypeList', {
                             return;
                         }
                         let enabled = me.store.getRange().filter((r) => !r.get('disabledReason'));
-                        // an entry whose name has all words beats one found by its description
                         let words = field.getValue().toLowerCase().split(/\s+/).filter(Boolean);
                         let named = enabled.filter((r) =>
                             words.every((word) => r.get('text').toLowerCase().includes(word)),
                         );
-                        // and one with just that name beats others that contain it
                         let exact = enabled.filter(
                             (r) => r.get('text').toLowerCase() === words.join(' '),
                         );
@@ -275,8 +262,6 @@ Ext.define('PVE.storage.TypeList', {
     },
 });
 
-// Datacenter > Storage > Add: one window from the choice of the storage type or setup to its
-// creation. A plain type shows the input panels of its Edit dialog, a guided SAN setup its steps.
 Ext.define('PVE.storage.AddWizard', {
     extend: 'Ext.window.Window',
     alias: 'widget.pveStorageAddWizard',
@@ -288,7 +273,6 @@ Ext.define('PVE.storage.AddWizard', {
     resizable: false,
     layout: 'border',
 
-    // the storage view whose addActions() list the entries and that knows the custom plugins
     storageView: undefined,
     // the ID of an entry to open without the list of types, like 'setup:iscsi'
     preselect: undefined,
@@ -325,7 +309,6 @@ Ext.define('PVE.storage.AddWizard', {
         return this.storageView.addCategories.map((category) => ({ ...category }));
     },
 
-    // the editor of a plain type, as Datacenter > Storage > Edit opens it
     plainEditor: function (type) {
         let me = this;
         let schema = PVE.Utils.storageSchema[type];
@@ -359,9 +342,7 @@ Ext.define('PVE.storage.AddWizard', {
             );
             return undefined;
         }
-        // the panels fill the window, as the steps of a setup do
         let padding = 10;
-        // a step taller than the window, like the form of a custom plugin, scrolls
         let ipanel = Ext.create(editor.paneltype, {
             title: gettext('General'),
             type,
@@ -438,7 +419,6 @@ Ext.define('PVE.storage.AddWizard', {
             tp.remove(tab, true);
         }
         if (flow.kind === 'san') {
-            // the type list cannot be reached while the setup has a storage it added
             if (me.connection?.created && !me.storageAdded) {
                 PVE.storage.wizard.SAN.removeAddedConnection(me.connection, Ext.emptyFn);
             }
@@ -451,7 +431,6 @@ Ext.define('PVE.storage.AddWizard', {
         me.setTitle(gettext('Add Storage'));
     },
 
-    // Mounts the steps of an entry after the type list, in place of those of another entry.
     mountFlow: function (id) {
         let me = this;
         if (me.flow?.id === id) {
@@ -527,7 +506,6 @@ Ext.define('PVE.storage.AddWizard', {
         return valid;
     },
 
-    // Sets the buttons and which steps can be opened, after a change of a field or the step.
     updateButtons: function () {
         let me = this;
         let tp = me.down('#wizcontent');
@@ -557,7 +535,6 @@ Ext.define('PVE.storage.AddWizard', {
             let generalValid = me.checkCard(flowTabs[0]);
             flowTabs.slice(1).forEach((tab) => tab.setDisabled(!generalValid));
         } else {
-            // enable the step after a valid one, but not after a step that submits something
             for (let i = idx; i <= me.maxidx && i < tabs.length - 1; i++) {
                 let ok = i === idx ? valid : me.checkCard(tabs[i]);
                 if (!ok) {
@@ -583,7 +560,6 @@ Ext.define('PVE.storage.AddWizard', {
             next.setDisabled(!me.typeTab.selectedId());
             submit.hide();
         } else if (flow.kind === 'plain') {
-            // as in other wizards, the button that goes on stays in place and adds only at the end
             let last = idx === tabs.length - 1;
             next.setVisible(!last);
             next.setDisabled(!valid);
@@ -600,8 +576,6 @@ Ext.define('PVE.storage.AddWizard', {
         }
     },
 
-    // A tab of the steps leads away from the type list only to the steps of the entry selected
-    // there, also with a search or a selection that still waits for its delay.
     onBeforeTabChange: function (newcard, oldcard) {
         let me = this;
         if (!me.typeTab || oldcard !== me.typeTab || newcard === me.typeTab) {
@@ -629,7 +603,6 @@ Ext.define('PVE.storage.AddWizard', {
         let tp = me.down('#wizcontent');
         let active = tp.getActiveTab();
         if (active === me.typeTab) {
-            // a search typed just before must not leave a hidden entry selected
             me.typeTab.flushSearch();
         }
         if (!me.checkCard(active)) {
@@ -651,9 +624,7 @@ Ext.define('PVE.storage.AddWizard', {
         if (me.submitting) {
             return;
         }
-        // A field reports a change only after a short delay, so Add can still be enabled for a
-        // value pasted right before, without its check or the reaction of the form to it, like
-        // NFS clearing the export of the previous server.
+        // flush pending buffered field changes (e.g. paste right before clicking Add)
         me.down('form')
             .getForm()
             .getFields()
@@ -693,8 +664,7 @@ Ext.define('PVE.storage.AddWizard', {
                 done(false, response, options);
                 let errors = response.result?.errors;
                 if (errors) {
-                    // show the first step with an error before marking it, as showing a step
-                    // validates its fields, which clears the marks of locally valid values
+                    // switch tab first, as activating a tab re-validates and clears server errors
                     let tab = me
                         .flowTabs()
                         .find((card) =>
@@ -708,8 +678,7 @@ Ext.define('PVE.storage.AddWizard', {
                     // non-field errors (e.g. bad path or server) usually belong to General
                     me.down('#wizcontent').setActiveTab(me.flowTabs()[0]);
                 }
-                // A field that loses the focus to the message, as after Enter in it, validates
-                // itself again and so drops the mark of a locally valid value: mark once more.
+                // alert steals focus and triggers field re-validation, clearing server errors
                 Ext.Msg.alert(gettext('Error'), response.htmlStatus, () => {
                     if (errors && !me.destroyed) {
                         form.markInvalid(errors);
@@ -734,7 +703,6 @@ Ext.define('PVE.storage.AddWizard', {
 
         let viewSize = Ext.getBody().getViewSize();
         me.width = Math.min(960, viewSize.width - 40);
-        // the whole list of types fits, if the screen allows
         me.height = Math.min(760, viewSize.height - 40);
         me.title = gettext('Add Storage');
 
@@ -749,8 +717,7 @@ Ext.define('PVE.storage.AddWizard', {
                 getActions: () => me.storageView.addActions(),
                 listeners: {
                     select: {
-                        // Arrows through the list do not mount every entry on the way. A selection
-                        // that a delayed search drops does not take the steps away once they show.
+                        // debounce arrow navigation and ignore selections after switching away
                         buffer: 150,
                         fn: (list) => {
                             if (me.down('#wizcontent').getActiveTab() === list) {
@@ -812,7 +779,6 @@ Ext.define('PVE.storage.AddWizard', {
                     boxLabelAlign: 'before',
                     boxLabel: gettext('Advanced'),
                     value: advancedOn,
-                    // not a value of the storage
                     submitValue: false,
                     isFormField: false,
                     listeners: {
@@ -850,15 +816,12 @@ Ext.define('PVE.storage.AddWizard', {
                     reference: 'submitbutton',
                     hidden: true,
                     minWidth: 60,
-                    // Enter in a field of a plain type goes on like the visible button; not for
-                    // the type list or a setup, which go on with their buttons only
                     click: function (event) {
                         let active = me.down('#wizcontent').getActiveTab();
                         if (me.flow?.kind !== 'plain' || active === me.typeTab) {
                             return;
                         }
-                        // a held key must not go on and then add, and an open picker, like the
-                        // grid of the node selector, needs Enter for its own selection
+                        // ignore key-repeat and let open dropdown pickers consume Enter
                         if (event?.browserEvent?.repeat || Ext.Component.from(event)?.isExpanded) {
                             return;
                         }
@@ -870,8 +833,7 @@ Ext.define('PVE.storage.AddWizard', {
                         }
                     },
                     handler: function () {
-                        // it takes the place of Next on the last step, where the second click of
-                        // a double click on Next must not add
+                        // prevent a double-click on Next from immediately triggering Add/Finish
                         if (Date.now() - (me.tabChangedAt ?? 0) < 500) {
                             return;
                         }

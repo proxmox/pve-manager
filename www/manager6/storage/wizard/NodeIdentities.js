@@ -14,9 +14,6 @@ Ext.define('pve-san-node-identity', {
     ],
 });
 
-// The nodes with their iSCSI initiator names or NVMe host NQNs, to allow them on the array, and to
-// select the nodes that use the target. The node serving the web UI sets up the volume group, so it
-// stays selected.
 Ext.define('PVE.storage.wizard.NodeIdentities', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveStorageWizardNodeIdentities',
@@ -24,7 +21,6 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
     selModel: { selType: 'checkboxmodel', mode: 'SIMPLE' },
     viewConfig: { enableTextSelection: true },
 
-    // the identity of a node that the array allows
     identity: 'iscsi-initiator-name',
 
     getSelectedNodes: function () {
@@ -33,14 +29,12 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
             .sort();
     },
 
-    // The selected nodes, or none if all are selected, as a storage without restriction has.
     getNodes: function () {
         let me = this;
         let selected = me.getSelectedNodes();
         return selected.length === me.store.getCount() ? [] : selected;
     },
 
-    // Selects the given nodes, or all for none.
     setNodes: function (nodes) {
         let me = this;
         me.wantedNodes = [].concat(nodes || []).filter(Boolean);
@@ -69,7 +63,6 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
                 dataIndex: 'state',
                 width: 175,
                 renderer: PVE.SANUtils.renderState,
-                // the state of multipathd, which native NVMe multipath does not use
                 hidden: nvme,
             },
             {
@@ -134,6 +127,7 @@ Ext.define('PVE.storage.wizard.NodeIdentities', {
         ];
         me.callParent();
         Proxmox.Utils.monStoreErrors(me, me.rstore);
+        // keep the node serving the UI selected, as it creates the volume group
         me.on('beforedeselect', (sm, rec) => rec.get('node') !== Proxmox.NodeName);
         me.on('selectionchange', () => me.fireEvent('nodeschange', me));
         me.mon(me.rstore, 'load', (store, records, success) => {

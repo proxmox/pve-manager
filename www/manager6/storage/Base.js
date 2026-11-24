@@ -3,7 +3,6 @@ Ext.define('PVE.panel.StorageBase', {
     controller: 'storageEdit',
 
     statics: {
-        // The fields every storage has, also used by the remote storage wizard.
         commonFields: function (isCreate, storageId) {
             return {
                 id: {
@@ -34,13 +33,11 @@ Ext.define('PVE.panel.StorageBase', {
             };
         },
 
-        // The API takes the inverse of the enable checkbox.
         submitEnable: function (values) {
             values.disable = values.enable ? 0 : 1;
             delete values.enable;
         },
 
-        // The snapshot-as-volume-chain checkbox, shared with other views that add storages.
         volumeChainField: function (isCreate, type) {
             return {
                 xtype: 'proxmoxcheckbox',

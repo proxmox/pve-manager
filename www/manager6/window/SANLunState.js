@@ -4,8 +4,6 @@ Ext.define('pve-san-lun-node', {
     fields: ['node', 'state', 'paths-active', 'paths-total', 'paths-expected'],
 });
 
-// Shows the state of a LUN on each node, from the cluster-wide status: for a new storage on its
-// nodes, with advice for those that lack the LUN, or without a storage for diagnosis.
 Ext.define('PVE.window.SANLunState', {
     extend: 'Ext.window.Window',
 
@@ -140,8 +138,7 @@ Ext.define('PVE.window.SANLunState', {
         me.callParent();
         Proxmox.Utils.monStoreErrors(me.down('grid'), rstore);
         me.mon(rstore, 'load', (s, records, success) => success && updateAdvice());
-        // nodes that did not set up the LUN in time turn from pending to missing without a change
-        // in the data
+        // refresh once the pending window expires so pending rows switch to missing
         let expire =
             me.storage &&
             Ext.defer(function () {

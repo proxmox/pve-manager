@@ -28,7 +28,6 @@ Ext.define('PVE.storage.IScsiScan', {
 
     reload: function () {
         let me = this;
-        // without a portal there is nothing to discover
         if (!me.isDisabled() && me.portal) {
             me.getStore().load();
         }
@@ -36,7 +35,6 @@ Ext.define('PVE.storage.IScsiScan', {
 
     setPortal: function (portal) {
         let me = this;
-        // the result for the previous portal would come too late
         me.pendingDiscovery?.abort();
         me.portal = portal;
         me.getStore().getProxy().setExtraParams({ portal });
@@ -80,7 +78,7 @@ Ext.define('PVE.storage.IScsiScan', {
             }
             let portal = operation?.getRequest()?.getParams()?.portal;
             if (portal !== me.portal) {
-                // an aborted discovery of a previous portal brings no records, others must go
+                // discard stale results if an earlier portal's request completed anyway
                 if (success) {
                     loaded.removeAll();
                     me.setValue('');
@@ -145,7 +143,6 @@ Ext.define('PVE.storage.IScsiInputPanel', {
                     change: {
                         fn: function (f, value) {
                             let panel = this.up('inputpanel');
-                            // only the target selector of the add dialog follows the portal
                             if (!panel.isCreate) {
                                 return;
                             }

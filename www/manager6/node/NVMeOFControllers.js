@@ -29,7 +29,6 @@ Ext.define('PVE.node.NVMeOFControllerList', {
             text: gettext('Transport'),
             dataIndex: 'transport',
             width: 90,
-            // the transport of the controller, named as for the paths of a namespace
             renderer: (value) => PVE.SANUtils.renderSanTransport(value && `nvme-${value}`),
         },
         { text: gettext('Portal'), dataIndex: 'portal', width: 150, renderer: Ext.htmlEncode },
@@ -111,7 +110,6 @@ Ext.define('PVE.node.NVMeOFControllerList', {
                         iconCls: 'fa fa-unlink',
                         disabled: true,
                         dangerous: true,
-                        // the disconnect uses nvme-cli
                         enableFn: () =>
                             !!Ext.state.Manager.get('GuiCap').dc['Sys.Modify'] && me.supported,
                         confirmMsg: (rec) =>
