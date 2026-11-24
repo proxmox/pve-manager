@@ -361,6 +361,8 @@ Ext.define('PVE.storage.wizard.Target', {
             let portal = me.down('field[name=portal]').getValue()?.trim();
             if (portal && PVE.SANUtils.portalIncomplete(portal)) {
                 return;
+            } else if (portal && nvme && !PVE.SANUtils.nvmePortalValid(portal)) {
+                return;
             }
             let target = me.down('field[name=target]');
             target.setDisabled(!portal);
@@ -386,6 +388,8 @@ Ext.define('PVE.storage.wizard.Target', {
                 fieldLabel: nvme ? gettext('Discovery Portal') : gettext('Portal'),
                 labelWidth,
                 allowBlank: false,
+                allowOnlyWhitespace: false,
+                validator: nvme ? (value) => PVE.SANUtils.validateNVMePortals(value) : undefined,
                 queryMode: 'local',
                 valueField: 'portal',
                 displayField: 'portal',
@@ -467,6 +471,8 @@ Ext.define('PVE.storage.wizard.Target', {
                           fieldLabel: gettext('Portals'),
                           labelWidth,
                           allowBlank: false,
+                          allowOnlyWhitespace: false,
+                          validator: (value) => PVE.SANUtils.validateNVMePortals(value, true),
                       },
                   ]
                 : []),

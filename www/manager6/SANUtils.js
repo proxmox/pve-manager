@@ -284,6 +284,34 @@ Ext.define('PVE.SANUtils', {
         );
     },
 
+    nvmePortalValid: function (portal) {
+        let [, ip6, ip4, port] = portal.match(/^(?:\[(.+)\]|([0-9.]+))(?::([0-9]+))?$/) ?? [];
+        if (port !== undefined && !(port >= 1 && port <= 65535)) {
+            return false;
+        }
+        return ip6
+            ? Proxmox.Utils.IP64_match.test(ip6)
+            : !!ip4 && Proxmox.Utils.IP4_match.test(ip4);
+    },
+
+    validateNVMePortals: function (value, list) {
+        let entries = `${value ?? ''}`.trim();
+        let parts = (list ? entries.split(/[\s,;]+/) : [entries]).filter(Boolean);
+        // a list of only separators names no portal, which the storage refuses too
+        let invalid = parts.length
+            ? parts.find((entry) => !PVE.SANUtils.nvmePortalValid(entry))
+            : entries || undefined;
+        return (
+            invalid === undefined ||
+            Ext.String.format(
+                gettext(
+                    'Invalid portal "{0}". Use an IPv4 address or an IPv6 address in brackets, optionally with a port.',
+                ),
+                Ext.htmlEncode(invalid),
+            )
+        );
+    },
+
     renderSanTransport: function (value) {
         return Ext.htmlEncode(
             {

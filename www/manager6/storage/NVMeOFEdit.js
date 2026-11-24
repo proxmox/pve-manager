@@ -58,6 +58,7 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
             fieldLabel: gettext('Discovery Portal'),
             // without discovery, the subsystem and portals can be entered as they are
             allowBlank: true,
+            validator: (value) => PVE.SANUtils.validateNVMePortals(value),
             submitValue: false,
             cbind: {
                 hidden: '{!isCreate}',
@@ -76,7 +77,7 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
                     panel.down('field[name=portals]')?.setValue('');
                     // a pasted portal can come with spaces around it
                     let typed = (value ?? '').trim();
-                    let portal = typed && !PVE.SANUtils.portalIncomplete(typed) ? typed : '';
+                    let portal = typed && PVE.SANUtils.nvmePortalValid(typed) ? typed : '';
                     field.discovery ??= new Ext.util.DelayedTask();
                     field.discovery.delay(500, () => {
                         if (portal && !scan.destroyed) {
@@ -140,6 +141,8 @@ Ext.define('PVE.storage.NVMeOFInputPanel', {
             name: 'portals',
             fieldLabel: gettext('Portals'),
             allowBlank: false,
+            allowOnlyWhitespace: false,
+            validator: (value) => PVE.SANUtils.validateNVMePortals(value, true),
         },
     ],
 
