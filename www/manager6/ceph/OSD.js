@@ -489,11 +489,7 @@ Ext.define('PVE.window.CephBulkRestartOSDs', {
             });
         };
 
-        // Warn before submit rather than letting the task error explain it. Only the checks
-
-        // the backend calls blocking, so an upgraded cluster is not warned about a restart
-
-        // that then succeeds.
+        // Warn before submit for checks the backend marks as blocking.
         Proxmox.Utils.API2Request({
             url: '/cluster/ceph/status',
             method: 'GET',
