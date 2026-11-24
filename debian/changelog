@@ -1,3 +1,27 @@
+pve-manager (9.2.41) trixie; urgency=medium
+
+  * ui: SAN:
+    - also detect disabled storages of external storage plugins when opening
+      the LUN wipe confirmation, so the confirmation still asks to verify
+      that no storage plugin uses the LUN.
+    - when adding a multipath entry, also check a WWID that was typed before
+      the node's LUN list finished loading, so that Enter no longer adds only
+      a part of a listed WWID. A part of a WWID that the list does not offer,
+      for example of an NVMe namespace, no longer counts as invalid.
+
+  * ui: storage wizard: fall back to the General tab after a failed add when
+    returned field errors do not match any form field, instead of staying on
+    the last step.
+
+  * ui: container network: list network devices without a MAC address. Before,
+    such a device aborted listing the network devices of the container.
+
+  * ui: guest identity: for a guest on a node with a Proxmox VE version older
+    than 9.2.33, say that the ID gets assigned with the next configuration
+    change on a node with 9.2.33 or newer, as older nodes assign none.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2026 23:52:14 +0100
+
 pve-manager (9.2.40) trixie; urgency=medium
 
   * fix #8206: ui: ceph: make the column headers of the OSD list translatable.
