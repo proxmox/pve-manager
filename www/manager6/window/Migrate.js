@@ -192,6 +192,12 @@ Ext.define('PVE.window.Migrate', {
             var me = this,
                 vm = me.getViewModel();
 
+            // serialize checks; queue a re-check if inputs change while one is in flight
+            if (me.checkingPreconditions) {
+                me.recheckPreconditions = true;
+                return;
+            }
+
             var vmrec = PVE.data.ResourceStore.findRecord(
                 'vmid',
                 vm.get('vmid'),
@@ -206,17 +212,38 @@ Ext.define('PVE.window.Migrate', {
 
             me.lookup('pveNodeSelector').disallowedNodes = [vm.get('nodename')];
 
-            if (vm.get('vmtype') === 'qemu') {
-                await me.checkQemuPreconditions(resetMigrationPossible);
-            } else {
-                await me.checkLxcPreconditions(resetMigrationPossible);
+            let queried = false;
+            me.checkingPreconditions = true;
+            try {
+                if (vm.get('vmtype') === 'qemu') {
+                    queried = await me.checkQemuPreconditions(resetMigrationPossible);
+                } else {
+                    queried = await me.checkLxcPreconditions(resetMigrationPossible);
+                }
+            } finally {
+                me.checkingPreconditions = false;
+            }
+
+            if (me.destroyed) {
+                return;
             }
 
             // Only allow nodes where the local storage is available in case of offline migration
             // where storage migration is not possible
             me.lookup('pveNodeSelector').allowedNodes = vm.get('migration.allowedNodes');
 
-            me.lookup('formPanel').isValid();
+            // precondition checks can reset migration.possible; keep disabled if form is invalid
+            if (!me.lookup('formPanel').isValid()) {
+                vm.set('migration.possible', false);
+            }
+
+            if (me.recheckPreconditions) {
+                me.recheckPreconditions = false;
+                // avoid retry loop when the /migrate query itself failed
+                if (queried) {
+                    me.checkMigratePreconditions(true);
+                }
+            }
         },
 
         checkGuestIdentitySupport: function (migration, disallowed) {
@@ -247,42 +274,47 @@ Ext.define('PVE.window.Migrate', {
             }
 
             try {
-                if (
-                    me.fetchingNodeMigrateInfo &&
-                    me.fetchingNodeMigrateInfo === vm.get('nodename')
-                ) {
-                    return;
-                }
-                me.fetchingNodeMigrateInfo = vm.get('nodename');
                 let { result } = await Proxmox.Async.api2({
                     url: `/nodes/${vm.get('nodename')}/${vm.get('vmtype')}/${vm.get('vmid')}/migrate`,
                     method: 'GET',
                 });
                 migrateStats = result.data;
             } catch (error) {
-                if (error?.result?.status !== 501) {
+                if (!me.destroyed && error?.result?.status !== 501) {
                     Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
                 }
-                me.fetchingNodeMigrateInfo = false;
-                return;
+                return false;
+            }
+            if (me.destroyed) {
+                return true;
             }
 
             const target = me.lookup('pveNodeSelector').value;
+            // the selector holds an empty array or null until it has a node selected
+            const hasTarget = !Ext.isEmpty(target);
             let targetCapabilities = {};
 
-            try {
-                const { result } = await Proxmox.Async.api2({
-                    url: `/nodes/${target}/capabilities/qemu/migration`,
-                    method: 'GET',
-                });
-                targetCapabilities = result.data;
-            } catch (err) {
-                // Only emit a warning in the case the target node does not (yet) support the
-                // `capabilites/qemu/migration` endpoint and simply treat all features as unsupported.
-                console.warn(`failed to query /capabilites/qemu/migration on '${target}':`, err);
+            if (hasTarget) {
+                try {
+                    const { result } = await Proxmox.Async.api2({
+                        url: `/nodes/${target}/capabilities/qemu/migration`,
+                        method: 'GET',
+                    });
+                    targetCapabilities = result.data;
+                } catch (err) {
+                    // Only emit a warning in the case the target node does not (yet) support
+                    // the `capabilites/qemu/migration` endpoint and simply treat all features as
+                    // unsupported.
+                    console.warn(
+                        `failed to query /capabilites/qemu/migration on '${target}':`,
+                        err,
+                    );
+                }
+                // drop stale results if target changed; queued re-check will update
+                if (me.destroyed || me.lookup('pveNodeSelector').value !== target) {
+                    return true;
+                }
             }
-
-            me.fetchingNodeMigrateInfo = false;
 
             if (migrateStats.running) {
                 vm.set('running', true);
@@ -297,7 +329,7 @@ Ext.define('PVE.window.Migrate', {
 
             if (migrateStats.allowed_nodes && !vm.get('running')) {
                 migration.allowedNodes = migrateStats.allowed_nodes;
-                if (target.length && !migrateStats.allowed_nodes.includes(target)) {
+                if (hasTarget && !migrateStats.allowed_nodes.includes(target)) {
                     if (disallowed.unavailable_storages !== undefined) {
                         let missingStorages = disallowed.unavailable_storages.join(', ');
                         const text = Ext.String.format(
@@ -428,7 +460,11 @@ Ext.define('PVE.window.Migrate', {
                         severity: 'info',
                     });
                 }
-                if (migration.withConntrackState && !targetCapabilities['has-dbus-vmstate']) {
+                if (
+                    migration.withConntrackState &&
+                    hasTarget &&
+                    !targetCapabilities['has-dbus-vmstate']
+                ) {
                     migration.preconditions.push({
                         text: gettext(
                             'Cannot migrate conntrack state, target node is lacking support. Active network connections might get dropped.',
@@ -504,6 +540,7 @@ Ext.define('PVE.window.Migrate', {
             }
 
             vm.set('migration', migration);
+            return true;
         },
         checkLxcPreconditions: async function (resetMigrationPossible) {
             let me = this;
@@ -515,25 +552,19 @@ Ext.define('PVE.window.Migrate', {
             }
 
             try {
-                if (
-                    me.fetchingNodeMigrateInfo &&
-                    me.fetchingNodeMigrateInfo === vm.get('nodename')
-                ) {
-                    return;
-                }
-                me.fetchingNodeMigrateInfo = vm.get('nodename');
                 let { result } = await Proxmox.Async.api2({
                     url: `/nodes/${vm.get('nodename')}/${vm.get('vmtype')}/${vm.get('vmid')}/migrate`,
                     method: 'GET',
                 });
                 migrateStats = result.data;
-                me.fetchingNodeMigrateInfo = false;
             } catch (error) {
-                if (error?.result?.status !== 501) {
+                if (!me.destroyed && error?.result?.status !== 501) {
                     Ext.Msg.alert(Proxmox.Utils.errorText, error.htmlStatus);
                 }
-                me.fetchingNodeMigrateInfo = false;
-                return;
+                return false;
+            }
+            if (me.destroyed) {
+                return true;
             }
 
             if (migrateStats.running) {
@@ -608,6 +639,7 @@ Ext.define('PVE.window.Migrate', {
             }
 
             vm.set('migration', migration);
+            return true;
         },
     },
 
@@ -650,6 +682,8 @@ Ext.define('PVE.window.Migrate', {
                             xtype: 'proxmoxcheckbox',
                             name: 'configCheck',
                             fieldLabel: gettext('Config Check'),
+                            // match bound default to avoid a spurious change event on open
+                            checked: true,
                             autoEl: {
                                 tag: 'div',
                                 'data-qtip': gettext(
@@ -720,6 +754,8 @@ Ext.define('PVE.window.Migrate', {
                         {
                             xtype: 'proxmoxcheckbox',
                             name: 'withConntrackState',
+                            // match the bound default, see the config check above
+                            checked: true,
                             // TRANSLATORS: See https://www.kernel.org/doc/html/next/networking/netlink_spec/conntrack.html
                             fieldLabel: gettext('Conntrack state'),
                             autoEl: {
