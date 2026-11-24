@@ -81,11 +81,8 @@ my sub merge_problems(@rows) {
 
 my sub notify_problems($self, $problem, $notify) {
     my $severity = (grep { $_->{state} eq 'failed' } @$problem) ? 'error' : 'warning';
-    if (!$notify->($severity, $problem)) {
-        # the LUNs may no longer show the problem in the next check, so keep them for it
-        $self->{held}->{problem} = $problem;
-        return;
-    }
+    # a problem that could not be queued is notified again while the next checks still show it
+    return if !$notify->($severity, $problem);
     my $notified = $self->{notified};
     for my $lun (@$problem) {
         my $row = { map { exists($lun->{$_}) ? ($_ => $lun->{$_}) : () } @KEEP };
@@ -127,8 +124,6 @@ sub update($self, $report, $notify = \&queue_notification) {
     my $luns = [grep { $_->{native} ? $namespaces : $maps } ($report->{luns} // [])->@*];
 
     my $notified = $self->{notified};
-    # a problem that is still to be notified comes before the recovery of its LUN
-    my %unsent = map { $_->{wwid} => 1 } ($self->{held}->{problem} // [])->@*;
     my (@problem, @recovery, %pending);
     for my $lun (sort { $a->{wwid} cmp $b->{wwid} } @$luns) {
         my $wwid = $lun->{wwid};
@@ -147,7 +142,7 @@ sub update($self, $report, $notify = \&queue_notification) {
             } elsif (!$last || $escalating) {
                 $pending{problem} = 1; # changed in this check, the next one can confirm it
             }
-        } elsif ($last && healthy($lun, $last) && !$unsent{$wwid}) {
+        } elsif ($last && healthy($lun, $last)) {
             if ($before && healthy($before, $last)) {
                 # The kernel removes failed paths and the expected count can be lowered, so the
                 # alert can be over without the paths being known to be back.
@@ -169,7 +164,6 @@ sub update($self, $report, $notify = \&queue_notification) {
             $pending{recovery} = 1;
             next;
         }
-        next if $unsent{$wwid};
         my $lun = { $notified->{$wwid}->%*, gone => 1 };
         delete $lun->@{qw(state paths-active paths-expected paths-total)};
         push @recovery, $lun;

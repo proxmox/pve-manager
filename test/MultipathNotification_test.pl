@@ -209,23 +209,10 @@ pass_with($degraded, [['warning', 'a:degraded']], 'and is notified');
 $accept = sub($severity) { return $severity ne 'error' };
 pass_with({ a => 'failed' }, [], 'then all paths');
 pass_with({ a => 'failed' }, [['error', 'a:failed']], 'the escalation cannot be queued');
-pass_with($optimal, [['error', 'a:failed']], 'nor while the LUN recovers');
-pass_with($optimal, [['error', 'a:failed']], 'and the recovery waits for it');
+pass_with({ a => 'failed' }, [['error', 'a:failed']], 'and is tried again in the next check');
+pass_with($optimal, [], 'the LUN recovers');
+pass_with($optimal, [['info', 'a:optimal']], 'which ends the alert without the escalation');
 $accept = 1;
-pass_with($optimal, [['error', 'a:failed']], 'until it is sent');
-pass_with($optimal, [['info', 'a:optimal']], 'followed by the recovery');
-
-$tracker = PVE::MultipathNotification->new("$dir/escalate-gone.json");
-pass_with($degraded, [], 'a LUN loses a path');
-pass_with($degraded, [['warning', 'a:degraded']], 'and is notified');
-$accept = sub($severity) { return $severity ne 'error' };
-pass_with({ a => 'failed' }, [], 'then all paths');
-pass_with({ a => 'failed' }, [['error', 'a:failed']], 'the escalation cannot be queued');
-pass_with({}, [['error', 'a:failed']], 'nor once the LUN is gone');
-pass_with({}, [['error', 'a:failed']], 'whose removal waits for it');
-$accept = 1;
-pass_with({}, [['error', 'a:failed']], 'until it is sent');
-pass_with({}, [['info', 'a:gone']], 'followed by the removal');
 
 $tracker = PVE::MultipathNotification->new("$dir/escalate.json");
 my $lost1 = { a => { state => 'degraded', 'paths-active' => 2, 'paths-total' => 3 } };
@@ -317,19 +304,6 @@ flush_with([], 'only once');
 $tracker = PVE::MultipathNotification->new("$dir/held-stop.json");
 pass_with({ a => 'optimal', b => 'optimal' }, [], 'the restarted daemon');
 pass_with({ a => 'optimal', b => 'optimal' }, [['info', 'a:optimal']], 'notifies its recovery');
-
-$tracker = PVE::MultipathNotification->new("$dir/held-rejected.json");
-pass_with({ a => 'failed', b => 'optimal' }, [], 'a LUN loses all paths');
-pass_with({ a => 'failed', b => 'degraded' }, [], 'which waits while another one starts to');
-$accept = 0;
-pass_with({ a => 'optimal', b => 'optimal' }, [['error', 'a:failed']], 'the notification fails');
-$accept = 1;
-pass_with(
-    { a => 'optimal', b => 'optimal' },
-    [['error', 'a:failed']],
-    'and is retried although the LUN recovered',
-);
-pass_with({ a => 'optimal', b => 'optimal' }, [['info', 'a:optimal']], 'followed by its recovery');
 
 open(my $fh, '>', "$dir/broken.json") or die $!;
 print {$fh} '{"truncated';
