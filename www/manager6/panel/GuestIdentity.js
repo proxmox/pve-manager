@@ -16,11 +16,30 @@ Ext.define('PVE.window.GuestIdentity', {
 
     // the parsed 'meta' property of the guest config
     meta: {},
+    // the pve-manager version of the node of the guest, if known
+    nodeVersion: undefined,
+
+    statics: {
+        // nodes with older versions do not keep guest identities, see PVE::GuestIdentity
+        minVersion: '9.2.33',
+    },
 
     initComponent: function () {
         let me = this;
 
         let meta = me.meta;
+        let minVersion = PVE.window.GuestIdentity.minVersion;
+        let nodeTooOld =
+            typeof me.nodeVersion === 'string' &&
+            PVE.Utils.compare_ceph_versions(me.nodeVersion, minVersion) < 0;
+        let pendingText = nodeTooOld
+            ? Ext.String.format(
+                  gettext(
+                      'Assigned with the next configuration change on a node with Proxmox VE {0} or newer',
+                  ),
+                  minVersion,
+              )
+            : gettext('Assigned with the next configuration change');
         let renderTime = (seconds) =>
             Ext.isNumeric(seconds) ? PVE.Utils.render_timestamp_human_readable(seconds) : '';
 
@@ -33,7 +52,7 @@ Ext.define('PVE.window.GuestIdentity', {
                     {
                         xtype: 'displayfield',
                         itemId: 'uid',
-                        value: meta.uid ?? gettext('Assigned with the next configuration change'),
+                        value: meta.uid ?? pendingText,
                         userCls: meta.uid ? '' : 'pmx-opacity-50',
                         flex: 1,
                     },
@@ -150,12 +169,22 @@ Ext.define('PVE.panel.GuestIdentityTool', {
 
         // no load mask, for this short request it only flashes over the whole status view
         me.loadingDetails = true;
-        let response;
+        let meta, nodeVersion;
         try {
-            response = await Proxmox.Async.api2({
+            let response = await Proxmox.Async.api2({
                 url: `/nodes/${node}/${type}/${vmid}/config`,
                 method: 'GET',
             });
+            meta = PVE.Parser.parsePropertyString(response.result.data.meta) ?? {};
+            if (!meta.uid && !me.destroyed) {
+                // a node that does not keep guest identities does not assign one either
+                nodeVersion = await Proxmox.Async.api2({
+                    url: `/nodes/${node}/version`,
+                    method: 'GET',
+                })
+                    .then((versionResponse) => versionResponse.result?.data?.version)
+                    .catch(() => undefined);
+            }
         } catch (error) {
             if (!me.destroyed) {
                 Ext.Msg.alert(gettext('Error'), error.htmlStatus);
@@ -174,7 +203,8 @@ Ext.define('PVE.panel.GuestIdentityTool', {
         Ext.create('PVE.window.GuestIdentity', {
             autoShow: true,
             title: `${gettext('Guest Identity')}: ${Ext.htmlEncode(guestIdentifier)}`,
-            meta: PVE.Parser.parsePropertyString(response.result.data.meta) ?? {},
+            meta,
+            nodeVersion,
         });
     },
 });
