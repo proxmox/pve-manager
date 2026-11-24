@@ -704,6 +704,9 @@ Ext.define('PVE.storage.AddWizard', {
                         me.down('#wizcontent').setActiveTab(tab);
                     }
                     form.markInvalid(errors);
+                } else {
+                    // non-field errors (e.g. bad path or server) usually belong to General
+                    me.down('#wizcontent').setActiveTab(me.flowTabs()[0]);
                 }
                 // A field that loses the focus to the message, as after Enter in it, validates
                 // itself again and so drops the mark of a locally valid value: mark once more.
