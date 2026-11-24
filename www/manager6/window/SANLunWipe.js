@@ -60,8 +60,12 @@ Ext.define('PVE.window.SANLunWipe', {
             },
             {
                 xtype: 'textfield',
-                fieldLabel: `${gettext('Please enter the ID to confirm')} (${Ext.htmlEncode(name)})`,
+                fieldLabel: `${gettext('Please enter the ID to confirm')} (<span class="x-selectable">${Ext.htmlEncode(name)}</span>)`,
                 labelAlign: 'top',
+                // omit the label's 'for' attribute so selecting the ID does not focus the input,
+                // which then needs its own name for screen readers
+                skipLabelForAttribute: true,
+                ariaLabel: Ext.htmlEncode(`${gettext('Please enter the ID to confirm')} (${name})`),
                 submitValue: false,
                 allowBlank: false,
                 validator: (value) => value === name || gettext('The ID does not match.'),
