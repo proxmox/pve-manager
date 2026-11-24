@@ -234,6 +234,8 @@ Ext.define('PVE.qemu.CmdMenu', {
                 url: `/nodes/${info.node}/${info.type}/${info.vmid}/feature`,
                 params: { feature: 'snapshot' },
                 method: 'GET',
+                // keep menu usable (entry disabled) if feature check fails, e.g. missing storage
+                autoErrorAlert: false,
                 success: (response) => {
                     let hasFeature = response.result.data.hasFeature;
                     let btn = me.down('#takeSnapshotBtn');
