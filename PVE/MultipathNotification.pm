@@ -12,9 +12,7 @@ use PVE::Notify;
 use PVE::SafeSyslog;
 use PVE::Storage;
 
-# the fields of a notified LUN that later checks and notifications use, kept across a restart
 my @KEEP = qw(wwid name native state paths-expected paths-total storages vgname);
-# the fields of a LUN that notification templates get, besides those made for them
 my @SHOW = qw(wwid name native state paths-active paths-total paths-expected gone cleared);
 
 sub new($class, $file) {
@@ -33,7 +31,6 @@ my sub problem($lun) {
     return $lun->{state} eq 'degraded' || $lun->{state} eq 'failed';
 }
 
-# the paths that a LUN had or should have had when its problem was notified
 my sub notified_paths($last) {
     return max($last->{'paths-total'} // 0, $last->{'paths-expected'} // 0);
 }
@@ -65,8 +62,7 @@ my sub keep_paths($row, $earlier) {
     }
 }
 
-# One row per LUN, the first one unless a later one shows a failure, which a partial recovery after
-# it was confirmed must not hide.
+# deduplicate by WWID, keeping 'failed' over 'degraded' so partial recovery cannot mask it
 my sub merge_problems(@rows) {
     my %by_wwid;
     for my $row (@rows) {
@@ -83,7 +79,6 @@ my sub merge_problems(@rows) {
 
 my sub notify_problems($self, $problem, $notify) {
     my $severity = (grep { $_->{state} eq 'failed' } @$problem) ? 'error' : 'warning';
-    # a problem that could not be queued is notified again while the next checks still show it
     return if !$notify->($severity, $problem);
     my $notified = $self->{notified};
     for my $lun (@$problem) {
@@ -102,18 +97,17 @@ my sub save($self) {
     $self->{dirty} = 0;
 }
 
-# Sends the problems that wait for the next check, which a daemon that stops would lose.
+# flush held problems before shutdown so they are not lost
 sub flush($self, $notify = \&queue_notification) {
     my $held = delete $self->{held}->{problem};
     notify_problems($self, $held, $notify) if $held;
     save($self);
 }
 
-# Takes a multipath report of this node. A change counts once two reports in a row show it.
+# require two consecutive reports before alerting or clearing
 sub update($self, $report, $notify = \&queue_notification) {
     my $valid = ref($report) eq 'HASH';
-    # Maps need multipathd, the namespaces of native NVMe multipath do not. Each row counts by its
-    # own source, so a node without multipathd still notifies on its namespaces.
+    # evaluate maps and native NVMe namespaces separately so multipathd errors don't block NVMe
     my $maps = $valid && !$report->{error} && !$report->{'scope-unknown'};
     my $namespaces = $valid && !$report->{'namespaces-unknown'};
     my $previous = $self->{previous};
@@ -142,7 +136,7 @@ sub update($self, $report, $notify = \&queue_notification) {
             ) {
                 push @problem, $lun;
             } elsif (!$last || $escalating) {
-                $pending{problem} = 1; # changed in this check, the next one can confirm it
+                $pending{problem} = 1;
             }
         } elsif ($last && healthy($lun, $last)) {
             if ($before && healthy($before, $last)) {
@@ -156,9 +150,7 @@ sub update($self, $report, $notify = \&queue_notification) {
             }
         }
     }
-    # A LUN can be left out of a report that is not complete, which does not mean it is gone:
-    # without the hints of LVM, maps known only by their volume group, and after a failed query the
-    # NVMe namespaces. Each counts by its own source.
+    # skip absent LUNs when their source report is incomplete (no LVM hints or failed NVMe query)
     for my $wwid (sort keys %$notified) {
         next if exists($current->{$wwid});
         next if $notified->{$wwid}->{native} ? !$namespaces : !$maps || $report->{'vgs-unknown'};
@@ -202,7 +194,6 @@ my sub plural($n, $noun) {
     return $n == 1 ? "1 $noun" : "$n ${noun}s";
 }
 
-# Takes the rows of a notification, each with all storages of its LUN, sorted.
 sub template_data($severity, $luns) {
     my $data = {};
     my ($failed, $degraded, $restored, $cleared) = (0, 0, 0, 0);
@@ -219,7 +210,6 @@ sub template_data($severity, $luns) {
             'storage-label' => scalar(@$storages) == 1 ? 'storage' : 'storages',
             storages => join(', ', @$storages),
         };
-        # the usable paths out of those the LUN has, or should have if more, as the UI shows them
         my $paths = max($lun->{'paths-total'} // 0, $lun->{'paths-expected'} // 0);
         $row->{'path-count'} = ($lun->{'paths-active'} // 0) . "/$paths"
             if defined($lun->{'paths-total'}) && $paths;
@@ -264,8 +254,6 @@ sub template_data($severity, $luns) {
     return $data;
 }
 
-# Queues a notification, with the storages of this node that each LUN belongs to. Returns whether
-# it was queued.
 sub queue_notification($severity, $luns) {
     my $ok = eval {
         my $nodename = PVE::INotify::nodename();
