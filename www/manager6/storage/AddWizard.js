@@ -663,20 +663,18 @@ Ext.define('PVE.storage.AddWizard', {
                 me.submitting = false;
                 done(false, response, options);
                 let errors = response.result?.errors;
+                let tab = errors
+                    ? me
+                          .flowTabs()
+                          .find((card) =>
+                              card.query('field').some((f) => Object.hasOwn(errors, f.getName?.())),
+                          )
+                    : undefined;
+                // switch tab first, as activating a tab re-validates and clears server errors;
+                // errors without a matching field usually belong to General
+                me.down('#wizcontent').setActiveTab(tab ?? me.flowTabs()[0]);
                 if (errors) {
-                    // switch tab first, as activating a tab re-validates and clears server errors
-                    let tab = me
-                        .flowTabs()
-                        .find((card) =>
-                            card.query('field').some((f) => Object.hasOwn(errors, f.getName?.())),
-                        );
-                    if (tab) {
-                        me.down('#wizcontent').setActiveTab(tab);
-                    }
                     form.markInvalid(errors);
-                } else {
-                    // non-field errors (e.g. bad path or server) usually belong to General
-                    me.down('#wizcontent').setActiveTab(me.flowTabs()[0]);
                 }
                 // alert steals focus and triggers field re-validation, clearing server errors
                 Ext.Msg.alert(gettext('Error'), response.htmlStatus, () => {
