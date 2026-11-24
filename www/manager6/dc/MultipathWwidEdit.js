@@ -30,6 +30,11 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
         if (me.isCreate) {
             // editable comboboxes auto-expand on focus and would cover the form
             me.defaultFocus = me.wwid ? 'field[name=alias]' : undefined;
+            // namespaces use native NVMe multipath, the entry API refuses their WWIDs
+            let isEligible = (rec) =>
+                ['none', 'unmanaged'].includes(rec.get('multipath')) &&
+                !(rec.get('transport') ?? '').startsWith('nvme') &&
+                !/^(?:eui|uuid|nvme)\./.test(rec.get('wwid') ?? '');
             wwidField = {
                 ...wwidField,
                 xtype: 'proxmoxComboGrid',
@@ -41,13 +46,17 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
                 // in another case, as the list does
                 validator: function (value) {
                     let data = this.getStore().getData();
-                    let wwids = (data.getSource() ?? data).getRange().map((r) => r.get('wwid'));
+                    let records = (data.getSource() ?? data).getRange();
                     let typed = value.toLowerCase();
+                    let mismatch =
+                        !!value &&
+                        !records.some((r) => r.get('wwid') === value) &&
+                        (records.some((r) => r.get('wwid').toLowerCase() === typed) ||
+                            records
+                                .filter(isEligible)
+                                .some((r) => r.get('wwid').toLowerCase().includes(typed)));
                     return (
-                        !value ||
-                        wwids.includes(value) ||
-                        !wwids.some((wwid) => wwid.toLowerCase().includes(typed)) ||
-                        gettext('Select the LUN from the list or enter its full WWID.')
+                        !mismatch || gettext('Select the LUN from the list or enter its full WWID.')
                     );
                 },
                 autoSelect: false,
@@ -61,13 +70,7 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
                         type: 'proxmox',
                         url: `/api2/json/nodes/${Proxmox.NodeName}/san/luns`,
                     },
-                    // namespaces use native NVMe multipath, the entry API refuses their WWIDs
-                    filters: [
-                        (rec) =>
-                            ['none', 'unmanaged'].includes(rec.get('multipath')) &&
-                            !(rec.get('transport') ?? '').startsWith('nvme') &&
-                            !/^(?:eui|uuid|nvme)\./.test(rec.get('wwid') ?? ''),
-                    ],
+                    filters: [isEligible],
                     sorters: 'wwid',
                 },
                 listConfig: {
@@ -169,5 +172,15 @@ Ext.define('PVE.dc.MultipathWwidEdit', {
             },
         ];
         me.callParent();
+        if (me.isCreate) {
+            let field = me.down('field[name=wwid]');
+            // the validator depends on the loaded LUNs, but ComboGrid's load handler does not
+            // re-run it for an unchanged value
+            me.mon(field.getStore(), 'load', (_store, _records, success) => {
+                if (success) {
+                    field.validate();
+                }
+            });
+        }
     },
 });
