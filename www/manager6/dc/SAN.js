@@ -388,6 +388,17 @@ Ext.define('PVE.dc.SANView', {
                     },
                     {
                         text: gettext('Multipath'),
+                        tooltip: Ext.htmlEncode(
+                            Ext.htmlEncode(
+                                Ext.String.format(
+                                    gettext(
+                                        // TRANSLATORS: {0} is the label of the Remove Entry button.
+                                        'How the map of the LUN is managed: by an explicit entry, which stays until it is removed with "{0}", by a storage with Multipath enabled, natively for NVMe, or "Unmanaged" if Proxmox VE did not set it up.',
+                                    ),
+                                    gettext('Remove Entry'),
+                                ),
+                            ),
+                        ),
                         dataIndex: 'explicit',
                         width: 170,
                         renderer: (value, md, rec) => {
