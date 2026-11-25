@@ -362,67 +362,117 @@ Ext.define(
         load: async function () {
             let me = this;
 
+            if (me.destroyed || me.destroying) {
+                return;
+            }
+
+            let loadSeq = (me.loadSeq = (me.loadSeq || 0) + 1);
+
             Proxmox.Utils.setErrorMask(me, true);
 
             let nodename = me.pveSelNode.data.node;
             let vmid = me.pveSelNode.data.vmid;
 
+            let confPromise = Proxmox.Async.api2({
+                url: me.url,
+            });
+            let ifPromise = Proxmox.Async.api2({
+                url: `/nodes/${nodename}/lxc/${vmid}/interfaces`,
+                method: 'GET',
+            }).catch(() => null);
+
+            let configs = {};
             try {
-                let ifResponse = await Proxmox.Async.api2({
-                    url: `/nodes/${nodename}/lxc/${vmid}/interfaces`,
-                    method: 'GET',
-                });
-                let confResponse = await Proxmox.Async.api2({
-                    url: me.url,
-                });
+                let confResponse = await confPromise;
+                if (me.destroyed || me.destroying || me.loadSeq !== loadSeq) {
+                    return;
+                }
                 Proxmox.Utils.setErrorMask(me, false);
 
-                let interfaces = [];
-                for (const [, iface] of Object.entries(ifResponse?.result?.data || {})) {
-                    interfaces[iface['hardware-address']] = iface;
-                }
-
                 let records = [];
-                me.dataCache = confResponse.result.data || {};
-                for (const [key, value] of Object.entries(confResponse.result.data)) {
+                me.dataCache = confResponse?.result?.data || {};
+                for (const [key, value] of Object.entries(me.dataCache)) {
                     if (!key.match(/^net\d+/)) {
                         continue;
                     }
                     let config = PVE.Parser.parseLxcNetwork(value);
                     let net = structuredClone(config);
                     net.id = key;
-
-                    let iface = interfaces[config.hwaddr?.toLowerCase()];
-                    if (iface) {
-                        net.name = iface.name;
-                        net.ip = [];
-                        net.ip6 = [];
-                        for (const i of iface['ip-addresses']) {
-                            let ip_with_prefix = `${i['ip-address']}/${i.prefix}`;
-                            if (i['ip-address-type'] === 'inet') {
-                                if (config.ip === ip_with_prefix) {
-                                    net.ip.push(`${ip_with_prefix} (static)`);
-                                } else {
-                                    // this could be dhcp, but also a static address set directly on the container
-                                    net.ip.push(`${ip_with_prefix} (dynamic)`);
-                                }
-                            } else if (i['ip-address-type'] === 'inet6') {
-                                if (config.ip6 === ip_with_prefix) {
-                                    net.ip6.push(`${ip_with_prefix} (static)`);
-                                } else {
-                                    // this could be dhcp, slaac, but also a static address set directly on the container
-                                    net.ip6.push(`${ip_with_prefix} (dynamic)`);
-                                }
-                            }
-                        }
-                    }
+                    configs[key] = config;
                     records.push(net);
                 }
 
                 me.store.loadData(records);
                 me.down('button[name=addButton]').setDisabled(records.length >= 32);
             } catch (error) {
-                Proxmox.Utils.setErrorMask(me, gettext('Error') + ': ' + error);
+                if (me.destroyed || me.destroying || me.loadSeq !== loadSeq) {
+                    return;
+                }
+                let msg =
+                    error?.htmlStatus ||
+                    (error?.result && Proxmox.Utils.extractRequestError(error.result, true)) ||
+                    Ext.htmlEncode(error?.message || String(error));
+                Proxmox.Utils.setErrorMask(me, msg);
+                return;
+            }
+
+            let ifResponse = await ifPromise;
+            if (me.destroyed || me.destroying || me.loadSeq !== loadSeq) {
+                return;
+            }
+
+            let ifData = ifResponse?.result?.data;
+            if (!Array.isArray(ifData) || ifData.length === 0) {
+                return;
+            }
+
+            let interfaces = Object.create(null);
+            for (const iface of ifData) {
+                if (iface?.['hardware-address']) {
+                    interfaces[iface['hardware-address'].toLowerCase()] = iface;
+                }
+            }
+
+            for (const [id, config] of Object.entries(configs)) {
+                if (!config.hwaddr) {
+                    continue;
+                }
+                let iface = interfaces[config.hwaddr.toLowerCase()];
+                if (!iface) {
+                    continue;
+                }
+                let record = me.store.getById(id);
+                if (!record) {
+                    continue;
+                }
+                let ip = [];
+                let ip6 = [];
+                for (const i of iface['ip-addresses'] || []) {
+                    let ip_with_prefix = `${i['ip-address']}/${i.prefix}`;
+                    if (i['ip-address-type'] === 'inet') {
+                        if (config.ip === ip_with_prefix) {
+                            ip.push(`${ip_with_prefix} (static)`);
+                        } else {
+                            // this could be dhcp, but also a static address set directly on the container
+                            ip.push(`${ip_with_prefix} (dynamic)`);
+                        }
+                    } else if (i['ip-address-type'] === 'inet6') {
+                        if (config.ip6 === ip_with_prefix) {
+                            ip6.push(`${ip_with_prefix} (static)`);
+                        } else {
+                            // this could be dhcp, slaac, but also a static address set directly on the container
+                            ip6.push(`${ip_with_prefix} (dynamic)`);
+                        }
+                    }
+                }
+                record.set(
+                    {
+                        name: iface.name ?? config.name,
+                        ip,
+                        ip6,
+                    },
+                    { dirty: false },
+                );
             }
         },
 
