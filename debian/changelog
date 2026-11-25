@@ -1,3 +1,9 @@
+pve-manager (9.3.0) trixie; urgency=medium
+
+  * bump for Proxmox VE 9.3.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 Nov 2026 01:08:09 +0100
+
 pve-manager (9.2.41) trixie; urgency=medium
 
   * ui: SAN:
