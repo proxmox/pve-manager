@@ -422,6 +422,9 @@ Ext.define(
                 me.store.loadData(records);
                 me.down('button[name=addButton]').setDisabled(records.length >= 32);
             } catch (error) {
+                if (me.destroyed) {
+                    return;
+                }
                 Proxmox.Utils.setErrorMask(me, gettext('Error') + ': ' + error);
             }
         },
