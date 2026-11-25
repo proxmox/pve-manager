@@ -1,3 +1,14 @@
+pve-manager (9.3.1) trixie; urgency=medium
+
+  * ui: container network: load configured network devices independently
+    of runtime interface queries, so a slow or failing interface lookup
+    no longer hides configured interfaces, and show the actual API error
+    message if loading the configuration fails. Avoid updating or
+    masking the view after navigating away from it or when a newer
+    reload is already in progress.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 Nov 2026 12:37:47 +0100
+
 pve-manager (9.3.0) trixie; urgency=medium
 
   * bump for Proxmox VE 9.3.
