@@ -186,6 +186,11 @@ Ext.define('PVE.storage.BaseEdit', {
                 region: 'center',
                 layout: 'fit',
                 bodyPadding: 10,
+                defaults: {
+                    // leave room for the window header, tab bar and buttons
+                    maxHeight: Math.max(200, Ext.getBody().getViewSize().height - 200),
+                    scrollable: 'y',
+                },
                 items: [
                     me.ipanel,
                     {
